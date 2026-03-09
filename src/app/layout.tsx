@@ -1,9 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
-import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
-import { ChatWidget } from "@/components/chat/ChatWidget";
+import { LayoutShell } from "@/components/layout/LayoutShell";
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -47,10 +45,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${jakarta.variable} ${jetbrains.variable}`}>
       <body className="font-[family-name:var(--font-heading)] antialiased">
-        <Header />
-        <main>{children}</main>
-        <Footer />
-        <ChatWidget />
+        <LayoutShell>{children}</LayoutShell>
       </body>
     </html>
   );
