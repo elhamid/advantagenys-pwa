@@ -254,7 +254,7 @@ export const forms: FormConfig[] = [
     category: "other",
     platform: "native",
     type: "link",
-    linkUrl: "https://g.page/r/ITIN-review-placeholder/review",
+    linkUrl: "https://g.page/r/CZy_8wX9_yQNEBM/review",
     active: true,
     priority: 21,
     slug: toSlug("ITIN Google Reviews"),
