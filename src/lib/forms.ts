@@ -5,6 +5,7 @@ export interface FormConfig {
   category: "tax" | "business" | "insurance" | "immigration" | "licensing" | "financial" | "other";
   platform: "jotform" | "google" | "native";
   embedUrl?: string;
+  nativeComponent?: string;
   active: boolean;
   priority: number;
   encrypted?: boolean;
@@ -188,32 +189,34 @@ export const forms: FormConfig[] = [
     slug: toSlug("HIC Auto Processing"),
   },
   {
-    id: "google-client-info",
+    id: "native-client-info",
     title: "Basic Info / Client Intake",
     description: "New client registration",
     category: "other",
-    platform: "google",
-    embedUrl: "https://appointabc.com/client/",
+    platform: "native",
+    nativeComponent: "ClientInfoForm",
     active: true,
     priority: 16,
     slug: toSlug("Basic Info Client Intake"),
   },
   {
-    id: "google-corp",
+    id: "native-corp",
     title: "Corporation Services",
     description: "Corporate registration form",
     category: "business",
-    platform: "google",
+    platform: "native",
+    nativeComponent: "CorporateRegistrationForm",
     active: true,
     priority: 17,
     slug: toSlug("Corporation Services"),
   },
   {
-    id: "google-insurance",
+    id: "native-insurance",
     title: "Client Form for Insurance",
     description: "Insurance intake form",
     category: "insurance",
-    platform: "google",
+    platform: "native",
+    nativeComponent: "InsuranceForm",
     active: true,
     priority: 18,
     slug: toSlug("Client Form for Insurance"),

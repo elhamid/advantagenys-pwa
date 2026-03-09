@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Container } from "@/components/ui/Container";
 import { forms, getFormBySlug } from "@/lib/forms";
 import { FormEmbed } from "./FormEmbed";
+import { NativeForm } from "./NativeForm";
 import Link from "next/link";
 
 interface PageProps {
@@ -28,7 +29,7 @@ export default async function FormPage({ params }: PageProps) {
   const { slug } = await params;
   const form = getFormBySlug(slug);
 
-  if (!form || !form.embedUrl) {
+  if (!form || (!form.embedUrl && form.platform !== "native")) {
     notFound();
   }
 
@@ -61,7 +62,11 @@ export default async function FormPage({ params }: PageProps) {
 
       <section className="pb-24">
         <Container>
-          <FormEmbed form={form} />
+          {form.platform === "native" && form.nativeComponent ? (
+            <NativeForm componentName={form.nativeComponent} />
+          ) : (
+            <FormEmbed form={form} />
+          )}
         </Container>
       </section>
     </div>
