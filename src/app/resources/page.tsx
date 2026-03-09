@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Container } from "@/components/ui/Container";
-import { CategoryTabs } from "@/components/resources/CategoryTabs";
+import { FormsGrid } from "@/components/resources/FormsGrid";
 
 export const metadata: Metadata = {
   title: "Client Resources",
@@ -27,7 +27,7 @@ export default function ResourcesPage() {
       {/* Forms */}
       <section className="py-12 pb-24">
         <Container>
-          <CategoryTabs />
+          <FormsGrid />
         </Container>
       </section>
     </div>

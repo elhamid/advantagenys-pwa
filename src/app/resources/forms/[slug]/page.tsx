@@ -4,6 +4,7 @@ import { Container } from "@/components/ui/Container";
 import { forms, getFormBySlug } from "@/lib/forms";
 import { FormEmbed } from "./FormEmbed";
 import { NativeForm } from "./NativeForm";
+import { FormPageShareBar } from "./FormPageShareBar";
 import Link from "next/link";
 
 interface PageProps {
@@ -46,17 +47,24 @@ export default async function FormPage({ params }: PageProps) {
             </svg>
             Back to Resources
           </Link>
-          <h1 className="text-3xl md:text-4xl font-bold text-[var(--text)] mb-2">
-            {form.title}
-          </h1>
-          <p className="text-lg text-[var(--text-secondary)]">
-            {form.description}
-          </p>
-          {form.encrypted && (
-            <p className="mt-2 text-sm text-green-700 font-medium">
-              This form uses encrypted submission for your security.
-            </p>
-          )}
+
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+            <div>
+              <h1 className="text-3xl md:text-4xl font-bold text-[var(--text)] mb-2">
+                {form.title}
+              </h1>
+              <p className="text-lg text-[var(--text-secondary)]">
+                {form.description}
+              </p>
+              {form.encrypted && (
+                <p className="mt-2 text-sm text-green-700 font-medium">
+                  This form uses encrypted submission for your security.
+                </p>
+              )}
+            </div>
+
+            <FormPageShareBar title={form.title} slug={form.slug} />
+          </div>
         </Container>
       </section>
 
