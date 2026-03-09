@@ -61,10 +61,10 @@ function TeamPhotoParallax() {
     <div ref={ref} className="relative rounded-2xl overflow-hidden mb-16" style={{ aspectRatio: "987 / 550" }}>
       <motion.div className="absolute inset-[-10%]" style={{ y }}>
         <Image
-          src="/images/team/advantage_team.png"
+          src="/images/team/advantage_team.jpg"
           alt="The Advantage Services team — Jay, Kedar, Zia, Akram, Riaz, and Hamid"
           fill
-          unoptimized
+          quality={95}
           priority
           className="object-cover"
           sizes="(max-width: 1024px) 100vw, 1400px"
