@@ -65,7 +65,8 @@ function TeamPhotoParallax() {
           alt="The Advantage Services team — Jay, Kedar, Zia, Akram, Riaz, and Hamid"
           fill
           className="object-cover"
-          sizes="(max-width: 1024px) 100vw, 1200px"
+          sizes="(max-width: 1024px) 100vw, 1400px"
+          quality={95}
         />
       </motion.div>
     </div>
