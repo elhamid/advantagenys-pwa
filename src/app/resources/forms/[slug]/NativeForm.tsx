@@ -16,6 +16,10 @@ const nativeFormComponents: Record<string, ComponentType> = {
     () => import("@/components/forms/InsuranceForm").then((mod) => mod.InsuranceForm),
     { loading: () => <div className="py-12 text-center text-[var(--text-muted)]">Loading form...</div> }
   ),
+  HomeImprovementForm: dynamic(
+    () => import("@/components/forms/HomeImprovementForm").then((mod) => mod.HomeImprovementForm),
+    { loading: () => <div className="py-12 text-center text-[var(--text-muted)]">Loading form...</div> }
+  ),
 };
 
 interface NativeFormProps {

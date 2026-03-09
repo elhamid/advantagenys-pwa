@@ -4,8 +4,10 @@ export interface FormConfig {
   description: string;
   category: "tax" | "business" | "insurance" | "immigration" | "licensing" | "financial" | "other";
   platform: "jotform" | "google" | "native";
+  type?: "form" | "link";
   embedUrl?: string;
   nativeComponent?: string;
+  linkUrl?: string;
   active: boolean;
   priority: number;
   encrypted?: boolean;
@@ -220,6 +222,65 @@ export const forms: FormConfig[] = [
     active: true,
     priority: 18,
     slug: toSlug("Client Form for Insurance"),
+  },
+  {
+    id: "link-office-address",
+    title: "Office Address",
+    description: "229-14 Linden Blvd, Cambria Heights, NY 11411",
+    category: "other",
+    platform: "native",
+    type: "link",
+    linkUrl: "https://maps.google.com/?q=229-14+Linden+Blvd+Cambria+Heights+NY+11411",
+    active: true,
+    priority: 19,
+    slug: toSlug("Office Address"),
+  },
+  {
+    id: "link-abc-google-reviews",
+    title: "ABC Google Reviews",
+    description: "Leave a review for Advantage Business Consulting",
+    category: "other",
+    platform: "native",
+    type: "link",
+    linkUrl: "https://g.page/r/CZy_8wX9_yQNEBM/review",
+    active: true,
+    priority: 20,
+    slug: toSlug("ABC Google Reviews"),
+  },
+  {
+    id: "link-itin-google-reviews",
+    title: "ITIN Google Reviews",
+    description: "Leave a review for ITIN services",
+    category: "other",
+    platform: "native",
+    type: "link",
+    linkUrl: "https://g.page/r/ITIN-review-placeholder/review",
+    active: true,
+    priority: 21,
+    slug: toSlug("ITIN Google Reviews"),
+  },
+  {
+    id: "link-zelle-info",
+    title: "Zelle Payment Info",
+    description: "Payment via Zelle to 229advantage@gmail.com or (929) 292-9230",
+    category: "other",
+    platform: "native",
+    type: "link",
+    linkUrl: "https://www.zellepay.com",
+    active: true,
+    priority: 22,
+    slug: toSlug("Zelle Payment Info"),
+  },
+  {
+    id: "native-home-improvement",
+    title: "Home Improvement Licensing",
+    description: "Home improvement contractor license application",
+    category: "licensing",
+    platform: "native",
+    nativeComponent: "HomeImprovementForm",
+    active: true,
+    priority: 23,
+    slug: toSlug("Home Improvement Licensing"),
   },
 ];
 

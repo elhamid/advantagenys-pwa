@@ -17,7 +17,9 @@ interface FormCardProps {
 export function FormCard({ form, index = 0, kioskMode = false }: FormCardProps) {
   const colorClass = categoryColors[form.category];
   const categoryLabel = categories.find((c) => c.key === form.category)?.label || form.category;
-  const formUrl = `/resources/forms/${form.slug}`;
+  const isLink = form.type === "link";
+  const formUrl = isLink ? (form.linkUrl || "#") : `/resources/forms/${form.slug}`;
+  const shareUrl = isLink ? (form.linkUrl || "#") : `/resources/forms/${form.slug}`;
   const Icon = categoryIcons[form.category];
 
   return (
@@ -41,7 +43,7 @@ export function FormCard({ form, index = 0, kioskMode = false }: FormCardProps) 
             </h3>
           </div>
           {/* Copy link button */}
-          <ShareButton title={form.title} url={formUrl} variant="copy" />
+          <ShareButton title={form.title} url={shareUrl} variant="copy" />
         </div>
 
         {!kioskMode && (
@@ -52,19 +54,35 @@ export function FormCard({ form, index = 0, kioskMode = false }: FormCardProps) 
 
         {/* Actions */}
         <div className={`flex gap-2 ${kioskMode ? "mt-2" : "mt-auto"}`}>
-          <Link
-            href={formUrl}
-            className={`flex-1 inline-flex items-center justify-center gap-1.5 font-semibold rounded-[var(--radius)] bg-[var(--surface)] text-[var(--text)] border border-[var(--border)] hover:bg-[var(--blue-pale)] hover:text-[var(--blue-accent)] transition-all duration-[var(--transition)] ${kioskMode ? "px-4 py-3 text-sm" : "px-3 py-2.5 text-sm"}`}
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" />
-              <polyline points="15 3 21 3 21 9" />
-              <line x1="10" y1="14" x2="21" y2="3" />
-            </svg>
-            Open
-          </Link>
-          <ShareButton title={form.title} url={formUrl} variant="icon" />
-          <ShareButton title={form.title} url={formUrl} variant="whatsapp" className={kioskMode ? "" : "hidden sm:inline-flex"} />
+          {isLink ? (
+            <a
+              href={formUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`flex-1 inline-flex items-center justify-center gap-1.5 font-semibold rounded-[var(--radius)] bg-[var(--surface)] text-[var(--text)] border border-[var(--border)] hover:bg-[var(--blue-pale)] hover:text-[var(--blue-accent)] transition-all duration-[var(--transition)] ${kioskMode ? "px-4 py-3 text-sm" : "px-3 py-2.5 text-sm"}`}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" />
+                <polyline points="15 3 21 3 21 9" />
+                <line x1="10" y1="14" x2="21" y2="3" />
+              </svg>
+              Open
+            </a>
+          ) : (
+            <Link
+              href={formUrl}
+              className={`flex-1 inline-flex items-center justify-center gap-1.5 font-semibold rounded-[var(--radius)] bg-[var(--surface)] text-[var(--text)] border border-[var(--border)] hover:bg-[var(--blue-pale)] hover:text-[var(--blue-accent)] transition-all duration-[var(--transition)] ${kioskMode ? "px-4 py-3 text-sm" : "px-3 py-2.5 text-sm"}`}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" />
+                <polyline points="15 3 21 3 21 9" />
+                <line x1="10" y1="14" x2="21" y2="3" />
+              </svg>
+              Open
+            </Link>
+          )}
+          <ShareButton title={form.title} url={shareUrl} variant="icon" />
+          <ShareButton title={form.title} url={shareUrl} variant="whatsapp" className={kioskMode ? "" : "hidden sm:inline-flex"} />
         </div>
       </Card>
     </motion.div>

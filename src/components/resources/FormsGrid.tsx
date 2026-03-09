@@ -47,7 +47,7 @@ export function FormsGrid({ kioskMode = false }: FormsGridProps) {
         </svg>
         <input
           type="text"
-          placeholder="Search forms..."
+          placeholder="Search forms & links..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className={`w-full pl-11 pr-4 rounded-[var(--radius)] bg-[var(--surface)] border border-[var(--border)] text-[var(--text)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--blue-accent)] focus:border-transparent transition-all duration-[var(--transition)] ${kioskMode ? "py-4 text-base" : "py-3 text-sm"}`}
@@ -84,7 +84,7 @@ export function FormsGrid({ kioskMode = false }: FormsGridProps) {
 
       {/* Results count */}
       <p className={`text-[var(--text-muted)] mb-4 ${kioskMode ? "text-sm" : "text-xs"}`}>
-        {filtered.length} form{filtered.length !== 1 ? "s" : ""}
+        {filtered.length} item{filtered.length !== 1 ? "s" : ""}
         {search && ` matching "${search}"`}
       </p>
 

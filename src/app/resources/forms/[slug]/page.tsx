@@ -12,7 +12,7 @@ interface PageProps {
 }
 
 export async function generateStaticParams() {
-  return forms.filter((f) => f.active).map((f) => ({ slug: f.slug }));
+  return forms.filter((f) => f.active && f.type !== "link").map((f) => ({ slug: f.slug }));
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -30,7 +30,7 @@ export default async function FormPage({ params }: PageProps) {
   const { slug } = await params;
   const form = getFormBySlug(slug);
 
-  if (!form || (!form.embedUrl && form.platform !== "native")) {
+  if (!form || form.type === "link" || (!form.embedUrl && form.platform !== "native")) {
     notFound();
   }
 
