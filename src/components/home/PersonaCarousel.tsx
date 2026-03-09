@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useCallback, type ReactNode } from "react";
+import { useRef, useState, useCallback, useEffect, type ReactNode } from "react";
 import { motion, useInView } from "framer-motion";
 import Image from "next/image";
 
@@ -311,6 +311,8 @@ function PersonaPanel({ persona, index }: { persona: Persona; index: number }) {
 export function PersonaCarousel() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const resumeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleScroll = useCallback(() => {
     const el = scrollRef.current;
@@ -326,6 +328,33 @@ export function PersonaCarousel() {
     if (!el) return;
     const panelWidth = el.scrollWidth / PERSONAS.length;
     el.scrollTo({ left: panelWidth * index, behavior: "smooth" });
+  }, []);
+
+  // Pause autoplay and schedule resume after 8s of no interaction
+  const pauseAutoplay = useCallback(() => {
+    setIsPaused(true);
+    if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
+    resumeTimerRef.current = setTimeout(() => setIsPaused(false), 8000);
+  }, []);
+
+  // Autoplay: advance every 5 seconds, loop back to first
+  useEffect(() => {
+    if (isPaused) return;
+    const interval = setInterval(() => {
+      setActiveIndex((prev) => {
+        const next = (prev + 1) % PERSONAS.length;
+        scrollTo(next);
+        return next;
+      });
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [isPaused, scrollTo]);
+
+  // Cleanup resume timer on unmount
+  useEffect(() => {
+    return () => {
+      if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
+    };
   }, []);
 
   return (
@@ -356,7 +385,12 @@ export function PersonaCarousel() {
         {/* Desktop: horizontal scroll-snap */}
         <div
           ref={scrollRef}
-          onScroll={handleScroll}
+          onScroll={() => { handleScroll(); pauseAutoplay(); }}
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => {
+            if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
+            resumeTimerRef.current = setTimeout(() => setIsPaused(false), 8000);
+          }}
           className="hidden lg:flex overflow-x-auto"
           style={{
             scrollSnapType: "x mandatory",
@@ -374,7 +408,7 @@ export function PersonaCarousel() {
           {PERSONAS.map((_, i) => (
             <button
               key={i}
-              onClick={() => scrollTo(i)}
+              onClick={() => { scrollTo(i); pauseAutoplay(); }}
               aria-label={`Go to persona ${i + 1}`}
               className="w-2.5 h-2.5 rounded-full transition-all duration-300"
               style={{

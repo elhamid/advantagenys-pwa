@@ -105,7 +105,7 @@ export default function ItinTaxIdPage() {
             Over 2,250 ITINs successfully processed. Fast, reliable, and safe.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
-            <Button href="/contact" size="lg">
+            <Button href="/resources/forms/itin-registration-form/" size="lg">
               Apply for Your ITIN
             </Button>
             <Button href={`tel:${PHONE.mainTel}`} variant="outline" size="lg">
@@ -336,7 +336,7 @@ export default function ItinTaxIdPage() {
               your passport — we handle everything else.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button href="/contact" size="lg">
+              <Button href="/resources/forms/itin-registration-form/" size="lg">
                 Schedule ITIN Appointment
               </Button>
               <Button href={PHONE.whatsappLink} variant="secondary" size="lg">

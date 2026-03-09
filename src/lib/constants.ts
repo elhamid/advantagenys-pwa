@@ -27,6 +27,7 @@ export const SERVICES = [
   { name: "Insurance", href: "/services/insurance/", icon: "shield-halved", description: "General liability, workers comp, disability" },
   { name: "Audit Defense", href: "/services/audit-defense/", icon: "scale-balanced", description: "Workers comp, sales tax, UI audit + fine reduction" },
   { name: "Financial Services", href: "/services/financial-services/", icon: "chart-line", description: "Bookkeeping, financial statements, analysis" },
+  { name: "Legal Services", href: "/services/legal/", icon: "gavel", description: "Immigration, citizenship, divorce, ITIN registration" },
 ] as const;
 
 export const TEAM = [

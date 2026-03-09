@@ -16,6 +16,15 @@ const TEAM_PHOTOS: Record<string, string> = {
   Hamid: "/images/team/hamid-v13.jpg",
 };
 
+const PHOTO_POSITIONS: Record<string, string> = {
+  Jay: "object-[50%_25%]",
+  Kedar: "object-[50%_25%]",
+  Zia: "object-[50%_25%]",
+  Akram: "object-[50%_25%]",
+  Riaz: "object-[50%_25%]",
+  Hamid: "object-center",
+};
+
 function ScrollReveal({
   children,
   delay = 0,
@@ -90,7 +99,7 @@ export function TeamSection() {
                     src={TEAM_PHOTOS[member.name] || ""}
                     alt={member.fullName}
                     fill
-                    className="object-cover"
+                    className={`object-cover ${PHOTO_POSITIONS[member.name] || "object-[50%_25%]"}`}
                     sizes="320px"
                     quality={90}
                   />
@@ -120,7 +129,7 @@ export function TeamSection() {
         <ScrollReveal delay={0.2}>
           <div className="mt-16 relative rounded-2xl overflow-hidden h-[300px] lg:h-[400px]">
             <Image
-              src="/images/team/consultation-dual.jpg"
+              src="/images/team/consultation-option-2.jpg"
               alt="Kedar and Zia helping a client with licensing while Jay and Akram help a couple with taxes"
               fill
               className="object-cover"

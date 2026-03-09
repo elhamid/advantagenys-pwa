@@ -41,6 +41,8 @@ export function ContactForm() {
     message: "",
   });
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   function handleServiceToggle(service: string) {
     setFormData((prev) => ({
@@ -51,10 +53,32 @@ export function ContactForm() {
     }));
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    console.log("Contact form submission:", formData);
-    setSubmitted(true);
+    setSubmitting(true);
+    setError(null);
+
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Something went wrong. Please try again.");
+      }
+
+      setSubmitted(true);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Something went wrong. Please try again."
+      );
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   if (submitted) {
@@ -185,9 +209,14 @@ export function ContactForm() {
           />
         </div>
 
+        {/* Error */}
+        {error && (
+          <p className="text-sm text-red-500 text-center">{error}</p>
+        )}
+
         {/* Submit */}
-        <Button type="submit" size="lg" className="w-full">
-          Request Free Consultation
+        <Button type="submit" size="lg" className="w-full" disabled={submitting}>
+          {submitting ? "Sending..." : "Request Free Consultation"}
         </Button>
 
         <p className="text-xs text-[var(--text-muted)] text-center">

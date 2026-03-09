@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Container } from "@/components/ui/Container";
 import { Card } from "@/components/ui/Card";
-import { ContactForm } from "@/components/contact/ContactForm";
+import { ContactFormTabs } from "@/components/contact/ContactFormTabs";
 import { PHONE, ADDRESS, HOURS } from "@/lib/constants";
 
 export const metadata: Metadata = {
@@ -16,7 +16,7 @@ export default function ContactPage() {
       <Container>
         <h1 className="text-4xl font-bold text-[var(--text)] mb-6">Contact Us</h1>
         <p className="text-lg text-[var(--text-secondary)] max-w-2xl mb-12">
-          Ready to get started? Reach out for a free consultation.
+          Ready to get started? Reach out for a free consultation or book an appointment.
         </p>
 
         {/* Info Cards */}
@@ -61,9 +61,9 @@ export default function ContactPage() {
           </Card>
         </div>
 
-        {/* Contact Form */}
+        {/* Forms with Tab Toggle */}
         <div className="max-w-2xl">
-          <ContactForm />
+          <ContactFormTabs />
         </div>
       </Container>
     </section>

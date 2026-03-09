@@ -825,7 +825,7 @@ export default function Demo5Page() {
           <ScrollReveal delay={0.2}>
             <div className="mt-16 relative rounded-2xl overflow-hidden h-[300px] lg:h-[400px]">
               <Image
-                src="/images/team/consultation-dual.jpg"
+                src="/images/team/consultation-option-2.jpg"
                 alt="Kedar and Zia helping a client with licensing while Jay and Akram help a couple with taxes"
                 fill
                 className="object-cover"
