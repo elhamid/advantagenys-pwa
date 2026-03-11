@@ -17,8 +17,8 @@ const jetbrains = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "AdvantageOS",
-    template: "%s · AdvantageOS",
+    default: "Advantage Services",
+    template: "%s · Advantage Services",
   },
   description:
     "One Stop-Shop For All Business Solutions. LLC formation, licensing, tax prep, insurance, and audit defense. 20+ years serving NYC businesses. IRS Certified Acceptance Agent.",
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    siteName: "AdvantageOS",
+    siteName: "Advantage Services",
   },
   manifest: "/manifest.json",
   icons: {
