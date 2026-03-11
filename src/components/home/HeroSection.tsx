@@ -28,7 +28,7 @@ export function HeroSection() {
   return (
     <section
       ref={sectionRef}
-      className="relative h-screen flex items-center justify-center overflow-hidden"
+      className="relative min-h-screen md:h-screen flex items-end md:items-center justify-center overflow-hidden pb-24 md:pb-0"
     >
       {/* Background image with mobile-first blur that resolves on scroll */}
       <motion.div
@@ -58,12 +58,12 @@ export function HeroSection() {
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-black/30" />
 
       {/* Content */}
-      <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
+      <div className="relative z-10 text-center px-6 max-w-4xl mx-auto pb-8 md:pb-0 md:mb-0 mb-4">
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 1, delay: 0.2, ease: EASE }}
-          className="inline-flex items-center rounded-full border border-white/18 bg-black/28 px-5 py-2.5 text-sm sm:text-base tracking-[0.24em] text-white/88 mb-6 font-semibold shadow-lg shadow-black/20 backdrop-blur-sm"
+          className="inline-flex items-center rounded-full border border-white/18 bg-black/28 px-4 py-2 sm:px-5 sm:py-2.5 text-xs sm:text-base tracking-[0.24em] text-white/88 mb-4 sm:mb-6 font-semibold shadow-lg shadow-black/20 backdrop-blur-sm"
         >
           ADVANTAGE SERVICES
         </motion.p>
@@ -72,7 +72,7 @@ export function HeroSection() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, delay: 0.4, ease: EASE }}
-          className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight"
+          className="text-3xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight"
         >
           We handle the business
           <br />
@@ -83,7 +83,7 @@ export function HeroSection() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 1.2, ease: EASE }}
-          className="text-xl sm:text-2xl text-white/80 font-light mt-4"
+          className="text-base sm:text-2xl text-white/80 font-light mt-3 sm:mt-4"
         >
           So you can handle everything else.
         </motion.p>
@@ -92,17 +92,17 @@ export function HeroSection() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 1.6, ease: EASE }}
-          className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-10"
+          className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mt-6 sm:mt-10"
         >
           <a
             href={`tel:${PHONE.mainTel}`}
-            className="inline-flex items-center justify-center bg-white text-gray-900 font-semibold rounded-full px-8 py-4 text-sm hover:bg-gray-100 transition-colors duration-300 min-w-[220px]"
+            className="inline-flex items-center justify-center bg-white text-gray-900 font-semibold rounded-full px-6 py-3 sm:px-8 sm:py-4 text-sm hover:bg-gray-100 transition-colors duration-300 w-full sm:w-auto sm:min-w-[220px]"
           >
             Talk to Someone Real
           </a>
           <a
             href="#personas"
-            className="inline-flex items-center justify-center border border-white text-white font-semibold rounded-full px-8 py-4 text-sm hover:bg-white/10 transition-colors duration-300 min-w-[220px]"
+            className="inline-flex items-center justify-center border border-white text-white font-semibold rounded-full px-6 py-3 sm:px-8 sm:py-4 text-sm hover:bg-white/10 transition-colors duration-300 w-full sm:w-auto sm:min-w-[220px]"
           >
             See How We Help
           </a>
@@ -112,7 +112,7 @@ export function HeroSection() {
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 1.85, ease: EASE }}
-          className="mt-5 flex flex-col items-center gap-3 sm:flex-row sm:justify-center"
+          className="mt-4 sm:mt-5 flex flex-col items-center gap-2 sm:flex-row sm:justify-center"
         >
           <a
             href={PHONE.whatsappLink}
