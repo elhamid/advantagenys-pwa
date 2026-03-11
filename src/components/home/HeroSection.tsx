@@ -32,7 +32,7 @@ export function HeroSection() {
   return (
     <section
       ref={sectionRef}
-      className="relative h-screen flex items-center justify-center overflow-hidden"
+      className="relative h-screen flex items-center justify-center overflow-hidden pt-14 pb-20 md:pt-16 md:pb-0"
     >
       {/* Background image with mobile-first blur that resolves on scroll */}
       <motion.div
@@ -62,7 +62,7 @@ export function HeroSection() {
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-black/30" />
 
       {/* Content — true vertical centering between header and bottom nav */}
-      <div className="relative z-10 text-center px-6 max-w-4xl mx-auto pt-14 pb-20 md:pt-16 md:pb-0">
+      <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
