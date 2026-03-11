@@ -37,7 +37,7 @@ body {
 
 /* Bottom nav: push ChatWidget above the nav bar on mobile */
 @media (max-width: 767px) {
-  .fixed.z-40[style*="bottom"] {
+  .chat-widget {
     --bottom-nav-height: 4rem;
     bottom: calc(var(--bottom-nav-height) + 0.75rem + env(safe-area-inset-bottom)) !important;
   }

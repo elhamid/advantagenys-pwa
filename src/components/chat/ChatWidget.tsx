@@ -48,7 +48,7 @@ export function ChatWidget() {
 
   return (
     <div
-      className="fixed z-40"
+      className="fixed z-40 chat-widget"
       style={{
         right: "calc(1.5rem + env(safe-area-inset-right))",
         bottom: "calc(1.5rem + env(safe-area-inset-bottom))",

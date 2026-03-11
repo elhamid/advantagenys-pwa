@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
-import { PHONE, SERVICES } from "@/lib/constants";
+import { SERVICES } from "@/lib/constants";
 import { MobileNav } from "./MobileNav";
 
 const NAV_ITEMS = [
@@ -78,12 +78,6 @@ export function Header({
 
         {/* Desktop CTA */}
         <div className="hidden md:flex items-center gap-3">
-          <a
-            href={`tel:${PHONE.mainTel}`}
-            className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--blue-accent)] transition-colors"
-          >
-            {PHONE.main}
-          </a>
           <Button size="sm" href="/contact">
             Get Started
           </Button>
