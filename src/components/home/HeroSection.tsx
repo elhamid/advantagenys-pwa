@@ -61,13 +61,13 @@ export function HeroSection() {
       {/* Dark gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-black/30" />
 
-      {/* Content — vertically centered; pb-16 on mobile offsets bottom nav bar */}
-      <div className="relative z-10 text-center px-6 max-w-4xl mx-auto pb-16 md:pb-0">
+      {/* Content — true vertical centering between header and bottom nav */}
+      <div className="relative z-10 text-center px-6 max-w-4xl mx-auto pt-14 pb-20 md:pt-16 md:pb-0">
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 1, delay: 0.2, ease: EASE }}
-          className="inline-flex items-center rounded-full border border-white/18 bg-black/28 px-4 py-2 sm:px-5 sm:py-2.5 text-xs sm:text-base tracking-[0.24em] text-white/88 mb-4 sm:mb-6 font-semibold shadow-lg shadow-black/20 backdrop-blur-sm"
+          className="inline-flex items-center rounded-full border border-white/18 bg-black/28 px-4 py-2 sm:px-5 sm:py-2.5 text-base sm:text-lg tracking-[0.24em] text-white/88 mb-4 sm:mb-6 font-semibold shadow-lg shadow-black/20 backdrop-blur-sm"
         >
           ADVANTAGE SERVICES
         </motion.p>

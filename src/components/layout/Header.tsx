@@ -34,6 +34,7 @@ export function Header({
       const currentY = window.scrollY;
       // Only collapse after user scrolls past 80px to avoid hiding on page load
       if (currentY > 80) {
+        // Hide on scroll DOWN (currentY > lastScrollY = moving down), show on scroll UP
         setHidden(currentY > lastScrollY.current);
       } else {
         setHidden(false);
@@ -49,15 +50,15 @@ export function Header({
     <header
       className="sticky top-0 z-50 border-b border-[var(--border)] bg-white/88 backdrop-blur-xl supports-[backdrop-filter]:bg-white/72 md:translate-y-0 transition-transform duration-300"
       style={{
-        transform: hidden ? "translateY(-100%)" : undefined,
+        transform: hidden ? "translateY(-100%)" : "translateY(0)",
       }}
     >
       <Container className="flex min-h-14 md:min-h-16 items-center justify-between gap-3 py-2 md:py-0 pt-[env(safe-area-inset-top)]">
         <Link href="/" className="flex items-center gap-2">
-          <span className="text-3xl md:text-3xl font-bold tracking-tight" style={{ color: "var(--blue-accent)" }}>
+          <span className="text-xl md:text-2xl font-bold tracking-tight" style={{ color: "var(--blue-accent)" }}>
             Advantage
           </span>
-          <span className="text-3xl md:text-3xl font-bold tracking-tight" style={{ color: "var(--navy)" }}>
+          <span className="text-xl md:text-2xl font-bold tracking-tight" style={{ color: "var(--navy)" }}>
             Services
           </span>
         </Link>
@@ -89,7 +90,7 @@ export function Header({
         <div className="flex md:hidden">
           <Link
             href="/contact"
-            className="inline-flex items-center rounded-full bg-[var(--blue-accent)] px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90 transition-opacity"
+            className="inline-flex items-center rounded-full bg-[var(--blue-accent)] px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90 transition-opacity whitespace-nowrap"
           >
             Get Started
           </Link>
