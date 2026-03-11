@@ -37,12 +37,12 @@ export function QuickPathsSection() {
                 href={segment.href}
                 className="group rounded-[24px] border border-slate-200 bg-white p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-[var(--blue-soft)] hover:shadow-[0_18px_50px_rgba(79,86,232,0.12)]"
               >
-                <div className="flex items-center justify-between gap-4">
-                  <div className="whitespace-nowrap text-xs font-semibold uppercase tracking-[0.14em] text-[var(--blue-accent)] md:tracking-[0.18em]">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--blue-accent)] md:tracking-[0.18em]">
                     {segment.name}
                   </div>
                   {SEGMENT_LABELS[segment.name] && (
-                    <div className="whitespace-nowrap rounded-full bg-[var(--blue-bg)] px-2.5 py-1 text-[11px] font-semibold text-[var(--navy)]">
+                    <div className="rounded-full bg-[var(--blue-bg)] px-2.5 py-1 text-[11px] font-semibold text-[var(--navy)]">
                       {SEGMENT_LABELS[segment.name]}
                     </div>
                   )}
@@ -85,24 +85,24 @@ export function QuickPathsSection() {
                 </div>
               </div>
 
-              <div className="flex flex-shrink-0 flex-col gap-3 sm:flex-row sm:flex-nowrap">
+              <div className="flex flex-shrink-0 flex-col gap-3 md:flex-row md:flex-nowrap">
                 <a
                   href={PHONE.whatsappLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center whitespace-nowrap rounded-full bg-emerald-400 px-5 py-3 text-sm font-semibold text-slate-950 transition-colors hover:bg-emerald-300"
+                  className="inline-flex items-center justify-center rounded-full bg-emerald-400 px-5 py-3 text-sm font-semibold text-slate-950 transition-colors hover:bg-emerald-300 md:whitespace-nowrap"
                 >
                   WhatsApp {PHONE.whatsapp}
                 </a>
                 <a
                   href={`tel:${PHONE.mainTel}`}
-                  className="inline-flex items-center justify-center whitespace-nowrap rounded-full bg-white px-5 py-3 text-sm font-semibold text-slate-950 transition-colors hover:bg-slate-100"
+                  className="inline-flex items-center justify-center rounded-full bg-white px-5 py-3 text-sm font-semibold text-slate-950 transition-colors hover:bg-slate-100 md:whitespace-nowrap"
                 >
                   Call {PHONE.main}
                 </a>
                 <Link
                   href="/services"
-                  className="inline-flex items-center justify-center whitespace-nowrap rounded-full border border-white/18 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/10"
+                  className="inline-flex items-center justify-center rounded-full border border-white/18 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/10 md:whitespace-nowrap"
                 >
                   Browse all services
                 </Link>
