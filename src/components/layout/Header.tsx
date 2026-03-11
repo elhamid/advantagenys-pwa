@@ -55,12 +55,12 @@ export function Header() {
         </div>
 
         <button
-          className="md:hidden p-2 text-[var(--text)]"
+          className="md:hidden p-2.5 -mr-1 rounded-xl text-[var(--text)] hover:bg-slate-50 active:scale-90 transition-all duration-200"
           onClick={() => setMobileOpen(true)}
           aria-label="Open menu"
         >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M3 12h18M3 6h18M3 18h18" />
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <path d="M4 7h16M4 12h12M4 17h8" />
           </svg>
         </button>
       </Container>
