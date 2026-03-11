@@ -111,7 +111,7 @@ function Timeline() {
 
 export function JourneyTimeline() {
   return (
-    <section className="py-20 bg-white">
+    <section className="bg-white py-14 md:py-20">
       <div className="max-w-6xl mx-auto px-6">
         <ScrollReveal>
           <h2 className="text-3xl lg:text-4xl font-bold text-center text-gray-900 mb-4">

@@ -76,7 +76,7 @@ function TeamPhotoParallax() {
 
 export function TeamSection() {
   return (
-    <section className="py-20 bg-white">
+    <section className="bg-white py-14 md:py-20">
       <div className="max-w-6xl mx-auto px-6">
         <ScrollReveal>
           <h2 className="text-3xl lg:text-4xl font-bold text-center text-gray-900 mb-4">
@@ -92,7 +92,7 @@ export function TeamSection() {
           <TeamPhotoParallax />
         </ScrollReveal>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-12">
+        <div className="grid grid-cols-2 gap-x-5 gap-y-10 md:grid-cols-3 md:gap-x-8 md:gap-y-12">
           {TEAM.map((member, i) => (
             <ScrollReveal key={member.name} delay={i * 0.08}>
               <div className="flex flex-col items-center text-center">

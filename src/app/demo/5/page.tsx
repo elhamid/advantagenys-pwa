@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback, type ReactNode } from "react";
-import { motion, useScroll, useTransform, useInView, AnimatePresence } from "framer-motion";
+import { motion, useScroll, useTransform, useInView } from "framer-motion";
 import Image from "next/image";
 import { PHONE, ADDRESS, HOURS, STATS, TEAM } from "@/lib/constants";
 import { GOOGLE_RATING, REVIEWS } from "@/lib/reviews";

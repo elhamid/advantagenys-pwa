@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { motion, useInView } from "framer-motion";
 import Image from "next/image";
-import { PHONE, ADDRESS, HOURS, SERVICES, TEAM, SEGMENTS } from "@/lib/constants";
+import { PHONE, ADDRESS, HOURS, SERVICES, SEGMENTS } from "@/lib/constants";
 import { GOOGLE_RATING, REVIEWS } from "@/lib/reviews";
 
 /* ─── Animation helpers ─── */

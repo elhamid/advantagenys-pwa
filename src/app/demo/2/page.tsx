@@ -4,7 +4,6 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import {
   motion,
   useInView,
-  useAnimation,
   AnimatePresence,
 } from "framer-motion";
 import { PHONE } from "@/lib/constants";

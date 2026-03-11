@@ -11,12 +11,14 @@ html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background: var(--bg);
 }
 
 body {
   font-family: var(--font-body);
   color: var(--text);
   background: var(--bg);
+  overflow-x: hidden;
 }
 
 ::selection {

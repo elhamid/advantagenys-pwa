@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
 import { Button } from "@/components/ui/Button";
 import { PHONE } from "@/lib/constants";
@@ -79,7 +80,11 @@ export function MobileNav({ open, onClose, items }: MobileNavProps) {
     }
   }, [open]);
 
-  return (
+  if (typeof document === "undefined") {
+    return null;
+  }
+
+  return createPortal(
     <AnimatePresence mode="wait">
       {open && (
         <div className="fixed inset-0 z-[100] md:hidden">
@@ -95,12 +100,14 @@ export function MobileNav({ open, onClose, items }: MobileNavProps) {
 
           {/* ── Glass panel ── */}
           <motion.div
-            className="absolute right-0 top-0 bottom-0 w-[85vw] max-w-[360px] flex flex-col"
+            className="fixed inset-y-0 right-0 h-dvh w-[85vw] max-w-[360px] flex flex-col overflow-hidden"
             style={{
               background:
                 "linear-gradient(165deg, #FFFFFF 0%, #F8FAFC 50%, #FFFFFF 100%)",
               boxShadow:
                 "-8px 0 60px rgba(0,0,0,0.15), -2px 0 20px rgba(0,0,0,0.08)",
+              paddingTop: "env(safe-area-inset-top)",
+              paddingBottom: "env(safe-area-inset-bottom)",
             }}
             variants={panel}
             initial="hidden"
@@ -281,5 +288,7 @@ export function MobileNav({ open, onClose, items }: MobileNavProps) {
         </div>
       )}
     </AnimatePresence>
+    ,
+    document.body
   );
 }

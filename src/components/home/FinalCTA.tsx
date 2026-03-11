@@ -33,7 +33,7 @@ function ScrollReveal({
 
 export function FinalCTA() {
   return (
-    <section className="relative py-28 lg:py-36 overflow-hidden">
+    <section className="relative overflow-hidden py-20 md:py-28 lg:py-36">
       {/* Background */}
       <div className="absolute inset-0">
         <Image

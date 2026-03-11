@@ -1,16 +1,41 @@
 "use client";
 
+import { useRef } from "react";
 import { motion } from "framer-motion";
+import { useReducedMotion, useScroll, useTransform } from "framer-motion";
 import Image from "next/image";
 import { PHONE } from "@/lib/constants";
 
 const EASE: [number, number, number, number] = [0.25, 0.1, 0.25, 1.0];
 
 export function HeroSection() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const prefersReducedMotion = useReducedMotion();
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start start", "end start"],
+  });
+
+  const imageScale = useTransform(scrollYProgress, [0, 0.35, 1], [1.12, 1.03, 1.06]);
+  const imageFilter = useTransform(scrollYProgress, [0, 0.35], ["blur(8px)", "blur(0px)"]);
+
   return (
-    <section className="relative h-screen flex items-center justify-center overflow-hidden">
-      {/* Background image with slow zoom */}
-      <div className="absolute inset-0 animate-[heroZoom_15s_ease-out_forwards]">
+    <section
+      ref={sectionRef}
+      className="relative h-screen flex items-center justify-center overflow-hidden"
+    >
+      {/* Background image with mobile-first blur that resolves on scroll */}
+      <motion.div
+        className="absolute inset-0 will-change-transform"
+        style={
+          prefersReducedMotion
+            ? undefined
+            : {
+                scale: imageScale,
+                filter: imageFilter,
+              }
+        }
+      >
         <Image
           src="/images/office-hero-v3.jpg"
           alt="Advantage Business Consulting office in Cambria Heights"
@@ -19,7 +44,7 @@ export function HeroSection() {
           priority
           sizes="100vw"
         />
-      </div>
+      </motion.div>
 
       {/* Dark gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-black/30" />
@@ -30,9 +55,9 @@ export function HeroSection() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 1, delay: 0.2, ease: EASE }}
-          className="text-sm tracking-[0.3em] text-white/60 mb-6 font-light"
+          className="inline-flex items-center rounded-full border border-white/18 bg-black/28 px-5 py-2.5 text-sm sm:text-base tracking-[0.24em] text-white/88 mb-6 font-semibold shadow-lg shadow-black/20 backdrop-blur-sm"
         >
-          ADVANTAGE SERVICES &middot; CAMBRIA HEIGHTS, NY
+          ADVANTAGE SERVICES
         </motion.p>
 
         <motion.h1
@@ -73,6 +98,29 @@ export function HeroSection() {
           >
             See How We Help
           </a>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 1.85, ease: EASE }}
+          className="mt-5 flex flex-col items-center gap-3 sm:flex-row sm:justify-center"
+        >
+          <a
+            href={PHONE.whatsappLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 rounded-full border border-emerald-400/35 bg-emerald-500/14 px-4 py-2.5 text-sm font-semibold text-emerald-200 backdrop-blur-sm transition-colors hover:bg-emerald-500/22"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
+              <path d="M12 0C5.373 0 0 5.373 0 12c0 2.126.553 4.12 1.52 5.856L0 24l6.335-1.652A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.82c-1.98 0-3.81-.588-5.348-1.588l-.384-.228-3.76.98.998-3.648-.25-.398A9.77 9.77 0 012.18 12C2.18 6.58 6.58 2.18 12 2.18S21.82 6.58 21.82 12 17.42 21.82 12 21.82z" />
+            </svg>
+            WhatsApp {PHONE.whatsapp}
+          </a>
+          <div className="text-xs uppercase tracking-[0.18em] text-white/55">
+            Fastest response
+          </div>
         </motion.div>
       </div>
 

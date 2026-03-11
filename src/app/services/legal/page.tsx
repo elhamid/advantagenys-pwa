@@ -84,7 +84,7 @@ export default function LegalServicesPage() {
           <p className="text-lg text-[var(--text-secondary)] max-w-2xl mb-8">
             Immigration petitions, citizenship applications, divorce filings,
             and ITIN registration — all handled by bilingual professionals with
-            20+ years of experience serving New York's immigrant communities.
+            20+ years of experience serving New York&apos;s immigrant communities.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
             <Button href="/contact" size="lg">
