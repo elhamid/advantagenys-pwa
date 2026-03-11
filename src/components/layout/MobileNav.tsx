@@ -98,11 +98,9 @@ export function MobileNav({ open, onClose, items }: MobileNavProps) {
             className="absolute right-0 top-0 bottom-0 w-[85vw] max-w-[360px] flex flex-col"
             style={{
               background:
-                "linear-gradient(165deg, rgba(255,255,255,0.92) 0%, rgba(248,250,252,0.97) 50%, rgba(255,255,255,0.95) 100%)",
-              backdropFilter: "blur(40px) saturate(1.8)",
-              WebkitBackdropFilter: "blur(40px) saturate(1.8)",
+                "linear-gradient(165deg, #FFFFFF 0%, #F8FAFC 50%, #FFFFFF 100%)",
               boxShadow:
-                "-8px 0 60px rgba(79, 86, 232, 0.08), -2px 0 20px rgba(0,0,0,0.06), inset 1px 0 0 rgba(255,255,255,0.7)",
+                "-8px 0 60px rgba(0,0,0,0.15), -2px 0 20px rgba(0,0,0,0.08)",
             }}
             variants={panel}
             initial="hidden"
