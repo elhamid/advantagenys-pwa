@@ -22,7 +22,7 @@ function ScrollReveal({
       ref={ref}
       initial={{ opacity: 0, y: 32 }}
       animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 32 }}
-      transition={{ duration: 0.7, delay, ease: EASE }}
+      transition={{ type: "spring", stiffness: 260, damping: 25, delay }}
       className={className}
     >
       {children}
@@ -233,7 +233,7 @@ function PersonaPanel({ persona, index }: { persona: Persona; index: number }) {
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
-          transition={{ duration: 0.7, delay: 0.1, ease: EASE }}
+          transition={{ type: "spring", stiffness: 260, damping: 25, delay: 0.1 }}
         >
           <span
             className="text-xs font-semibold tracking-[0.25em] block mb-6"
@@ -246,7 +246,7 @@ function PersonaPanel({ persona, index }: { persona: Persona; index: number }) {
         <motion.blockquote
           initial={{ opacity: 0, y: 24 }}
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
-          transition={{ duration: 0.7, delay: 0.25, ease: EASE }}
+          transition={{ type: "spring", stiffness: 260, damping: 25, delay: 0.25 }}
           className="text-2xl lg:text-3xl font-light italic text-white mb-8 leading-relaxed"
         >
           &ldquo;{persona.quote}&rdquo;
@@ -263,7 +263,7 @@ function PersonaPanel({ persona, index }: { persona: Persona; index: number }) {
         <motion.p
           initial={{ opacity: 0, y: 24 }}
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
-          transition={{ duration: 0.7, delay: 0.45, ease: EASE }}
+          transition={{ type: "spring", stiffness: 260, damping: 25, delay: 0.45 }}
           className="text-white/80 text-base lg:text-lg leading-relaxed mb-8"
         >
           {persona.solution}
@@ -272,7 +272,7 @@ function PersonaPanel({ persona, index }: { persona: Persona; index: number }) {
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
-          transition={{ duration: 0.6, delay: 0.55, ease: EASE }}
+          transition={{ type: "spring", stiffness: 260, damping: 25, delay: 0.55 }}
           className="flex flex-wrap gap-2 mb-10"
         >
           {persona.services.map((service) => (
@@ -289,7 +289,7 @@ function PersonaPanel({ persona, index }: { persona: Persona; index: number }) {
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
-          transition={{ duration: 0.6, delay: 0.65, ease: EASE }}
+          transition={{ type: "spring", stiffness: 260, damping: 25, delay: 0.65 }}
         >
           <a
             href={persona.ctaHref}

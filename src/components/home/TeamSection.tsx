@@ -41,7 +41,7 @@ function ScrollReveal({
       ref={ref}
       initial={{ opacity: 0, y: 32 }}
       animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 32 }}
-      transition={{ duration: 0.7, delay, ease: EASE }}
+      transition={{ type: "spring", stiffness: 260, damping: 25, delay }}
       className={className}
     >
       {children}
@@ -68,6 +68,8 @@ function TeamPhotoParallax() {
           priority
           className="object-cover"
           sizes="(max-width: 1024px) 100vw, 1400px"
+          placeholder="blur"
+          blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAKAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAABgX/xAAiEAABBAIBBQEAAAAAAAAAAAABAAIDBAUREiExQWH/xAAUAQEAAAAAAAAAAAAAAAAAAAAA/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8AqVe1bXW1bDPHG90UTnNa8tBIBIHBPyqREBk5LKbklvUopJGN5tDWuIHHsPCIiAf/2Q=="
         />
       </motion.div>
     </div>

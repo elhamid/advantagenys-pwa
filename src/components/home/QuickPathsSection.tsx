@@ -2,15 +2,13 @@
 
 import Link from "next/link";
 import { Container } from "@/components/ui/Container";
-import { Badge } from "@/components/ui/Badge";
-import { PHONE, SEGMENTS, SERVICES, STATS } from "@/lib/constants";
-import { GOOGLE_RATING } from "@/lib/reviews";
+import { PHONE, SEGMENTS, SERVICES } from "@/lib/constants";
 
-const TRUST_ITEMS = [
-  { value: `${STATS.businessSetups.count}+`, label: "businesses formed" },
-  { value: `${STATS.taxClients.count}+`, label: "tax clients served" },
-  { value: `${GOOGLE_RATING.rating}/5`, label: "Google rating" },
-];
+const SEGMENT_LABELS: Record<string, string> = {
+  Contractors: "Licensing & Compliance",
+  Restaurants: "Permits & Operations",
+  "Immigrant Entrepreneurs": "ITIN & Business Setup",
+};
 
 const FEATURED_SERVICES = SERVICES.slice(0, 5);
 
@@ -19,35 +17,17 @@ export function QuickPathsSection() {
     <section className="relative bg-white py-10 md:py-14">
       <Container className="space-y-8">
         <div className="rounded-[28px] border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] p-5 shadow-[0_24px_70px_rgba(15,23,42,0.08)] md:p-7">
-          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-            <div className="max-w-2xl">
-              <Badge className="mb-3 !bg-[var(--blue-bg)] !text-[var(--navy)]">
-                Start Where You Are
-              </Badge>
-              <h2 className="text-2xl font-bold tracking-tight text-slate-950 md:text-4xl">
-                Choose the path that gets you to revenue faster.
-              </h2>
-              <p className="mt-3 max-w-xl text-sm leading-6 text-slate-600 md:text-base">
-                Instead of reading a long brochure, jump into the business path that
-                matches your situation right now.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-3 gap-2 md:min-w-[360px]">
-              {TRUST_ITEMS.map((item) => (
-                <div
-                  key={item.label}
-                  className="rounded-2xl border border-slate-200 bg-white px-3 py-3 text-center shadow-sm"
-                >
-                  <div className="text-lg font-bold tracking-tight text-slate-950 md:text-2xl">
-                    {item.value}
-                  </div>
-                  <div className="mt-1 text-[11px] uppercase tracking-[0.16em] text-slate-500 md:text-xs">
-                    {item.label}
-                  </div>
-                </div>
-              ))}
-            </div>
+          <div className="max-w-2xl">
+            <span className="mb-3 inline-flex items-center rounded-full bg-[var(--blue-bg)] px-3 py-1 text-xs font-semibold text-[var(--navy)]">
+              Start Where You Are
+            </span>
+            <h2 className="text-2xl font-bold tracking-tight text-slate-950 md:text-4xl">
+              Choose the path that gets you to revenue faster.
+            </h2>
+            <p className="mt-3 max-w-xl text-sm leading-6 text-slate-600 md:text-base">
+              Instead of reading a long brochure, jump into the business path that
+              matches your situation right now.
+            </p>
           </div>
 
           <div className="mt-6 grid gap-3 md:mt-8 md:grid-cols-3">
@@ -61,9 +41,11 @@ export function QuickPathsSection() {
                   <div className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--blue-accent)]">
                     {segment.name}
                   </div>
-                  <div className="rounded-full bg-[var(--blue-bg)] px-2.5 py-1 text-[11px] font-semibold text-[var(--navy)]">
-                    Priority Path
-                  </div>
+                  {SEGMENT_LABELS[segment.name] && (
+                    <div className="rounded-full bg-[var(--blue-bg)] px-2.5 py-1 text-[11px] font-semibold text-[var(--navy)]">
+                      {SEGMENT_LABELS[segment.name]}
+                    </div>
+                  )}
                 </div>
 
                 <p className="mt-3 text-xl font-semibold tracking-tight text-slate-950">

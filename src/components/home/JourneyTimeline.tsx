@@ -21,7 +21,7 @@ function ScrollReveal({
       ref={ref}
       initial={{ opacity: 0, y: 32 }}
       animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 32 }}
-      transition={{ duration: 0.7, delay, ease: EASE }}
+      transition={{ type: "spring", stiffness: 260, damping: 25, delay }}
       className={className}
     >
       {children}
@@ -64,7 +64,7 @@ function Timeline() {
             animate={
               isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }
             }
-            transition={{ duration: 0.5, delay: 0.2 + i * 0.15, ease: EASE }}
+            transition={{ type: "spring", stiffness: 260, damping: 25, delay: 0.2 + i * 0.15 }}
           >
             <div className="w-12 h-12 rounded-full bg-white border-2 border-blue-500 flex items-center justify-center text-blue-600 font-semibold text-sm mb-3 shadow-sm">
               {i + 1}
@@ -96,7 +96,7 @@ function Timeline() {
             animate={
               isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }
             }
-            transition={{ duration: 0.5, delay: 0.2 + i * 0.15, ease: EASE }}
+            transition={{ type: "spring", stiffness: 260, damping: 25, delay: 0.2 + i * 0.15 }}
           >
             <div className="w-10 h-10 rounded-full bg-white border-2 border-blue-500 flex items-center justify-center text-blue-600 font-semibold text-sm shadow-sm flex-shrink-0">
               {i + 1}

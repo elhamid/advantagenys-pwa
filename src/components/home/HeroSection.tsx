@@ -17,7 +17,13 @@ export function HeroSection() {
   });
 
   const imageScale = useTransform(scrollYProgress, [0, 0.35, 1], [1.12, 1.03, 1.06]);
-  const imageFilter = useTransform(scrollYProgress, [0, 0.35], ["blur(8px)", "blur(0px)"]);
+  // Only apply blur on md+ (768px+); on mobile the blur looks broken at initial load
+  const isMd = typeof window !== "undefined" && window.innerWidth >= 768;
+  const imageFilter = useTransform(
+    scrollYProgress,
+    [0, 0.35],
+    isMd ? ["blur(4px)", "blur(0px)"] : ["blur(0px)", "blur(0px)"],
+  );
 
   return (
     <section
@@ -43,6 +49,8 @@ export function HeroSection() {
           className="object-cover"
           priority
           sizes="100vw"
+          placeholder="blur"
+          blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAKAAoDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAABgUH/8QAIhAAAQMEAgMBAAAAAAAAAAAAAQIDBAAFESEGEhMxQf/EABQBAQAAAAAAAAAAAAAAAAAAAAD/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCmkrVZqtpqK2WW6SxW+dBVnLDjSFApJGCP3xrXKSLgW2M6hqxvJVvKlJlBKSofAPGB+a2rTs9PuGC3LiOhbLgylQ9j7GiJSlYSvdUFJBBIB5FFFAf/2Q=="
         />
       </motion.div>
 

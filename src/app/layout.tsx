@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { LayoutShell } from "@/components/layout/LayoutShell";
+import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -30,8 +31,14 @@ export const metadata: Metadata = {
   },
   manifest: "/manifest.json",
   icons: {
-    icon: '/icons/icon-32.png',
-    apple: '/icons/apple-touch-icon.png',
+    icon: "/icons/icon-32.png",
+    apple: "/icons/apple-touch-icon.png",
+  },
+  // Apple PWA meta tags
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Advantage Services",
   },
 };
 
@@ -39,6 +46,7 @@ export const viewport: Viewport = {
   themeColor: "#4F56E8",
   width: "device-width",
   initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
@@ -49,6 +57,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${jakarta.variable} ${jetbrains.variable}`}>
       <body className="font-[family-name:var(--font-heading)] antialiased">
+        <ServiceWorkerRegistration />
         <LayoutShell>{children}</LayoutShell>
       </body>
     </html>

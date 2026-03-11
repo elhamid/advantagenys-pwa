@@ -1,10 +1,50 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { PHONE } from "@/lib/constants";
+
+const NUDGE_MAP: Record<string, string> = {
+  "/services/tax": "Tax question?",
+  "/services/business-formation": "Starting a business?",
+  "/services/legal": "Immigration help?",
+};
+
+const NUDGE_SESSION_KEY = "chat-nudge-shown";
+
+function getNudge(pathname: string): string | null {
+  if (pathname === "/contact") return null;
+  return NUDGE_MAP[pathname] ?? "Need help?";
+}
 
 export function ChatWidget() {
   const [open, setOpen] = useState(false);
+  const [nudge, setNudge] = useState<string | null>(null);
+  const pathname = usePathname();
+
+  useEffect(() => {
+    // Reset nudge when path changes
+    setNudge(null);
+
+    const message = getNudge(pathname);
+    if (!message) return;
+
+    // Only show once per session
+    if (typeof sessionStorage !== "undefined" && sessionStorage.getItem(NUDGE_SESSION_KEY)) return;
+
+    const timer = setTimeout(() => {
+      if (!open) {
+        setNudge(message);
+        if (typeof sessionStorage !== "undefined") {
+          sessionStorage.setItem(NUDGE_SESSION_KEY, "1");
+        }
+        // Auto-dismiss after 5s
+        setTimeout(() => setNudge(null), 5000);
+      }
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [pathname, open]);
 
   return (
     <div
@@ -17,10 +57,9 @@ export function ChatWidget() {
       {open && (
         <div className="mb-4 w-80 rounded-[var(--radius-lg)] bg-[var(--surface)] shadow-[var(--shadow-lg)] border border-[var(--border)] overflow-hidden">
           <div className="p-4" style={{ background: "var(--gradient-primary)" }}>
-            <h3 className="text-white font-semibold">Human help now. AI next.</h3>
+            <h3 className="text-white font-semibold">Get in Touch</h3>
             <p className="text-sm text-slate-200">
-              This is where the future AI assistant will live. For now, reach the
-              team directly.
+              Reach our team directly.
             </p>
           </div>
           <div className="p-4 flex flex-col gap-3">
@@ -53,9 +92,26 @@ export function ChatWidget() {
           </div>
         </div>
       )}
+
+      {/* Page-aware nudge pill */}
+      {!open && nudge && (
+        <div
+          className="mb-3 flex items-center justify-end"
+          role="status"
+          aria-live="polite"
+        >
+          <span className="rounded-full bg-slate-900 px-3.5 py-2 text-xs font-semibold text-white shadow-lg">
+            {nudge}
+          </span>
+        </div>
+      )}
+
       <button
-        onClick={() => setOpen(!open)}
-        className="w-14 h-14 rounded-full shadow-[var(--shadow-lg)] flex items-center justify-center text-white transition-transform hover:scale-105"
+        onClick={() => {
+          setOpen(!open);
+          setNudge(null);
+        }}
+        className="w-14 h-14 rounded-full shadow-[var(--shadow-lg)] flex items-center justify-center text-white transition-transform hover:scale-105 active:scale-95"
         style={{ background: "var(--blue-accent)" }}
         aria-label={open ? "Close chat" : "Open chat"}
       >
@@ -69,11 +125,6 @@ export function ChatWidget() {
           </svg>
         )}
       </button>
-      {!open && (
-        <div className="pointer-events-none mt-2 text-center text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
-          AI assistant soon
-        </div>
-      )}
     </div>
   );
 }
