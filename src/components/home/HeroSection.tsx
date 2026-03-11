@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { useReducedMotion, useScroll, useTransform } from "framer-motion";
 import Image from "next/image";
@@ -17,8 +17,12 @@ export function HeroSection() {
   });
 
   const imageScale = useTransform(scrollYProgress, [0, 0.35, 1], [1.12, 1.03, 1.06]);
-  // Only apply blur on md+ (768px+); on mobile the blur looks broken at initial load
-  const isMd = typeof window !== "undefined" && window.innerWidth >= 768;
+  // Only apply blur on md+ (768px+); on mobile the blur looks broken at initial load.
+  // Use state to avoid SSR/client hydration mismatch (window is not available during SSR).
+  const [isMd, setIsMd] = useState(false);
+  useEffect(() => {
+    setIsMd(window.innerWidth >= 768);
+  }, []);
   const imageFilter = useTransform(
     scrollYProgress,
     [0, 0.35],
