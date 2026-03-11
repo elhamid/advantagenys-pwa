@@ -29,6 +29,10 @@ export const metadata: Metadata = {
     siteName: "AdvantageOS",
   },
   manifest: "/manifest.json",
+  icons: {
+    icon: '/icons/icon-32.png',
+    apple: '/icons/apple-touch-icon.png',
+  },
 };
 
 export const viewport: Viewport = {
