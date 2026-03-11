@@ -54,10 +54,10 @@ export function Header({
     >
       <Container className="flex min-h-14 md:min-h-16 items-center justify-between gap-3 py-2 md:py-0 pt-[env(safe-area-inset-top)]">
         <Link href="/" className="flex items-center gap-2">
-          <span className="text-xl font-bold tracking-tight" style={{ color: "var(--blue-accent)" }}>
+          <span className="text-2xl font-bold tracking-tight" style={{ color: "var(--blue-accent)" }}>
             Advantage
           </span>
-          <span className="text-xl font-bold tracking-tight" style={{ color: "var(--navy)" }}>
+          <span className="text-2xl font-bold tracking-tight" style={{ color: "var(--navy)" }}>
             Services
           </span>
         </Link>
