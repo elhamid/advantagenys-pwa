@@ -26,7 +26,7 @@ export function FormCard({ form, index = 0, kioskMode = false }: FormCardProps) 
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, delay: index * 0.04, ease: [0.4, 0, 0.2, 1] }}
+      transition={{ type: "spring", stiffness: 380, damping: 30, delay: index * 0.04 }}
     >
       <Card hover className={`flex flex-col h-full ${kioskMode ? "p-5" : ""}`}>
         <div className="flex items-start gap-3 mb-3">

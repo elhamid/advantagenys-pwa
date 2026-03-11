@@ -92,20 +92,20 @@ export function StatsSection() {
   ];
 
   return (
-    <section className="py-20 bg-white">
+    <section className="bg-white py-10 md:py-16">
       <ScrollReveal>
         <div className="max-w-5xl mx-auto px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-0">
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-0">
             {stats.map((stat, i) => (
               <div
                 key={stat.label}
-                className={`text-center ${
+                className={`rounded-3xl border border-slate-200 bg-slate-50 px-4 py-5 text-center md:rounded-none md:border-0 md:bg-transparent md:px-0 md:py-0 ${
                   i < 3 ? "md:border-r md:border-gray-200" : ""
                 }`}
               >
                 <span
                   ref={stat.ref}
-                  className="text-4xl lg:text-5xl font-bold text-gray-900"
+                  className="text-3xl font-bold tracking-tight text-gray-900 md:text-5xl"
                 >
                   {stat.display}
                   {stat.suffix && (
@@ -114,7 +114,7 @@ export function StatsSection() {
                     </span>
                   )}
                 </span>
-                <span className="block text-sm text-gray-500 mt-2 font-medium">
+                <span className="mt-2 block text-xs font-medium uppercase tracking-[0.14em] text-gray-500 md:text-sm md:normal-case md:tracking-normal">
                   {stat.link ? (
                     <a
                       href={stat.link}

@@ -11,12 +11,14 @@ html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background: var(--bg);
 }
 
 body {
   font-family: var(--font-body);
   color: var(--text);
   background: var(--bg);
+  overflow-x: hidden;
 }
 
 ::selection {
@@ -31,4 +33,25 @@ body {
   to {
     transform: scale(1.05);
   }
+}
+
+/* Bottom nav: push ChatWidget above the nav bar on mobile */
+@media (max-width: 767px) {
+  .fixed.z-40[style*="bottom"] {
+    --bottom-nav-height: 4rem;
+    bottom: calc(var(--bottom-nav-height) + 0.75rem + env(safe-area-inset-bottom)) !important;
+  }
+}
+
+/* Touch feedback for all interactive elements */
+@media (hover: none) {
+  button, a, [role="button"] {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }

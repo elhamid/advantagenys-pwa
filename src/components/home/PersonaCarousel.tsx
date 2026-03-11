@@ -22,7 +22,7 @@ function ScrollReveal({
       ref={ref}
       initial={{ opacity: 0, y: 32 }}
       animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 32 }}
-      transition={{ duration: 0.7, delay, ease: EASE }}
+      transition={{ type: "spring", stiffness: 260, damping: 25, delay }}
       className={className}
     >
       {children}
@@ -233,7 +233,7 @@ function PersonaPanel({ persona, index }: { persona: Persona; index: number }) {
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
-          transition={{ duration: 0.7, delay: 0.1, ease: EASE }}
+          transition={{ type: "spring", stiffness: 260, damping: 25, delay: 0.1 }}
         >
           <span
             className="text-xs font-semibold tracking-[0.25em] block mb-6"
@@ -246,7 +246,7 @@ function PersonaPanel({ persona, index }: { persona: Persona; index: number }) {
         <motion.blockquote
           initial={{ opacity: 0, y: 24 }}
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
-          transition={{ duration: 0.7, delay: 0.25, ease: EASE }}
+          transition={{ type: "spring", stiffness: 260, damping: 25, delay: 0.25 }}
           className="text-2xl lg:text-3xl font-light italic text-white mb-8 leading-relaxed"
         >
           &ldquo;{persona.quote}&rdquo;
@@ -263,7 +263,7 @@ function PersonaPanel({ persona, index }: { persona: Persona; index: number }) {
         <motion.p
           initial={{ opacity: 0, y: 24 }}
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
-          transition={{ duration: 0.7, delay: 0.45, ease: EASE }}
+          transition={{ type: "spring", stiffness: 260, damping: 25, delay: 0.45 }}
           className="text-white/80 text-base lg:text-lg leading-relaxed mb-8"
         >
           {persona.solution}
@@ -272,7 +272,7 @@ function PersonaPanel({ persona, index }: { persona: Persona; index: number }) {
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
-          transition={{ duration: 0.6, delay: 0.55, ease: EASE }}
+          transition={{ type: "spring", stiffness: 260, damping: 25, delay: 0.55 }}
           className="flex flex-wrap gap-2 mb-10"
         >
           {persona.services.map((service) => (
@@ -289,7 +289,7 @@ function PersonaPanel({ persona, index }: { persona: Persona; index: number }) {
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
-          transition={{ duration: 0.6, delay: 0.65, ease: EASE }}
+          transition={{ type: "spring", stiffness: 260, damping: 25, delay: 0.65 }}
         >
           <a
             href={persona.ctaHref}
@@ -304,13 +304,79 @@ function PersonaPanel({ persona, index }: { persona: Persona; index: number }) {
   );
 }
 
+function MobilePersonaCard({
+  persona,
+  index,
+}: {
+  persona: Persona;
+  index: number;
+}) {
+  return (
+    <div className="min-w-[86vw] snap-center overflow-hidden rounded-[28px] border border-white/10 bg-white/[0.04] shadow-[0_24px_80px_rgba(0,0,0,0.22)]">
+      <div className="relative h-[220px]">
+        <Image
+          src={persona.image}
+          alt={persona.imageAlt}
+          fill
+          className="object-cover"
+          sizes="86vw"
+          priority={index === 0}
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#07101f] via-[#07101f]/25 to-transparent" />
+        <div className="absolute left-4 top-4 rounded-full border border-white/12 bg-black/25 px-3 py-1 text-[11px] font-semibold tracking-[0.16em] text-white/75 backdrop-blur-sm">
+          {persona.label}
+        </div>
+      </div>
+
+      <div className="space-y-4 p-5">
+        <blockquote className="text-xl font-light leading-8 text-white">
+          &ldquo;{persona.quote}&rdquo;
+        </blockquote>
+
+        <p
+          className="text-sm leading-6 text-white/72"
+          style={{
+            display: "-webkit-box",
+            WebkitLineClamp: 4,
+            WebkitBoxOrient: "vertical",
+            overflow: "hidden",
+          }}
+        >
+          {persona.solution}
+        </p>
+
+        <div className="flex flex-wrap gap-2">
+          {persona.services.slice(0, 3).map((service) => (
+            <span
+              key={service}
+              className="rounded-full border border-white/12 bg-white/6 px-3 py-1.5 text-xs text-white/78"
+            >
+              {service}
+            </span>
+          ))}
+        </div>
+
+        <a
+          href={persona.ctaHref}
+          className="inline-flex items-center gap-2 rounded-full border border-[var(--gold)]/60 px-5 py-3 text-sm font-semibold text-white transition-colors duration-300 hover:bg-white/8"
+        >
+          {persona.ctaLabel}
+          <span aria-hidden="true">&rarr;</span>
+        </a>
+      </div>
+    </div>
+  );
+}
+
 /* ═══════════════════════════════════════════════════════════════
    PERSONA CAROUSEL (exported)
    ═══════════════════════════════════════════════════════════════ */
 
 export function PersonaCarousel() {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const mobileScrollRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [mobileActiveIndex, setMobileActiveIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const resumeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -328,6 +394,21 @@ export function PersonaCarousel() {
     if (!el) return;
     const panelWidth = el.scrollWidth / PERSONAS.length;
     el.scrollTo({ left: panelWidth * index, behavior: "smooth" });
+  }, []);
+
+  const handleMobileScroll = useCallback(() => {
+    const el = mobileScrollRef.current;
+    if (!el) return;
+    const cardWidth = el.clientWidth * 0.86 + 16;
+    const idx = Math.round(el.scrollLeft / cardWidth);
+    setMobileActiveIndex(Math.min(idx, PERSONAS.length - 1));
+  }, []);
+
+  const scrollToMobile = useCallback((index: number) => {
+    const el = mobileScrollRef.current;
+    if (!el) return;
+    const cardWidth = el.clientWidth * 0.86 + 16;
+    el.scrollTo({ left: cardWidth * index, behavior: "smooth" });
   }, []);
 
   // Pause autoplay and schedule resume after 8s of no interaction
@@ -361,11 +442,15 @@ export function PersonaCarousel() {
     <section id="personas" className="py-16 lg:py-0" style={{ backgroundColor: "#0A0F1A" }}>
       <div className="lg:hidden px-6 pt-4 pb-8">
         <ScrollReveal>
+          <div className="mx-auto mb-3 w-fit rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/60">
+            Real Client Journeys
+          </div>
           <h2 className="text-3xl font-bold text-white text-center">
             Your Story. Our Expertise.
           </h2>
-          <p className="text-white/60 text-center mt-3 text-lg">
-            Every business has a beginning. Here&apos;s how we help.
+          <p className="text-white/60 text-center mt-3 text-base leading-7">
+            Swipe through the situations clients usually come in with, and the
+            path we help them take next.
           </p>
         </ScrollReveal>
       </div>
@@ -420,11 +505,37 @@ export function PersonaCarousel() {
           ))}
         </div>
 
-        {/* Mobile: stacked vertically */}
-        <div className="lg:hidden flex flex-col">
-          {PERSONAS.map((persona, i) => (
-            <PersonaPanel key={persona.label} persona={persona} index={i} />
-          ))}
+        {/* Mobile: horizontal story cards */}
+        <div className="lg:hidden">
+          <div
+            ref={mobileScrollRef}
+            onScroll={handleMobileScroll}
+            className="flex snap-x snap-mandatory gap-4 overflow-x-auto px-6 pb-2"
+            style={{
+              WebkitOverflowScrolling: "touch",
+              scrollbarWidth: "none",
+            }}
+          >
+            {PERSONAS.map((persona, i) => (
+              <MobilePersonaCard key={persona.label} persona={persona} index={i} />
+            ))}
+          </div>
+
+          <div className="mt-5 flex justify-center gap-2 px-6">
+            {PERSONAS.map((persona, i) => (
+              <button
+                key={persona.label}
+                onClick={() => scrollToMobile(i)}
+                aria-label={`Show ${persona.label}`}
+                className="h-2.5 rounded-full transition-all duration-300"
+                style={{
+                  width: mobileActiveIndex === i ? "22px" : "10px",
+                  backgroundColor:
+                    mobileActiveIndex === i ? "#D4970A" : "rgba(255,255,255,0.22)",
+                }}
+              />
+            ))}
+          </div>
         </div>
       </div>
 

@@ -23,7 +23,7 @@ function ScrollReveal({
       ref={ref}
       initial={{ opacity: 0, y: 32 }}
       animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 32 }}
-      transition={{ duration: 0.7, delay, ease: EASE }}
+      transition={{ type: "spring", stiffness: 260, damping: 25, delay }}
       className={className}
     >
       {children}
@@ -33,7 +33,7 @@ function ScrollReveal({
 
 export function FinalCTA() {
   return (
-    <section className="relative py-28 lg:py-36 overflow-hidden">
+    <section className="relative overflow-hidden py-20 md:py-28 lg:py-36">
       {/* Background */}
       <div className="absolute inset-0">
         <Image
@@ -42,6 +42,8 @@ export function FinalCTA() {
           fill
           className="object-cover"
           sizes="100vw"
+          placeholder="blur"
+          blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAKAAoDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAABgUH/8QAIhAAAQMEAgMBAAAAAAAAAAAAAQIDBAAFESEGEhMxQf/EABQBAQAAAAAAAAAAAAAAAAAAAAD/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCmkrVZqtpqK2WW6SxW+dBVnLDjSFApJGCP3xrXKSLgW2M6hqxvJVvKlJlBKSofAPGB+a2rTs9PuGC3LiOhbLgylQ9j7GiJSlYSvdUFJBBIB5FFFAf/2Q=="
         />
       </div>
       <div className="absolute inset-0 bg-black/75" />

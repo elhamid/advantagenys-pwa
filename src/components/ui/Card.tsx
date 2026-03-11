@@ -11,7 +11,7 @@ export function Card({ children, className, hover = false }: CardProps) {
     <div
       className={cn(
         "rounded-[var(--radius-lg)] bg-[var(--surface)] p-6 shadow-[var(--shadow-card)] border border-[var(--border)]",
-        hover && "transition-all duration-[var(--transition)] hover:shadow-[var(--shadow-md)] hover:-translate-y-1",
+        hover && "transition-all duration-[var(--transition)] hover:shadow-[var(--shadow-md)] hover:-translate-y-1 active:scale-[0.97]",
         className
       )}
     >

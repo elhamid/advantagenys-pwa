@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 import { PHONE, SERVICES } from "@/lib/constants";
@@ -15,12 +15,45 @@ const NAV_ITEMS = [
   { label: "Contact", href: "/contact" },
 ];
 
-export function Header() {
-  const [mobileOpen, setMobileOpen] = useState(false);
+interface HeaderProps {
+  mobileNavOpen?: boolean;
+  onMobileNavOpen?: () => void;
+  onMobileNavClose?: () => void;
+}
+
+export function Header({
+  mobileNavOpen = false,
+  onMobileNavOpen,
+  onMobileNavClose,
+}: HeaderProps) {
+  // Scroll-aware hide/show on mobile
+  const [hidden, setHidden] = useState(false);
+  const lastScrollY = useRef(0);
+
+  useEffect(() => {
+    function handleScroll() {
+      const currentY = window.scrollY;
+      // Only collapse after user scrolls past 80px to avoid hiding on page load
+      if (currentY > 80) {
+        setHidden(currentY > lastScrollY.current);
+      } else {
+        setHidden(false);
+      }
+      lastScrollY.current = currentY;
+    }
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
-    <header className="sticky top-0 z-50 bg-[var(--surface)]/95 backdrop-blur-md border-b border-[var(--border)]">
-      <Container className="flex items-center justify-between h-16">
+    <header
+      className="sticky top-0 z-50 border-b border-[var(--border)] bg-white/88 backdrop-blur-xl supports-[backdrop-filter]:bg-white/72 md:translate-y-0 transition-transform duration-300"
+      style={{
+        transform: hidden ? "translateY(-100%)" : undefined,
+      }}
+    >
+      <Container className="flex min-h-16 items-center justify-between gap-3 pt-[env(safe-area-inset-top)]">
         <Link href="/" className="flex items-center gap-2">
           <span className="text-xl font-bold tracking-tight" style={{ color: "var(--blue-accent)" }}>
             Advantage
@@ -30,6 +63,7 @@ export function Header() {
           </span>
         </Link>
 
+        {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-6">
           {NAV_ITEMS.map((item) => (
             <Link
@@ -42,6 +76,7 @@ export function Header() {
           ))}
         </nav>
 
+        {/* Desktop CTA */}
         <div className="hidden md:flex items-center gap-3">
           <a
             href={`tel:${PHONE.mainTel}`}
@@ -54,18 +89,15 @@ export function Header() {
           </Button>
         </div>
 
-        <button
-          className="md:hidden p-2.5 -mr-1 rounded-xl text-[var(--text)] hover:bg-slate-50 active:scale-90 transition-all duration-200"
-          onClick={() => setMobileOpen(true)}
-          aria-label="Open menu"
-        >
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-            <path d="M4 7h16M4 12h12M4 17h8" />
-          </svg>
-        </button>
+        {/* Mobile: logo only, no hamburger (BottomNav handles navigation) */}
       </Container>
 
-      <MobileNav open={mobileOpen} onClose={() => setMobileOpen(false)} items={NAV_ITEMS} />
+      {/* MobileNav — controlled from outside (BottomNav "More" button) */}
+      <MobileNav
+        open={mobileNavOpen}
+        onClose={onMobileNavClose ?? (() => {})}
+        items={NAV_ITEMS}
+      />
     </header>
   );
 }
