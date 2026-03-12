@@ -11,6 +11,12 @@ interface ContactPayload {
   businessType?: string;
   services?: string[];
   message?: string;
+  // Booking-specific fields (present when type === "booking")
+  type?: "booking";
+  serviceType?: string;
+  preferredDate?: string;
+  preferredTime?: string;
+  description?: string;
 }
 
 function validatePayload(
@@ -20,8 +26,19 @@ function validatePayload(
     return { valid: false, error: "Request body must be a JSON object." };
   }
 
-  const { fullName, phone, email, businessType, services, message } =
-    body as Record<string, unknown>;
+  const {
+    fullName,
+    phone,
+    email,
+    businessType,
+    services,
+    message,
+    type,
+    serviceType,
+    preferredDate,
+    preferredTime,
+    description,
+  } = body as Record<string, unknown>;
 
   if (typeof fullName !== "string" || fullName.trim().length === 0) {
     return { valid: false, error: "Full name is required." };
@@ -53,6 +70,12 @@ function validatePayload(
       businessType: typeof businessType === "string" ? businessType.trim() : undefined,
       services: Array.isArray(services) ? services : undefined,
       message: typeof message === "string" ? message.trim() : undefined,
+      // Booking-specific fields
+      type: type === "booking" ? "booking" : undefined,
+      serviceType: typeof serviceType === "string" ? serviceType.trim() : undefined,
+      preferredDate: typeof preferredDate === "string" ? preferredDate.trim() : undefined,
+      preferredTime: typeof preferredTime === "string" ? preferredTime.trim() : undefined,
+      description: typeof description === "string" ? description.trim() : undefined,
     },
   };
 }
@@ -105,7 +128,8 @@ export async function POST(request: NextRequest) {
     // Server-side log for now -- replace with email/CRM integration
     // TODO: Wire to email service (Resend, SendGrid, or nodemailer) for delivery to 229advantage@gmail.com
     // TODO: Add rate limiting to prevent spam
-    console.log("[Contact Form Submission]", {
+    const logLabel = data.type === "booking" ? "[Booking Form Submission]" : "[Contact Form Submission]";
+    console.log(logLabel, {
       timestamp: new Date().toISOString(),
       ...data,
     });
@@ -117,6 +141,24 @@ export async function POST(request: NextRequest) {
         process.env.TASKBOARD_WEBHOOK_URL ||
         "https://app.advantagenys.com/api/webhooks/pwa-lead";
 
+      // Build webhook payload — booking fields are included when present
+      const webhookPayload: Record<string, unknown> = {
+        fullName: data.fullName,
+        phone: data.phone,
+        email: data.email,
+        businessType: data.businessType,
+        services: data.services,
+        message: data.message ?? data.description,
+        source: "pwa-contact-form",
+      };
+
+      if (data.type === "booking") {
+        webhookPayload.type = "booking";
+        if (data.serviceType) webhookPayload.serviceType = data.serviceType;
+        if (data.preferredDate) webhookPayload.preferredDate = data.preferredDate;
+        if (data.preferredTime) webhookPayload.preferredTime = data.preferredTime;
+      }
+
       try {
         const webhookRes = await fetch(webhookUrl, {
           method: "POST",
@@ -124,14 +166,7 @@ export async function POST(request: NextRequest) {
             "Content-Type": "application/json",
             "x-pwa-secret": webhookSecret,
           },
-          body: JSON.stringify({
-            fullName: data.fullName,
-            phone: data.phone,
-            email: data.email,
-            businessType: data.businessType,
-            services: data.services,
-            message: data.message,
-          }),
+          body: JSON.stringify(webhookPayload),
         });
 
         if (!webhookRes.ok) {
