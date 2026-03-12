@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Turnstile } from "@marsidev/react-turnstile";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 
@@ -43,6 +44,7 @@ export function ContactForm() {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [turnstileToken, setTurnstileToken] = useState<string>("");
 
   function handleServiceToggle(service: string) {
     setFormData((prev) => ({
@@ -62,7 +64,7 @@ export function ContactForm() {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ ...formData, turnstileToken }),
       });
 
       const data = await res.json();
@@ -208,6 +210,13 @@ export function ContactForm() {
             className={inputClasses}
           />
         </div>
+
+        {/* Turnstile */}
+        <Turnstile
+          siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "1x00000000000000000000AA"}
+          onSuccess={(token) => setTurnstileToken(token)}
+          options={{ size: "invisible" }}
+        />
 
         {/* Error */}
         {error && (

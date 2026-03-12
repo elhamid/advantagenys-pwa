@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Turnstile } from "@marsidev/react-turnstile";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 
@@ -44,6 +45,7 @@ export function BookingForm() {
   });
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string>("");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -53,7 +55,7 @@ export function BookingForm() {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...formData, type: "booking" }),
+        body: JSON.stringify({ ...formData, type: "booking", turnstileToken }),
       });
 
       if (!res.ok) throw new Error("Submission failed");
@@ -220,6 +222,13 @@ export function BookingForm() {
             className={inputClasses}
           />
         </div>
+
+        {/* Turnstile */}
+        <Turnstile
+          siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "1x00000000000000000000AA"}
+          onSuccess={(token) => setTurnstileToken(token)}
+          options={{ size: "invisible" }}
+        />
 
         {/* Submit */}
         <Button type="submit" size="lg" className="w-full" disabled={loading}>

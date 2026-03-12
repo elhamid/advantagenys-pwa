@@ -71,11 +71,84 @@ export async function POST(request: NextRequest) {
 
     const { data } = result;
 
+    // --- Turnstile verification ---
+    const turnstileToken = (body as Record<string, unknown>).turnstileToken;
+    if (process.env.TURNSTILE_SECRET_KEY) {
+      if (!turnstileToken || typeof turnstileToken !== "string") {
+        return NextResponse.json(
+          { success: false, error: "Human verification failed" },
+          { status: 403 }
+        );
+      }
+
+      const turnstileRes = await fetch(
+        "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({
+            secret: process.env.TURNSTILE_SECRET_KEY,
+            response: turnstileToken,
+          }),
+        }
+      );
+      const turnstileData = await turnstileRes.json();
+
+      if (!turnstileData.success) {
+        return NextResponse.json(
+          { success: false, error: "Human verification failed" },
+          { status: 403 }
+        );
+      }
+    }
+
     // Server-side log for now -- replace with email/CRM integration
+    // TODO: Wire to email service (Resend, SendGrid, or nodemailer) for delivery to 229advantage@gmail.com
+    // TODO: Add rate limiting to prevent spam
     console.log("[Contact Form Submission]", {
       timestamp: new Date().toISOString(),
       ...data,
     });
+
+    // --- Forward to taskboard webhook ---
+    const webhookSecret = process.env.PWA_WEBHOOK_SECRET;
+    if (webhookSecret) {
+      const webhookUrl =
+        process.env.TASKBOARD_WEBHOOK_URL ||
+        "https://app.advantagenys.com/api/webhooks/pwa-lead";
+
+      try {
+        const webhookRes = await fetch(webhookUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-pwa-secret": webhookSecret,
+          },
+          body: JSON.stringify({
+            fullName: data.fullName,
+            phone: data.phone,
+            email: data.email,
+            businessType: data.businessType,
+            services: data.services,
+            message: data.message,
+          }),
+        });
+
+        if (!webhookRes.ok) {
+          console.error(
+            "[Taskboard Webhook] Failed with status",
+            webhookRes.status,
+            await webhookRes.text()
+          );
+        }
+      } catch (webhookErr) {
+        console.error("[Taskboard Webhook] Error:", webhookErr);
+      }
+    } else {
+      console.warn(
+        "[Taskboard Webhook] PWA_WEBHOOK_SECRET not set, skipping webhook call"
+      );
+    }
 
     return NextResponse.json({ success: true });
   } catch {
