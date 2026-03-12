@@ -128,7 +128,7 @@ export async function POST(request: NextRequest) {
     // Server-side log for now -- replace with email/CRM integration
     // TODO: Wire to email service (Resend, SendGrid, or nodemailer) for delivery to 229advantage@gmail.com
     // TODO: Add rate limiting to prevent spam
-    const logLabel = data.type === "booking" ? "[Booking Form Submission]" : "[Contact Form Submission]";
+    const logLabel = data.type === "booking" ? "[Website Booking]" : "[Website Lead]";
     console.log(logLabel, {
       timestamp: new Date().toISOString(),
       ...data,
@@ -149,7 +149,7 @@ export async function POST(request: NextRequest) {
         businessType: data.businessType,
         services: data.services,
         message: data.message ?? data.description,
-        source: "pwa-contact-form",
+        source: "website-contact-form",
       };
 
       if (data.type === "booking") {
@@ -181,7 +181,7 @@ export async function POST(request: NextRequest) {
       }
     } else {
       console.warn(
-        "[Taskboard Webhook] PWA_WEBHOOK_SECRET not set, skipping webhook call"
+        "[Taskboard Webhook] Website webhook secret not configured, skipping webhook call"
       );
     }
 
