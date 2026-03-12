@@ -16,7 +16,7 @@ export const ADDRESS = {
 
 export const HOURS = {
   days: "Monday - Saturday",
-  time: "9:00 AM - 7:00 PM",
+  time: "10:00 AM - 8:00 PM",
   timezone: "ET",
 } as const;
 
@@ -36,7 +36,7 @@ export const TEAM = [
   { name: "Zia", fullName: "Ziaur (Zia) Khan", role: "Consultant", specialties: ["Formation", "Tax", "Licensing", "Payroll", "Consulting"] },
   { name: "Akram", fullName: "Akram Gaffor", role: "Consultant", specialties: ["Insurance", "Tax", "Bookkeeping"] },
   { name: "Riaz", fullName: "Riaz Khan", role: "Consultant", specialties: ["Bookkeeping", "Tax"] },
-  { name: "Hamid", fullName: "Hamid Elsevar", role: "AI Growth & Execution Lead", specialties: ["Tech", "AI", "Business Development"] },
+  { name: "Hamid", fullName: "Hamid Elsevar", role: "Growth Operator", specialties: ["Tech", "AI", "Business Development"] },
 ] as const;
 
 // Real client stats — original from nysconsultants.com (2023-2024), updated +35% for 2026

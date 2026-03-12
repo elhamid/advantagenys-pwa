@@ -668,7 +668,7 @@ export default function DemoPage() {
           >
             <span>{ADDRESS.full}</span>
             <span className="hidden sm:inline">&middot;</span>
-            <span>Mon - Sat, 9 AM - 7 PM ET</span>
+            <span>Mon - Sat, 10 AM - 8 PM ET</span>
           </div>
         </motion.div>
       </section>
