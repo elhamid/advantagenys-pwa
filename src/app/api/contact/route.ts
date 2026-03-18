@@ -1,7 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
+import { sendContactEmail } from "@/lib/email";
 
-// TODO: Wire to email service (Resend, SendGrid, or nodemailer) for delivery to 229advantage@gmail.com
-// TODO: Wire to Jotform submission API or advantage-taskboard CRM pipeline for lead tracking
+// Lazy-init Supabase client to avoid crashing if env vars aren't set yet
+let supabaseClient: Awaited<typeof import("@/lib/supabase")>["supabase"] | null =
+  null;
+
+async function getSupabase() {
+  if (supabaseClient) return supabaseClient;
+  try {
+    const { supabase } = await import("@/lib/supabase");
+    supabaseClient = supabase;
+    return supabase;
+  } catch {
+    console.warn("[Supabase] Client not available — env vars may be missing");
+    return null;
+  }
+}
+
 // TODO: Add rate limiting to prevent spam
 
 interface ContactPayload {
@@ -80,6 +95,47 @@ function validatePayload(
   };
 }
 
+/**
+ * Store lead in Supabase pwa_leads table.
+ * Non-blocking — logs errors but never fails the request.
+ */
+async function storeLeadInSupabase(data: ContactPayload): Promise<void> {
+  const supabase = await getSupabase();
+  if (!supabase) return;
+
+  const isBooking = data.type === "booking";
+  const source = isBooking ? "booking" : "contact";
+
+  const row = {
+    name: data.fullName,
+    email: data.email || null,
+    phone: data.phone,
+    message: data.message || data.description || null,
+    service_type: data.serviceType || (data.services?.join(", ") ?? null),
+    booking_date: isBooking ? (data.preferredDate || null) : null,
+    booking_time: isBooking ? (data.preferredTime || null) : null,
+    booking_type: isBooking ? (data.serviceType || null) : null,
+    source,
+    status: "new",
+    metadata: {
+      business_type: data.businessType || null,
+      services: data.services || null,
+      raw_type: data.type || "contact",
+    },
+  };
+
+  try {
+    const { error } = await supabase.from("pwa_leads").insert(row);
+    if (error) {
+      console.error("[Supabase] Insert failed:", error.message);
+    } else {
+      console.log("[Supabase] Lead stored successfully");
+    }
+  } catch (err) {
+    console.error("[Supabase] Unexpected error:", err);
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -125,14 +181,16 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Server-side log for now -- replace with email/CRM integration
-    // TODO: Wire to email service (Resend, SendGrid, or nodemailer) for delivery to 229advantage@gmail.com
-    // TODO: Add rate limiting to prevent spam
     const logLabel = data.type === "booking" ? "[Website Booking]" : "[Website Lead]";
     console.log(logLabel, {
       timestamp: new Date().toISOString(),
       ...data,
     });
+
+    // --- Store in Supabase (non-blocking, best-effort) ---
+    storeLeadInSupabase(data).catch((err) =>
+      console.error("[Supabase] Background store failed:", err)
+    );
 
     // --- Forward to taskboard webhook ---
     const webhookSecret = process.env.PWA_WEBHOOK_SECRET;
@@ -183,6 +241,15 @@ export async function POST(request: NextRequest) {
       console.warn(
         "[Taskboard Webhook] Website webhook secret not configured, skipping webhook call"
       );
+    }
+
+    // --- Send notification email ---
+    try {
+      await sendContactEmail(data);
+      console.log("[Email] Notification sent to", process.env.EMAIL_TO);
+    } catch (emailErr) {
+      // Non-fatal: webhook + CRM are primary pipeline; email is supplementary
+      console.error("[Email] Failed to send notification:", emailErr);
     }
 
     return NextResponse.json({ success: true });

@@ -1,6 +1,6 @@
 export const PHONE = {
-  main: "929-292-9230",
-  mainTel: "+19292929230",
+  main: "929-933-1396",
+  mainTel: "+19299331396",
   whatsapp: "929-933-1396",
   whatsappLink: "https://wa.me/19299331396",
 } as const;

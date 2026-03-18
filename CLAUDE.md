@@ -42,6 +42,9 @@ npm run dev       # Local dev server
 npm run build     # Production build
 npm run start     # Serve production build
 npm run lint      # ESLint
+npm test          # Vitest in watch mode
+npm run test:run  # Vitest single run (CI)
+npm run test:e2e  # Playwright E2E tests
 ```
 
 ## Conventions
@@ -56,14 +59,16 @@ npm run lint      # ESLint
 
 - `next.config.ts` is currently empty -- any image domains, redirects, or rewrites must be added there
 - No `.env` file exists yet -- external API integrations (form submissions, chat backend) will need env vars
-- No test framework configured
+- Test framework: Vitest (unit/integration) + Playwright (E2E); see `vitest.config.ts` and `playwright.config.ts`
 - Tailwind 4 uses `@tailwindcss/postcss` plugin (not the classic `tailwindcss` PostCSS plugin)
 - Path alias `@/*` resolves to `src/*`, not project root
+- `.env.local` required for: `TURNSTILE_SECRET_KEY`, `NEXT_PUBLIC_TURNSTILE_SITE_KEY`, `TASKBOARD_WEBHOOK_URL`
 
 ## Integration Points
 
 - **Lead capture** flows into the advantage-taskboard CRM pipeline (form submissions from ContactForm and ChatWidget)
-- **ChatWidget** is rendered globally via root layout -- backend integration TBD
+- **ChatWidget** is rendered globally via root layout
+- **Lead pipeline** is LIVE: ContactForm/BookingForm → `/api/contact` → Turnstile verification → taskboard webhook (`/api/webhooks/pwa-lead`)
 
 ## AdvantageOS Portfolio
 
@@ -75,3 +80,6 @@ This is piece **5 of 6** in the AdvantageOS ecosystem:
 4. AdvantageNYS (legacy site)
 5. **advantagenys-pwa** -- client-facing PWA (this project)
 6. Additional portfolio pieces TBD
+
+## Velocity
+9 products shipped in 2 months. Estimate from actual baseline, not default human timelines.

@@ -246,8 +246,8 @@ export default function TermsPage() {
               </p>
               <p>
                 Phone:{" "}
-                <a href="tel:+19292929230" className="text-[var(--blue-accent)] underline underline-offset-2">
-                  (929) 292-9230
+                <a href="tel:+19299331396" className="text-[var(--blue-accent)] underline underline-offset-2">
+                  (929) 933-1396
                 </a>
               </p>
               <p>
