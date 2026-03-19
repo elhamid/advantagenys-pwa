@@ -46,6 +46,9 @@ export function ChatWidget() {
     return () => clearTimeout(timer);
   }, [pathname, open]);
 
+  // Hide entirely on contact page — page has its own contact actions
+  if (pathname === "/contact") return null;
+
   return (
     <div
       className="fixed z-40 chat-widget"
