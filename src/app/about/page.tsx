@@ -1,7 +1,26 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { Container } from "@/components/ui/Container";
 import { Card } from "@/components/ui/Card";
 import { TEAM, ADDRESS } from "@/lib/constants";
+
+const TEAM_PHOTOS: Record<string, string> = {
+  Jay: "/images/team/jay-v2.jpg",
+  Kedar: "/images/team/kedar.jpg",
+  Zia: "/images/team/zia.jpg",
+  Akram: "/images/team/akram.jpg",
+  Riaz: "/images/team/riaz-v7.jpg",
+  Hamid: "/images/team/hamid-v14.jpg",
+};
+
+const PHOTO_POSITIONS: Record<string, string> = {
+  Jay: "object-[50%_25%]",
+  Kedar: "object-[50%_25%]",
+  Zia: "object-[50%_25%]",
+  Akram: "object-[50%_25%]",
+  Riaz: "object-[50%_25%]",
+  Hamid: "object-center",
+};
 
 export const metadata: Metadata = {
   title: "About Us",
@@ -23,6 +42,17 @@ export default function AboutPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {TEAM.map((member) => (
             <Card key={member.name}>
+              <div className="flex flex-col items-center mb-4">
+                <div className="relative w-20 h-20 rounded-full overflow-hidden">
+                  <Image
+                    src={TEAM_PHOTOS[member.name]}
+                    alt={member.fullName}
+                    fill
+                    className={`object-cover ${PHOTO_POSITIONS[member.name]}`}
+                    sizes="80px"
+                  />
+                </div>
+              </div>
               <h3 className="text-lg font-semibold text-[var(--text)]">{member.fullName}</h3>
               <p className="text-sm text-[var(--blue-accent)] mb-2">{member.role}</p>
               <div className="flex flex-wrap gap-1">
