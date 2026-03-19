@@ -64,12 +64,13 @@ export default function FinancialServicesPage() {
             every successful business. We handle the numbers so you can focus on
             growing your business.
           </p>
+          <p className="text-sm text-[var(--text-muted)] mb-3">{PHONE.main} &middot; Call or WhatsApp</p>
           <div className="flex flex-col sm:flex-row gap-4">
             <Button href="/contact" size="lg">
               Get Started
             </Button>
-            <Button href={`tel:${PHONE.mainTel}`} variant="outline" size="lg">
-              Call {PHONE.main}
+            <Button href={PHONE.whatsappLink} variant="outline" size="lg">
+              WhatsApp Us
             </Button>
           </div>
         </Container>
@@ -173,12 +174,13 @@ export default function FinancialServicesPage() {
               Schedule a free consultation. We&apos;ll review your current
               setup and recommend the right level of service.
             </p>
+            <p className="text-sm text-[var(--text-muted)] mb-3">{PHONE.main} &middot; Call or WhatsApp</p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button href="/contact" size="lg">
                 Free Consultation
               </Button>
-              <Button href={`tel:${PHONE.mainTel}`} variant="outline" size="lg">
-                Call {PHONE.main}
+              <Button href={PHONE.whatsappLink} variant="secondary" size="lg">
+                WhatsApp Us
               </Button>
             </div>
           </div>

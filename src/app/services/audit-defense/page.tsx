@@ -99,9 +99,10 @@ export default function AuditDefensePage() {
             the experience to fight back, challenge incorrect findings, and
             reduce fines by thousands.
           </p>
+          <p className="text-sm text-[var(--text-muted)] mb-3">{PHONE.main} &middot; Call or WhatsApp</p>
           <div className="flex flex-col sm:flex-row gap-4">
             <Button href={`tel:${PHONE.mainTel}`} size="lg">
-              Call Now: {PHONE.main}
+              Call Now
             </Button>
             <Button href="/contact" variant="outline" size="lg">
               Request Urgent Consultation
@@ -140,8 +141,9 @@ export default function AuditDefensePage() {
               ))}
             </div>
             <div className="text-center mt-8">
+              <p className="text-sm text-[var(--text-muted)] mb-3">{PHONE.main}</p>
               <Button href={`tel:${PHONE.mainTel}`}>
-                Call {PHONE.main} Now
+                Call Now
               </Button>
             </div>
           </Card>
@@ -344,9 +346,10 @@ export default function AuditDefensePage() {
               urgent consultation. We will review your notice and tell you
               exactly where you stand.
             </p>
+            <p className="text-sm text-[var(--text-muted)] mb-3">{PHONE.main} &middot; Call or WhatsApp</p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button href={`tel:${PHONE.mainTel}`} size="lg">
-                Call Now: {PHONE.main}
+                Call Now
               </Button>
               <Button href={PHONE.whatsappLink} variant="secondary" size="lg">
                 WhatsApp Us

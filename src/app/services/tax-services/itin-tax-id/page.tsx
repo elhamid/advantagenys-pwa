@@ -104,12 +104,13 @@ export default function ItinTaxIdPage() {
           <p className="text-lg font-medium text-[var(--text)] max-w-2xl mb-8">
             Over 2,250 ITINs successfully processed. Fast, reliable, and safe.
           </p>
+          <p className="text-sm text-[var(--text-muted)] mb-3">{PHONE.main} &middot; Call or WhatsApp</p>
           <div className="flex flex-col sm:flex-row gap-4">
             <Button href="/resources/forms/itin-registration-form/" size="lg">
               Apply for Your ITIN
             </Button>
-            <Button href={`tel:${PHONE.mainTel}`} variant="outline" size="lg">
-              Call {PHONE.main}
+            <Button href={PHONE.whatsappLink} variant="outline" size="lg">
+              WhatsApp Us
             </Button>
           </div>
         </Container>
@@ -335,6 +336,7 @@ export default function ItinTaxIdPage() {
               Visit our Cambria Heights office or call for an appointment. Bring
               your passport — we handle everything else.
             </p>
+            <p className="text-sm text-[var(--text-muted)] mb-3">{PHONE.main} &middot; Call or WhatsApp</p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button href="/resources/forms/itin-registration-form/" size="lg">
                 Schedule ITIN Appointment

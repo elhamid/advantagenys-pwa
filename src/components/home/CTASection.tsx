@@ -34,13 +34,12 @@ export function CTASection() {
               WhatsApp Us
             </Button>
           </div>
-          <div className="flex flex-col sm:flex-row gap-6 justify-center text-sm text-slate-300">
+          <div className="text-sm text-slate-300">
             <a href={`tel:${PHONE.mainTel}`} className="hover:text-white transition-colors">
-              Phone: {PHONE.main}
+              {PHONE.main}
             </a>
-            <a href={PHONE.whatsappLink} className="hover:text-white transition-colors">
-              WhatsApp: {PHONE.whatsapp}
-            </a>
+            <span className="mx-2">&middot;</span>
+            <span>Call or WhatsApp</span>
           </div>
         </div>
       </Container>

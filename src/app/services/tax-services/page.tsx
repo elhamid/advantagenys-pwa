@@ -103,12 +103,13 @@ export default function TaxServicesPage() {
             professionals handles it all. IRS Certified Acceptance Agent on
             staff.
           </p>
+          <p className="text-sm text-[var(--text-muted)] mb-3">{PHONE.main} &middot; Call or WhatsApp</p>
           <div className="flex flex-col sm:flex-row gap-4">
             <Button href="/contact" size="lg">
               Schedule Tax Consultation
             </Button>
-            <Button href={`tel:${PHONE.mainTel}`} variant="outline" size="lg">
-              Call {PHONE.main}
+            <Button href={PHONE.whatsappLink} variant="outline" size="lg">
+              WhatsApp Us
             </Button>
           </div>
         </Container>
@@ -269,6 +270,7 @@ export default function TaxServicesPage() {
               Whether you need a simple personal return or complex corporate
               filing, we are here to help. Free initial consultation.
             </p>
+            <p className="text-sm text-[var(--text-muted)] mb-3">{PHONE.main} &middot; Call or WhatsApp</p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button href="/contact" size="lg">
                 Book Tax Appointment

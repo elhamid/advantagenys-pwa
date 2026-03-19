@@ -70,12 +70,13 @@ export default function InsurancePage() {
             compensation, and disability — the policies every New York business
             needs.
           </p>
+          <p className="text-sm text-[var(--text-muted)] mb-3">{PHONE.main} &middot; Call or WhatsApp</p>
           <div className="flex flex-col sm:flex-row gap-4">
             <Button href="/contact" size="lg">
               Get a Quote
             </Button>
-            <Button href={`tel:${PHONE.mainTel}`} variant="outline" size="lg">
-              Call {PHONE.main}
+            <Button href={PHONE.whatsappLink} variant="outline" size="lg">
+              WhatsApp Us
             </Button>
           </div>
         </Container>
@@ -271,6 +272,7 @@ export default function InsurancePage() {
               Tell us about your business and we will shop multiple carriers for
               competitive quotes. Free consultation, no obligation.
             </p>
+            <p className="text-sm text-[var(--text-muted)] mb-3">{PHONE.main} &middot; Call or WhatsApp</p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button href="/contact" size="lg">
                 Get Insurance Quote

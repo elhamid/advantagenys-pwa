@@ -86,12 +86,13 @@ export default function LegalServicesPage() {
             and ITIN registration — all handled by bilingual professionals with
             20+ years of experience serving New York&apos;s immigrant communities.
           </p>
+          <p className="text-sm text-[var(--text-muted)] mb-3">{PHONE.main} &middot; Call or WhatsApp</p>
           <div className="flex flex-col sm:flex-row gap-4">
             <Button href="/contact" size="lg">
               Schedule a Free Consultation
             </Button>
-            <Button href={`tel:${PHONE.mainTel}`} variant="outline" size="lg">
-              Call {PHONE.main}
+            <Button href={PHONE.whatsappLink} variant="outline" size="lg">
+              WhatsApp Us
             </Button>
           </div>
         </Container>
@@ -241,12 +242,10 @@ export default function LegalServicesPage() {
               ITIN registration — our bilingual team is ready to assist. Call us
               or visit our office today.
             </p>
+            <p className="text-sm text-[var(--text-muted)] mb-3">{PHONE.main} &middot; Call or WhatsApp</p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button href="/contact" size="lg">
                 Contact Us
-              </Button>
-              <Button href={`tel:${PHONE.mainTel}`} variant="outline" size="lg">
-                Call {PHONE.main}
               </Button>
               <Button href={PHONE.whatsappLink} variant="secondary" size="lg">
                 WhatsApp Us

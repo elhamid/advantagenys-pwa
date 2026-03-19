@@ -91,12 +91,13 @@ export default function LicensingPage() {
             regulations that change frequently. We have been guiding businesses
             through the process since 2005.
           </p>
+          <p className="text-sm text-[var(--text-muted)] mb-3">{PHONE.main} &middot; Call or WhatsApp</p>
           <div className="flex flex-col sm:flex-row gap-4">
             <Button href="/contact" size="lg">
               Get Licensed
             </Button>
-            <Button href={`tel:${PHONE.mainTel}`} variant="outline" size="lg">
-              Call {PHONE.main}
+            <Button href={PHONE.whatsappLink} variant="outline" size="lg">
+              WhatsApp Us
             </Button>
           </div>
         </Container>
@@ -240,6 +241,7 @@ export default function LicensingPage() {
               Tell us your business type and we will identify every license and
               permit you need. Free consultation, no obligation.
             </p>
+            <p className="text-sm text-[var(--text-muted)] mb-3">{PHONE.main} &middot; Call or WhatsApp</p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button href="/contact" size="lg">
                 Free Consultation
