@@ -42,8 +42,8 @@ export default function AboutPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {TEAM.map((member) => (
             <Card key={member.name}>
-              <div className="flex flex-col items-center mb-4">
-                <div className="relative w-20 h-20 rounded-full overflow-hidden">
+              <div className="flex items-center gap-4">
+                <div className="relative w-20 h-20 rounded-full overflow-hidden shrink-0">
                   <Image
                     src={TEAM_PHOTOS[member.name]}
                     alt={member.fullName}
@@ -52,15 +52,17 @@ export default function AboutPage() {
                     sizes="80px"
                   />
                 </div>
-              </div>
-              <h3 className="text-lg font-semibold text-[var(--text)]">{member.fullName}</h3>
-              <p className="text-sm text-[var(--blue-accent)] mb-2">{member.role}</p>
-              <div className="flex flex-wrap gap-1">
-                {member.specialties.map((s) => (
-                  <span key={s} className="text-xs bg-[var(--blue-bg)] text-[var(--text-secondary)] px-2 py-0.5 rounded-full">
-                    {s}
-                  </span>
-                ))}
+                <div>
+                  <h3 className="text-lg font-semibold text-[var(--text)]">{member.fullName}</h3>
+                  <p className="text-sm text-[var(--blue-accent)] mb-2">{member.role}</p>
+                  <div className="flex flex-wrap gap-1">
+                    {member.specialties.map((s) => (
+                      <span key={s} className="text-xs bg-[var(--blue-bg)] text-[var(--text-secondary)] px-2 py-0.5 rounded-full">
+                        {s}
+                      </span>
+                    ))}
+                  </div>
+                </div>
               </div>
             </Card>
           ))}
