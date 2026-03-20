@@ -9,7 +9,10 @@ import {
 } from "@/lib/chat/security";
 import { getSystemPrompt } from "@/lib/chat/system-prompt";
 import { findRelevantKnowledge } from "@/lib/chat/knowledge";
-import { calculateQualification } from "@/lib/chat/qualification";
+import {
+  calculateQualification,
+  QualificationResult,
+} from "@/lib/chat/qualification";
 
 // ============================================================================
 // Rate limiters — module-level singletons (persist across requests in same instance)
@@ -17,6 +20,105 @@ import { calculateQualification } from "@/lib/chat/qualification";
 
 const minuteLimiter = createRateLimiter(15, 60_000); // 15 messages/min
 const hourLimiter = createRateLimiter(100, 3_600_000); // 100 messages/hour
+
+// ============================================================================
+// Lead webhook — fire-and-forget when qualification threshold is reached
+// ============================================================================
+
+interface SimpleMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+
+/**
+ * Build a concise conversation summary from the user messages.
+ * Used as the required `summary` field in the taskboard webhook payload.
+ */
+function buildSummary(messages: SimpleMessage[]): string {
+  const userMessages = messages.filter((m) => m.role === "user");
+  if (userMessages.length === 0) return "Web chat inquiry — no user messages recorded.";
+  // Take the last 3 user messages as the summary
+  const excerpts = userMessages.slice(-3).map((m) => m.content.trim());
+  return `Web chat inquiry: ${excerpts.join(" / ")}`.slice(0, 500);
+}
+
+/**
+ * Extract name, phone, email from conversation text using simple heuristics.
+ * These are best-effort; the webhook treats them all as optional.
+ */
+function extractContactInfo(messages: SimpleMessage[]): {
+  name?: string;
+  phone?: string;
+  email?: string;
+} {
+  const userText = messages
+    .filter((m) => m.role === "user")
+    .map((m) => m.content)
+    .join(" ");
+
+  const nameMatch = userText.match(
+    /(?:my\s+name\s+is|me\s+llamo|i\s+am|i'm|soy)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/i
+  );
+  const phoneMatch = userText.match(/\b(\+?1?[-.\s]?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4})\b/);
+  const emailMatch = userText.match(/\b[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}\b/);
+
+  return {
+    name: nameMatch?.[1]?.trim(),
+    phone: phoneMatch?.[1]?.replace(/[^\d+]/g, ""),
+    email: emailMatch?.[0]?.toLowerCase(),
+  };
+}
+
+async function sendLeadToTaskboard(
+  messages: SimpleMessage[],
+  qualification: QualificationResult,
+  pageContext?: string
+): Promise<void> {
+  const webhookUrl = process.env.TASKBOARD_WEBHOOK_URL;
+  const apiKey = process.env.WEBCHAT_API_KEY;
+
+  if (!webhookUrl || !apiKey) {
+    console.warn(
+      "[chat] TASKBOARD_WEBHOOK_URL or WEBCHAT_API_KEY not set — skipping lead webhook"
+    );
+    return;
+  }
+
+  const contact = extractContactInfo(messages);
+  const summary = buildSummary(messages);
+
+  const payload = {
+    summary,
+    messages,
+    score: qualification.score,
+    level: qualification.level,
+    ...(contact.name ? { name: contact.name } : {}),
+    ...(contact.phone ? { phone: contact.phone } : {}),
+    ...(contact.email ? { email: contact.email } : {}),
+    ...(qualification.detectedService ? { service: qualification.detectedService } : {}),
+    ...(pageContext ? { pageContext } : {}),
+  };
+
+  const response = await fetch(webhookUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => "");
+    console.error(
+      `[chat] lead webhook responded ${response.status}: ${text}`
+    );
+  } else {
+    console.log(
+      `[chat] lead webhook accepted — score=${qualification.score} level=${qualification.level}`
+    );
+  }
+}
 
 // ============================================================================
 // Handler
@@ -160,6 +262,13 @@ export async function POST(request: NextRequest) {
         const qualEvent = `data: ${JSON.stringify({ qualification })}\n\n`;
         await writer.write(encoder.encode(qualEvent));
         await writer.write(encoder.encode("data: [DONE]\n\n"));
+
+        // Fire-and-forget: send qualified lead to taskboard when threshold reached
+        if (qualification.shouldHandoff) {
+          sendLeadToTaskboard(qualMessages, qualification, pageContext).catch(
+            (err) => console.error("[chat] lead webhook error:", err)
+          );
+        }
       } catch (e) {
         console.error("[chat] stream pipe error:", e);
       } finally {
