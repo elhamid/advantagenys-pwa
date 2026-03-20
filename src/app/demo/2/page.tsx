@@ -747,7 +747,7 @@ export default function BentoDemoPage() {
         {/* Footer */}
         <footer className="border-t border-[var(--border)] py-6">
           <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-[var(--text-muted)]">
-            <span>Advantage Business Consulting LLC</span>
+            <span>Advantage Services LLC</span>
             <span>{PHONE.main}</span>
           </div>
         </footer>

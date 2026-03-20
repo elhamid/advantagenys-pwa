@@ -550,7 +550,7 @@ export default function Demo5Page() {
         <div className="absolute inset-0 animate-[heroZoom_15s_ease-out_forwards]">
           <Image
             src="/images/office-hero-v3.jpg"
-            alt="Advantage Business Consulting office in Cambria Heights"
+            alt="Advantage Services office in Cambria Heights"
             fill
             className="object-cover"
             priority

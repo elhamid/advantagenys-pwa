@@ -4,7 +4,7 @@ import { Container } from "@/components/ui/Container";
 export const metadata: Metadata = {
   title: "Terms of Service",
   description:
-    "Terms of Service for Advantage Business Consulting LLC. Understand the terms governing use of our website and business consulting services.",
+    "Terms of Service for Advantage Services LLC. Understand the terms governing use of our website and business consulting services.",
 };
 
 export default function TermsPage() {
@@ -16,7 +16,7 @@ export default function TermsPage() {
           <p className="text-sm text-[var(--text-secondary)] mb-12">Last updated: March 2026</p>
 
           <p className="text-lg text-[var(--text-secondary)] mb-12 leading-relaxed">
-            These Terms of Service (&ldquo;Terms&rdquo;) govern your use of the Advantage Business Consulting LLC
+            These Terms of Service (&ldquo;Terms&rdquo;) govern your use of the Advantage Services LLC
             website at{" "}
             <a
               href="https://advantagenys.com"
@@ -32,7 +32,7 @@ export default function TermsPage() {
           <div className="mb-10">
             <h2 className="text-2xl font-bold text-[var(--text)] mb-4">1. Acceptance of Terms</h2>
             <p className="text-[var(--text-secondary)] leading-relaxed">
-              By accessing this website or engaging Advantage Business Consulting LLC for any service, you agree to
+              By accessing this website or engaging Advantage Services LLC for any service, you agree to
               be bound by these Terms. If you do not agree, please do not use this website or our services. Your
               continued use after any update to these Terms constitutes acceptance of the revised Terms.
             </p>
@@ -42,7 +42,7 @@ export default function TermsPage() {
           <div className="mb-10">
             <h2 className="text-2xl font-bold text-[var(--text)] mb-4">2. Services Description</h2>
             <p className="text-[var(--text-secondary)] mb-4 leading-relaxed">
-              Advantage Business Consulting LLC provides the following services to individuals and small businesses:
+              Advantage Services LLC provides the following services to individuals and small businesses:
             </p>
             <ul className="list-disc pl-6 space-y-2 text-[var(--text-secondary)] leading-relaxed">
               <li>Business formation (LLC, corporation, sole proprietorship registration)</li>
@@ -75,7 +75,7 @@ export default function TermsPage() {
               <div className="bg-[var(--blue-bg)] rounded-lg p-4">
                 <p className="text-sm font-semibold text-[var(--text)] mb-1">IRS Circular 230 Notice</p>
                 <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-                  Tax advice contained in communications from Advantage Business Consulting LLC is not intended or
+                  Tax advice contained in communications from Advantage Services LLC is not intended or
                   written to be used, and cannot be used, for the purpose of (i) avoiding penalties under the
                   Internal Revenue Code or (ii) promoting, marketing, or recommending to another party any
                   transaction or matter addressed herein.
@@ -85,10 +85,10 @@ export default function TermsPage() {
               <div className="bg-[var(--blue-bg)] rounded-lg p-4">
                 <p className="text-sm font-semibold text-[var(--text)] mb-1">Not a Law Firm</p>
                 <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-                  Advantage Business Consulting LLC is not a law firm and does not provide legal representation.
+                  Advantage Services LLC is not a law firm and does not provide legal representation.
                   Immigration and legal services are facilitated through licensed attorney partners in our network.
                   Engaging our services for legal referrals does not create an attorney-client relationship with
-                  Advantage Business Consulting LLC.
+                  Advantage Services LLC.
                 </p>
               </div>
 
@@ -158,7 +158,7 @@ export default function TermsPage() {
           <div className="mb-10">
             <h2 className="text-2xl font-bold text-[var(--text)] mb-4">6. Limitation of Liability</h2>
             <p className="text-[var(--text-secondary)] mb-4 leading-relaxed">
-              To the maximum extent permitted by applicable law, Advantage Business Consulting LLC is not liable for:
+              To the maximum extent permitted by applicable law, Advantage Services LLC is not liable for:
             </p>
             <ul className="list-disc pl-6 space-y-2 text-[var(--text-secondary)] leading-relaxed">
               <li>
@@ -188,7 +188,7 @@ export default function TermsPage() {
             <h2 className="text-2xl font-bold text-[var(--text)] mb-4">7. Intellectual Property</h2>
             <p className="text-[var(--text-secondary)] leading-relaxed">
               All content on this website — including text, graphics, logos, icons, images, and software — is the
-              property of Advantage Business Consulting LLC and is protected by applicable copyright, trademark, and
+              property of Advantage Services LLC and is protected by applicable copyright, trademark, and
               intellectual property laws. You may not reproduce, distribute, or create derivative works from any
               content on this site without our written permission.
             </p>
@@ -233,7 +233,7 @@ export default function TermsPage() {
               Questions about these Terms or our services? Reach us at:
             </p>
             <address className="not-italic space-y-1 text-[var(--text-secondary)]">
-              <p className="font-semibold text-[var(--text)]">Advantage Business Consulting LLC</p>
+              <p className="font-semibold text-[var(--text)]">Advantage Services LLC</p>
               <p>229-14 Linden Blvd, Cambria Heights, NY 11411</p>
               <p>
                 Email:{" "}

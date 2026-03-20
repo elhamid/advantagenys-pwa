@@ -34,7 +34,7 @@ describe("GOOGLE_RATING", () => {
     expect(GOOGLE_RATING.mapsUrl).toMatch(/^https:\/\/www\.google\.com\/maps/);
   });
 
-  it("mapsUrl contains Advantage Business Consulting", () => {
+  it("mapsUrl contains Advantage", () => {
     expect(GOOGLE_RATING.mapsUrl).toContain("Advantage");
   });
 });
@@ -92,7 +92,7 @@ describe("REVIEWS", () => {
     const review = REVIEWS.find((r) => r.name === "SJ Trendz Inc.");
     expect(review).toBeDefined();
     expect(review?.rating).toBe(5);
-    expect(review?.text).toContain("Advantage Business Consulting");
+    expect(review?.text).toContain("Advantage Services");
   });
 
   it("all review texts are at least 50 characters", () => {

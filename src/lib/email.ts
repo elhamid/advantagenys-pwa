@@ -61,7 +61,7 @@ function buildHtmlBody(payload: EmailPayload): string {
 <body style="margin: 0; padding: 0; background: #f3f4f6; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
   <div style="max-width: 600px; margin: 32px auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
     <div style="background: #4F56E8; padding: 24px 32px;">
-      <h1 style="margin: 0; color: #ffffff; font-size: 20px; font-weight: 700;">Advantage Business Consulting</h1>
+      <h1 style="margin: 0; color: #ffffff; font-size: 20px; font-weight: 700;">Advantage Services</h1>
       <p style="margin: 4px 0 0; color: #c7d2fe; font-size: 14px;">New submission from advantagenys.com</p>
     </div>
     <div style="padding: 24px 32px;">

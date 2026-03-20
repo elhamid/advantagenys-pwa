@@ -238,7 +238,7 @@ export const forms: FormConfig[] = [
   {
     id: "link-abc-google-reviews",
     title: "ABC Google Reviews",
-    description: "Leave a review for Advantage Business Consulting",
+    description: "Leave a review for Advantage Services",
     category: "other",
     platform: "native",
     type: "link",

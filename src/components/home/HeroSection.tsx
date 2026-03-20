@@ -48,7 +48,7 @@ export function HeroSection() {
       >
         <Image
           src="/images/office-hero-v3.jpg"
-          alt="Advantage Business Consulting office in Cambria Heights"
+          alt="Advantage Services office in Cambria Heights"
           fill
           className="object-cover"
           priority

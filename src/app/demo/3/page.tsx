@@ -703,7 +703,7 @@ function Footer() {
       style={{ background: C.bg, borderColor: C.border }}
     >
       <p className="text-xs" style={{ color: C.muted }}>
-        &copy; 2026 Advantage Business Consulting LLC &middot; {ADDRESS.full}
+        &copy; 2026 Advantage Services LLC &middot; {ADDRESS.full}
       </p>
     </footer>
   );

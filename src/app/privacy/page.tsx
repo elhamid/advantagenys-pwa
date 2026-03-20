@@ -4,7 +4,7 @@ import { Container } from "@/components/ui/Container";
 export const metadata: Metadata = {
   title: "Privacy Policy",
   description:
-    "Privacy Policy for Advantage Business Consulting LLC. Learn how we collect, use, and protect your personal and business information.",
+    "Privacy Policy for Advantage Services LLC. Learn how we collect, use, and protect your personal and business information.",
 };
 
 export default function PrivacyPage() {
@@ -16,7 +16,7 @@ export default function PrivacyPage() {
           <p className="text-sm text-[var(--text-secondary)] mb-12">Last updated: March 2026</p>
 
           <p className="text-lg text-[var(--text-secondary)] mb-12 leading-relaxed">
-            Advantage Business Consulting LLC (&ldquo;Advantage,&rdquo; &ldquo;we,&rdquo; &ldquo;our,&rdquo; or
+            Advantage Services LLC (&ldquo;Advantage,&rdquo; &ldquo;we,&rdquo; &ldquo;our,&rdquo; or
             &ldquo;us&rdquo;) is committed to protecting your privacy. This policy explains what information we
             collect, how we use it, and what choices you have.
           </p>
@@ -233,7 +233,7 @@ export default function PrivacyPage() {
               If you have questions about this Privacy Policy or how your information is handled, please contact us:
             </p>
             <address className="not-italic space-y-1 text-[var(--text-secondary)]">
-              <p className="font-semibold text-[var(--text)]">Advantage Business Consulting LLC</p>
+              <p className="font-semibold text-[var(--text)]">Advantage Services LLC</p>
               <p>229-14 Linden Blvd, Cambria Heights, NY 11411</p>
               <p>
                 Email:{" "}

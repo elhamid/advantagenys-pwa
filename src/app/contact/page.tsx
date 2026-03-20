@@ -6,7 +6,7 @@ import { PHONE, ADDRESS, HOURS } from "@/lib/constants";
 export const metadata: Metadata = {
   title: "Contact",
   description:
-    "Contact Advantage Business Consulting. Call, WhatsApp, or visit us in Cambria Heights, NY. Free consultation.",
+    "Contact Advantage Services. Call, WhatsApp, or visit us in Cambria Heights, NY. Free consultation.",
 };
 
 export default function ContactPage() {

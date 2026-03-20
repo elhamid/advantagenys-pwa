@@ -73,7 +73,7 @@ export function Footer() {
 
         <div className="border-t border-slate-700 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-xs text-slate-400">
-            &copy; {new Date().getFullYear()} Advantage Business Consulting LLC. All rights reserved.
+            &copy; {new Date().getFullYear()} Advantage Services LLC. All rights reserved.
           </p>
           <div className="flex gap-4">
             <Link href="/privacy" className="text-xs text-slate-400 hover:text-white transition-colors">Privacy</Link>

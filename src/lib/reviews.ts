@@ -21,7 +21,7 @@ export const REVIEWS = [
   {
     name: "Delacia P.",
     rating: 5,
-    text: "Advantage Business Consulting LLC is truly top-notch! Their team is professional, knowledgeable, and incredibly efficient. They made the entire tax filing process smooth and stress-free, handling everything with precision and care. I was impressed with how quickly they worked while ensuring every detail was accurate.",
+    text: "Advantage Services LLC is truly top-notch! Their team is professional, knowledgeable, and incredibly efficient. They made the entire tax filing process smooth and stress-free, handling everything with precision and care. I was impressed with how quickly they worked while ensuring every detail was accurate.",
     date: "11 months ago",
     photoUrl:
       "https://lh3.googleusercontent.com/a-/ALV-UjUyrMXJM5FWLcCLr4CcEpjSiQc-6DCuu63HmtehtHfLkG5wdqPi=s128-c0x00000000-cc-rp-mo",
@@ -37,7 +37,7 @@ export const REVIEWS = [
   {
     name: "SJ Trendz Inc.",
     rating: 5,
-    text: "I have been working with Advantage Business Consulting for several years now and I cannot express enough how impressed I am with their knowledge, quick response time, and professionalism. Every time I have a question or concern, they are always there to provide me with a clear and concise answer. Their team is amazing and I feel like they truly care about my financial well-being. I highly recommend Advantage Business Consulting to anyone who is looking for a reliable and trustworthy accountant.",
+    text: "I have been working with Advantage Services for several years now and I cannot express enough how impressed I am with their knowledge, quick response time, and professionalism. Every time I have a question or concern, they are always there to provide me with a clear and concise answer. Their team is amazing and I feel like they truly care about my financial well-being. I highly recommend Advantage Services to anyone who is looking for a reliable and trustworthy accountant.",
     date: "2 years ago",
     photoUrl:
       "https://lh3.googleusercontent.com/a-/ALV-UjV_z5YDhOEZogp49FYq32uD6yVI3oOp5tj6RVJ3S7zDlGhjtPkb=s128-c0x00000000-cc-rp-mo",

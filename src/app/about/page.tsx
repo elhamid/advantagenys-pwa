@@ -24,7 +24,7 @@ const PHOTO_POSITIONS: Record<string, string> = {
 
 export const metadata: Metadata = {
   title: "About Us",
-  description: "Advantage Business Consulting LLC. 20+ years serving NYC small businesses with formation, licensing, tax, insurance, and audit defense.",
+  description: "Advantage Services LLC. 20+ years serving NYC small businesses with formation, licensing, tax, insurance, and audit defense.",
 };
 
 export default function AboutPage() {
@@ -33,7 +33,7 @@ export default function AboutPage() {
       <Container>
         <h1 className="text-4xl font-bold text-[var(--text)] mb-6">About Advantage Services</h1>
         <p className="text-lg text-[var(--text-secondary)] max-w-2xl mb-12">
-          Advantage Business Consulting LLC has been serving NYC small businesses for over 20 years
+          Advantage Services LLC has been serving NYC small businesses for over 20 years
           from our office in {ADDRESS.city}, {ADDRESS.state}. We are a one-stop shop for all
           business solutions -- formation, licensing, tax, insurance, and audit defense.
         </p>

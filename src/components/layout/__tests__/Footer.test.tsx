@@ -149,7 +149,7 @@ describe("Footer", () => {
     render(<Footer />);
     const year = new Date().getFullYear().toString();
     expect(screen.getByText(new RegExp(year))).toBeInTheDocument();
-    expect(screen.getByText(/Advantage Business Consulting/i)).toBeInTheDocument();
+    expect(screen.getByText(/Advantage Services/i)).toBeInTheDocument();
   });
 
   it("renders Privacy link", () => {

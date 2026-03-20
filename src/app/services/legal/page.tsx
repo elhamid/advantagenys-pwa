@@ -5,11 +5,12 @@ import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { PHONE } from "@/lib/constants";
+import { JsonLd } from "@/components/seo/JsonLd";
 
 export const metadata: Metadata = {
-  title: "Legal Services | Advantage Business Consulting",
+  title: "Legal Services in Queens, NYC | Advantage Services",
   description:
-    "Immigration petitions, citizenship applications, divorce filings, and ITIN registration. Bilingual staff, IRS Certified Acceptance Agent, and 20+ years of experience serving immigrant entrepreneurs and families.",
+    "Immigration petitions, citizenship applications, divorce filings, and ITIN registration in Queens, NYC. Bilingual staff, IRS Certified Acceptance Agent. Advantage Services.",
 };
 
 const legalServices = [
@@ -74,6 +75,20 @@ const legalServices = [
 export default function LegalServicesPage() {
   return (
     <>
+      <JsonLd
+        type="Service"
+        serviceName="Legal Services"
+        serviceDescription="Immigration petitions, citizenship applications, divorce filings, and ITIN registration. Bilingual staff, IRS Certified Acceptance Agent, and 20+ years of experience serving immigrant entrepreneurs and families."
+        serviceUrl="https://advantagenys.com/services/legal"
+      />
+      <JsonLd
+        type="BreadcrumbList"
+        items={[
+          { name: "Home", url: "https://advantagenys.com" },
+          { name: "Services", url: "https://advantagenys.com/services" },
+          { name: "Legal Services", url: "https://advantagenys.com/services/legal" },
+        ]}
+      />
       {/* Hero */}
       <section className="py-20 bg-[var(--blue-bg)]">
         <Container>

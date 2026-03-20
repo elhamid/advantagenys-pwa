@@ -260,7 +260,7 @@ function HeroSection() {
             <div className="relative rounded-2xl overflow-hidden" style={{ boxShadow: "var(--shadow-lg)" }}>
               <Image
                 src="/images/hero-team.png"
-                alt="The Advantage Business Consulting team"
+                alt="The Advantage Services team"
                 width={640}
                 height={480}
                 className="w-full h-auto object-cover"
