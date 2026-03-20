@@ -79,12 +79,11 @@ describe("cn() — className utility", () => {
   });
 
   it("returns correct classes for typical Tailwind usage", () => {
-    const variant = "primary";
-    const result = cn(
-      "inline-flex items-center font-semibold",
-      variant === "primary" && "bg-blue-600 text-white",
-      variant === "secondary" && "bg-gray-200 text-gray-900"
+    expect(cn("inline-flex items-center font-semibold", "bg-blue-600 text-white")).toBe(
+      "inline-flex items-center font-semibold bg-blue-600 text-white"
     );
-    expect(result).toBe("inline-flex items-center font-semibold bg-blue-600 text-white");
+    expect(cn("inline-flex items-center font-semibold", "bg-gray-200 text-gray-900")).toBe(
+      "inline-flex items-center font-semibold bg-gray-200 text-gray-900"
+    );
   });
 });

@@ -1,5 +1,10 @@
 import '@testing-library/jest-dom'
 
+// jsdom does not implement scrollIntoView — mock it globally
+if (typeof window !== 'undefined') {
+  window.HTMLElement.prototype.scrollIntoView = () => {}
+}
+
 // Mock sessionStorage if not available
 if (typeof window !== 'undefined' && !window.sessionStorage) {
   const sessionStorageMock = (() => {

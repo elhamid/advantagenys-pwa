@@ -31,7 +31,6 @@ export function ChatWidget() {
   const isContactPage = pathname === "/contact";
 
   useEffect(() => {
-    setNudge(null);
     if (isContactPage) return;
 
     const message = NUDGE_MAP[pathname] ?? "Need help?";
@@ -50,9 +49,11 @@ export function ChatWidget() {
         // Auto-dismiss after 5s
         setTimeout(() => setNudge(null), 5000);
       }
-    }, 3000);
+      }, 3000);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+    };
   }, [pathname, open, isContactPage]);
 
   // Hide entirely on contact page

@@ -70,10 +70,11 @@ describe("Footer", () => {
     expect(phoneLink).toHaveAttribute("href", "tel:+19299331396");
   });
 
-  it("renders WhatsApp link", () => {
-    render(<Footer />);
-    const whatsappLink = screen.getByRole("link", { name: /whatsapp/i });
-    expect(whatsappLink).toHaveAttribute("href", expect.stringContaining("wa.me"));
+  it("renders WhatsApp SVG icon alongside the phone number", () => {
+    // Footer shows phone + WhatsApp SVG icons next to the tel: link (no separate WhatsApp anchor)
+    const { container } = render(<Footer />);
+    // The WhatsApp SVG is rendered with a distinctive emerald class
+    expect(container.querySelector("svg.text-emerald-400")).not.toBeNull();
   });
 
   // --- Hours ---

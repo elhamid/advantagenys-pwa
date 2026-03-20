@@ -19,9 +19,17 @@ export function HeroSection() {
   const imageScale = useTransform(scrollYProgress, [0, 0.35, 1], [1.12, 1.03, 1.06]);
   // Only apply blur on md+ (768px+); on mobile the blur looks broken at initial load.
   // Use state to avoid SSR/client hydration mismatch (window is not available during SSR).
-  const [isMd, setIsMd] = useState(false);
+  const [isMd, setIsMd] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.innerWidth >= 768;
+  });
   useEffect(() => {
-    setIsMd(window.innerWidth >= 768);
+    const handleResize = () => {
+      setIsMd(window.innerWidth >= 768);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
   const imageFilter = useTransform(
     scrollYProgress,

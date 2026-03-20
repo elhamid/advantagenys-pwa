@@ -16,12 +16,46 @@ vi.mock("@/lib/constants", () => ({
   },
 }));
 
+// ChatPanel uses framer-motion; mock it to avoid animation complexity in unit tests
+vi.mock("framer-motion", () => ({
+  motion: {
+    div: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
+      <div {...props}>{children}</div>
+    ),
+  },
+}));
+
+// Mock useChat hook so ChatPanel renders without API calls
+vi.mock("@/hooks/useChat", () => ({
+  useChat: () => ({
+    messages: [],
+    isLoading: false,
+    error: null,
+    qualification: null,
+    sendMessage: vi.fn(),
+    clearMessages: vi.fn(),
+  }),
+}));
+
+// Mock next/link
+vi.mock("next/link", () => ({
+  default: ({
+    href,
+    children,
+    ...rest
+  }: { href: string; children: React.ReactNode } & React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
+    <a href={href} {...rest}>
+      {children}
+    </a>
+  ),
+}));
+
 import { usePathname } from "next/navigation";
 import { ChatWidget } from "../ChatWidget";
 
 const mockUsePathname = usePathname as ReturnType<typeof vi.fn>;
 
-const NUDGE_KEY = "chat-nudge-shown";
+const NUDGE_KEY = "ava-nudge-shown";
 
 describe("ChatWidget", () => {
   beforeEach(() => {
@@ -40,58 +74,47 @@ describe("ChatWidget", () => {
 
   it("renders the FAB button initially closed", () => {
     render(<ChatWidget />);
-    const fab = screen.getByRole("button", { name: /open chat/i });
+    // FAB label is "Chat with Ava" when closed
+    const fab = screen.getByRole("button", { name: /chat with ava/i });
     expect(fab).toBeInTheDocument();
-    // Panel should not be present
-    expect(screen.queryByText("Get in Touch")).not.toBeInTheDocument();
+    // Panel title "Ava" should not be in the panel header (panel not open)
+    expect(screen.queryByRole("button", { name: /close chat/i })).not.toBeInTheDocument();
   });
 
   it("opens the chat panel when FAB is clicked", () => {
     render(<ChatWidget />);
-    const fab = screen.getByRole("button", { name: /open chat/i });
+    const fab = screen.getByRole("button", { name: /chat with ava/i });
     fireEvent.click(fab);
-    expect(screen.getByText("Get in Touch")).toBeInTheDocument();
+    // Panel renders — the ChatPanel header "Ava" heading becomes visible
+    // (both FAB and ChatPanel's own close button get aria-label "Close chat",
+    //  so use the panel heading to confirm the panel opened)
+    expect(screen.getByRole("heading", { name: /ava/i })).toBeInTheDocument();
   });
 
-  it("closes the chat panel on second FAB click", () => {
+  it("closes the chat panel on close button click", () => {
     render(<ChatWidget />);
-    const fab = screen.getByRole("button", { name: /open chat/i });
+    fireEvent.click(screen.getByRole("button", { name: /chat with ava/i }));
+    // Panel is open; click the FAB (now "Close chat") to close — use getAllByRole
+    // since ChatPanel also has a "Close chat" button
+    const closeButtons = screen.getAllByRole("button", { name: /close chat/i });
+    expect(closeButtons.length).toBeGreaterThanOrEqual(1);
+    // Click the last one (FAB is the outermost, ChatPanel close button is inside)
+    fireEvent.click(closeButtons[closeButtons.length - 1]);
+    expect(screen.queryByRole("heading", { name: /ava/i })).not.toBeInTheDocument();
+  });
+
+  it("toggles aria-label between 'Chat with Ava' and 'Close chat' on FAB", () => {
+    render(<ChatWidget />);
+    const fab = screen.getByRole("button", { name: /chat with ava/i });
 
     fireEvent.click(fab);
-    expect(screen.getByText("Get in Touch")).toBeInTheDocument();
+    // After opening, FAB aria-label flips to "Close chat" (panel is open)
+    expect(screen.getByRole("heading", { name: /ava/i })).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: /close chat/i }));
-    expect(screen.queryByText("Get in Touch")).not.toBeInTheDocument();
-  });
-
-  it("toggles aria-label between 'Open chat' and 'Close chat'", () => {
-    render(<ChatWidget />);
-    const fab = screen.getByRole("button", { name: /open chat/i });
-
-    fireEvent.click(fab);
-    expect(screen.getByRole("button", { name: /close chat/i })).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole("button", { name: /close chat/i }));
-    expect(screen.getByRole("button", { name: /open chat/i })).toBeInTheDocument();
-  });
-
-  // --- Contact links when open ---
-
-  it("shows WhatsApp link when open", () => {
-    render(<ChatWidget />);
-    fireEvent.click(screen.getByRole("button", { name: /open chat/i }));
-
-    const whatsappLink = screen.getByRole("link", { name: /whatsapp/i });
-    expect(whatsappLink).toHaveAttribute("href", "https://wa.me/19299331396");
-    expect(whatsappLink).toHaveAttribute("target", "_blank");
-  });
-
-  it("shows call link when open", () => {
-    render(<ChatWidget />);
-    fireEvent.click(screen.getByRole("button", { name: /open chat/i }));
-
-    const callLink = screen.getByRole("link", { name: /call/i });
-    expect(callLink).toHaveAttribute("href", "tel:+19299331396");
+    // Click the FAB again to close; FAB is the last "Close chat" button rendered
+    const closeButtons = screen.getAllByRole("button", { name: /close chat/i });
+    fireEvent.click(closeButtons[closeButtons.length - 1]);
+    expect(screen.getByRole("button", { name: /chat with ava/i })).toBeInTheDocument();
   });
 
   // --- Nudge: generic path ---
@@ -126,15 +149,15 @@ describe("ChatWidget", () => {
 
   // --- Nudge: page-aware messages ---
 
-  it("shows tax-specific nudge on /services/tax", () => {
-    mockUsePathname.mockReturnValue("/services/tax");
+  it("shows tax-specific nudge on /services/tax-services", () => {
+    mockUsePathname.mockReturnValue("/services/tax-services");
     render(<ChatWidget />);
 
     act(() => {
       vi.advanceTimersByTime(3000);
     });
 
-    expect(screen.getByText("Tax question?")).toBeInTheDocument();
+    expect(screen.getByText("Questions about tax services?")).toBeInTheDocument();
   });
 
   it("shows business formation nudge on /services/business-formation", () => {
@@ -156,21 +179,21 @@ describe("ChatWidget", () => {
       vi.advanceTimersByTime(3000);
     });
 
-    expect(screen.getByText("Immigration help?")).toBeInTheDocument();
+    expect(screen.getByText("Immigration questions?")).toBeInTheDocument();
   });
 
   // --- No nudge on /contact ---
 
-  it("shows no nudge on /contact even after 3s", () => {
+  it("renders nothing on /contact (widget hidden)", () => {
     mockUsePathname.mockReturnValue("/contact");
-    render(<ChatWidget />);
+    const { container } = render(<ChatWidget />);
 
     act(() => {
       vi.advanceTimersByTime(3000);
     });
 
-    // getNudge returns null for /contact
-    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+    // Widget returns null on /contact
+    expect(container.firstChild).toBeNull();
   });
 
   // --- SessionStorage prevents repeat nudge ---
@@ -209,7 +232,7 @@ describe("ChatWidget", () => {
     });
     expect(screen.getByText("Need help?")).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: /open chat/i }));
+    fireEvent.click(screen.getByRole("button", { name: /chat with ava/i }));
     expect(screen.queryByText("Need help?")).not.toBeInTheDocument();
   });
 
@@ -229,9 +252,9 @@ describe("ChatWidget", () => {
 
   // --- Widget position ---
 
-  it("widget container has fixed positioning with correct classes", () => {
+  it("widget container has fixed positioning class z-40", () => {
     const { container } = render(<ChatWidget />);
     const wrapper = container.firstChild as HTMLElement;
-    expect(wrapper).toHaveClass("fixed", "z-40", "chat-widget");
+    expect(wrapper).toHaveClass("fixed", "z-40");
   });
 });

@@ -231,7 +231,7 @@ describe('POST /api/contact', () => {
     await POST(makeRequest(validContact))
 
     // Find the webhook call (not the Cloudflare call)
-    const webhookCall = (fetchSpy.mock.calls as [string, RequestInit][]).find(
+    const webhookCall = (fetchSpy.mock.calls as unknown as [string, RequestInit][]).find(
       ([url]) => !String(url).includes('cloudflare.com'),
     )
     expect(webhookCall).toBeDefined()
@@ -252,7 +252,7 @@ describe('POST /api/contact', () => {
 
     await POST(makeRequest(validContact))
 
-    const webhookCall = (fetchSpy.mock.calls as [string, RequestInit][]).find(
+    const webhookCall = (fetchSpy.mock.calls as unknown as [string, RequestInit][]).find(
       ([url]) => !String(url).includes('cloudflare.com'),
     )
     expect(webhookCall).toBeDefined()
@@ -272,7 +272,7 @@ describe('POST /api/contact', () => {
     expect(res.status).toBe(200)
 
     // Only the Cloudflare siteverify call should have been made (if at all)
-    const webhookCalled = (fetchSpy.mock.calls as [string][]).some(
+    const webhookCalled = (fetchSpy.mock.calls as unknown as [string][]).some(
       ([url]) => !String(url).includes('cloudflare.com'),
     )
     expect(webhookCalled).toBe(false)
@@ -303,7 +303,7 @@ describe('POST /api/contact', () => {
 
     await POST(makeRequest(validBooking))
 
-    const webhookCall = (fetchSpy.mock.calls as [string, RequestInit][]).find(
+    const webhookCall = (fetchSpy.mock.calls as unknown as [string, RequestInit][]).find(
       ([url]) => !String(url).includes('cloudflare.com'),
     )
     expect(webhookCall).toBeDefined()
@@ -321,7 +321,7 @@ describe('POST /api/contact', () => {
 
     await POST(makeRequest(validContact))
 
-    const webhookCall = (fetchSpy.mock.calls as [string, RequestInit][]).find(
+    const webhookCall = (fetchSpy.mock.calls as unknown as [string, RequestInit][]).find(
       ([url]) => !String(url).includes('cloudflare.com'),
     )
     expect(webhookCall).toBeDefined()
