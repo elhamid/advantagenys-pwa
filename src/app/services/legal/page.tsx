@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { PHONE } from "@/lib/constants";
 import { JsonLd } from "@/components/seo/JsonLd";
+import { FAQSection } from "@/components/seo/FAQSection";
+import { getServiceFAQs } from "@/lib/chat/get-faqs";
 
 export const metadata: Metadata = {
   title: "Legal Services in Queens, NYC | Advantage Services",
@@ -72,7 +74,8 @@ const legalServices = [
   },
 ];
 
-export default function LegalServicesPage() {
+export default async function LegalServicesPage() {
+  const faqs = await getServiceFAQs("legal");
   return (
     <>
       <JsonLd
@@ -267,6 +270,7 @@ export default function LegalServicesPage() {
               </Button>
             </div>
           </div>
+          {faqs.length > 0 && <FAQSection faqs={faqs} />}
         </Container>
       </section>
     </>

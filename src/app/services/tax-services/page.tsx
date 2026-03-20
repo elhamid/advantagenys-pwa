@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { PHONE } from "@/lib/constants";
 import { JsonLd } from "@/components/seo/JsonLd";
+import { FAQSection } from "@/components/seo/FAQSection";
+import { getServiceFAQs } from "@/lib/chat/get-faqs";
 
 export const metadata: Metadata = {
   title: "Tax Services in Queens, NYC | Advantage Services",
@@ -88,7 +90,8 @@ const taxServices = [
   },
 ];
 
-export default function TaxServicesPage() {
+export default async function TaxServicesPage() {
+  const faqs = await getServiceFAQs("tax");
   return (
     <>
       <JsonLd
@@ -295,6 +298,7 @@ export default function TaxServicesPage() {
               </Button>
             </div>
           </div>
+          {faqs.length > 0 && <FAQSection faqs={faqs} />}
         </Container>
       </section>
     </>

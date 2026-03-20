@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { PHONE } from "@/lib/constants";
 import { JsonLd } from "@/components/seo/JsonLd";
+import { FAQSection } from "@/components/seo/FAQSection";
+import { getServiceFAQs } from "@/lib/chat/get-faqs";
 
 export const metadata: Metadata = {
   title: "Audit Defense in Queens, NYC | Advantage Services",
@@ -79,7 +81,8 @@ const urgentSteps = [
   },
 ];
 
-export default function AuditDefensePage() {
+export default async function AuditDefensePage() {
+  const faqs = await getServiceFAQs("audit");
   return (
     <>
       <JsonLd
@@ -371,6 +374,7 @@ export default function AuditDefensePage() {
               </Button>
             </div>
           </div>
+          {faqs.length > 0 && <FAQSection faqs={faqs} />}
         </Container>
       </section>
     </>
