@@ -4,11 +4,12 @@ import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { PHONE } from "@/lib/constants";
+import { JsonLd } from "@/components/seo/JsonLd";
 
 export const metadata: Metadata = {
-  title: "Financial Services",
+  title: "Financial Services in Queens, NYC | Advantage Services",
   description:
-    "Bookkeeping, financial statements, and business analysis for NYC small businesses. Keep your books clean and your finances in order.",
+    "Bookkeeping, financial statements, and business analysis for Queens, NYC small businesses. Keep your books clean and your finances in order. Advantage Services.",
 };
 
 const services = [
@@ -53,6 +54,20 @@ const services = [
 export default function FinancialServicesPage() {
   return (
     <>
+      <JsonLd
+        type="Service"
+        serviceName="Financial Services"
+        serviceDescription="Bookkeeping, financial statements, and business analysis for NYC small businesses. Keep your books clean and your finances in order."
+        serviceUrl="https://advantagenys.com/services/financial-services"
+      />
+      <JsonLd
+        type="BreadcrumbList"
+        items={[
+          { name: "Home", url: "https://advantagenys.com" },
+          { name: "Services", url: "https://advantagenys.com/services" },
+          { name: "Financial Services", url: "https://advantagenys.com/services/financial-services" },
+        ]}
+      />
       <section className="py-20 bg-[var(--blue-bg)]">
         <Container>
           <Badge className="mb-4">Financial Services</Badge>

@@ -5,11 +5,12 @@ import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { PHONE } from "@/lib/constants";
+import { JsonLd } from "@/components/seo/JsonLd";
 
 export const metadata: Metadata = {
-  title: "Business Formation",
+  title: "Business Formation in Queens, NYC | Advantage Services",
   description:
-    "LLC, Corporation, and Non-Profit formation services in New York. Fast filing, registered agent service, EIN application, and operating agreements included.",
+    "LLC, Corporation, and Non-Profit formation services in Queens, NYC. Fast filing, registered agent service, EIN application, and operating agreements. Advantage Services.",
 };
 
 const formations = [
@@ -121,6 +122,20 @@ const steps = [
 export default function BusinessFormationPage() {
   return (
     <>
+      <JsonLd
+        type="Service"
+        serviceName="Business Formation"
+        serviceDescription="LLC, Corporation, and Non-Profit formation services in New York. Fast filing, registered agent service, EIN application, and operating agreements included."
+        serviceUrl="https://advantagenys.com/services/business-formation"
+      />
+      <JsonLd
+        type="BreadcrumbList"
+        items={[
+          { name: "Home", url: "https://advantagenys.com" },
+          { name: "Services", url: "https://advantagenys.com/services" },
+          { name: "Business Formation", url: "https://advantagenys.com/services/business-formation" },
+        ]}
+      />
       {/* Hero */}
       <section className="py-20 bg-[var(--blue-bg)]">
         <Container>

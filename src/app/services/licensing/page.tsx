@@ -5,11 +5,12 @@ import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { PHONE } from "@/lib/constants";
+import { JsonLd } from "@/components/seo/JsonLd";
 
 export const metadata: Metadata = {
-  title: "Licensing & Permits",
+  title: "Business Licensing in Queens, NYC | Advantage Services",
   description:
-    "Business licensing and permit services for contractors, restaurants, delis, and retail businesses in NYC. Home improvement, general contractor, liquor, food, and specialty licenses.",
+    "Business licensing and permit services in Queens, NYC for contractors, restaurants, delis, and retail businesses. HIC, liquor, food, and specialty licenses. Advantage Services.",
 };
 
 const licenses = [
@@ -78,6 +79,20 @@ const licenses = [
 export default function LicensingPage() {
   return (
     <>
+      <JsonLd
+        type="Service"
+        serviceName="Business Licensing & Permits"
+        serviceDescription="Business licensing and permit services for contractors, restaurants, delis, and retail businesses in NYC. Home improvement, general contractor, liquor, food, and specialty licenses."
+        serviceUrl="https://advantagenys.com/services/licensing"
+      />
+      <JsonLd
+        type="BreadcrumbList"
+        items={[
+          { name: "Home", url: "https://advantagenys.com" },
+          { name: "Services", url: "https://advantagenys.com/services" },
+          { name: "Licensing & Permits", url: "https://advantagenys.com/services/licensing" },
+        ]}
+      />
       {/* Hero */}
       <section className="py-20 bg-[var(--blue-bg)]">
         <Container>

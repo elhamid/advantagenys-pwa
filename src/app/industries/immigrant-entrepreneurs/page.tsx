@@ -3,11 +3,12 @@ import { Container } from "@/components/ui/Container";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { JsonLd } from "@/components/seo/JsonLd";
 
 export const metadata: Metadata = {
-  title: "Immigrant Entrepreneurs",
+  title: "Immigrant Entrepreneur Services in Queens, NYC | Advantage Services",
   description:
-    "ITIN processing, LLC formation, EIN, licensing, tax, and insurance for immigrant entrepreneurs in NYC. IRS Certified Acceptance Agent. 2,250+ ITINs processed.",
+    "ITIN processing, LLC formation, EIN, licensing, tax, and insurance for immigrant entrepreneurs in Queens, NYC. IRS Certified Acceptance Agent. Advantage Services.",
 };
 
 const painPoints = [
@@ -77,6 +78,20 @@ const trustSignals = [
 export default function ImmigrantEntrepreneursPage() {
   return (
     <>
+      <JsonLd
+        type="Service"
+        serviceName="Immigrant Entrepreneur Business Services"
+        serviceDescription="ITIN processing, LLC formation, EIN, licensing, tax, and insurance for immigrant entrepreneurs in NYC. IRS Certified Acceptance Agent. 2,250+ ITINs processed."
+        serviceUrl="https://advantagenys.com/industries/immigrant-entrepreneurs"
+      />
+      <JsonLd
+        type="BreadcrumbList"
+        items={[
+          { name: "Home", url: "https://advantagenys.com" },
+          { name: "Industries", url: "https://advantagenys.com/industries" },
+          { name: "Immigrant Entrepreneurs", url: "https://advantagenys.com/industries/immigrant-entrepreneurs" },
+        ]}
+      />
       {/* Hero */}
       <section className="py-20 bg-[var(--blue-bg)]">
         <Container>

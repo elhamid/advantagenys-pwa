@@ -11,3 +11,6 @@ User-agent: PerplexityBot
 Allow: /
 
 Sitemap: https://advantagenys.com/sitemap.xml
+
+# AI Crawler Files
+# llms.txt: https://advantagenys.com/llms.txt

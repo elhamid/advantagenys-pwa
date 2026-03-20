@@ -3,11 +3,12 @@ import { Container } from "@/components/ui/Container";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { JsonLd } from "@/components/seo/JsonLd";
 
 export const metadata: Metadata = {
-  title: "Contractors",
+  title: "Contractor Business Services in Queens, NYC | Advantage Services",
   description:
-    "Business services for contractors in NYC. HIC licensing, general contractor license, workers comp, GL insurance, and tax prep.",
+    "Business services for contractors in Queens, NYC. HIC licensing, general contractor license, workers comp, GL insurance, and tax prep. Advantage Services.",
 };
 
 const painPoints = [
@@ -57,6 +58,20 @@ const services = [
 export default function ContractorsPage() {
   return (
     <>
+      <JsonLd
+        type="Service"
+        serviceName="Contractor Business Services"
+        serviceDescription="Business services for contractors in NYC. HIC licensing, general contractor license, workers comp, GL insurance, and tax prep."
+        serviceUrl="https://advantagenys.com/industries/contractors"
+      />
+      <JsonLd
+        type="BreadcrumbList"
+        items={[
+          { name: "Home", url: "https://advantagenys.com" },
+          { name: "Industries", url: "https://advantagenys.com/industries" },
+          { name: "Contractors", url: "https://advantagenys.com/industries/contractors" },
+        ]}
+      />
       {/* Hero */}
       <section className="py-20 bg-[var(--blue-bg)]">
         <Container>

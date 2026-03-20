@@ -5,11 +5,12 @@ import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { PHONE } from "@/lib/constants";
+import { JsonLd } from "@/components/seo/JsonLd";
 
 export const metadata: Metadata = {
-  title: "Tax Services",
+  title: "Tax Services in Queens, NYC | Advantage Services",
   description:
-    "Business and personal tax preparation, ITIN processing by IRS Certified Acceptance Agent, payroll and sales tax services, and IRS representation for NYC businesses.",
+    "Business and personal tax preparation in Queens, NYC. ITIN processing by IRS Certified Acceptance Agent, payroll and sales tax services, and IRS representation. Advantage Services.",
 };
 
 const taxServices = [
@@ -90,6 +91,20 @@ const taxServices = [
 export default function TaxServicesPage() {
   return (
     <>
+      <JsonLd
+        type="Service"
+        serviceName="Tax Services"
+        serviceDescription="Business and personal tax preparation, ITIN processing by IRS Certified Acceptance Agent, payroll and sales tax services, and IRS representation for NYC businesses."
+        serviceUrl="https://advantagenys.com/services/tax-services"
+      />
+      <JsonLd
+        type="BreadcrumbList"
+        items={[
+          { name: "Home", url: "https://advantagenys.com" },
+          { name: "Services", url: "https://advantagenys.com/services" },
+          { name: "Tax Services", url: "https://advantagenys.com/services/tax-services" },
+        ]}
+      />
       {/* Hero */}
       <section className="py-20 bg-[var(--blue-bg)]">
         <Container>

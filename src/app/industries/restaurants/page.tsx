@@ -3,11 +3,12 @@ import { Container } from "@/components/ui/Container";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { JsonLd } from "@/components/seo/JsonLd";
 
 export const metadata: Metadata = {
-  title: "Restaurants",
+  title: "Restaurant Business Services in Queens, NYC | Advantage Services",
   description:
-    "Business services for restaurants in NYC. Health permits, liquor license, fire dept, sales tax, workers comp, and insurance.",
+    "Business services for restaurants in Queens, NYC. Health permits, liquor license, fire dept, sales tax, workers comp, and insurance. Advantage Services.",
 };
 
 const painPoints = [
@@ -62,6 +63,20 @@ const services = [
 export default function RestaurantsPage() {
   return (
     <>
+      <JsonLd
+        type="Service"
+        serviceName="Restaurant Business Services"
+        serviceDescription="Business services for restaurants in NYC. Health permits, liquor license, fire dept, sales tax, workers comp, and insurance."
+        serviceUrl="https://advantagenys.com/industries/restaurants"
+      />
+      <JsonLd
+        type="BreadcrumbList"
+        items={[
+          { name: "Home", url: "https://advantagenys.com" },
+          { name: "Industries", url: "https://advantagenys.com/industries" },
+          { name: "Restaurants", url: "https://advantagenys.com/industries/restaurants" },
+        ]}
+      />
       {/* Hero */}
       <section className="py-20 bg-[var(--blue-bg)]">
         <Container>

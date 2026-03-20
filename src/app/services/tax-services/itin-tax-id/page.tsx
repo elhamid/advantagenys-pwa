@@ -5,11 +5,12 @@ import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { PHONE } from "@/lib/constants";
+import { JsonLd } from "@/components/seo/JsonLd";
 
 export const metadata: Metadata = {
-  title: "ITIN / Tax ID Services",
+  title: "ITIN Tax ID Application in Queens, NYC | Advantage Services",
   description:
-    "ITIN application and renewal by IRS Certified Acceptance Agent. 2,250+ ITINs processed. No need to mail original documents. On-site verification in Cambria Heights, NY.",
+    "ITIN application and renewal by IRS Certified Acceptance Agent in Queens, NYC. 2,250+ ITINs processed. No need to mail original documents. Advantage Services.",
 };
 
 const stats = [
@@ -86,6 +87,25 @@ const faqs = [
 export default function ItinTaxIdPage() {
   return (
     <>
+      <JsonLd
+        type="Service"
+        serviceName="ITIN / Tax ID Services"
+        serviceDescription="ITIN application and renewal by IRS Certified Acceptance Agent. 2,250+ ITINs processed. No need to mail original documents. On-site verification in Cambria Heights, NY."
+        serviceUrl="https://advantagenys.com/services/tax-services/itin-tax-id"
+      />
+      <JsonLd
+        type="BreadcrumbList"
+        items={[
+          { name: "Home", url: "https://advantagenys.com" },
+          { name: "Services", url: "https://advantagenys.com/services" },
+          { name: "Tax Services", url: "https://advantagenys.com/services/tax-services" },
+          { name: "ITIN Tax ID", url: "https://advantagenys.com/services/tax-services/itin-tax-id" },
+        ]}
+      />
+      <JsonLd
+        type="FAQPage"
+        faqs={faqs}
+      />
       {/* Hero */}
       <section className="py-20 bg-[var(--blue-bg)]">
         <Container>

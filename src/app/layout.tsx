@@ -3,6 +3,7 @@ import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { LayoutShell } from "@/components/layout/LayoutShell";
 import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
+import { JsonLd } from "@/components/seo/JsonLd";
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -59,6 +60,7 @@ export default function RootLayout({
       <body className="font-[family-name:var(--font-heading)] antialiased">
         <ServiceWorkerRegistration />
         <LayoutShell>{children}</LayoutShell>
+        <JsonLd type="LocalBusiness" />
       </body>
     </html>
   );

@@ -5,11 +5,12 @@ import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { PHONE } from "@/lib/constants";
+import { JsonLd } from "@/components/seo/JsonLd";
 
 export const metadata: Metadata = {
-  title: "Insurance Services",
+  title: "Business Insurance in Queens, NYC | Advantage Services",
   description:
-    "Business insurance for NYC small businesses. General liability, workers compensation, and disability insurance. Licensed broker with competitive rates.",
+    "Business insurance for Queens, NYC small businesses. General liability, workers compensation, and disability insurance. Licensed broker with competitive rates. Advantage Services.",
 };
 
 const insuranceTypes = [
@@ -57,6 +58,20 @@ const insuranceTypes = [
 export default function InsurancePage() {
   return (
     <>
+      <JsonLd
+        type="Service"
+        serviceName="Business Insurance"
+        serviceDescription="Business insurance for NYC small businesses. General liability, workers compensation, and disability insurance. Licensed broker with competitive rates."
+        serviceUrl="https://advantagenys.com/services/insurance"
+      />
+      <JsonLd
+        type="BreadcrumbList"
+        items={[
+          { name: "Home", url: "https://advantagenys.com" },
+          { name: "Services", url: "https://advantagenys.com/services" },
+          { name: "Insurance", url: "https://advantagenys.com/services/insurance" },
+        ]}
+      />
       {/* Hero */}
       <section className="py-20 bg-[var(--blue-bg)]">
         <Container>

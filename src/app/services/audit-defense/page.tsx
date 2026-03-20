@@ -5,11 +5,12 @@ import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { PHONE } from "@/lib/constants";
+import { JsonLd } from "@/components/seo/JsonLd";
 
 export const metadata: Metadata = {
-  title: "Audit Defense & Fine Reduction",
+  title: "Audit Defense in Queens, NYC | Advantage Services",
   description:
-    "Workers comp audit defense, sales tax audit representation, unemployment insurance audit defense, and fine reduction for NYC businesses. What other firms won't touch.",
+    "Workers comp audit defense, sales tax audit representation, and fine reduction in Queens, NYC. Unemployment insurance audit defense for NYC businesses. Advantage Services.",
 };
 
 const auditTypes = [
@@ -81,6 +82,20 @@ const urgentSteps = [
 export default function AuditDefensePage() {
   return (
     <>
+      <JsonLd
+        type="Service"
+        serviceName="Audit Defense & Fine Reduction"
+        serviceDescription="Workers comp audit defense, sales tax audit representation, unemployment insurance audit defense, and fine reduction for NYC businesses."
+        serviceUrl="https://advantagenys.com/services/audit-defense"
+      />
+      <JsonLd
+        type="BreadcrumbList"
+        items={[
+          { name: "Home", url: "https://advantagenys.com" },
+          { name: "Services", url: "https://advantagenys.com/services" },
+          { name: "Audit Defense", url: "https://advantagenys.com/services/audit-defense" },
+        ]}
+      />
       {/* Hero */}
       <section className="py-20 bg-[var(--blue-bg)]">
         <Container>
