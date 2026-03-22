@@ -262,7 +262,7 @@ export const forms: FormConfig[] = [
   {
     id: "link-zelle-info",
     title: "Zelle Payment Info",
-    description: "Payment via Zelle to 229advantage@gmail.com or (929) 292-9230",
+    description: "Payment via Zelle to 229advantage@gmail.com or 929-933-1396",
     category: "other",
     platform: "native",
     type: "link",

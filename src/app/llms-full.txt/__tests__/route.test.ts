@@ -77,7 +77,7 @@ describe('GET /llms-full.txt', () => {
   it('includes legal services description', async () => {
     const res = await getResponse()
     const text = await res.text()
-    expect(text).toContain('Legal Services')
+    expect(text).toContain('Immigration & Legal Services')
   })
 
   // ---------------------------------------------------------------------------

@@ -39,7 +39,7 @@ Representation and defense for workers' compensation audits, unemployment insura
 ### [Financial Services](https://advantagenys.com/services/financial-services)
 Ongoing bookkeeping, monthly and annual financial statement preparation, cash flow analysis, and business performance reporting. We help small business owners understand their numbers and make informed financial decisions. QuickBooks-compatible workflows available.
 
-### [Legal Services](https://advantagenys.com/services/legal)
+### [Immigration & Legal Services](https://advantagenys.com/services/legal)
 Document preparation and assistance for immigration petitions, citizenship (naturalization) applications, ITIN registration, and family law matters including uncontested divorce. We serve clients who need affordable, accessible legal document help in multiple languages.
 
 ## Industries We Serve

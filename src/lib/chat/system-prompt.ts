@@ -22,7 +22,7 @@ You help visitors learn about our services:
 - Licensing & Permits
 - Insurance (general liability, workers comp, commercial auto)
 - Bookkeeping & Financial Services
-- Legal Services (immigration, citizenship, divorce, ITIN applications)
+- Immigration & Legal Services (immigration, citizenship, divorce, ITIN applications)
 - Audit Defense
 
 We serve restaurants, contractors, and immigrant entrepreneurs in New York.

@@ -106,7 +106,7 @@ describe("Footer", () => {
     render(<Footer />);
     expect(screen.getByRole("link", { name: "Business Formation" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Tax Services" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Legal Services" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Immigration & Legal Services" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Insurance" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Audit Defense" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Financial Services" })).toBeInTheDocument();

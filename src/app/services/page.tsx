@@ -9,10 +9,24 @@ import { PHONE } from "@/lib/constants";
 export const metadata: Metadata = {
   title: "Services",
   description:
-    "Business formation, licensing, tax, insurance, and audit defense services for NYC small businesses. One firm, every service your business needs.",
+    "ITIN registration, business formation, licensing, tax, insurance, and audit defense services for NYC small businesses. IRS Certified Acceptance Agent on staff.",
 };
 
 const serviceCategories = [
+  {
+    name: "ITIN Registration",
+    href: "/resources/forms/itin-registration-form/",
+    badge: "IRS Certified",
+    description:
+      "Individual Taxpayer Identification Number processing by our IRS Certified Acceptance Agent. We certify your documents on-site — no mailing your original passport to the IRS. Fast turnaround for contractors, self-employed individuals, and immigrant workers.",
+    services: [
+      "IRS Form W-7 Preparation",
+      "Passport Certification (On-Site)",
+      "Application Submission to IRS",
+      "ITIN Renewal",
+      "Status Tracking",
+    ],
+  },
   {
     name: "Business Formation",
     href: "/services/business-formation/",
@@ -80,6 +94,19 @@ const serviceCategories = [
       "Workers Comp Audit Defense",
       "Sales Tax Audit + Fine Reduction",
       "Unemployment Insurance Audits",
+    ],
+  },
+  {
+    name: "Immigration & Legal Services",
+    href: "/services/legal/",
+    badge: null,
+    description:
+      "Immigration petitions, citizenship applications, ITIN registration, and family law. Our legal team specializes in helping immigrant entrepreneurs and their families navigate the U.S. legal system.",
+    services: [
+      "Immigration (I-130 Petition)",
+      "Citizenship (N-400)",
+      "ITIN Registration",
+      "Divorce & Family Law",
     ],
   },
 ];

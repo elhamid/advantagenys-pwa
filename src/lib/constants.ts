@@ -21,13 +21,14 @@ export const HOURS = {
 } as const;
 
 export const SERVICES = [
+  { name: "ITIN Registration", href: "/resources/forms/itin-registration-form/", icon: "id-badge", description: "IRS Certified Acceptance Agent — no mailing your passport. We certify and file on-site." },
   { name: "Business Formation", href: "/services/business-formation/", icon: "building", description: "LLC, Corporation, Non-Profit setup and filing" },
   { name: "Licensing", href: "/services/licensing/", icon: "id-card", description: "Contractor, restaurant, and retail licensing" },
-  { name: "Tax Services", href: "/services/tax-services/", icon: "file-invoice-dollar", description: "ITIN, business & personal tax, IRS representation" },
+  { name: "Tax Services", href: "/services/tax-services/", icon: "file-invoice-dollar", description: "Business & personal tax, payroll tax, IRS representation" },
   { name: "Insurance", href: "/services/insurance/", icon: "shield-halved", description: "General liability, workers comp, disability" },
   { name: "Audit Defense", href: "/services/audit-defense/", icon: "scale-balanced", description: "Workers comp, sales tax, UI audit + fine reduction" },
   { name: "Financial Services", href: "/services/financial-services/", icon: "chart-line", description: "Bookkeeping, financial statements, analysis" },
-  { name: "Legal Services", href: "/services/legal/", icon: "gavel", description: "Immigration, citizenship, divorce, ITIN registration" },
+  { name: "Immigration & Legal Services", href: "/services/legal/", icon: "gavel", description: "Immigration, citizenship, divorce, ITIN registration" },
 ] as const;
 
 export const TEAM = [

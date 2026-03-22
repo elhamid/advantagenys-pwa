@@ -14,7 +14,7 @@ export function GET() {
 - [Insurance](https://advantagenys.com/services/insurance): General liability, workers compensation, disability insurance
 - [Audit Defense](https://advantagenys.com/services/audit-defense): Workers comp audit, unemployment insurance audit, sales tax audit, fine reduction
 - [Financial Services](https://advantagenys.com/services/financial-services): Bookkeeping, financial statements, business analysis
-- [Legal Services](https://advantagenys.com/services/legal): Immigration petitions, citizenship applications, ITIN registration
+- [Immigration & Legal Services](https://advantagenys.com/services/legal): Immigration petitions, citizenship applications, ITIN registration
 
 ## Industries We Serve
 - [Restaurants](https://advantagenys.com/industries/restaurants): Full licensing, insurance, tax, and compliance for food businesses

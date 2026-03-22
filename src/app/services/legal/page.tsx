@@ -10,12 +10,30 @@ import { FAQSection } from "@/components/seo/FAQSection";
 import { getServiceFAQs } from "@/lib/chat/get-faqs";
 
 export const metadata: Metadata = {
-  title: "Legal Services in Queens, NYC | Advantage Services",
+  title: "Immigration & Legal Services in Queens, NYC | Advantage Services",
   description:
     "Immigration petitions, citizenship applications, divorce filings, and ITIN registration in Queens, NYC. Bilingual staff, IRS Certified Acceptance Agent. Advantage Services.",
 };
 
 const legalServices = [
+  {
+    name: "ITIN Registration",
+    description:
+      "As an IRS Certified Acceptance Agent, we process Individual Taxpayer Identification Number (ITIN) applications on-site. No need to mail your original passport to the IRS — we certify your documents in person and submit your application directly. Contractors, self-employed individuals, and immigrant workers rely on us to get their ITIN fast.",
+    whoItHelps: "Individuals without a Social Security Number who need to file taxes — including contractors and self-employed immigrants",
+    includes: [
+      "IRS Form W-7 preparation",
+      "Passport and document certification (no mailing originals)",
+      "Application submission to the IRS",
+      "Status tracking and follow-up",
+      "Renewal of expiring ITINs",
+    ],
+    cta: {
+      label: "Start ITIN Application",
+      href: "/resources/forms/itin-registration-form/",
+    },
+    featured: true,
+  },
   {
     name: "Immigration Petitions (I-130)",
     description:
@@ -55,23 +73,6 @@ const legalServices = [
       "Referral to attorneys when needed",
     ],
   },
-  {
-    name: "ITIN Registration",
-    description:
-      "As an IRS Certified Acceptance Agent, we process Individual Taxpayer Identification Number (ITIN) applications on-site. No need to mail your original passport to the IRS — we certify your documents in person and submit your application directly.",
-    whoItHelps: "Individuals without a Social Security Number who need to file taxes",
-    includes: [
-      "IRS Form W-7 preparation",
-      "Passport and document certification (no mailing originals)",
-      "Application submission to the IRS",
-      "Status tracking and follow-up",
-      "Renewal of expiring ITINs",
-    ],
-    cta: {
-      label: "Start ITIN Application",
-      href: "/resources/forms/itin-registration-form/",
-    },
-  },
 ];
 
 export default async function LegalServicesPage() {
@@ -80,7 +81,7 @@ export default async function LegalServicesPage() {
     <>
       <JsonLd
         type="Service"
-        serviceName="Legal Services"
+        serviceName="Immigration & Legal Services"
         serviceDescription="Immigration petitions, citizenship applications, divorce filings, and ITIN registration. Bilingual staff, IRS Certified Acceptance Agent, and 20+ years of experience serving immigrant entrepreneurs and families."
         serviceUrl="https://advantagenys.com/services/legal"
       />
@@ -89,13 +90,13 @@ export default async function LegalServicesPage() {
         items={[
           { name: "Home", url: "https://advantagenys.com" },
           { name: "Services", url: "https://advantagenys.com/services" },
-          { name: "Legal Services", url: "https://advantagenys.com/services/legal" },
+          { name: "Immigration & Legal Services", url: "https://advantagenys.com/services/legal" },
         ]}
       />
       {/* Hero */}
       <section className="py-20 bg-[var(--blue-bg)]">
         <Container>
-          <Badge className="mb-4">Legal Services</Badge>
+          <Badge className="mb-4">Immigration & Legal Services</Badge>
           <h1 className="text-4xl sm:text-5xl font-bold text-[var(--text)] mb-6 max-w-3xl">
             Legal Support for Immigrant Entrepreneurs and Families
           </h1>
@@ -120,7 +121,7 @@ export default async function LegalServicesPage() {
       <section className="py-16">
         <Container>
           <h2 className="text-3xl font-bold text-[var(--text)] mb-10 text-center">
-            Why Choose Advantage for Legal Services?
+            Why Choose Advantage for Immigration & Legal Services?
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Card>
@@ -161,11 +162,19 @@ export default async function LegalServicesPage() {
       <section className="py-16 bg-[var(--blue-bg)]">
         <Container>
           <h2 className="text-3xl font-bold text-[var(--text)] mb-10 text-center">
-            Our Legal Services
+            Our Immigration & Legal Services
           </h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {legalServices.map((service) => (
-              <Card key={service.name} className="flex flex-col">
+              <Card
+                key={service.name}
+                className={`flex flex-col${"featured" in service && service.featured ? " ring-2 ring-[var(--blue-accent)] relative" : ""}`}
+              >
+                {"featured" in service && service.featured && (
+                  <span className="absolute -top-3 left-4 px-3 py-0.5 rounded-full bg-[var(--blue-accent)] text-white text-xs font-bold uppercase tracking-wide">
+                    Most Requested
+                  </span>
+                )}
                 <h3 className="text-xl font-bold text-[var(--text)] mb-3">
                   {service.name}
                 </h3>
@@ -190,7 +199,7 @@ export default async function LegalServicesPage() {
                       </li>
                     ))}
                   </ul>
-                  {service.cta && (
+                  {"cta" in service && service.cta && (
                     <div className="mt-4">
                       <Button href={service.cta.href} size="sm" variant="outline">
                         {service.cta.label}

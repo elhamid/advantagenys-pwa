@@ -25,8 +25,17 @@ export function Footer() {
 
           <div>
             <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-4">Services</h3>
+            <div className="mb-4">
+              <Link
+                href="/resources/forms/itin-registration-form/"
+                className="flex items-center gap-2 px-3 py-2 rounded-md bg-[var(--blue-accent)]/20 border border-[var(--blue-accent)]/40 hover:bg-[var(--blue-accent)]/30 transition-colors"
+              >
+                <span className="text-xs font-bold text-[var(--blue-accent)] uppercase tracking-wide">ITIN</span>
+                <span className="text-xs text-slate-300">IRS Certified — Apply Now</span>
+              </Link>
+            </div>
             <ul className="space-y-2">
-              {SERVICES.map((service) => (
+              {SERVICES.filter((s) => s.name !== "ITIN Registration").map((service) => (
                 <li key={service.name}>
                   <Link href={service.href} className="text-sm text-slate-300 hover:text-white transition-colors">
                     {service.name}

@@ -114,8 +114,8 @@ describe("SERVICES", () => {
     expect(found?.href).toBe("/services/tax-services/");
   });
 
-  it("contains Legal Services", () => {
-    const found = SERVICES.find((s) => s.name === "Legal Services");
+  it("contains Immigration & Legal Services", () => {
+    const found = SERVICES.find((s) => s.name === "Immigration & Legal Services");
     expect(found).toBeDefined();
     expect(found?.href).toBe("/services/legal/");
   });
