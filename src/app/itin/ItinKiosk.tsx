@@ -122,12 +122,12 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
         <Image
           src="/images/tropical-stars-logo.png"
           alt="Tropical Stars"
-          width={160}
-          height={75}
+          width={192}
+          height={90}
           className="mb-3"
           priority
         />
-        <span className="text-white/60 text-base font-semibold tracking-wide">
+        <span className="text-white/60 text-lg font-semibold tracking-wide">
           Tropical Stars
         </span>
       </div>
@@ -136,12 +136,12 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
       <div className="mb-6">
         <span
           className="
-            inline-flex items-center gap-2 px-4 py-2 rounded-full
+            inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full
             bg-[#4F56E8]/20 border border-[#4F56E8]/30
-            text-[#818CF8] text-sm font-semibold tracking-wide
+            text-[#818CF8] text-base font-semibold tracking-wide
           "
         >
-          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
             <path
               fillRule="evenodd"
               d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
@@ -163,7 +163,7 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
         <span className="text-[#818CF8]">Application</span>
       </h1>
 
-      <p className="text-center text-white/50 text-base sm:text-lg max-w-md mb-10 leading-relaxed">
+      <p className="text-center text-white/50 text-lg sm:text-xl max-w-md mb-10 leading-relaxed">
         Individual Taxpayer Identification Number
         <br />
         <span className="text-white/40">No mailing your passport. We certify on-site.</span>
@@ -173,8 +173,8 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
       <button
         onClick={onStart}
         className="
-          group relative px-10 py-5 rounded-2xl
-          bg-[#4F56E8] text-white font-bold text-lg
+          group relative px-12 py-5 rounded-2xl
+          bg-[#4F56E8] text-white font-bold text-xl
           shadow-[0_0_40px_rgba(79,86,232,0.3)]
           hover:shadow-[0_0_60px_rgba(79,86,232,0.4)]
           hover:bg-[#5B63F0]
@@ -185,7 +185,7 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
         <span className="flex items-center gap-3">
           Start Application
           <svg
-            className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-200"
+            className="w-6 h-6 group-hover:translate-x-1 transition-transform duration-200"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -197,7 +197,7 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
       </button>
 
       {/* Trust indicators */}
-      <div className="mt-10 flex flex-wrap items-center justify-center gap-8 text-white/50 text-sm font-medium">
+      <div className="mt-10 flex flex-wrap items-center justify-center gap-8 text-white/50 text-base font-medium">
         <span className="flex items-center gap-2">
           <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
             <path
