@@ -998,8 +998,9 @@ function StepLocation({ data, errors, update }: StepProps) {
           id="itin-addressUsa"
           value={data.addressUsa}
           onChange={(v) => update("addressUsa", v)}
-          placeholder="Street, City, State, ZIP"
+          placeholder="123 Main St, City, State, ZIP"
           autoComplete="street-address"
+          inputMode="numeric"
           large
         />
       </div>
