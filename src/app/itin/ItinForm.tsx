@@ -386,6 +386,8 @@ export function ItinForm({ onSuccess }: Props) {
       if (!data.countryOfCitizenship) errs.countryOfCitizenship = "Country of citizenship is required";
       if (!data.phone.trim() || data.phone.replace(/\D/g, "").length < 7)
         errs.phone = "Valid phone number is required";
+      if (!data.email.trim() || !data.email.includes("@"))
+        errs.email = "Valid email is required";
     }
 
     if (s === 2) {
@@ -1055,6 +1057,11 @@ function CountrySelect({
    Employer Badge (Tropical Stars default)
    ═══════════════════════════════════════════════ */
 
+const COMPANY_OPTIONS = [
+  "Tropical Stars Inc.",
+  "Other",
+];
+
 function EmployerBadge({
   value,
   onChange,
@@ -1062,25 +1069,26 @@ function EmployerBadge({
   value: string;
   onChange: (v: string) => void;
 }) {
-  const [editing, setEditing] = useState(false);
+  const isCustom = !COMPANY_OPTIONS.includes(value) && value !== DEFAULT_EMPLOYER;
+  const [showCustom, setShowCustom] = useState(isCustom);
 
-  if (editing) {
+  if (showCustom) {
     return (
       <div>
         <Label htmlFor="itin-company">Company / Employer</Label>
         <div className="flex gap-2">
           <Input
             id="itin-company"
-            value={value}
+            value={value === "Other" ? "" : value}
             onChange={onChange}
-            placeholder="Company name"
+            placeholder="Enter company name"
             autoComplete="organization"
           />
           <button
             type="button"
             onClick={() => {
-              if (!value.trim()) onChange(DEFAULT_EMPLOYER);
-              setEditing(false);
+              if (!value.trim() || value === "Other") onChange(DEFAULT_EMPLOYER);
+              setShowCustom(false);
             }}
             className="
               shrink-0 px-4 py-3.5 rounded-xl text-sm font-medium
@@ -1110,20 +1118,33 @@ function EmployerBadge({
         <div className="flex-1 min-w-0">
           <span className="text-white/80 text-base font-semibold block truncate">{value}</span>
         </div>
-        <button
-          type="button"
-          onClick={() => setEditing(true)}
+        <select
+          value={COMPANY_OPTIONS.includes(value) ? value : "Other"}
+          onChange={(e) => {
+            if (e.target.value === "Other") {
+              onChange("");
+              setShowCustom(true);
+            } else {
+              onChange(e.target.value);
+            }
+          }}
           className="
-            shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium
-            text-white/40 hover:text-white/70 hover:bg-white/5
-            transition-all duration-200
+            shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium appearance-none
+            bg-white/5 border border-white/10 text-white/60
+            hover:bg-white/10 hover:text-white/80
+            transition-all duration-200 cursor-pointer
+            pr-7
           "
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' fill='none' viewBox='0 0 24 24' stroke='rgba(255,255,255,0.4)' stroke-width='2.5'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E")`,
+            backgroundRepeat: "no-repeat",
+            backgroundPosition: "right 0.5rem center",
+          }}
         >
-          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
-          </svg>
-          Change
-        </button>
+          {COMPANY_OPTIONS.map((c) => (
+            <option key={c} value={c} className="bg-[#0F1B2D] text-white">{c === "Other" ? "Select different..." : c}</option>
+          ))}
+        </select>
       </div>
     </div>
   );
@@ -1269,7 +1290,7 @@ function StepPersonal({ data, errors, update }: StepProps) {
 
       {/* Email */}
       <div>
-        <Label htmlFor="itin-email">Email</Label>
+        <Label required htmlFor="itin-email">Email</Label>
         <Input
           id="itin-email"
           value={data.email}

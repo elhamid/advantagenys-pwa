@@ -26,7 +26,7 @@ const STEP_FIELDS: Record<number, FieldDef[]> = {
     { key: "countryOfBirth", label: "Birth Country" },
     { key: "countryOfCitizenship", label: "Citizenship" },
     { key: "phone", label: "Phone" },
-    { key: "email", label: "Email", optional: true },
+    { key: "email", label: "Email" },
   ],
   2: [   // Location & Work
     { key: "addressUsa", label: "U.S. Address (Street, City, ZIP)" },
