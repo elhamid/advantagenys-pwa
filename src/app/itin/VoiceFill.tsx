@@ -294,6 +294,8 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
 
   const recognitionRef = useRef<SpeechRec | null>(null);
   const transcriptRef = useRef("");
+  const accumulatedRef = useRef(""); // accumulates across auto-restarts
+  const stoppedByUserRef = useRef(false);
   const fieldListRef = useRef<HTMLDivElement>(null);
   const extractedRef = useRef<Record<string, string>>({});
   const currentFieldIndexRef = useRef(0);
@@ -378,6 +380,8 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
     setInterimText("");
     setTranscript("");
     transcriptRef.current = "";
+    accumulatedRef.current = "";
+    stoppedByUserRef.current = false;
 
     const Ctor = getSpeechRecognition();
     if (!Ctor) return;
@@ -404,7 +408,9 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
         }
       }
       transcriptRef.current = finalParts;
-      setTranscript(finalParts);
+      // Show accumulated (from previous segments) + current final + interim
+      const fullTranscript = accumulatedRef.current + (accumulatedRef.current && finalParts ? " " : "") + finalParts;
+      setTranscript(fullTranscript);
       setInterimText(interimParts);
     };
 
@@ -424,14 +430,34 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
     };
 
     recognition.onend = () => {
-      if (recognitionRef.current === recognition) {
-        recognitionRef.current = null;
-        const finalTranscript = transcriptRef.current.trim();
-        if (finalTranscript.length > 0) {
-          processTranscript(finalTranscript);
-        } else {
-          setState("idle");
+      if (recognitionRef.current !== recognition) return;
+
+      // Accumulate what was captured in this segment
+      const segmentText = transcriptRef.current.trim();
+      if (segmentText) {
+        accumulatedRef.current = accumulatedRef.current
+          ? accumulatedRef.current + " " + segmentText
+          : segmentText;
+      }
+
+      // If user didn't tap stop, auto-restart (iOS Safari drops continuous mode)
+      if (!stoppedByUserRef.current) {
+        transcriptRef.current = "";
+        try {
+          recognition.start();
+          return; // keep listening
+        } catch {
+          // Can't restart — fall through to process
         }
+      }
+
+      // User tapped stop or restart failed — process everything
+      recognitionRef.current = null;
+      const fullTranscript = accumulatedRef.current.trim();
+      if (fullTranscript.length > 0) {
+        processTranscript(fullTranscript);
+      } else {
+        setState("idle");
       }
     };
 
@@ -448,6 +474,7 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
 
   /* ─── Stop Listening ─── */
   const stopListening = useCallback(() => {
+    stoppedByUserRef.current = true;
     if (recognitionRef.current) {
       try { recognitionRef.current.stop(); } catch { /* noop */ }
     }
