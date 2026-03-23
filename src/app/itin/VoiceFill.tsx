@@ -124,7 +124,7 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
 
   /* ─── Start Listening ─── */
   // eslint-disable-next-line react-hooks/rules-of-hooks
-  const startListening = useCallback(() => {
+  const startListening = useCallback(async () => {
     setError(null);
     setTranscript("");
     setInterimText("");
@@ -137,6 +137,16 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
 
     if (recognitionRef.current) {
       try { recognitionRef.current.abort(); } catch { /* noop */ }
+    }
+
+    // Pre-request mic permission to avoid Safari blocking SpeechRecognition
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      stream.getTracks().forEach(t => t.stop()); // release immediately
+    } catch {
+      setError("Microphone access denied. Allow mic in Settings > Safari.");
+      setState("idle");
+      return;
     }
 
     const recognition = new Ctor();
