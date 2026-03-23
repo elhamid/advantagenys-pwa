@@ -157,7 +157,7 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
 
   /* ─── Karaoke auto-cycle ─── */
   useEffect(() => {
-    if (state !== "ready" || unfilledFields.length === 0) return;
+    if ((state !== "ready" && state !== "listening") || unfilledFields.length === 0) return;
 
     // Reset to valid index when unfilled fields change
     setHighlightIndex(0);
@@ -543,36 +543,63 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
           </div>
         )}
 
-        {/* === LISTENING STATE: Pulsing label + transcript === */}
-        {state === "listening" && (
+        {/* === LISTENING STATE: Keep karaoke highlight + transcript === */}
+        {state === "listening" && currentKaraokeField && (
           <div className="flex flex-col items-center text-center w-full">
-            {/* Horizontal pill strip of fields */}
-            <div className="flex flex-wrap items-center justify-center gap-1.5 mb-8 px-2 max-w-full">
+            {/* Big cycling label — same as ready, keeps guiding while listening */}
+            <div
+              className="mb-2"
+              style={{
+                minHeight: "80px",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <h2
+                className="text-4xl font-bold text-white"
+                style={{
+                  opacity: cyclePhase === "visible" ? 1 : 0,
+                  transform: cyclePhase === "visible" ? "translateY(0)" : "translateY(-20px)",
+                  transition: "opacity 300ms ease-out, transform 300ms ease-out",
+                }}
+              >
+                {currentKaraokeField.label}
+              </h2>
+              <p
+                className="text-base text-white/30 mt-1.5"
+                style={{
+                  opacity: cyclePhase === "visible" ? 1 : 0,
+                  transform: cyclePhase === "visible" ? "translateY(0)" : "translateY(-20px)",
+                  transition: "opacity 300ms ease-out, transform 300ms ease-out",
+                  transitionDelay: "50ms",
+                }}
+              >
+                {currentKaraokeField.hint}
+              </p>
+            </div>
+
+            {/* Dot progress track */}
+            <div className="flex items-center gap-2 mt-4 mb-6">
               {fields.map((f) => {
                 const filled = isFilled(currentData[f.key]) || isFilled(extracted[f.key]);
+                const isCurrent = currentKaraokeField.key === f.key;
                 return (
-                  <span
+                  <div
                     key={f.key}
-                    className={`
-                      rounded-full px-2.5 py-1 text-xs font-medium transition-all duration-300
-                      ${filled
-                        ? "bg-emerald-500/15 text-emerald-400"
-                        : "bg-white/5 text-white/40"
-                      }
-                    `}
-                    style={
-                      !filled
-                        ? { animation: "gentle-pulse 2s ease-in-out infinite" }
-                        : undefined
-                    }
-                  >
-                    {filled && (
-                      <svg className="w-3 h-3 inline-block mr-1 -mt-px" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                      </svg>
-                    )}
-                    {f.label}
-                  </span>
+                    className="transition-all duration-300"
+                    style={{
+                      width: isCurrent ? "24px" : "8px",
+                      height: "8px",
+                      borderRadius: "4px",
+                      backgroundColor: filled
+                        ? "#10B981"
+                        : isCurrent
+                          ? "#818CF8"
+                          : "rgba(255,255,255,0.15)",
+                    }}
+                  />
                 );
               })}
             </div>
