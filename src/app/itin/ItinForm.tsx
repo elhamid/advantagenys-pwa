@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 
 // Lazy-load capture components — they're heavy (camera APIs, canvas processing)
@@ -76,6 +76,35 @@ interface Props {
 }
 
 /* ═══════════════════════════════════════════════
+   Keyboard-aware bottom offset (iPad/mobile)
+   ═══════════════════════════════════════════════ */
+
+function useKeyboardHeight() {
+  const [kbHeight, setKbHeight] = useState(0);
+
+  useEffect(() => {
+    const vv = typeof window !== "undefined" ? window.visualViewport : null;
+    if (!vv) return;
+
+    function onResize() {
+      // When keyboard opens, visualViewport.height shrinks.
+      // The difference = keyboard height.
+      const diff = window.innerHeight - (vv?.height ?? window.innerHeight);
+      setKbHeight(diff > 50 ? diff : 0); // ignore tiny resizes
+    }
+
+    vv.addEventListener("resize", onResize);
+    vv.addEventListener("scroll", onResize);
+    return () => {
+      vv.removeEventListener("resize", onResize);
+      vv.removeEventListener("scroll", onResize);
+    };
+  }, []);
+
+  return kbHeight;
+}
+
+/* ═══════════════════════════════════════════════
    Main Form Component
    ═══════════════════════════════════════════════ */
 
@@ -98,6 +127,10 @@ export function ItinForm({ onSuccess }: Props) {
   // Direction for slide animation
   const [slideDirection, setSlideDirection] = useState<"left" | "right">("left");
   const [animating, setAnimating] = useState(false);
+
+  // Track iPad/mobile keyboard height so Continue button stays visible
+  const kbHeight = useKeyboardHeight();
+  const formRef = useRef<HTMLDivElement>(null);
 
   const update = useCallback(
     <K extends keyof ItinData>(field: K, value: ItinData[K]) => {
@@ -279,9 +312,9 @@ export function ItinForm({ onSuccess }: Props) {
 
   return (
     <>
-      <div className="flex-1 flex flex-col px-4 sm:px-6 md:px-12 lg:px-24 max-w-3xl mx-auto w-full relative">
+      <div ref={formRef} className="flex-1 flex flex-col px-4 sm:px-6 md:px-12 lg:px-24 max-w-3xl mx-auto w-full relative">
         {/* ─── Progress Indicator ─── */}
-        <div className="mb-6 sm:mb-8">
+        <div className="mb-4 sm:mb-6">
           <div className="flex items-center justify-between mb-3">
             {STEPS.map((s, i) => (
               <button
@@ -339,7 +372,7 @@ export function ItinForm({ onSuccess }: Props) {
         {/* ─── Scrollable Form Content ─── */}
         <div
           className={`
-            flex-1 overflow-y-auto pb-28 transition-all duration-300 ease-out
+            flex-1 overflow-y-auto pb-20 transition-all duration-300 ease-out
             ${animating
               ? slideDirection === "left"
                 ? "opacity-0 translate-x-4"
@@ -393,10 +426,13 @@ export function ItinForm({ onSuccess }: Props) {
           </div>
         )}
 
-        {/* ─── Sticky Bottom Navigation ─── */}
-        <div className="sticky bottom-0 left-0 right-0 z-20 pt-6 pb-4">
+        {/* ─── Fixed Bottom Navigation — follows keyboard ─── */}
+        <div
+          className="fixed left-0 right-0 z-20 px-4 sm:px-6 md:px-12 lg:px-24 pt-3 pb-4 transition-[bottom] duration-200 ease-out"
+          style={{ bottom: kbHeight > 0 ? `${kbHeight}px` : "0px" }}
+        >
           {/* Gradient backdrop — blends into the dark background */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0F1B2D] via-[#0F1B2D]/95 to-transparent pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0F1B2D] via-[#0F1B2D]/98 to-transparent pointer-events-none" />
 
           <div className="relative flex items-center gap-3">
             {step > 0 && (
@@ -684,7 +720,7 @@ interface StepProps {
 
 function StepPersonal({ data, errors, update }: StepProps) {
   return (
-    <div className="space-y-5">
+    <div className="space-y-3">
       <SectionHeader
         title="Personal Information"
         subtitle="Basic contact details for your ITIN application."
@@ -710,7 +746,7 @@ function StepPersonal({ data, errors, update }: StepProps) {
         onChange={(v) => update("companyName", v)}
       />
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-3">
         <div>
           <Label required>First Name</Label>
           <Input
@@ -761,7 +797,7 @@ function StepPersonal({ data, errors, update }: StepProps) {
       </div>
 
       {/* Trust note */}
-      <div className="flex items-center gap-2 pt-2 text-white/25 text-xs">
+      <div className="flex items-center gap-2 pt-1 text-white/25 text-xs">
         <svg className="w-3.5 h-3.5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
           <path
             fillRule="evenodd"
@@ -781,7 +817,7 @@ function StepPersonal({ data, errors, update }: StepProps) {
 
 function StepLocation({ data, errors, update }: StepProps) {
   return (
-    <div className="space-y-5">
+    <div className="space-y-3">
       <SectionHeader
         title="Location & Employment"
         subtitle="Where you'll attend and your work details."
