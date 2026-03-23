@@ -42,19 +42,29 @@ const CITIES = [
 const DEFAULT_EMPLOYER = "Tropical Stars Inc.";
 
 interface ItinData {
-  // Step 1
+  // Step 1 — Personal
   firstName: string;
   lastName: string;
+  middleName: string;
+  dateOfBirth: string;
+  countryOfBirth: string;
+  cityOfBirth: string;
+  countryOfCitizenship: string;
   phone: string;
   email: string;
   companyName: string;
-  // Step 2
+  // Step 2 — Location
   city: string;
   addressUsa: string;
-  addressHomeCountry: string;
+  addressHomeCountry: string; // street address (backward compat key)
+  homeCountry: string;
+  homeCity: string;
+  homeAddress: string;
+  usEntryDate: string;
   amount: string;
-  // Step 3
+  // Step 3 — Document
   documentScan: File | null;
+  passportCountry: string;
   // Step 4
   selfie: File | null;
   // Step 5
@@ -69,14 +79,24 @@ interface ItinData {
 const INITIAL: ItinData = {
   firstName: "",
   lastName: "",
+  middleName: "",
+  dateOfBirth: "",
+  countryOfBirth: "",
+  cityOfBirth: "",
+  countryOfCitizenship: "",
   phone: "",
   email: "",
   companyName: DEFAULT_EMPLOYER,
   city: "",
   addressUsa: "",
   addressHomeCountry: "",
+  homeCountry: "",
+  homeCity: "",
+  homeAddress: "",
+  usEntryDate: "",
   amount: "",
   documentScan: null,
+  passportCountry: "",
   selfie: null,
   signature: null,
   hasPassport: false,
@@ -264,12 +284,18 @@ export function ItinForm({ onSuccess }: Props) {
     if (s === 0) {
       if (!data.firstName.trim()) errs.firstName = "First name is required";
       if (!data.lastName.trim()) errs.lastName = "Last name is required";
+      if (!data.dateOfBirth) errs.dateOfBirth = "Date of birth is required";
+      if (!data.countryOfBirth) errs.countryOfBirth = "Country of birth is required";
+      if (!data.cityOfBirth.trim()) errs.cityOfBirth = "City of birth is required";
+      if (!data.countryOfCitizenship) errs.countryOfCitizenship = "Country of citizenship is required";
       if (!data.phone.trim() || data.phone.replace(/\D/g, "").length < 7)
         errs.phone = "Valid phone number is required";
     }
 
     if (s === 1) {
       if (!data.city) errs.city = "Please select appointment city";
+      if (!data.homeCountry) errs.homeCountry = "Home country is required";
+      if (!data.homeCity.trim()) errs.homeCity = "Home city is required";
     }
 
     // Steps 2 (document) and 3 (selfie) are optional — skip allowed
@@ -334,16 +360,26 @@ export function ItinForm({ onSuccess }: Props) {
       const payload = new FormData();
       payload.append("firstName", data.firstName.trim());
       payload.append("lastName", data.lastName.trim());
+      payload.append("middleName", data.middleName.trim());
+      payload.append("dateOfBirth", data.dateOfBirth);
+      payload.append("countryOfBirth", data.countryOfBirth);
+      payload.append("cityOfBirth", data.cityOfBirth.trim());
+      payload.append("countryOfCitizenship", data.countryOfCitizenship);
       payload.append("phone", data.phone.trim());
       payload.append("email", data.email.trim());
       payload.append("city", data.city);
       payload.append("addressUsa", data.addressUsa.trim());
       payload.append("addressHomeCountry", data.addressHomeCountry.trim());
+      payload.append("homeCountry", data.homeCountry);
+      payload.append("homeCity", data.homeCity.trim());
+      payload.append("homeAddress", data.homeAddress.trim());
+      payload.append("usEntryDate", data.usEntryDate);
       payload.append("companyName", data.companyName.trim());
       payload.append("amount", data.amount.trim());
       payload.append("hasPassport", String(!!data.documentScan));
       payload.append("passportNumber", data.passportNumber.trim());
       payload.append("passportExpiry", data.passportExpiry);
+      payload.append("passportCountry", data.passportCountry);
       payload.append("comment", data.comment.trim());
 
       if (data.documentScan) {
@@ -381,13 +417,13 @@ export function ItinForm({ onSuccess }: Props) {
   // Completed steps for progress indicator
   const completedSteps = useMemo(() => {
     const completed = new Set<number>();
-    if (data.firstName && data.lastName && data.phone) completed.add(0);
-    if (data.city) completed.add(1);
+    if (data.firstName && data.lastName && data.phone && data.dateOfBirth && data.countryOfBirth && data.cityOfBirth && data.countryOfCitizenship) completed.add(0);
+    if (data.city && data.homeCountry && data.homeCity) completed.add(1);
     if (data.documentScan) completed.add(2);
     if (data.selfie) completed.add(3);
     if (data.signature) completed.add(4);
     return completed;
-  }, [data.firstName, data.lastName, data.phone, data.city, data.documentScan, data.selfie, data.signature]);
+  }, [data.firstName, data.lastName, data.phone, data.dateOfBirth, data.countryOfBirth, data.cityOfBirth, data.countryOfCitizenship, data.city, data.homeCountry, data.homeCity, data.documentScan, data.selfie, data.signature]);
 
   // Compute animation classes for step content
   const getStepAnimClass = () => {
@@ -482,6 +518,8 @@ export function ItinForm({ onSuccess }: Props) {
           {displayStep === 2 && (
             <StepDocument
               data={data}
+              errors={errors}
+              update={update}
               docPreview={docPreview}
               onOpenScanner={() => setShowDocScanner(true)}
               onClear={clearDoc}
@@ -768,6 +806,134 @@ function SectionHeader({
   );
 }
 
+function SectionDivider({ label }: { label: string }) {
+  return (
+    <div className="flex items-center gap-3 pt-2">
+      <div className="flex-1 border-t border-white/10" />
+      <span className="text-white/30 text-xs uppercase tracking-widest font-medium">{label}</span>
+      <div className="flex-1 border-t border-white/10" />
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════
+   Country Select — reusable dropdown
+   ═══════════════════════════════════════════════ */
+
+const TOP_COUNTRIES = [
+  "Mexico", "Guatemala", "Honduras", "El Salvador", "Brazil",
+  "Colombia", "Ecuador", "Peru", "India", "China", "Philippines",
+  "South Korea", "Pakistan", "Bangladesh", "Nigeria",
+];
+
+const ALL_COUNTRIES = [
+  "Afghanistan", "Albania", "Algeria", "Andorra", "Angola",
+  "Antigua and Barbuda", "Argentina", "Armenia", "Australia", "Austria",
+  "Azerbaijan", "Bahamas", "Bahrain", "Bangladesh", "Barbados",
+  "Belarus", "Belgium", "Belize", "Benin", "Bhutan",
+  "Bolivia", "Bosnia and Herzegovina", "Botswana", "Brazil", "Brunei",
+  "Bulgaria", "Burkina Faso", "Burundi", "Cabo Verde", "Cambodia",
+  "Cameroon", "Canada", "Central African Republic", "Chad", "Chile",
+  "China", "Colombia", "Comoros", "Congo (DRC)", "Congo (Republic)",
+  "Costa Rica", "Croatia", "Cuba", "Cyprus", "Czech Republic",
+  "Denmark", "Djibouti", "Dominica", "Dominican Republic", "East Timor",
+  "Ecuador", "Egypt", "El Salvador", "Equatorial Guinea", "Eritrea",
+  "Estonia", "Eswatini", "Ethiopia", "Fiji", "Finland",
+  "France", "Gabon", "Gambia", "Georgia", "Germany",
+  "Ghana", "Greece", "Grenada", "Guatemala", "Guinea",
+  "Guinea-Bissau", "Guyana", "Haiti", "Honduras", "Hungary",
+  "Iceland", "India", "Indonesia", "Iran", "Iraq",
+  "Ireland", "Israel", "Italy", "Ivory Coast", "Jamaica",
+  "Japan", "Jordan", "Kazakhstan", "Kenya", "Kiribati",
+  "Kosovo", "Kuwait", "Kyrgyzstan", "Laos", "Latvia",
+  "Lebanon", "Lesotho", "Liberia", "Libya", "Liechtenstein",
+  "Lithuania", "Luxembourg", "Madagascar", "Malawi", "Malaysia",
+  "Maldives", "Mali", "Malta", "Marshall Islands", "Mauritania",
+  "Mauritius", "Mexico", "Micronesia", "Moldova", "Monaco",
+  "Mongolia", "Montenegro", "Morocco", "Mozambique", "Myanmar",
+  "Namibia", "Nauru", "Nepal", "Netherlands", "New Zealand",
+  "Nicaragua", "Niger", "Nigeria", "North Korea", "North Macedonia",
+  "Norway", "Oman", "Pakistan", "Palau", "Palestine",
+  "Panama", "Papua New Guinea", "Paraguay", "Peru", "Philippines",
+  "Poland", "Portugal", "Qatar", "Romania", "Russia",
+  "Rwanda", "Saint Kitts and Nevis", "Saint Lucia", "Saint Vincent and the Grenadines", "Samoa",
+  "San Marino", "Sao Tome and Principe", "Saudi Arabia", "Senegal", "Serbia",
+  "Seychelles", "Sierra Leone", "Singapore", "Slovakia", "Slovenia",
+  "Solomon Islands", "Somalia", "South Africa", "South Korea", "South Sudan",
+  "Spain", "Sri Lanka", "Sudan", "Suriname", "Sweden",
+  "Switzerland", "Syria", "Taiwan", "Tajikistan", "Tanzania",
+  "Thailand", "Togo", "Tonga", "Trinidad and Tobago", "Tunisia",
+  "Turkey", "Turkmenistan", "Tuvalu", "Uganda", "Ukraine",
+  "United Arab Emirates", "United Kingdom", "Uruguay", "Uzbekistan", "Vanuatu",
+  "Vatican City", "Venezuela", "Vietnam", "Yemen", "Zambia", "Zimbabwe",
+];
+
+// Deduplicated list: top countries first, then alphabetical remainder
+const COUNTRY_OPTIONS = (() => {
+  const topSet = new Set(TOP_COUNTRIES);
+  const rest = ALL_COUNTRIES.filter((c) => !topSet.has(c));
+  return { top: TOP_COUNTRIES, rest };
+})();
+
+function CountrySelect({
+  value,
+  onChange,
+  id,
+  required,
+  error,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  id?: string;
+  required?: boolean;
+  error?: string;
+}) {
+  return (
+    <>
+      <select
+        id={id}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        required={required}
+        className={`
+          w-full px-4 py-3.5 rounded-xl text-base appearance-none
+          bg-white/[0.07] border
+          text-white
+          focus:outline-none focus:border-[#4F56E8] focus:ring-1 focus:ring-[#4F56E8]/30
+          transition-all duration-200
+          ${!value ? "text-white/25" : ""}
+          ${error ? "border-red-400/50 ring-1 ring-red-400/20" : "border-white/10"}
+        `}
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' viewBox='0 0 24 24' stroke='rgba(255,255,255,0.3)' stroke-width='2.5'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E")`,
+          backgroundRepeat: "no-repeat",
+          backgroundPosition: "right 1rem center",
+          paddingRight: "2.5rem",
+        }}
+      >
+        <option value="" disabled className="bg-[#0F1B2D] text-white/40">
+          Select country...
+        </option>
+        <optgroup label="Common" className="bg-[#0F1B2D] text-white">
+          {COUNTRY_OPTIONS.top.map((c) => (
+            <option key={`top-${c}`} value={c} className="bg-[#0F1B2D] text-white">
+              {c}
+            </option>
+          ))}
+        </optgroup>
+        <optgroup label="All Countries" className="bg-[#0F1B2D] text-white">
+          {COUNTRY_OPTIONS.rest.map((c) => (
+            <option key={c} value={c} className="bg-[#0F1B2D] text-white">
+              {c}
+            </option>
+          ))}
+        </optgroup>
+      </select>
+      {error && <p className="mt-1 text-xs text-red-400">{error}</p>}
+    </>
+  );
+}
+
 /* ═══════════════════════════════════════════════
    Employer Badge (Tropical Stars default)
    ═══════════════════════════════════════════════ */
@@ -861,7 +1027,7 @@ function StepPersonal({ data, errors, update }: StepProps) {
     <div className="space-y-3">
       <SectionHeader
         title="Personal Information"
-        subtitle="Basic contact details for your ITIN application."
+        subtitle="W-7 application details for your ITIN."
       />
 
       {/* IRS badge */}
@@ -878,12 +1044,13 @@ function StepPersonal({ data, errors, update }: StepProps) {
         </span>
       </div>
 
-      {/* Employer badge — moved to Step 1 */}
+      {/* Employer badge */}
       <EmployerBadge
         value={data.companyName}
         onChange={(v) => update("companyName", v)}
       />
 
+      {/* Row 1: First / Last name */}
       <div className="grid grid-cols-2 gap-3">
         <div>
           <Label required htmlFor="itin-firstName">First Name</Label>
@@ -909,6 +1076,67 @@ function StepPersonal({ data, errors, update }: StepProps) {
         </div>
       </div>
 
+      {/* Row 2: Middle Name */}
+      <div>
+        <Label htmlFor="itin-middleName">Middle Name</Label>
+        <Input
+          id="itin-middleName"
+          value={data.middleName}
+          onChange={(v) => update("middleName", v)}
+          placeholder="Optional"
+          autoComplete="additional-name"
+        />
+      </div>
+
+      {/* Row 3: Date of Birth | City of Birth */}
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <Label required htmlFor="itin-dob">Date of Birth</Label>
+          <Input
+            id="itin-dob"
+            value={data.dateOfBirth}
+            onChange={(v) => update("dateOfBirth", v)}
+            error={errors.dateOfBirth}
+            type="date"
+          />
+        </div>
+        <div>
+          <Label required htmlFor="itin-cityOfBirth">City / Town of Birth</Label>
+          <Input
+            id="itin-cityOfBirth"
+            value={data.cityOfBirth}
+            onChange={(v) => update("cityOfBirth", v)}
+            error={errors.cityOfBirth}
+            placeholder="Guadalajara"
+          />
+        </div>
+      </div>
+
+      {/* Row 4: Country of Birth | Country of Citizenship */}
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <Label required htmlFor="itin-countryOfBirth">Country of Birth</Label>
+          <CountrySelect
+            id="itin-countryOfBirth"
+            value={data.countryOfBirth}
+            onChange={(v) => update("countryOfBirth", v)}
+            required
+            error={errors.countryOfBirth}
+          />
+        </div>
+        <div>
+          <Label required htmlFor="itin-countryOfCitizenship">Country of Citizenship</Label>
+          <CountrySelect
+            id="itin-countryOfCitizenship"
+            value={data.countryOfCitizenship}
+            onChange={(v) => update("countryOfCitizenship", v)}
+            required
+            error={errors.countryOfCitizenship}
+          />
+        </div>
+      </div>
+
+      {/* Phone */}
       <div>
         <Label required htmlFor="itin-phone">Phone Number</Label>
         <Input
@@ -924,6 +1152,7 @@ function StepPersonal({ data, errors, update }: StepProps) {
         />
       </div>
 
+      {/* Email */}
       <div>
         <Label htmlFor="itin-email">Email</Label>
         <Input
@@ -993,6 +1222,7 @@ function StepLocation({ data, errors, update }: StepProps) {
         {errors.city && <p className="mt-1 text-xs text-red-400">{errors.city}</p>}
       </div>
 
+      {/* US Address with autocomplete */}
       <div>
         <Label htmlFor="itin-addressUsa">US Address</Label>
         <AddressAutocomplete
@@ -1003,17 +1233,58 @@ function StepLocation({ data, errors, update }: StepProps) {
         />
       </div>
 
+      {/* US Entry Date */}
       <div>
-        <Label htmlFor="itin-addressHomeCountry">Home Country Address</Label>
-        <TextArea
-          id="itin-addressHomeCountry"
-          value={data.addressHomeCountry}
-          onChange={(v) => update("addressHomeCountry", v)}
-          placeholder="Full address in your home country"
-          rows={2}
+        <Label htmlFor="itin-usEntryDate">Date of Entry to US (if applicable)</Label>
+        <Input
+          id="itin-usEntryDate"
+          value={data.usEntryDate}
+          onChange={(v) => update("usEntryDate", v)}
+          type="date"
         />
       </div>
 
+      <SectionDivider label="Home Country Information" />
+
+      {/* Home Country | Home City */}
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <Label required htmlFor="itin-homeCountry">Home Country</Label>
+          <CountrySelect
+            id="itin-homeCountry"
+            value={data.homeCountry}
+            onChange={(v) => update("homeCountry", v)}
+            required
+            error={errors.homeCountry}
+          />
+        </div>
+        <div>
+          <Label required htmlFor="itin-homeCity">Home City</Label>
+          <Input
+            id="itin-homeCity"
+            value={data.homeCity}
+            onChange={(v) => update("homeCity", v)}
+            error={errors.homeCity}
+            placeholder="City or town"
+          />
+        </div>
+      </div>
+
+      {/* Home Address (street) — wired to addressHomeCountry for backward compat */}
+      <div>
+        <Label htmlFor="itin-homeAddress">Home Address (Street)</Label>
+        <Input
+          id="itin-homeAddress"
+          value={data.homeAddress}
+          onChange={(v) => {
+            update("homeAddress", v);
+            update("addressHomeCountry", v);
+          }}
+          placeholder="Street address in your home country"
+        />
+      </div>
+
+      {/* Annual Earnings */}
       <div>
         <Label htmlFor="itin-amount">Annual Earnings ($)</Label>
         <Input
@@ -1035,11 +1306,15 @@ function StepLocation({ data, errors, update }: StepProps) {
 
 function StepDocument({
   data,
+  errors,
+  update,
   docPreview,
   onOpenScanner,
   onClear,
 }: {
   data: ItinData;
+  errors: Partial<Record<keyof ItinData, string>>;
+  update: <K extends keyof ItinData>(field: K, value: ItinData[K]) => void;
   docPreview: string | null;
   onOpenScanner: () => void;
   onClear: () => void;
@@ -1137,6 +1412,40 @@ function StepDocument({
           </p>
         </div>
       )}
+
+      {/* ─── Passport Details ─── */}
+      <SectionDivider label="Passport Details (Optional)" />
+
+      <div>
+        <Label htmlFor="itin-passportNumber">Passport Number</Label>
+        <Input
+          id="itin-passportNumber"
+          value={data.passportNumber}
+          onChange={(v) => update("passportNumber", v)}
+          placeholder="e.g. G12345678"
+          autoComplete="off"
+        />
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <Label htmlFor="itin-passportExpiry">Passport Expiry</Label>
+          <Input
+            id="itin-passportExpiry"
+            value={data.passportExpiry}
+            onChange={(v) => update("passportExpiry", v)}
+            type="date"
+          />
+        </div>
+        <div>
+          <Label htmlFor="itin-passportCountry">Country of Issuance</Label>
+          <CountrySelect
+            id="itin-passportCountry"
+            value={data.passportCountry}
+            onChange={(v) => update("passportCountry", v)}
+          />
+        </div>
+      </div>
     </div>
   );
 }
@@ -1290,24 +1599,40 @@ function StepReview({
             Personal Information
           </h3>
           <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
-            <ReviewField label="Name" value={`${data.firstName} ${data.lastName}`} />
+            <ReviewField
+              label="Name"
+              value={[data.firstName, data.middleName, data.lastName].filter(Boolean).join(" ")}
+            />
+            <ReviewField label="Date of Birth" value={data.dateOfBirth || "Not provided"} muted={!data.dateOfBirth} />
+            <ReviewField label="Birth City" value={data.cityOfBirth || "Not provided"} muted={!data.cityOfBirth} />
+            <ReviewField label="Birth Country" value={data.countryOfBirth || "Not provided"} muted={!data.countryOfBirth} />
+            <ReviewField label="Citizenship" value={data.countryOfCitizenship || "Not provided"} muted={!data.countryOfCitizenship} />
+          </div>
+        </div>
+
+        {/* Contact */}
+        <div className="px-5 py-4 border-b border-white/5">
+          <h3 className="text-xs font-semibold text-[#818CF8] uppercase tracking-wider mb-3">
+            Contact
+          </h3>
+          <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
             <ReviewField label="Phone" value={data.phone} />
             <ReviewField label="Email" value={data.email || "Not provided"} muted={!data.email} />
             <ReviewField label="Employer" value={data.companyName || "Not provided"} muted={!data.companyName} />
           </div>
         </div>
 
-        {/* Location & Work */}
+        {/* Location */}
         <div className="px-5 py-4 border-b border-white/5">
           <h3 className="text-xs font-semibold text-[#818CF8] uppercase tracking-wider mb-3">
-            Location & Employment
+            Location
           </h3>
           <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
-            <ReviewField label="City" value={cityLabel} />
+            <ReviewField label="Appointment City" value={cityLabel} />
             <ReviewField
-              label="Annual Earnings"
-              value={data.amount ? `$${data.amount}` : "Not provided"}
-              muted={!data.amount}
+              label="US Entry Date"
+              value={data.usEntryDate || "Not provided"}
+              muted={!data.usEntryDate}
             />
             <ReviewField
               label="US Address"
@@ -1315,12 +1640,40 @@ function StepReview({
               muted={!data.addressUsa}
               fullWidth
             />
+          </div>
+        </div>
+
+        {/* Home Country */}
+        <div className="px-5 py-4 border-b border-white/5">
+          <h3 className="text-xs font-semibold text-[#818CF8] uppercase tracking-wider mb-3">
+            Home Country
+          </h3>
+          <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
+            <ReviewField label="Country" value={data.homeCountry || "Not provided"} muted={!data.homeCountry} />
+            <ReviewField label="City" value={data.homeCity || "Not provided"} muted={!data.homeCity} />
             <ReviewField
-              label="Home Address"
-              value={data.addressHomeCountry || "Not provided"}
-              muted={!data.addressHomeCountry}
+              label="Address"
+              value={data.homeAddress || "Not provided"}
+              muted={!data.homeAddress}
               fullWidth
             />
+            <ReviewField
+              label="Annual Earnings"
+              value={data.amount ? `$${data.amount}` : "Not provided"}
+              muted={!data.amount}
+            />
+          </div>
+        </div>
+
+        {/* Passport */}
+        <div className="px-5 py-4 border-b border-white/5">
+          <h3 className="text-xs font-semibold text-[#818CF8] uppercase tracking-wider mb-3">
+            Passport
+          </h3>
+          <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
+            <ReviewField label="Number" value={data.passportNumber || "Not provided"} muted={!data.passportNumber} />
+            <ReviewField label="Expiry" value={data.passportExpiry || "Not provided"} muted={!data.passportExpiry} />
+            <ReviewField label="Issuing Country" value={data.passportCountry || "Not provided"} muted={!data.passportCountry} />
           </div>
         </div>
 
