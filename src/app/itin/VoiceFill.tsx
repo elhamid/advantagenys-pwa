@@ -94,18 +94,13 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
   const accumulatedRef = useRef("");
   const stoppedByUserRef = useRef(false);
 
-  // No voice fields for this step
-  if (fields.length === 0) return null;
-
   /* ─── Mount animation ─── */
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
     const frame = requestAnimationFrame(() => setMounted(true));
     return () => cancelAnimationFrame(frame);
   }, []);
 
   /* ─── Escape key ─── */
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
     document.addEventListener("keydown", handler);
@@ -113,7 +108,6 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
   }, [onClose]);
 
   /* ─── Cleanup on unmount ─── */
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
     return () => {
       if (recognitionRef.current) {
@@ -123,7 +117,6 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
   }, []);
 
   /* ─── Start Listening ─── */
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const startListening = useCallback(async () => {
     setError(null);
     setTranscript("");
@@ -218,10 +211,9 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
       setError("Could not start mic.");
       setState("idle");
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []); // eslint-disable-line
 
   /* ─── Stop Listening ─── */
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const stopListening = useCallback(() => {
     stoppedByUserRef.current = true;
     if (recognitionRef.current) {
@@ -230,7 +222,6 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
   }, []);
 
   /* ─── Process via LLM ─── */
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const processTranscript = useCallback(async (text: string) => {
     setState("processing");
     console.log("[AVA] Sending transcript to LLM:", text);
@@ -263,18 +254,19 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
   }, [extracted, fields]);
 
   /* ─── Done ─── */
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const handleDone = useCallback(() => {
     onFill(extracted);
     onClose();
   }, [extracted, onFill, onClose]);
 
   /* ─── Toggle mic ─── */
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const toggleMic = useCallback(() => {
     if (state === "listening") stopListening();
     else startListening();
   }, [state, stopListening, startListening]);
+
+  // No voice fields for this step — early return AFTER all hooks
+  if (fields.length === 0) return null;
 
   /* ─── Which fields are filled ─── */
   const isFieldDone = (key: string) => {
