@@ -98,8 +98,11 @@ Today's date is ${today}.
 6. Convert spoken numbers to digits: "twenty-seven thousand five hundred" → "27500"
 7. Convert all dates to YYYY-MM-DD format. Use today's date for relative references.
 8. Strip commas from amounts: "27,500" → "27500"
-9. Only include fields where you found data. Do NOT include empty or null fields.
-10. Return ONLY the JSON object. No explanation, no markdown, no code fences.
+9. PHONE NUMBERS: Speech-to-text often breaks phone numbers into separate digit groups. Reassemble them into a proper phone number. Examples: "3 47 4403592" → "347-440-3592", "nine two nine 5 5 5 0123" → "929-555-0123", "347 440 3592" → "347-440-3592". Look for ANY sequence of digits/digit-groups near words like "phone", "number", "call", "cell", "mobile" and combine into a US phone number (XXX-XXX-XXXX format).
+10. EMAILS: Speech-to-text may duplicate or garble domains. Clean them: "gmailgmail.com" → "gmail.com", "at gmail dot com" → "@gmail.com", "yahooYahoo.com" → "yahoo.com". Fix obvious speech-to-text artifacts.
+11. WORDS RUN TOGETHER: Speech-to-text may join words without spaces. "HarrisonBorn" means "Harrison" + "Born". Separate them and extract both parts.
+12. Only include fields where you found data. Do NOT include empty or null fields.
+13. Return ONLY the JSON object. No explanation, no markdown, no code fences.
 
 ## EXAMPLES
 
@@ -113,7 +116,11 @@ Output: {"addressUsa":"8148 256th St.","usEntryDate":"2023-09-10","countryOfBirt
 
 ### Example 3
 Transcript: "Juan Carlos Martinez no middle name born July 20 1985 I'm from Guatemala passport number G12345678 expires March 15 2027 working at Tony's Pizzeria making twenty thousand a year phone 929-555-0123"
-Output: {"firstName":"Juan Carlos","lastName":"Martinez","middleName":"N/A","dateOfBirth":"1985-07-20","countryOfBirth":"Guatemala","countryOfCitizenship":"Guatemala","homeCountry":"Guatemala","passportNumber":"G12345678","passportExpiry":"2027-03-15","passportCountry":"Guatemala","companyName":"Tony's Pizzeria","amount":"20000","phone":"929-555-0123"}`;
+Output: {"firstName":"Juan Carlos","lastName":"Martinez","middleName":"N/A","dateOfBirth":"1985-07-20","countryOfBirth":"Guatemala","countryOfCitizenship":"Guatemala","homeCountry":"Guatemala","passportNumber":"G12345678","passportExpiry":"2027-03-15","passportCountry":"Guatemala","companyName":"Tony's Pizzeria","amount":"20000","phone":"929-555-0123"}
+
+### Example 4 (garbled speech-to-text — phone broken into digit groups, email domain doubled, words joined)
+Transcript: "Harry HarrisonBorn on September 10, 1981 in Baku Azerbaijan Azerbaijan citizen number is 3 47 4403592 email Hamid.genius@gmailgmail.com"
+Output: {"firstName":"Harry","lastName":"Harrison","dateOfBirth":"1981-09-10","cityOfBirth":"Baku","countryOfBirth":"Azerbaijan","countryOfCitizenship":"Azerbaijan","phone":"347-440-3592","email":"Hamid.genius@gmail.com"}`;
 }
 
 // ============================================================================
