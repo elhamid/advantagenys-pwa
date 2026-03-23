@@ -51,7 +51,9 @@ function buildStoragePath(
   const timestamp = Date.now();
   const ext = filename.includes(".") ? filename.split(".").pop() : "bin";
   // Sanitize phone: strip non-numeric chars to avoid path traversal
-  const safePhone = phone.replace(/[^0-9]/g, "");
+  let safePhone = phone.replace(/[^0-9]/g, "");
+  if (!safePhone) safePhone = "unknown";
+  if (safePhone.length > 20) safePhone = safePhone.slice(0, 20);
   return `${safePhone}/${type}-${timestamp}.${ext}`;
 }
 

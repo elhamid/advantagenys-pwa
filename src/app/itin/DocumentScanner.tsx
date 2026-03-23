@@ -30,12 +30,28 @@ export default function DocumentScanner({
   const [mounted, setMounted] = useState(false);
   const [hintVisible, setHintVisible] = useState(false);
   const [restarting, setRestarting] = useState(false);
+  const [capturing, setCapturing] = useState(false);
+  const [shutterFlash, setShutterFlash] = useState(false);
+
+  // Detect iOS
+  const isIOS =
+    typeof navigator !== "undefined" &&
+    /iPad|iPhone|iPod/.test(navigator.userAgent);
 
   // Mount animation
   useEffect(() => {
     const frame = requestAnimationFrame(() => setMounted(true));
     return () => cancelAnimationFrame(frame);
   }, []);
+
+  // Escape key handler
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [onClose]);
 
   // Delayed hint text
   useEffect(() => {
@@ -163,14 +179,25 @@ export default function DocumentScanner({
   }, []);
 
   const handleCapture = useCallback(() => {
+    if (capturing) return; // Guard against double-tap
+
     const video = videoRef.current;
     const canvas = canvasRef.current;
     if (!video || !canvas || video.videoWidth === 0) return;
 
+    setCapturing(true);
+
+    // Shutter flash effect
+    setShutterFlash(true);
+    setTimeout(() => setShutterFlash(false), 200);
+
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    if (!ctx) {
+      setCapturing(false);
+      return;
+    }
     ctx.drawImage(video, 0, 0);
 
     const previewUrl = canvas.toDataURL("image/jpeg", 0.9);
@@ -179,6 +206,7 @@ export default function DocumentScanner({
     if (!file) {
       // Canvas processing failed — stay on live, show transient error
       setErrorMsg("Failed to process image. Please try again.");
+      setCapturing(false);
       return;
     }
 
@@ -188,12 +216,14 @@ export default function DocumentScanner({
     // Stop camera after successful capture
     stopCamera();
     setState("preview");
-  }, [processImage, stopCamera]);
+    setCapturing(false);
+  }, [capturing, processImage, stopCamera]);
 
   const handleRetake = useCallback(async () => {
     if (restarting) return; // Prevent double-clicks
 
     setRestarting(true);
+    setCapturing(false);
     setCapturedDataUrl(null);
     setProcessedFile(null);
     setHintVisible(false);
@@ -243,10 +273,11 @@ export default function DocumentScanner({
   );
 
   const handleTryAgain = useCallback(async () => {
+    stopCamera();
     setErrorMsg("");
     setState("initializing");
     await startCamera();
-  }, [startCamera]);
+  }, [startCamera, stopCamera]);
 
   const handleClose = useCallback(() => {
     stopCamera();
@@ -310,10 +341,16 @@ export default function DocumentScanner({
               playsInline
               muted
             />
-            {/* Dimmed surround */}
+            {/* Shutter flash overlay */}
+            <div
+              className="absolute inset-0 bg-white pointer-events-none z-10"
+              style={{
+                opacity: shutterFlash ? 0.5 : 0,
+                transition: shutterFlash ? "opacity 50ms ease-in" : "opacity 150ms ease-out",
+              }}
+            />
+            {/* Guide cutout with box-shadow dimmed surround */}
             <div className="absolute inset-0 pointer-events-none">
-              <div className="absolute inset-0 bg-black/40" />
-              {/* Guide cutout */}
               <div className="absolute inset-0 flex items-center justify-center">
                 <div
                   className="relative shadow-[0_0_0_9999px_rgba(0,0,0,0.5)]"
@@ -390,15 +427,23 @@ export default function DocumentScanner({
             </div>
             <div>
               <p className="text-white font-semibold text-xl mb-2">Camera Access Denied</p>
-              <p className="text-white/50 text-sm leading-relaxed">{errorMsg}</p>
+              {isIOS ? (
+                <p className="text-white/50 text-sm leading-relaxed">
+                  To enable camera, go to Settings &rsaquo; Safari &rsaquo; Camera and allow access for this site.
+                </p>
+              ) : (
+                <p className="text-white/50 text-sm leading-relaxed">{errorMsg}</p>
+              )}
             </div>
-            <button
-              onClick={handleTryAgain}
-              className="min-h-[52px] w-full px-8 bg-white/8 hover:bg-white/14 active:scale-[0.95] text-white font-semibold rounded-full transition-all duration-150 text-base border border-white/15"
-              aria-label="Try requesting camera permission again"
-            >
-              Try Again
-            </button>
+            {!isIOS && (
+              <button
+                onClick={handleTryAgain}
+                className="min-h-[52px] w-full px-8 bg-white/10 hover:bg-white/15 active:scale-[0.95] text-white font-semibold rounded-full transition-all duration-150 text-base border border-white/15"
+                aria-label="Try requesting camera permission again"
+              >
+                Try Again
+              </button>
+            )}
             <button
               onClick={() => fileInputRef.current?.click()}
               className="min-h-[52px] w-full px-8 bg-[#4F56E8] hover:bg-[#5B63F0] active:scale-[0.95] text-white font-semibold rounded-full transition-all duration-150 text-base shadow-lg shadow-[#4F56E8]/30"
@@ -410,7 +455,6 @@ export default function DocumentScanner({
               ref={fileInputRef}
               type="file"
               accept="image/*"
-              capture="environment"
               className="hidden"
               onChange={handleFileChange}
             />
@@ -442,7 +486,6 @@ export default function DocumentScanner({
               ref={fileInputRef}
               type="file"
               accept="image/*"
-              capture="environment"
               className="hidden"
               onChange={handleFileChange}
             />
@@ -460,7 +503,8 @@ export default function DocumentScanner({
             <div className="flex flex-col items-center gap-2">
               <button
                 onClick={handleCapture}
-                className="w-20 h-20 rounded-full bg-white border-[4px] border-[#4F56E8] hover:bg-blue-50 active:scale-[0.95] transition-all duration-150 flex items-center justify-center shadow-xl shadow-[#4F56E8]/20"
+                disabled={capturing}
+                className="w-20 h-20 rounded-full bg-white border-[4px] border-[#4F56E8] hover:bg-blue-50 active:scale-[0.95] transition-all duration-150 flex items-center justify-center shadow-xl shadow-[#4F56E8]/20 disabled:opacity-60 disabled:pointer-events-none"
                 aria-label="Capture photo"
               >
                 <span className="w-[52px] h-[52px] rounded-full bg-[#4F56E8] block" />
@@ -473,7 +517,7 @@ export default function DocumentScanner({
               <button
                 onClick={handleRetake}
                 disabled={restarting}
-                className="flex-1 min-h-[52px] px-4 bg-white/8 hover:bg-white/14 active:scale-[0.95] text-white font-semibold rounded-full transition-all duration-150 border border-white/15 text-base disabled:opacity-50 disabled:pointer-events-none"
+                className="flex-1 min-h-[52px] px-4 bg-white/10 hover:bg-white/15 active:scale-[0.95] text-white font-semibold rounded-full transition-all duration-150 border border-white/15 text-base disabled:opacity-50 disabled:pointer-events-none"
                 aria-label="Retake photo"
               >
                 {restarting ? "Restarting…" : "Retake"}

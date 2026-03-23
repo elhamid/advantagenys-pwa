@@ -22,6 +22,10 @@ import { uploadMultipleItinDocuments } from "@/lib/itin-storage";
  * - TASKBOARD_SUPABASE_URL + TASKBOARD_SUPABASE_SERVICE_KEY → document storage
  */
 
+// Double-submit guard: reject same phone within 30 seconds
+const recentSubmissions = new Map<string, number>();
+const DOUBLE_SUBMIT_WINDOW_MS = 30_000;
+
 // JotForm field mapping (from form 210224697492156 / test clone 260807759178168)
 // QID → Field: 13=Name, 31=US Addr, 32=Phone, 33=Email, 35=Citizenship,
 // 37=Passport#, 40=Passport Exp, 41=Foreign Addr, 48=Work Addr,
@@ -166,10 +170,13 @@ async function submitToJotForm(data: ItinPayload): Promise<void> {
 
   try {
     const res = await fetch(
-      `https://api.jotform.com/form/${formId}/submissions?apiKey=${apiKey}`,
+      `https://api.jotform.com/form/${formId}/submissions`,
       {
         method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "APIKEY": apiKey,
+        },
         body: params.toString(),
       }
     );
@@ -296,6 +303,18 @@ export async function POST(request: NextRequest) {
     if (error) {
       return NextResponse.json({ success: false, error }, { status: 400 });
     }
+
+    // Double-submit guard: reject same phone within 30 seconds
+    const normalizedPhone = data.phone.replace(/\D/g, "");
+    const now = Date.now();
+    const lastSubmit = recentSubmissions.get(normalizedPhone);
+    if (lastSubmit && now - lastSubmit < DOUBLE_SUBMIT_WINDOW_MS) {
+      return NextResponse.json(
+        { success: false, error: "Duplicate submission — please wait before resubmitting" },
+        { status: 429 }
+      );
+    }
+    recentSubmissions.set(normalizedPhone, now);
 
     // Extract new file fields (all optional, all non-fatal on failure)
     const [documentScanFile, selfieFile, signatureFile] = await Promise.all([

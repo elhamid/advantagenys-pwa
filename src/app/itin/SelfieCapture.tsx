@@ -19,12 +19,28 @@ export default function SelfieCapture({ onCapture, onClose }: SelfieCaptureProps
   const [capturedDataUrl, setCapturedDataUrl] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
   const [restarting, setRestarting] = useState(false);
+  const [capturing, setCapturing] = useState(false);
+  const [shutterFlash, setShutterFlash] = useState(false);
+
+  // Detect iOS
+  const isIOS =
+    typeof navigator !== "undefined" &&
+    /iPad|iPhone|iPod/.test(navigator.userAgent);
 
   // Mount animation
   useEffect(() => {
     const frame = requestAnimationFrame(() => setMounted(true));
     return () => cancelAnimationFrame(frame);
   }, []);
+
+  // Escape key handler
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [onClose]);
 
   // Stop all tracks and clear video srcObject
   const stopCamera = useCallback(() => {
@@ -85,9 +101,17 @@ export default function SelfieCapture({ onCapture, onClose }: SelfieCaptureProps
   }, [startCamera, stopCamera]);
 
   const takePhoto = useCallback(() => {
+    if (capturing) return; // Guard against double-tap
+
     const video = videoRef.current;
     const canvas = canvasRef.current;
     if (!video || !canvas || video.videoWidth === 0) return;
+
+    setCapturing(true);
+
+    // Shutter flash effect
+    setShutterFlash(true);
+    setTimeout(() => setShutterFlash(false), 200);
 
     const vw = video.videoWidth;
     const vh = video.videoHeight;
@@ -102,7 +126,10 @@ export default function SelfieCapture({ onCapture, onClose }: SelfieCaptureProps
     canvas.height = cropH;
 
     const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    if (!ctx) {
+      setCapturing(false);
+      return;
+    }
 
     // Mirror horizontally: the saved image matches what the user saw in the
     // mirrored video preview. This is the standard selfie camera behavior.
@@ -116,12 +143,14 @@ export default function SelfieCapture({ onCapture, onClose }: SelfieCaptureProps
     setCapturedDataUrl(dataUrl);
     stopCamera();
     setState("captured");
-  }, [stopCamera]);
+    setCapturing(false);
+  }, [capturing, stopCamera]);
 
   const retake = useCallback(async () => {
     if (restarting) return; // Prevent double-clicks
 
     setRestarting(true);
+    setCapturing(false);
     setCapturedDataUrl(null);
 
     // Stop any remaining tracks and clear srcObject
@@ -154,9 +183,10 @@ export default function SelfieCapture({ onCapture, onClose }: SelfieCaptureProps
   );
 
   const handleTryAgain = useCallback(async () => {
+    stopCamera();
     setState("requesting");
     await startCamera();
-  }, [startCamera]);
+  }, [startCamera, stopCamera]);
 
   const handleClose = useCallback(() => {
     stopCamera();
@@ -217,6 +247,14 @@ export default function SelfieCapture({ onCapture, onClose }: SelfieCaptureProps
               playsInline
               muted
               aria-hidden="true"
+            />
+            {/* Shutter flash overlay */}
+            <div
+              className="absolute inset-0 bg-white rounded-2xl pointer-events-none z-10"
+              style={{
+                opacity: shutterFlash ? 0.5 : 0,
+                transition: shutterFlash ? "opacity 50ms ease-in" : "opacity 150ms ease-out",
+              }}
             />
             {/* Face oval guide overlay */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none" aria-hidden="true">
@@ -295,17 +333,25 @@ export default function SelfieCapture({ onCapture, onClose }: SelfieCaptureProps
             </div>
             <div>
               <p className="text-white font-semibold text-xl mb-2">Camera Access Denied</p>
-              <p className="text-white/50 text-sm leading-relaxed">
-                Please allow camera access in your browser settings and try again, or upload a photo directly.
-              </p>
+              {isIOS ? (
+                <p className="text-white/50 text-sm leading-relaxed">
+                  To enable camera, go to Settings &rsaquo; Safari &rsaquo; Camera and allow access for this site.
+                </p>
+              ) : (
+                <p className="text-white/50 text-sm leading-relaxed">
+                  Please allow camera access in your browser settings and try again, or upload a photo directly.
+                </p>
+              )}
             </div>
-            <button
-              onClick={handleTryAgain}
-              className="min-h-[52px] w-full px-8 bg-white/8 hover:bg-white/14 active:scale-[0.95] text-white font-semibold rounded-full transition-all duration-150 text-base border border-white/15"
-              aria-label="Try requesting camera permission again"
-            >
-              Try Again
-            </button>
+            {!isIOS && (
+              <button
+                onClick={handleTryAgain}
+                className="min-h-[52px] w-full px-8 bg-white/10 hover:bg-white/15 active:scale-[0.95] text-white font-semibold rounded-full transition-all duration-150 text-base border border-white/15"
+                aria-label="Try requesting camera permission again"
+              >
+                Try Again
+              </button>
+            )}
             <button
               onClick={() => fileInputRef.current?.click()}
               className="min-h-[52px] w-full px-8 bg-[#4F56E8] hover:bg-[#5B63F0] active:scale-[0.95] text-white font-semibold rounded-full transition-all duration-150 text-base shadow-lg shadow-[#4F56E8]/30"
@@ -317,7 +363,6 @@ export default function SelfieCapture({ onCapture, onClose }: SelfieCaptureProps
               ref={fileInputRef}
               type="file"
               accept="image/*"
-              capture="user"
               className="hidden"
               onChange={handleFileInput}
             />
@@ -349,7 +394,6 @@ export default function SelfieCapture({ onCapture, onClose }: SelfieCaptureProps
               ref={fileInputRef}
               type="file"
               accept="image/*"
-              capture="user"
               className="hidden"
               onChange={handleFileInput}
             />
@@ -362,7 +406,8 @@ export default function SelfieCapture({ onCapture, onClose }: SelfieCaptureProps
         {state === "preview" && (
           <button
             onClick={takePhoto}
-            className="flex-1 min-h-[52px] bg-[#4F56E8] hover:bg-[#5B63F0] active:scale-[0.95] text-white rounded-full text-base font-bold tracking-wide transition-all duration-150 shadow-lg shadow-[#4F56E8]/30"
+            disabled={capturing}
+            className="flex-1 min-h-[52px] bg-[#4F56E8] hover:bg-[#5B63F0] active:scale-[0.95] text-white rounded-full text-base font-bold tracking-wide transition-all duration-150 shadow-lg shadow-[#4F56E8]/30 disabled:opacity-60 disabled:pointer-events-none"
             aria-label="Take photo"
           >
             Take Photo
@@ -374,7 +419,7 @@ export default function SelfieCapture({ onCapture, onClose }: SelfieCaptureProps
             <button
               onClick={retake}
               disabled={restarting}
-              className="flex-1 min-h-[52px] bg-white/8 hover:bg-white/14 active:scale-[0.95] text-white rounded-full text-base font-semibold transition-all duration-150 border border-white/15 disabled:opacity-50 disabled:pointer-events-none"
+              className="flex-1 min-h-[52px] bg-white/10 hover:bg-white/15 active:scale-[0.95] text-white rounded-full text-base font-semibold transition-all duration-150 border border-white/15 disabled:opacity-50 disabled:pointer-events-none"
               aria-label="Retake photo"
             >
               {restarting ? "Restarting…" : "Retake"}

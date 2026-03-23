@@ -11,6 +11,7 @@ type Stage = "welcome" | "form" | "success";
 export function ItinKiosk() {
   const [stage, setStage] = useState<Stage>("welcome");
   const [fadeIn, setFadeIn] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Fade-in on mount
@@ -33,8 +34,17 @@ export function ItinKiosk() {
 
   const resetToWelcome = useCallback(() => {
     setStage("welcome");
+    setShowConfirm(false);
     if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
   }, []);
+
+  const handleStartOver = useCallback(() => {
+    if (stage === "form") {
+      setShowConfirm(true);
+    } else {
+      resetToWelcome();
+    }
+  }, [stage, resetToWelcome]);
 
   const startForm = useCallback(() => {
     setStage("form");
@@ -43,7 +53,7 @@ export function ItinKiosk() {
   return (
     <div
       className={`
-        min-h-[100dvh] flex flex-col
+        min-h-screen min-h-[100dvh] flex flex-col
         bg-gradient-to-br from-[#0F1B2D] via-[#1A3A5C] to-[#0F1B2D]
         text-white overflow-hidden relative
         transition-opacity duration-700
@@ -78,7 +88,7 @@ export function ItinKiosk() {
         </div>
         {stage !== "welcome" && (
           <button
-            onClick={resetToWelcome}
+            onClick={handleStartOver}
             className="
               text-xs font-medium px-4 py-2 rounded-full
               bg-white/10 text-white/60 backdrop-blur-sm
@@ -97,6 +107,44 @@ export function ItinKiosk() {
         {stage === "form" && <ItinForm onSuccess={() => setStage("success")} />}
         {stage === "success" && <SuccessScreen onReset={resetToWelcome} />}
       </div>
+
+      {/* Start Over confirmation overlay */}
+      {showConfirm && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="mx-6 w-full max-w-sm rounded-2xl bg-[#1A2D45] border border-white/10 p-8 shadow-2xl">
+            <h3 className="text-xl font-bold text-white text-center mb-3">
+              Start Over?
+            </h3>
+            <p className="text-white/50 text-sm text-center mb-8 leading-relaxed">
+              All progress will be lost. This cannot be undone.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowConfirm(false)}
+                className="
+                  flex-1 py-3 rounded-xl
+                  bg-white/10 text-white/70 font-semibold text-base
+                  hover:bg-white/15 hover:text-white/90 active:scale-[0.97]
+                  transition-all duration-200
+                "
+              >
+                Cancel
+              </button>
+              <button
+                onClick={resetToWelcome}
+                className="
+                  flex-1 py-3 rounded-xl
+                  bg-red-500/80 text-white font-semibold text-base
+                  hover:bg-red-500 active:scale-[0.97]
+                  transition-all duration-200
+                "
+              >
+                Yes, Start Over
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

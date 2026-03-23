@@ -3,7 +3,8 @@
 import { useRef, useEffect, useState, useCallback } from "react";
 
 interface SignaturePadProps {
-  onSign: (file: File) => void;
+  onSave?: (file: File) => void;
+  onSign?: (file: File) => void;
   onClose: () => void;
 }
 
@@ -14,7 +15,19 @@ interface Point {
   time: number;
 }
 
-export default function SignaturePad({ onSign, onClose }: SignaturePadProps) {
+function canvasToFile(canvas: HTMLCanvasElement, filename: string): File {
+  const dataUrl = canvas.toDataURL("image/png", 1.0);
+  const byteString = atob(dataUrl.split(",")[1]);
+  const mimeString = dataUrl.split(",")[0].split(":")[1].split(";")[0];
+  const ab = new ArrayBuffer(byteString.length);
+  const ia = new Uint8Array(ab);
+  for (let i = 0; i < byteString.length; i++) {
+    ia[i] = byteString.charCodeAt(i);
+  }
+  return new File([ab], filename, { type: mimeString });
+}
+
+export default function SignaturePad({ onSave, onSign, onClose }: SignaturePadProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isEmpty, setIsEmpty] = useState(true);
@@ -22,6 +35,12 @@ export default function SignaturePad({ onSign, onClose }: SignaturePadProps) {
   const [mounted, setMounted] = useState(false);
   const lastPointRef = useRef<Point | null>(null);
   const pointsBufferRef = useRef<Point[]>([]);
+  const isDrawingRef = useRef(false);
+
+  // Keep ref in sync so ResizeObserver callback can read it without stale closure
+  useEffect(() => {
+    isDrawingRef.current = isDrawing;
+  }, [isDrawing]);
 
   // Mount animation
   useEffect(() => {
@@ -36,8 +55,20 @@ export default function SignaturePad({ onSign, onClose }: SignaturePadProps) {
     }
   }, [mounted]);
 
+  // Escape key to close
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [onClose]);
+
   // Resize canvas to fill container while maintaining generous height
   const resizeCanvas = useCallback(() => {
+    // Skip resize while actively drawing to avoid interrupting a stroke
+    if (isDrawingRef.current) return;
+
     const canvas = canvasRef.current;
     const container = containerRef.current;
     if (!canvas || !container) return;
@@ -47,7 +78,10 @@ export default function SignaturePad({ onSign, onClose }: SignaturePadProps) {
     const minHeight = Math.round(window.innerHeight * 0.6);
     const height = Math.max(minHeight, Math.round(width * 0.55), 300);
 
+    const oldWidth = canvas.width;
+    const oldHeight = canvas.height;
     const imageData = canvas.toDataURL();
+
     canvas.width = width;
     canvas.height = height;
 
@@ -58,10 +92,10 @@ export default function SignaturePad({ onSign, onClose }: SignaturePadProps) {
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, width, height);
 
-    // Restore drawing if present
-    if (!isEmpty) {
+    // Restore drawing scaled to new dimensions
+    if (!isEmpty && oldWidth > 0 && oldHeight > 0) {
       const img = new Image();
-      img.onload = () => ctx.drawImage(img, 0, 0);
+      img.onload = () => ctx.drawImage(img, 0, 0, oldWidth, oldHeight, 0, 0, width, height);
       img.src = imageData;
     }
 
@@ -136,6 +170,7 @@ export default function SignaturePad({ onSign, onClose }: SignaturePadProps) {
 
   const startDrawing = useCallback((point: Point) => {
     setIsDrawing(true);
+    isDrawingRef.current = true;
     setIsEmpty(false);
     lastPointRef.current = point;
     pointsBufferRef.current = [point];
@@ -162,6 +197,7 @@ export default function SignaturePad({ onSign, onClose }: SignaturePadProps) {
 
   const stopDrawing = useCallback(() => {
     setIsDrawing(false);
+    isDrawingRef.current = false;
     lastPointRef.current = null;
     pointsBufferRef.current = [];
   }, []);
@@ -187,31 +223,30 @@ export default function SignaturePad({ onSign, onClose }: SignaturePadProps) {
     stopDrawing();
   };
 
-  // Touch events
+  // Touch events — no e.preventDefault(); touchAction: "none" on container handles scroll lock
   const handleTouchStart = (e: React.TouchEvent<HTMLCanvasElement>) => {
-    e.preventDefault();
     const canvas = canvasRef.current;
     if (!canvas) return;
     const touch = e.touches[0];
     // `force` is a non-standard Apple Pencil / 3D Touch property not in the TS lib types
     const force = (touch as Touch & { force?: number }).force ?? 0;
-    const pressure = force > 0 ? force : 0.5;
+    // Apple Pencil force ranges 0–6.67; normalize to 0–1
+    const pressure = force > 0 ? Math.min(force, 1) : 0.5;
     startDrawing(getCanvasPoint(canvas, touch.clientX, touch.clientY, pressure));
   };
 
   const handleTouchMove = (e: React.TouchEvent<HTMLCanvasElement>) => {
-    e.preventDefault();
     if (!isDrawing) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
     const touch = e.touches[0];
     const force = (touch as Touch & { force?: number }).force ?? 0;
-    const pressure = force > 0 ? force : 0.5;
+    // Apple Pencil force ranges 0–6.67; normalize to 0–1
+    const pressure = force > 0 ? Math.min(force, 1) : 0.5;
     continueDrawing(getCanvasPoint(canvas, touch.clientX, touch.clientY, pressure));
   };
 
-  const handleTouchEnd = (e: React.TouchEvent<HTMLCanvasElement>) => {
-    e.preventDefault();
+  const handleTouchEnd = () => {
     stopDrawing();
   };
 
@@ -246,16 +281,10 @@ export default function SignaturePad({ onSign, onClose }: SignaturePadProps) {
     const canvas = canvasRef.current;
     if (!canvas || isEmpty) return;
 
-    canvas.toBlob(
-      (blob) => {
-        if (!blob) return;
-        const file = new File([blob], "signature.png", { type: "image/png" });
-        onSign(file);
-      },
-      "image/png",
-      1.0
-    );
-  }, [isEmpty, onSign]);
+    const file = canvasToFile(canvas, "signature.png");
+    if (onSign) onSign(file);
+    if (onSave) onSave(file);
+  }, [isEmpty, onSign, onSave]);
 
   return (
     <div
@@ -302,7 +331,7 @@ export default function SignaturePad({ onSign, onClose }: SignaturePadProps) {
         <div
           ref={containerRef}
           className="relative flex-1 rounded-2xl overflow-hidden border border-white/15 bg-white shadow-2xl"
-          style={{ minHeight: 300 }}
+          style={{ minHeight: 300, touchAction: "none" }}
         >
           <canvas
             ref={canvasRef}
@@ -352,7 +381,7 @@ export default function SignaturePad({ onSign, onClose }: SignaturePadProps) {
           className={`min-h-[52px] px-6 rounded-full text-base font-semibold transition-all duration-150 border ${
             isEmpty
               ? "border-white/10 text-white/25 cursor-not-allowed"
-              : "border-white/20 text-white bg-white/8 hover:bg-white/14 active:scale-[0.98]"
+              : "border-white/20 text-white bg-white/10 hover:bg-white/15 active:scale-[0.98]"
           }`}
           aria-label="Clear signature"
         >

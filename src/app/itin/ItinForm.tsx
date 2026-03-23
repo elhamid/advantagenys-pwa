@@ -4,9 +4,30 @@ import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 
 // Lazy-load capture components — they're heavy (camera APIs, canvas processing)
-const DocumentScanner = dynamic(() => import("./DocumentScanner"), { ssr: false });
-const SelfieCapture = dynamic(() => import("./SelfieCapture"), { ssr: false });
-const SignaturePad = dynamic(() => import("./SignaturePad"), { ssr: false });
+const DocumentScanner = dynamic(() => import("./DocumentScanner"), {
+  ssr: false,
+  loading: () => (
+    <div className="fixed inset-0 z-50 bg-[#0F1B2D] flex items-center justify-center">
+      <span className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+    </div>
+  ),
+});
+const SelfieCapture = dynamic(() => import("./SelfieCapture"), {
+  ssr: false,
+  loading: () => (
+    <div className="fixed inset-0 z-50 bg-[#0F1B2D] flex items-center justify-center">
+      <span className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+    </div>
+  ),
+});
+const SignaturePad = dynamic(() => import("./SignaturePad"), {
+  ssr: false,
+  loading: () => (
+    <div className="fixed inset-0 z-50 bg-[#0F1B2D] flex items-center justify-center">
+      <span className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+    </div>
+  ),
+});
 
 /* ═══════════════════════════════════════════════
    Types & Constants
@@ -94,10 +115,10 @@ function useKeyboardHeight() {
     }
 
     vv.addEventListener("resize", onResize);
-    vv.addEventListener("scroll", onResize);
+    // NOTE: scroll listener removed — causes false positive keyboard detection
+    // when iPad Safari address bar hides/shows
     return () => {
       vv.removeEventListener("resize", onResize);
-      vv.removeEventListener("scroll", onResize);
     };
   }, []);
 
@@ -118,19 +139,38 @@ export function ItinForm({ onSuccess }: Props) {
   // Capture overlay states
   const [showDocScanner, setShowDocScanner] = useState(false);
   const [showSelfieCapture, setShowSelfieCapture] = useState(false);
+  const [showSignaturePad, setShowSignaturePad] = useState(false);
 
   // Preview URLs for captured files
   const [docPreview, setDocPreview] = useState<string | null>(null);
   const [selfiePreview, setSelfiePreview] = useState<string | null>(null);
   const [sigPreview, setSigPreview] = useState<string | null>(null);
 
-  // Direction for slide animation
+  // Refs for object URL cleanup on unmount
+  const docPreviewRef = useRef<string | null>(null);
+  const selfiePreviewRef = useRef<string | null>(null);
+  const sigPreviewRef = useRef<string | null>(null);
+
+  // Slide animation state
+  const [displayStep, setDisplayStep] = useState(0);
+  const [animPhase, setAnimPhase] = useState<"idle" | "exit" | "enter">("idle");
   const [slideDirection, setSlideDirection] = useState<"left" | "right">("left");
-  const [animating, setAnimating] = useState(false);
 
   // Track iPad/mobile keyboard height so Continue button stays visible
   const kbHeight = useKeyboardHeight();
   const formRef = useRef<HTMLDivElement>(null);
+
+  // Ref for focusing first input after step transition
+  const stepContentRef = useRef<HTMLDivElement>(null);
+
+  // Revoke all object URLs on unmount
+  useEffect(() => {
+    return () => {
+      if (docPreviewRef.current) URL.revokeObjectURL(docPreviewRef.current);
+      if (selfiePreviewRef.current) URL.revokeObjectURL(selfiePreviewRef.current);
+      if (sigPreviewRef.current) URL.revokeObjectURL(sigPreviewRef.current);
+    };
+  }, []);
 
   const update = useCallback(
     <K extends keyof ItinData>(field: K, value: ItinData[K]) => {
@@ -154,7 +194,10 @@ export function ItinForm({ onSuccess }: Props) {
     (file: File) => {
       update("documentScan", file);
       update("hasPassport", true);
-      setDocPreview(createPreviewUrl(file));
+      const url = createPreviewUrl(file);
+      if (docPreviewRef.current) URL.revokeObjectURL(docPreviewRef.current);
+      docPreviewRef.current = url;
+      setDocPreview(url);
       setShowDocScanner(false);
     },
     [update, createPreviewUrl]
@@ -163,7 +206,10 @@ export function ItinForm({ onSuccess }: Props) {
   const handleSelfieCapture = useCallback(
     (file: File) => {
       update("selfie", file);
-      setSelfiePreview(createPreviewUrl(file));
+      const url = createPreviewUrl(file);
+      if (selfiePreviewRef.current) URL.revokeObjectURL(selfiePreviewRef.current);
+      selfiePreviewRef.current = url;
+      setSelfiePreview(url);
       setShowSelfieCapture(false);
     },
     [update, createPreviewUrl]
@@ -172,7 +218,11 @@ export function ItinForm({ onSuccess }: Props) {
   const handleSignatureSave = useCallback(
     (file: File) => {
       update("signature", file);
-      setSigPreview(createPreviewUrl(file));
+      const url = createPreviewUrl(file);
+      if (sigPreviewRef.current) URL.revokeObjectURL(sigPreviewRef.current);
+      sigPreviewRef.current = url;
+      setSigPreview(url);
+      setShowSignaturePad(false);
     },
     [update, createPreviewUrl]
   );
@@ -180,21 +230,30 @@ export function ItinForm({ onSuccess }: Props) {
   const clearDoc = useCallback(() => {
     update("documentScan", null);
     update("hasPassport", false);
-    if (docPreview) URL.revokeObjectURL(docPreview);
+    if (docPreviewRef.current) {
+      URL.revokeObjectURL(docPreviewRef.current);
+      docPreviewRef.current = null;
+    }
     setDocPreview(null);
-  }, [update, docPreview]);
+  }, [update]);
 
   const clearSelfie = useCallback(() => {
     update("selfie", null);
-    if (selfiePreview) URL.revokeObjectURL(selfiePreview);
+    if (selfiePreviewRef.current) {
+      URL.revokeObjectURL(selfiePreviewRef.current);
+      selfiePreviewRef.current = null;
+    }
     setSelfiePreview(null);
-  }, [update, selfiePreview]);
+  }, [update]);
 
   const clearSignature = useCallback(() => {
     update("signature", null);
-    if (sigPreview) URL.revokeObjectURL(sigPreview);
+    if (sigPreviewRef.current) {
+      URL.revokeObjectURL(sigPreviewRef.current);
+      sigPreviewRef.current = null;
+    }
     setSigPreview(null);
-  }, [update, sigPreview]);
+  }, [update]);
 
   // ─── Validation ───
 
@@ -222,15 +281,33 @@ export function ItinForm({ onSuccess }: Props) {
     return Object.keys(errs).length === 0;
   }
 
-  function transitionToStep(target: number) {
-    if (animating || target === step) return;
-    setSlideDirection(target > step ? "left" : "right");
-    setAnimating(true);
-    // Allow brief animation frame before switching
+  // Focus first input of new step after transition
+  function focusFirstInput() {
     requestAnimationFrame(() => {
-      setStep(target);
-      setTimeout(() => setAnimating(false), 350);
+      if (!stepContentRef.current) return;
+      const focusable = stepContentRef.current.querySelector<HTMLElement>(
+        'input:not([disabled]), textarea:not([disabled]), select:not([disabled]), button:not([disabled])'
+      );
+      focusable?.focus();
     });
+  }
+
+  function transitionToStep(target: number) {
+    if (animPhase !== "idle" || target === step) return;
+    setSlideDirection(target > step ? "left" : "right");
+    // Phase 1: exit animation on current step
+    setAnimPhase("exit");
+    setTimeout(() => {
+      // Phase 2: switch step, begin enter animation
+      setStep(target);
+      setDisplayStep(target);
+      setAnimPhase("enter");
+      setTimeout(() => {
+        // Phase 3: animation complete
+        setAnimPhase("idle");
+        focusFirstInput();
+      }, 300);
+    }, 250);
   }
 
   function nextStep() {
@@ -247,6 +324,7 @@ export function ItinForm({ onSuccess }: Props) {
   // ─── Submit ───
 
   async function handleSubmit() {
+    if (submitting) return;
     if (!validateStep(step)) return;
     setSubmitting(true);
     setSubmitError(null);
@@ -310,6 +388,21 @@ export function ItinForm({ onSuccess }: Props) {
     return completed;
   }, [data.firstName, data.lastName, data.phone, data.city, data.documentScan, data.selfie, data.signature]);
 
+  // Compute animation classes for step content
+  const getStepAnimClass = () => {
+    if (animPhase === "exit") {
+      return slideDirection === "left"
+        ? "opacity-0 -translate-x-5"
+        : "opacity-0 translate-x-5";
+    }
+    if (animPhase === "enter") {
+      return slideDirection === "left"
+        ? "opacity-0 translate-x-5"
+        : "opacity-0 -translate-x-5";
+    }
+    return "opacity-100 translate-x-0";
+  };
+
   return (
     <>
       <div ref={formRef} className="flex-1 flex flex-col px-4 sm:px-6 md:px-12 lg:px-24 max-w-3xl mx-auto w-full relative">
@@ -324,11 +417,12 @@ export function ItinForm({ onSuccess }: Props) {
                 }}
                 className="flex flex-col items-center gap-1.5 group"
                 disabled={i > step}
+                aria-label={`Step ${i + 1}: ${s.label}${completedSteps.has(i) ? ' (completed)' : ''}`}
               >
-                {/* Step circle */}
+                {/* Step circle — 44px min for Apple HIG */}
                 <div
                   className={`
-                    w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center
+                    w-10 h-10 sm:w-11 sm:h-11 rounded-full flex items-center justify-center
                     text-xs font-bold transition-all duration-300
                     ${
                       i === step
@@ -351,7 +445,7 @@ export function ItinForm({ onSuccess }: Props) {
                 {/* Step label */}
                 <span
                   className={`
-                    text-[10px] sm:text-xs font-medium transition-colors duration-200
+                    text-xs font-medium transition-colors duration-200
                     ${i === step ? "text-[#818CF8]" : i < step ? "text-white/40" : "text-white/20"}
                   `}
                 >
@@ -371,23 +465,20 @@ export function ItinForm({ onSuccess }: Props) {
 
         {/* ─── Scrollable Form Content ─── */}
         <div
+          ref={stepContentRef}
+          aria-live="polite"
           className={`
-            flex-1 overflow-y-auto pb-20 transition-all duration-300 ease-out
-            ${animating
-              ? slideDirection === "left"
-                ? "opacity-0 translate-x-4"
-                : "opacity-0 -translate-x-4"
-              : "opacity-100 translate-x-0"
-            }
+            flex-1 overflow-y-auto pb-20 transition-all duration-250 ease-out
+            ${getStepAnimClass()}
           `}
         >
-          {step === 0 && (
+          {displayStep === 0 && (
             <StepPersonal data={data} errors={errors} update={update} />
           )}
-          {step === 1 && (
+          {displayStep === 1 && (
             <StepLocation data={data} errors={errors} update={update} />
           )}
-          {step === 2 && (
+          {displayStep === 2 && (
             <StepDocument
               data={data}
               docPreview={docPreview}
@@ -395,7 +486,7 @@ export function ItinForm({ onSuccess }: Props) {
               onClear={clearDoc}
             />
           )}
-          {step === 3 && (
+          {displayStep === 3 && (
             <StepSelfie
               data={data}
               selfiePreview={selfiePreview}
@@ -403,14 +494,14 @@ export function ItinForm({ onSuccess }: Props) {
               onClear={clearSelfie}
             />
           )}
-          {step === 4 && (
+          {displayStep === 4 && (
             <StepReview
               data={data}
               errors={errors}
               docPreview={docPreview}
               selfiePreview={selfiePreview}
               sigPreview={sigPreview}
-              onSaveSignature={handleSignatureSave}
+              onOpenSignaturePad={() => setShowSignaturePad(true)}
               onClearSignature={clearSignature}
             />
           )}
@@ -426,10 +517,34 @@ export function ItinForm({ onSuccess }: Props) {
           </div>
         )}
 
+        {/* ─── Keyboard Dismiss Button ─── */}
+        {kbHeight > 0 && (
+          <div
+            className="fixed left-0 right-0 z-30 flex justify-end px-4 sm:px-6 md:px-12 lg:px-24 transition-[bottom] duration-200 ease-out"
+            style={{ bottom: `${kbHeight}px` }}
+          >
+            <button
+              type="button"
+              onClick={() => (document.activeElement as HTMLElement)?.blur()}
+              className="
+                mb-1 px-4 py-2 rounded-lg text-xs font-semibold
+                bg-white/10 backdrop-blur-sm text-white/70
+                hover:bg-white/20 hover:text-white
+                active:scale-[0.97] transition-all duration-150
+              "
+            >
+              Done
+            </button>
+          </div>
+        )}
+
         {/* ─── Fixed Bottom Navigation — follows keyboard ─── */}
         <div
           className="fixed left-0 right-0 z-20 px-4 sm:px-6 md:px-12 lg:px-24 pt-3 pb-4 transition-[bottom] duration-200 ease-out"
-          style={{ bottom: kbHeight > 0 ? `${kbHeight}px` : "0px" }}
+          style={{
+            bottom: kbHeight > 0 ? `${kbHeight}px` : "0px",
+            paddingBottom: kbHeight > 0 ? undefined : "max(1rem, env(safe-area-inset-bottom))",
+          }}
         >
           {/* Gradient backdrop — blends into the dark background */}
           <div className="absolute inset-0 bg-gradient-to-t from-[#0F1B2D] via-[#0F1B2D]/98 to-transparent pointer-events-none" />
@@ -528,6 +643,13 @@ export function ItinForm({ onSuccess }: Props) {
           }}
         />
       )}
+
+      {showSignaturePad && (
+        <SignaturePad
+          onSign={handleSignatureSave}
+          onClose={() => setShowSignaturePad(false)}
+        />
+      )}
     </>
   );
 }
@@ -536,9 +658,17 @@ export function ItinForm({ onSuccess }: Props) {
    Shared UI Primitives
    ═══════════════════════════════════════════════ */
 
-function Label({ children, required }: { children: React.ReactNode; required?: boolean }) {
+function Label({
+  children,
+  required,
+  htmlFor,
+}: {
+  children: React.ReactNode;
+  required?: boolean;
+  htmlFor?: string;
+}) {
   return (
-    <label className="block text-sm font-medium text-white/70 mb-1.5">
+    <label htmlFor={htmlFor} className="block text-sm font-medium text-white/70 mb-1.5">
       {children}
       {required && <span className="text-[#818CF8] ml-0.5">*</span>}
     </label>
@@ -554,6 +684,7 @@ function Input({
   inputMode,
   autoComplete,
   large,
+  id,
 }: {
   value: string;
   onChange: (v: string) => void;
@@ -563,10 +694,12 @@ function Input({
   inputMode?: "numeric" | "tel" | "email" | "text" | "decimal";
   autoComplete?: string;
   large?: boolean;
+  id?: string;
 }) {
   return (
     <>
       <input
+        id={id}
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -593,14 +726,17 @@ function TextArea({
   onChange,
   placeholder,
   rows = 3,
+  id,
 }: {
   value: string;
   onChange: (v: string) => void;
   placeholder?: string;
   rows?: number;
+  id?: string;
 }) {
   return (
     <textarea
+      id={id}
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
@@ -647,9 +783,10 @@ function EmployerBadge({
   if (editing) {
     return (
       <div>
-        <Label>Company / Employer</Label>
+        <Label htmlFor="itin-company">Company / Employer</Label>
         <div className="flex gap-2">
           <Input
+            id="itin-company"
             value={value}
             onChange={onChange}
             placeholder="Company name"
@@ -748,8 +885,9 @@ function StepPersonal({ data, errors, update }: StepProps) {
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <Label required>First Name</Label>
+          <Label required htmlFor="itin-firstName">First Name</Label>
           <Input
+            id="itin-firstName"
             value={data.firstName}
             onChange={(v) => update("firstName", v)}
             error={errors.firstName}
@@ -758,8 +896,9 @@ function StepPersonal({ data, errors, update }: StepProps) {
           />
         </div>
         <div>
-          <Label required>Last Name</Label>
+          <Label required htmlFor="itin-lastName">Last Name</Label>
           <Input
+            id="itin-lastName"
             value={data.lastName}
             onChange={(v) => update("lastName", v)}
             error={errors.lastName}
@@ -770,8 +909,9 @@ function StepPersonal({ data, errors, update }: StepProps) {
       </div>
 
       <div>
-        <Label required>Phone Number</Label>
+        <Label required htmlFor="itin-phone">Phone Number</Label>
         <Input
+          id="itin-phone"
           value={data.phone}
           onChange={(v) => update("phone", v)}
           error={errors.phone}
@@ -784,8 +924,9 @@ function StepPersonal({ data, errors, update }: StepProps) {
       </div>
 
       <div>
-        <Label>Email</Label>
+        <Label htmlFor="itin-email">Email</Label>
         <Input
+          id="itin-email"
           value={data.email}
           onChange={(v) => update("email", v)}
           error={errors.email}
@@ -852,8 +993,9 @@ function StepLocation({ data, errors, update }: StepProps) {
       </div>
 
       <div>
-        <Label>US Address</Label>
+        <Label htmlFor="itin-addressUsa">US Address</Label>
         <TextArea
+          id="itin-addressUsa"
           value={data.addressUsa}
           onChange={(v) => update("addressUsa", v)}
           placeholder="Street, City, State, ZIP"
@@ -862,8 +1004,9 @@ function StepLocation({ data, errors, update }: StepProps) {
       </div>
 
       <div>
-        <Label>Home Country Address</Label>
+        <Label htmlFor="itin-addressHomeCountry">Home Country Address</Label>
         <TextArea
+          id="itin-addressHomeCountry"
           value={data.addressHomeCountry}
           onChange={(v) => update("addressHomeCountry", v)}
           placeholder="Full address in your home country"
@@ -872,8 +1015,9 @@ function StepLocation({ data, errors, update }: StepProps) {
       </div>
 
       <div>
-        <Label>Annual Earnings ($)</Label>
+        <Label htmlFor="itin-amount">Annual Earnings ($)</Label>
         <Input
+          id="itin-amount"
           value={data.amount}
           onChange={(v) => update("amount", v)}
           placeholder="0.00"
@@ -1118,7 +1262,7 @@ function StepReview({
   docPreview,
   selfiePreview,
   sigPreview,
-  onSaveSignature,
+  onOpenSignaturePad,
   onClearSignature,
 }: {
   data: ItinData;
@@ -1126,7 +1270,7 @@ function StepReview({
   docPreview: string | null;
   selfiePreview: string | null;
   sigPreview: string | null;
-  onSaveSignature: (file: File) => void;
+  onOpenSignaturePad: () => void;
   onClearSignature: () => void;
 }) {
   const cityLabel = CITIES.find((c) => c.value === data.city)?.label || data.city;
@@ -1227,7 +1371,7 @@ function StepReview({
         </div>
       </div>
 
-      {/* Signature Section */}
+      {/* Signature Section — toggle pattern like cameras */}
       <div>
         <div className="flex items-center justify-between mb-2">
           <Label required>Signature</Label>
@@ -1243,30 +1387,68 @@ function StepReview({
         </div>
 
         {data.signature && sigPreview ? (
-          /* Signed preview */
-          <div className="rounded-xl border border-emerald-500/20 bg-white/[0.04] p-3">
-            <div className="flex items-center gap-2 mb-2">
-              <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-              </svg>
-              <span className="text-emerald-400 text-xs font-semibold">Signed</span>
+          /* Signed preview with retake */
+          <div className="space-y-3">
+            <div className="rounded-xl border border-emerald-500/20 bg-white/[0.04] p-3">
+              <div className="flex items-center gap-2 mb-2">
+                <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+                <span className="text-emerald-400 text-xs font-semibold">Signed</span>
+              </div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={sigPreview}
+                alt="Your signature"
+                className="w-full h-24 object-contain rounded-lg bg-white"
+              />
             </div>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={sigPreview}
-              alt="Your signature"
-              className="w-full h-24 object-contain rounded-lg bg-white"
-            />
+            <button
+              type="button"
+              onClick={onOpenSignaturePad}
+              className="
+                w-full flex items-center justify-center gap-2
+                px-4 py-3 rounded-xl text-sm font-semibold
+                bg-white/5 border border-white/10 text-white/60
+                hover:bg-white/10 hover:text-white/80
+                active:scale-[0.97] transition-all duration-200
+                min-h-[48px]
+              "
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              Retake Signature
+            </button>
           </div>
         ) : (
-          /* Signature pad inline */
+          /* Tap to Sign CTA — opens overlay */
           <div>
-            <SignaturePad
-              onSign={onSaveSignature}
-              onClose={() => {
-                /* no-op: pad is always visible on review step */
-              }}
-            />
+            <button
+              type="button"
+              onClick={onOpenSignaturePad}
+              className="
+                w-full py-10 rounded-2xl border-2 border-dashed border-[#4F56E8]/30
+                bg-[#4F56E8]/5 hover:bg-[#4F56E8]/10
+                flex flex-col items-center gap-3
+                transition-all duration-200 active:scale-[0.98]
+                group
+              "
+            >
+              <div className="w-14 h-14 rounded-2xl bg-[#4F56E8]/20 flex items-center justify-center group-hover:bg-[#4F56E8]/30 transition-colors">
+                <svg className="w-7 h-7 text-[#818CF8]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                </svg>
+              </div>
+              <div className="text-center">
+                <span className="text-base font-semibold text-white/80 block">
+                  Tap to Sign
+                </span>
+                <span className="text-sm text-white/40 mt-1 block">
+                  Draw your signature with finger or stylus
+                </span>
+              </div>
+            </button>
             {errors.signature && (
               <p className="mt-2 text-xs text-red-400">{errors.signature}</p>
             )}
