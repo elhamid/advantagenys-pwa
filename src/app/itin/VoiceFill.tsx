@@ -406,15 +406,6 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
       transcriptRef.current = finalParts;
       setTranscript(finalParts);
       setInterimText(interimParts);
-
-      // Real-time client-side extraction — context-aware based on current highlighted field
-      const fullText = finalParts + " " + interimParts;
-      const cfIdx = currentFieldIndexRef.current;
-      const cfKey = cfIdx >= 0 ? fields[cfIdx]?.key : undefined;
-      const clientExtracted = extractFromTranscript(fullText, cfKey, extractedRef.current);
-      if (Object.keys(clientExtracted).length > 0) {
-        setExtracted((prev) => ({ ...prev, ...clientExtracted }));
-      }
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -715,21 +706,19 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
       {/* ── Bottom section ── */}
       <div className="shrink-0 pb-8 pt-3 flex flex-col items-center gap-3 px-5">
 
-        {/* Live transcript line */}
-        <div className="text-center px-5 py-1 text-sm text-white/40 italic truncate w-full max-w-md min-h-[24px]">
+        {/* Live transcript */}
+        <div className="text-center px-4 py-2 w-full max-w-lg min-h-[32px]">
           {(transcript || interimText) ? (
-            <>
-              &ldquo;
-              <span className="text-white/50">{transcript}</span>
+            <p className="text-lg leading-relaxed">
+              <span className="text-white/70">{transcript}</span>
               {interimText && (
-                <span className="text-white/25">{transcript ? " " : ""}{interimText}</span>
+                <span className="text-white/30">{transcript ? " " : ""}{interimText}</span>
               )}
-              &rdquo;
-            </>
+            </p>
           ) : state === "processing" ? (
             <span className="flex items-center justify-center gap-2">
-              <span className="block w-3.5 h-3.5 border-2 border-white/10 border-t-[#818CF8] rounded-full animate-spin" />
-              <span className="text-white/30">Refining...</span>
+              <span className="block w-4 h-4 border-2 border-white/10 border-t-[#818CF8] rounded-full animate-spin" />
+              <span className="text-white/40 text-base">AVA is processing...</span>
             </span>
           ) : null}
         </div>

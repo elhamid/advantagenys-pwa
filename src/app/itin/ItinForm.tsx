@@ -524,20 +524,25 @@ export function ItinForm({ onSuccess }: Props) {
             type="button"
             onClick={() => setShowVoiceFill(true)}
             className="
-              mb-3 w-full py-3 px-4 rounded-xl
-              bg-[#4F56E8]/10 border border-[#4F56E8]/20
-              flex items-center gap-3
-              hover:bg-[#4F56E8]/20 active:scale-[0.98]
-              transition-all duration-200
+              mb-4 w-full py-5 px-6 rounded-2xl
+              bg-gradient-to-r from-[#4F56E8]/20 to-[#818CF8]/15
+              border-2 border-[#4F56E8]/30
+              flex items-center gap-4
+              hover:from-[#4F56E8]/30 hover:to-[#818CF8]/25
+              active:scale-[0.97] transition-all duration-200
+              shadow-[0_0_30px_rgba(79,86,232,0.1)]
             "
           >
-            <div className="w-9 h-9 rounded-full bg-[#4F56E8] flex items-center justify-center shrink-0">
-              <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <div className="w-14 h-14 rounded-full bg-[#4F56E8] flex items-center justify-center shrink-0 shadow-[0_0_25px_rgba(79,86,232,0.3)]">
+              <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
               </svg>
             </div>
-            <span className="text-white/70 text-sm font-medium">Speak to fill with AVA</span>
-            <svg className="w-4 h-4 text-white/20 ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <div className="flex-1 text-left">
+              <span className="text-white font-bold text-lg block">Speak to Fill</span>
+              <span className="text-white/40 text-sm">Let AVA fill the form by voice</span>
+            </div>
+            <svg className="w-5 h-5 text-white/25 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
             </svg>
           </button>
