@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
+import AddressAutocomplete from "./AddressAutocomplete";
 
 // Lazy-load capture components — they're heavy (camera APIs, canvas processing)
 const DocumentScanner = dynamic(() => import("./DocumentScanner"), {
@@ -994,14 +995,11 @@ function StepLocation({ data, errors, update }: StepProps) {
 
       <div>
         <Label htmlFor="itin-addressUsa">US Address</Label>
-        <Input
+        <AddressAutocomplete
           id="itin-addressUsa"
           value={data.addressUsa}
           onChange={(v) => update("addressUsa", v)}
           placeholder="123 Main St, City, State, ZIP"
-          autoComplete="street-address"
-          inputMode="numeric"
-          large
         />
       </div>
 
