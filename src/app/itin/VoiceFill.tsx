@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 
 /* ═══════════════════════════════════════════════
    Web Speech API — use `any` to avoid Turbopack
@@ -18,33 +18,34 @@ interface FieldDef {
   key: string;
   label: string;
   prompt: string;
+  hint: string;
 }
 
 const STEP_FIELDS: Record<number, FieldDef[]> = {
   0: [
-    { key: "firstName", label: "First Name", prompt: "your first name" },
-    { key: "lastName", label: "Last Name", prompt: "your last name" },
-    { key: "middleName", label: "Middle Name", prompt: "your middle name if you have one" },
-    { key: "dateOfBirth", label: "Date of Birth", prompt: "your date of birth" },
-    { key: "cityOfBirth", label: "Birth City", prompt: "the city you were born in" },
-    { key: "countryOfBirth", label: "Birth Country", prompt: "the country you were born in" },
-    { key: "countryOfCitizenship", label: "Citizenship", prompt: "your country of citizenship" },
-    { key: "phone", label: "Phone", prompt: "your phone number" },
-    { key: "email", label: "Email", prompt: "your email address" },
+    { key: "firstName", label: "First Name", prompt: "your first name", hint: "e.g. Kemar" },
+    { key: "lastName", label: "Last Name", prompt: "your last name", hint: "e.g. Campbell" },
+    { key: "middleName", label: "Middle Name", prompt: "your middle name if you have one", hint: "e.g. Anthony" },
+    { key: "dateOfBirth", label: "Date of Birth", prompt: "your date of birth", hint: "e.g. March 5, 1990" },
+    { key: "cityOfBirth", label: "Birth City", prompt: "the city you were born in", hint: "e.g. Kingston" },
+    { key: "countryOfBirth", label: "Birth Country", prompt: "the country you were born in", hint: "e.g. Jamaica" },
+    { key: "countryOfCitizenship", label: "Citizenship", prompt: "your country of citizenship", hint: "e.g. Jamaica" },
+    { key: "phone", label: "Phone", prompt: "your phone number", hint: "e.g. 929-555-0123" },
+    { key: "email", label: "Email", prompt: "your email address", hint: "e.g. kemar@email.com" },
   ],
   1: [
-    { key: "city", label: "Appointment City", prompt: "New York or Nashville" },
-    { key: "addressUsa", label: "US Address", prompt: "your US address" },
-    { key: "usEntryDate", label: "Entry Date", prompt: "when you entered the US" },
-    { key: "homeCountry", label: "Home Country", prompt: "your home country" },
-    { key: "homeCity", label: "Home City", prompt: "your home city" },
-    { key: "homeAddress", label: "Home Address", prompt: "your home address" },
-    { key: "amount", label: "Annual Earnings", prompt: "your annual earnings" },
+    { key: "city", label: "Appointment City", prompt: "New York or Nashville", hint: "New York or Nashville" },
+    { key: "addressUsa", label: "US Address", prompt: "your US address", hint: "e.g. 123 Main St, Brooklyn" },
+    { key: "usEntryDate", label: "Entry Date", prompt: "when you entered the US", hint: "e.g. January 2023" },
+    { key: "homeCountry", label: "Home Country", prompt: "your home country", hint: "e.g. Mexico" },
+    { key: "homeCity", label: "Home City", prompt: "your home city", hint: "e.g. Guadalajara" },
+    { key: "homeAddress", label: "Home Address", prompt: "your home address", hint: "e.g. Calle 5 #200" },
+    { key: "amount", label: "Annual Earnings", prompt: "your annual earnings", hint: "e.g. $35,000" },
   ],
   2: [
-    { key: "passportNumber", label: "Passport Number", prompt: "your passport number" },
-    { key: "passportExpiry", label: "Passport Expiry", prompt: "your passport expiry date" },
-    { key: "passportCountry", label: "Issuing Country", prompt: "the country that issued your passport" },
+    { key: "passportNumber", label: "Passport Number", prompt: "your passport number", hint: "e.g. AB1234567" },
+    { key: "passportExpiry", label: "Passport Expiry", prompt: "your passport expiry date", hint: "e.g. Dec 2028" },
+    { key: "passportCountry", label: "Issuing Country", prompt: "the country that issued your passport", hint: "e.g. Jamaica" },
   ],
   3: [],
   4: [],
@@ -77,18 +78,6 @@ function isFilled(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;
 }
 
-/** Build the natural-language prompt from unfilled fields */
-function buildPrompt(fields: FieldDef[], currentData: Record<string, unknown>, extracted: Record<string, string>): string {
-  const unfilled = fields.filter(
-    (f) => !isFilled(currentData[f.key]) && !isFilled(extracted[f.key])
-  );
-  if (unfilled.length === 0) return "All fields captured!";
-  if (unfilled.length === 1) return `Tell me ${unfilled[0].prompt}`;
-  const last = unfilled[unfilled.length - 1];
-  const rest = unfilled.slice(0, -1);
-  return `Tell me ${rest.map((f) => f.prompt).join(", ")}, and ${last.prompt}`;
-}
-
 type VoiceState = "ready" | "listening" | "processing" | "done" | "unavailable";
 
 /* ═══════════════════════════════════════════════
@@ -104,20 +93,49 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
   const [transcript, setTranscript] = useState("");
   const [interimText, setInterimText] = useState("");
   const [extracted, setExtracted] = useState<Record<string, string>>({});
-  const [flashKeys, setFlashKeys] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
+
+  /* ─── Karaoke auto-cycle state ─── */
+  const [highlightIndex, setHighlightIndex] = useState(0);
+  const [cyclePhase, setCyclePhase] = useState<"visible" | "fading">("visible");
 
   const recognitionRef = useRef<SpeechRec | null>(null);
   const transcriptRef = useRef("");
 
-  // Mount animation
+  /* ─── Derived: unfilled / filled fields ─── */
+  const unfilledFields = useMemo(
+    () => fields.filter((f) => !isFilled(currentData[f.key]) && !isFilled(extracted[f.key])),
+    [fields, currentData, extracted]
+  );
+
+  const filledFields = useMemo(
+    () => fields.filter((f) => isFilled(currentData[f.key]) || isFilled(extracted[f.key])),
+    [fields, currentData, extracted]
+  );
+
+  const allStepFilled = fields.length > 0 && unfilledFields.length === 0;
+  const hasExtracted = Object.keys(extracted).length > 0;
+
+  /* ─── Get display value for a field ─── */
+  const getDisplayValue = useCallback(
+    (f: FieldDef): string | null => {
+      const ext = extracted[f.key];
+      if (isFilled(ext)) return ext;
+      const manual = currentData[f.key];
+      if (isFilled(manual)) return String(manual);
+      return null;
+    },
+    [extracted, currentData]
+  );
+
+  /* ─── Mount animation ─── */
   useEffect(() => {
     const frame = requestAnimationFrame(() => setMounted(true));
     return () => cancelAnimationFrame(frame);
   }, []);
 
-  // Escape key
+  /* ─── Escape key ─── */
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === "Escape") handleClose();
@@ -127,7 +145,7 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Cleanup on unmount
+  /* ─── Cleanup on unmount ─── */
   useEffect(() => {
     return () => {
       if (recognitionRef.current) {
@@ -137,8 +155,35 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
     };
   }, []);
 
-  /* ─── Close ─── */
+  /* ─── Karaoke auto-cycle ─── */
+  useEffect(() => {
+    if (state !== "ready" || unfilledFields.length === 0) return;
 
+    // Reset to valid index when unfilled fields change
+    setHighlightIndex(0);
+    setCyclePhase("visible");
+
+    const interval = setInterval(() => {
+      // Start fade out
+      setCyclePhase("fading");
+
+      // After fade out, switch field and fade in
+      setTimeout(() => {
+        setHighlightIndex((prev) => (prev + 1) % unfilledFields.length);
+        setCyclePhase("visible");
+      }, 300);
+    }, 2500);
+
+    return () => clearInterval(interval);
+  }, [state, unfilledFields.length]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  /* ─── Current karaoke field ─── */
+  const currentKaraokeField =
+    state === "ready" && unfilledFields.length > 0
+      ? unfilledFields[highlightIndex % unfilledFields.length]
+      : null;
+
+  /* ─── Close ─── */
   const handleClose = useCallback(() => {
     if (recognitionRef.current) {
       try { recognitionRef.current.abort(); } catch { /* noop */ }
@@ -148,7 +193,6 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
   }, [onClose]);
 
   /* ─── Start Listening ─── */
-
   const startListening = useCallback(() => {
     setError(null);
     setInterimText("");
@@ -190,14 +234,14 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     recognition.onerror = (event: any) => {
       if (event.error === "not-allowed" || event.error === "service-not-allowed") {
-        setError("Microphone access was denied. Please allow microphone access in your browser settings.");
+        setError("Microphone access denied. Allow mic in browser settings.");
         setState("ready");
       } else if (event.error === "no-speech") {
         // silent — stay listening
       } else if (event.error === "aborted") {
         // intentional
       } else {
-        setError(`Speech recognition error: ${event.error}. Please try again.`);
+        setError(`Speech error: ${event.error}. Try again.`);
         setState("ready");
       }
     };
@@ -209,7 +253,7 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
         if (finalTranscript.length > 0) {
           processTranscript(finalTranscript);
         } else {
-          setError("We didn't hear anything. Please speak clearly and try again.");
+          setError("Didn\u2019t catch that. Speak clearly and try again.");
           setState("ready");
         }
       }
@@ -221,13 +265,12 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
     try {
       recognition.start();
     } catch {
-      setError("Could not start speech recognition. Please try again.");
+      setError("Could not start. Try again.");
       setState("ready");
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   /* ─── Stop Listening ─── */
-
   const stopListening = useCallback(() => {
     if (recognitionRef.current) {
       try { recognitionRef.current.stop(); } catch { /* noop */ }
@@ -235,7 +278,6 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
   }, []);
 
   /* ─── Toggle mic ─── */
-
   const toggleMic = useCallback(() => {
     if (state === "listening") {
       stopListening();
@@ -245,7 +287,6 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
   }, [state, stopListening, startListening]);
 
   /* ─── Process Transcript ─── */
-
   const processTranscript = useCallback(
     async (text: string) => {
       setState("processing");
@@ -283,16 +324,11 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
           }
         }
 
-        // Trigger flash animation for newly filled fields
-        const newFlash = new Set(Object.keys(validFields));
-        setFlashKeys(newFlash);
-        setTimeout(() => setFlashKeys(new Set()), 1200);
-
         // Merge with previous extractions
         setExtracted((prev) => ({ ...prev, ...validFields }));
         setState("done");
       } catch {
-        setError("Could not process your speech. Please try again or fill in manually.");
+        setError("Could not process speech. Try again or fill manually.");
         setState("ready");
       }
     },
@@ -300,7 +336,6 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
   );
 
   /* ─── Apply and Close ─── */
-
   const handleDone = useCallback(() => {
     const toFill: Record<string, string> = {};
     for (const [key, value] of Object.entries(extracted)) {
@@ -313,40 +348,18 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
   }, [extracted, onFill, handleClose]);
 
   /* ─── Speak Again ─── */
-
   const handleSpeakAgain = useCallback(() => {
     setTranscript("");
     setInterimText("");
     startListening();
   }, [startListening]);
 
-  /* ─── Computed ─── */
-
-  const allStepFilled = fields.length > 0 && fields.every(
-    (f) => isFilled(currentData[f.key]) || isFilled(extracted[f.key])
-  );
-
-  const promptText = buildPrompt(fields, currentData, extracted);
-
-  const subtitle =
-    state === "listening"
-      ? "I'm listening..."
-      : state === "processing"
-        ? "Let me fill that in..."
-        : allStepFilled
-          ? "All fields captured!"
-          : "Tap the mic and tell me...";
-
-  const hasExtracted = Object.keys(extracted).length > 0;
-
   /* ═══════════════════════════════════════════════
      Render
      ═══════════════════════════════════════════════ */
 
   // No voice fields for this step
-  if (fields.length === 0) {
-    return null;
-  }
+  if (fields.length === 0) return null;
 
   // Voice not available
   if (state === "unavailable") {
@@ -370,7 +383,7 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
           </div>
           <h2 className="text-xl font-bold text-white mb-3">Voice Not Available</h2>
           <p className="text-white/50 text-sm leading-relaxed mb-8">
-            Voice input is not available on this device. Please fill out the form manually.
+            Voice input is not available on this device.
           </p>
           <button
             onClick={handleClose}
@@ -400,56 +413,48 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
           ? "Listening. Speak now."
           : state === "processing"
             ? "Processing your speech."
-            : ""}
+            : currentKaraokeField
+              ? `Current field: ${currentKaraokeField.label}`
+              : ""}
       </div>
 
-      {/* ── Header ── */}
-      <header className="flex items-center justify-between px-5 py-4 shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-[#4F56E8]/20 flex items-center justify-center">
-            <svg className="w-5 h-5 text-[#818CF8]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      {/* ── Header (compact) ── */}
+      <header className="flex items-center justify-between px-5 py-3 shrink-0">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-lg bg-[#4F56E8]/20 flex items-center justify-center">
+            <svg className="w-4 h-4 text-[#818CF8]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
             </svg>
           </div>
-          <div>
-            <span className="text-sm font-semibold tracking-wide text-white/70 block">
-              AVA Voice Assistant
-            </span>
-            <span className="text-xs text-white/30">{subtitle}</span>
-          </div>
+          <span className="text-sm font-semibold tracking-wide text-white/60">
+            AVA Voice
+          </span>
         </div>
         <button
           onClick={handleClose}
           aria-label="Close voice assistant"
-          className="w-10 h-10 rounded-full flex items-center justify-center bg-white/10 text-white/60 hover:bg-white/15 hover:text-white/80 active:scale-[0.95] transition-all duration-200"
+          className="w-9 h-9 rounded-full flex items-center justify-center bg-white/10 text-white/60 hover:bg-white/15 hover:text-white/80 active:scale-[0.95] transition-all duration-200"
         >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
       </header>
 
-      {/* ── Prompt sentence ── */}
-      <div className="px-5 pb-3 shrink-0">
-        <p className={`text-sm leading-relaxed ${allStepFilled ? "text-emerald-400" : "text-white/50"}`}>
-          {promptText}
-        </p>
-      </div>
-
       {/* ── Error banner ── */}
       {error && (
-        <div className="px-5 pb-3 shrink-0">
-          <div className="px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/20 flex items-start gap-3">
-            <svg className="w-5 h-5 text-red-400 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <div className="px-5 pb-2 shrink-0">
+          <div className="px-4 py-2.5 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center gap-3">
+            <svg className="w-4 h-4 text-red-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
             </svg>
-            <p className="text-red-400/90 text-sm text-left leading-relaxed flex-1">{error}</p>
+            <p className="text-red-400/90 text-xs flex-1">{error}</p>
             <button
               onClick={() => setError(null)}
               className="text-red-400/50 hover:text-red-400/80 transition-colors shrink-0"
               aria-label="Dismiss error"
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
@@ -457,150 +462,262 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
         </div>
       )}
 
-      {/* ── Field List (karaoke guide) ── */}
-      <div className="flex-1 overflow-y-auto px-5 pb-3">
-        <div className="bg-white/[0.03] rounded-xl overflow-hidden">
-          {fields.map((f, i) => {
-            const manualValue = currentData[f.key];
-            const extractedValue = extracted[f.key];
-            const hasManual = isFilled(manualValue);
-            const hasExtractedVal = isFilled(extractedValue);
-            const filled = hasManual || hasExtractedVal;
-            const displayValue = hasExtractedVal ? extractedValue : hasManual ? String(manualValue) : null;
-            const isFlashing = flashKeys.has(f.key);
+      {/* ── Main content area ── */}
+      <div className="flex-1 flex flex-col items-center justify-center px-5 min-h-0">
 
-            return (
-              <div
-                key={f.key}
-                className={`
-                  px-4 py-3 flex items-center justify-between gap-3
-                  ${i < fields.length - 1 ? "border-b border-white/5" : ""}
-                  transition-colors duration-1000 ease-out
-                `}
-                style={isFlashing ? { backgroundColor: "rgba(16, 185, 129, 0.1)" } : undefined}
+        {/* === READY STATE: Karaoke teleprompter === */}
+        {state === "ready" && !allStepFilled && currentKaraokeField && (
+          <div className="flex flex-col items-center text-center w-full">
+            {/* Big cycling label */}
+            <div
+              aria-live="polite"
+              className="mb-2"
+              style={{
+                minHeight: "80px",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <h2
+                className="text-4xl font-bold text-white"
+                style={{
+                  opacity: cyclePhase === "visible" ? 1 : 0,
+                  transform: cyclePhase === "visible" ? "translateY(0)" : "translateY(-20px)",
+                  transition: "opacity 300ms ease-out, transform 300ms ease-out",
+                }}
               >
-                {/* Left: label */}
-                <span className={`text-sm font-medium ${filled ? "text-white/70" : "text-white/40"}`}>
-                  {f.label}
-                </span>
+                {currentKaraokeField.label}
+              </h2>
+              <p
+                className="text-base text-white/30 mt-1.5"
+                style={{
+                  opacity: cyclePhase === "visible" ? 1 : 0,
+                  transform: cyclePhase === "visible" ? "translateY(0)" : "translateY(-20px)",
+                  transition: "opacity 300ms ease-out, transform 300ms ease-out",
+                  transitionDelay: "50ms",
+                }}
+              >
+                {currentKaraokeField.hint}
+              </p>
+            </div>
 
-                {/* Right: status */}
-                <div className="flex items-center gap-2 min-w-0">
-                  {filled ? (
-                    <>
-                      <span
-                        className={`text-sm truncate max-w-[180px] ${hasExtractedVal ? "text-white font-medium" : "text-white/60"}`}
-                      >
-                        {displayValue}
-                      </span>
-                      {hasExtractedVal ? (
-                        <svg className="w-4 h-4 text-emerald-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                        </svg>
-                      ) : (
-                        <svg className="w-4 h-4 text-blue-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                        </svg>
-                      )}
-                    </>
-                  ) : (
-                    <span className="text-white/20 text-sm">&mdash;</span>
+            {/* Dot progress track */}
+            <div className="flex items-center gap-2 mt-6">
+              {fields.map((f) => {
+                const filled = isFilled(currentData[f.key]) || isFilled(extracted[f.key]);
+                const isCurrent = currentKaraokeField.key === f.key;
+
+                return (
+                  <div
+                    key={f.key}
+                    className="transition-all duration-300"
+                    style={{
+                      width: isCurrent ? "24px" : "8px",
+                      height: "8px",
+                      borderRadius: "4px",
+                      backgroundColor: filled
+                        ? "#10B981"
+                        : isCurrent
+                          ? "#818CF8"
+                          : "rgba(255,255,255,0.15)",
+                    }}
+                  />
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* === READY STATE: All filled === */}
+        {state === "ready" && allStepFilled && (
+          <div className="flex flex-col items-center text-center">
+            <div className="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center mb-4">
+              <svg className="w-8 h-8 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-bold text-white mb-1">All captured</h2>
+            <p className="text-sm text-white/40">Tap Done to apply</p>
+          </div>
+        )}
+
+        {/* === LISTENING STATE: Pulsing label + transcript === */}
+        {state === "listening" && (
+          <div className="flex flex-col items-center text-center w-full">
+            {/* Horizontal pill strip of fields */}
+            <div className="flex flex-wrap items-center justify-center gap-1.5 mb-8 px-2 max-w-full">
+              {fields.map((f) => {
+                const filled = isFilled(currentData[f.key]) || isFilled(extracted[f.key]);
+                return (
+                  <span
+                    key={f.key}
+                    className={`
+                      rounded-full px-2.5 py-1 text-xs font-medium transition-all duration-300
+                      ${filled
+                        ? "bg-emerald-500/15 text-emerald-400"
+                        : "bg-white/5 text-white/40"
+                      }
+                    `}
+                    style={
+                      !filled
+                        ? { animation: "gentle-pulse 2s ease-in-out infinite" }
+                        : undefined
+                    }
+                  >
+                    {filled && (
+                      <svg className="w-3 h-3 inline-block mr-1 -mt-px" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                    {f.label}
+                  </span>
+                );
+              })}
+            </div>
+
+            {/* Listening indicator */}
+            <div className="flex items-center gap-2 mb-4">
+              <span className="w-2 h-2 rounded-full bg-red-400 animate-pulse" />
+              <span className="text-sm font-medium text-white/50">Listening...</span>
+            </div>
+
+            {/* Live transcript */}
+            {(transcript || interimText) && (
+              <div className="w-full max-w-sm px-4 py-3 rounded-xl bg-white/[0.04] border border-white/[0.06]">
+                <p className="text-sm leading-relaxed text-center">
+                  <span className="text-white">{transcript}</span>
+                  {interimText && (
+                    <span className="text-white/35">{transcript ? " " : ""}{interimText}</span>
                   )}
-                </div>
+                </p>
               </div>
-            );
-          })}
-        </div>
-      </div>
+            )}
+          </div>
+        )}
 
-      {/* ── Transcript area (between field list and mic) ── */}
-      {(state === "listening" || state === "processing") && (transcript || interimText) && (
-        <div className="px-5 pb-2 shrink-0">
-          <div className="px-4 py-3 rounded-xl bg-white/[0.03] max-h-[100px] overflow-y-auto">
-            <p className="text-sm leading-relaxed">
-              <span className="text-white">{transcript}</span>
-              {interimText && (
-                <span className="text-white/40">{transcript ? " " : ""}{interimText}</span>
-              )}
+        {/* === PROCESSING STATE: Spinner === */}
+        {state === "processing" && (
+          <div className="flex flex-col items-center">
+            <span className="block w-14 h-14 border-[3px] border-white/10 border-t-[#4F56E8] rounded-full animate-spin mb-4" />
+            <p className="text-sm text-white/40">Processing...</p>
+          </div>
+        )}
+
+        {/* === DONE STATE: Compact pill results === */}
+        {state === "done" && (
+          <div className="flex flex-col items-center w-full">
+            {/* Filled pills */}
+            {filledFields.length > 0 && (
+              <div className="flex flex-wrap items-center justify-center gap-2 mb-5 px-2">
+                {filledFields.map((f) => {
+                  const val = getDisplayValue(f);
+                  return (
+                    <span
+                      key={f.key}
+                      className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 text-xs font-medium text-emerald-400 max-w-[180px]"
+                    >
+                      <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span className="truncate">{val}</span>
+                    </span>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Unfilled pills */}
+            {unfilledFields.length > 0 && (
+              <div className="flex flex-wrap items-center justify-center gap-2 mb-5 px-2">
+                {unfilledFields.map((f) => (
+                  <span
+                    key={f.key}
+                    className="inline-flex items-center rounded-full bg-white/5 border border-white/10 px-3 py-1.5 text-xs font-medium text-white/30"
+                    style={{ animation: "gentle-pulse 2s ease-in-out infinite" }}
+                  >
+                    {f.label}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* Summary line */}
+            <p className="text-xs text-white/30 mb-2">
+              {filledFields.length}/{fields.length} fields captured
             </p>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* ── Bottom: Mic + Actions ── */}
       <div className="shrink-0 pb-8 pt-4 flex flex-col items-center gap-4 px-5">
-        {/* Mic button */}
-        <div className="relative">
-          {/* Pulse rings when listening */}
-          {state === "listening" && (
-            <>
-              <span
-                className="absolute inset-0 rounded-full bg-[#4F56E8]/20 animate-ping"
-                style={{ animationDuration: "2s" }}
-              />
-              <span
-                className="absolute inset-0 rounded-full bg-[#4F56E8]/15 animate-ping"
-                style={{ animationDuration: "2s", animationDelay: "0.4s" }}
-              />
-              <span
-                className="absolute inset-0 rounded-full bg-[#4F56E8]/10 animate-ping"
-                style={{ animationDuration: "2s", animationDelay: "0.8s" }}
-              />
-            </>
-          )}
 
-          {/* Processing spinner replaces mic */}
-          {state === "processing" ? (
-            <div className="w-[72px] h-[72px] flex items-center justify-center">
-              <span className="block w-12 h-12 border-[3px] border-white/20 border-t-[#4F56E8] rounded-full animate-spin" />
+        {/* Mic button — hidden during processing */}
+        {state !== "processing" && (
+          <>
+            <div className="relative">
+              {/* Pulse rings when listening */}
+              {state === "listening" && (
+                <>
+                  <span
+                    className="absolute inset-0 rounded-full bg-[#4F56E8]/20 animate-ping"
+                    style={{ animationDuration: "2s" }}
+                  />
+                  <span
+                    className="absolute inset-0 rounded-full bg-[#4F56E8]/15 animate-ping"
+                    style={{ animationDuration: "2s", animationDelay: "0.4s" }}
+                  />
+                  <span
+                    className="absolute inset-0 rounded-full bg-[#4F56E8]/10 animate-ping"
+                    style={{ animationDuration: "2s", animationDelay: "0.8s" }}
+                  />
+                </>
+              )}
+              <button
+                onClick={toggleMic}
+                aria-label={state === "listening" ? "Stop listening" : "Start voice input"}
+                className={`
+                  relative z-10 w-[72px] h-[72px] rounded-full flex items-center justify-center
+                  bg-[#4F56E8] active:scale-[0.95] transition-all duration-200
+                  ${state === "listening"
+                    ? "shadow-[0_0_50px_rgba(79,86,232,0.5)]"
+                    : "shadow-[0_0_40px_rgba(79,86,232,0.3)] hover:shadow-[0_0_60px_rgba(79,86,232,0.4)] hover:bg-[#5B63F0]"
+                  }
+                `}
+              >
+                <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                </svg>
+              </button>
             </div>
-          ) : (
-            <button
-              onClick={toggleMic}
-              aria-label={state === "listening" ? "Stop listening" : "Start voice input"}
-              className={`
-                relative z-10 w-[72px] h-[72px] rounded-full flex items-center justify-center
-                bg-[#4F56E8] active:scale-[0.95] transition-all duration-200
-                ${state === "listening"
-                  ? "shadow-[0_0_50px_rgba(79,86,232,0.5)]"
-                  : "shadow-[0_0_40px_rgba(79,86,232,0.3)] hover:shadow-[0_0_60px_rgba(79,86,232,0.4)] hover:bg-[#5B63F0]"
-                }
-              `}
-            >
-              <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-              </svg>
-            </button>
-          )}
-        </div>
 
-        {/* Mic label */}
-        <p className="text-white/30 text-xs">
-          {state === "listening"
-            ? "Tap to stop"
-            : state === "processing"
-              ? "Processing..."
-              : "Tap to start"
-          }
-        </p>
+            {/* Mic label */}
+            <p className="text-white/25 text-xs">
+              {state === "listening" ? "Tap to stop" : "Tap to start"}
+            </p>
+          </>
+        )}
 
-        {/* Listening indicator dot */}
-        {state === "listening" && (
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-red-400 animate-pulse" />
-            <span className="text-xs font-medium text-white/50">Listening</span>
+        {/* Processing spinner (replaces mic) */}
+        {state === "processing" && (
+          <div className="w-[72px] h-[72px] flex items-center justify-center">
+            <span className="block w-12 h-12 border-[3px] border-white/20 border-t-[#4F56E8] rounded-full animate-spin" />
           </div>
         )}
 
         {/* Action buttons — show after extraction */}
         {(state === "done" || (state === "ready" && hasExtracted)) && (
           <div className="flex gap-3 w-full max-w-xs">
-            <button
-              onClick={handleSpeakAgain}
-              className="flex-1 py-3 rounded-xl bg-white/10 text-white/70 font-semibold text-sm hover:bg-white/15 hover:text-white/90 active:scale-[0.97] transition-all duration-200"
-            >
-              Speak Again
-            </button>
+            {unfilledFields.length > 0 && (
+              <button
+                onClick={handleSpeakAgain}
+                className="flex-1 py-3 rounded-xl bg-white/10 text-white/70 font-semibold text-sm hover:bg-white/15 hover:text-white/90 active:scale-[0.97] transition-all duration-200"
+              >
+                Speak Again
+              </button>
+            )}
             <button
               onClick={handleDone}
               className="flex-1 py-3 rounded-xl bg-[#4F56E8] text-white font-semibold text-sm shadow-[0_0_30px_rgba(79,86,232,0.25)] hover:bg-[#5B63F0] hover:shadow-[0_0_40px_rgba(79,86,232,0.35)] active:scale-[0.97] transition-all duration-200"
@@ -610,6 +727,14 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
           </div>
         )}
       </div>
+
+      {/* Keyframe for gentle pulse on unfilled pills */}
+      <style>{`
+        @keyframes gentle-pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
+        }
+      `}</style>
     </div>
   );
 }
