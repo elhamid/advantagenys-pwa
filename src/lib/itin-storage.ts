@@ -25,8 +25,15 @@ const ALLOWED_CONTENT_TYPES = new Set([
 ]);
 
 function getServiceClient(): SupabaseClient | null {
-  const url = process.env.TASKBOARD_SUPABASE_URL;
-  const serviceKey = process.env.TASKBOARD_SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+  // Use whichever Supabase has a matching URL+key pair
+  // Priority: TASKBOARD pair > PWA pair
+  let url = process.env.TASKBOARD_SUPABASE_URL;
+  let serviceKey = process.env.TASKBOARD_SUPABASE_SERVICE_KEY;
+  // Fall back to PWA's own Supabase if taskboard key is missing
+  if (!serviceKey) {
+    url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  }
 
   if (!url || !serviceKey) {
     console.warn(
