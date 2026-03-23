@@ -28,12 +28,11 @@ const STEP_FIELDS: Record<number, FieldDef[]> = {
     { key: "email", label: "Email", optional: true },
   ],
   1: [
-    { key: "city", label: "Appointment City" },
     { key: "addressUsa", label: "US Address" },
     { key: "usEntryDate", label: "Entry Date", optional: true },
     { key: "homeCountry", label: "Home Country" },
     { key: "homeCity", label: "Home City" },
-    { key: "homeAddress", label: "Home Address", optional: true },
+    { key: "homeAddress", label: "Home Address (non-US)" },
     { key: "amount", label: "Annual Earnings" },
   ],
   2: [

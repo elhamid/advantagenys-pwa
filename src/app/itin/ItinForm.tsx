@@ -202,6 +202,30 @@ export function ItinForm({ onSuccess }: Props) {
     };
   }, []);
 
+  // Auto-detect appointment city via GPS
+  useEffect(() => {
+    if (data.city) return; // already set
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        // Nashville area: ~36.1N, ~-86.8W
+        // New York area: ~40.7N, ~-74.0W
+        // Simple distance check — within ~100 miles
+        const distNY = Math.sqrt((latitude - 40.7) ** 2 + (longitude + 74.0) ** 2);
+        const distNash = Math.sqrt((latitude - 36.16) ** 2 + (longitude + 86.78) ** 2);
+        if (distNY < 2) {
+          update("city", "new_york");
+        } else if (distNash < 2) {
+          update("city", "nashville");
+        }
+        // If neither, leave it for manual selection
+      },
+      () => { /* silently ignore GPS denial */ },
+      { enableHighAccuracy: false, timeout: 5000 }
+    );
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   const update = useCallback(
     <K extends keyof ItinData>(field: K, value: ItinData[K]) => {
       setData((prev) => ({ ...prev, [field]: value }));
@@ -314,6 +338,7 @@ export function ItinForm({ onSuccess }: Props) {
       if (!data.city) errs.city = "Please select appointment city";
       if (!data.homeCountry) errs.homeCountry = "Home country is required";
       if (!data.homeCity.trim()) errs.homeCity = "Home city is required";
+      if (!data.homeAddress.trim()) errs.homeAddress = "Home address is required";
     }
 
     // Steps 2 (document) and 3 (selfie) are optional — skip allowed
@@ -1303,7 +1328,7 @@ function StepLocation({ data, errors, update }: StepProps) {
 
       {/* Home Address (street) — wired to addressHomeCountry for backward compat */}
       <div>
-        <Label htmlFor="itin-homeAddress">Home Address (Street)</Label>
+        <Label required htmlFor="itin-homeAddress">Home Address (non-US)</Label>
         <Input
           id="itin-homeAddress"
           value={data.homeAddress}
