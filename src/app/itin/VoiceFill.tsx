@@ -182,13 +182,18 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
       if (seg) {
         accumulatedRef.current = accumulatedRef.current ? accumulatedRef.current + " " + seg : seg;
       }
+      console.log("[AVA] onend — accumulated so far:", accumulatedRef.current);
       // Auto-restart unless user tapped stop
       if (!stoppedByUserRef.current) {
         transcriptRef.current = "";
+        // Show accumulated text while restarting so user sees everything
+        setTranscript(accumulatedRef.current);
+        setInterimText("");
         try { recognition.start(); return; } catch { /* fall through */ }
       }
       recognitionRef.current = null;
       const fullText = accumulatedRef.current.trim();
+      console.log("[AVA] Final transcript to process:", fullText);
       if (fullText) {
         processTranscript(fullText);
       } else {
@@ -217,6 +222,8 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const processTranscript = useCallback(async (text: string) => {
     setState("processing");
+    console.log("[AVA] Sending transcript to LLM:", text);
+    console.log("[AVA] Transcript length:", text.length, "words:", text.split(/\s+/).length);
     try {
       const res = await fetch("/api/itin-voice", {
         method: "POST",
@@ -225,6 +232,7 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
       });
       if (!res.ok) throw new Error(`Error ${res.status}`);
       const data = await res.json();
+      console.log("[AVA] LLM response:", JSON.stringify(data));
       const newFields: Record<string, string> = data.fields || {};
       // Only keep fields for this step
       const stepKeys = new Set(fields.map(f => f.key));
@@ -232,9 +240,11 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
       for (const [k, v] of Object.entries(newFields)) {
         if (stepKeys.has(k) && typeof v === "string" && v.trim()) valid[k] = v;
       }
+      console.log("[AVA] Valid fields for step:", JSON.stringify(valid));
       setExtracted(prev => ({ ...prev, ...valid }));
       setState("results");
-    } catch {
+    } catch (err) {
+      console.error("[AVA] Processing error:", err);
       setError("Could not process. Try again or fill manually.");
       setState("idle");
     }
