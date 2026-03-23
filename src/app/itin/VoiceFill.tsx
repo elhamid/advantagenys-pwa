@@ -80,8 +80,101 @@ type VoiceState = "idle" | "listening" | "processing";
    Runs on EVERY interim result — instant feedback
    ═══════════════════════════════════════════════ */
 
-function extractFromTranscript(text: string): Record<string, string> {
+function extractFromTranscript(text: string, currentFieldKey?: string, alreadyExtracted?: Record<string, string>): Record<string, string> {
   const result: Record<string, string> = {};
+  const already = alreadyExtracted || {};
+
+  // ── Context-aware: if we know what field is highlighted, be aggressive ──
+  // Just grab the first meaningful words the user says for that field
+  if (currentFieldKey) {
+    const words = text.trim().split(/\s+/).filter(w => w.length > 0);
+    const lastWords = words.slice(-3).join(" "); // last few words spoken
+    const allWords = words.join(" ");
+
+    if (currentFieldKey === "firstName" && !already.firstName && words.length >= 1) {
+      // First word(s) they say = first name
+      const nameWords = words.filter(w => /^[A-Z]/i.test(w) && !/^(my|name|is|i'm|i|am|the|a|an)$/i.test(w));
+      if (nameWords.length > 0) result.firstName = nameWords[0].charAt(0).toUpperCase() + nameWords[0].slice(1).toLowerCase();
+    }
+    if (currentFieldKey === "lastName" && !already.lastName && words.length >= 1) {
+      const nameWords = words.filter(w => /^[A-Z]/i.test(w) && !/^(my|name|is|i'm|i|am|the|a|an|last)$/i.test(w));
+      if (nameWords.length > 0) {
+        const w = nameWords[nameWords.length - 1];
+        result.lastName = w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+      }
+    }
+    if (currentFieldKey === "middleName" && !already.middleName) {
+      if (/(?:no|none|skip|don't|dont|n\/a|nope)/i.test(allWords)) {
+        result.middleName = "N/A";
+      } else {
+        const nameWords = words.filter(w => /^[A-Z]/i.test(w) && !/^(my|name|is|middle|i|the|a)$/i.test(w));
+        if (nameWords.length > 0) result.middleName = nameWords[0].charAt(0).toUpperCase() + nameWords[0].slice(1).toLowerCase();
+      }
+    }
+    if (currentFieldKey === "dateOfBirth" && !already.dateOfBirth) {
+      // Any date-like text
+      const dateMatch = allWords.match(/(\w+\s+\d{1,2}(?:st|nd|rd|th)?\s*,?\s*\d{4}|\d{1,2}[\/-]\d{1,2}[\/-]\d{2,4})/i);
+      if (dateMatch) result.dateOfBirth = dateMatch[1];
+    }
+    if (currentFieldKey === "cityOfBirth" && !already.cityOfBirth) {
+      const cityWords = words.filter(w => /^[A-Z]/i.test(w) && !/^(city|town|born|in|is|the|of|my)$/i.test(w));
+      if (cityWords.length > 0) result.cityOfBirth = cityWords.map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(" ");
+    }
+    if ((currentFieldKey === "countryOfBirth" || currentFieldKey === "countryOfCitizenship") && !already[currentFieldKey]) {
+      const countryWords = words.filter(w => /^[A-Z]/i.test(w) && !/^(country|from|born|in|is|the|of|my|citizen|citizenship)$/i.test(w));
+      if (countryWords.length > 0) result[currentFieldKey] = countryWords.map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(" ");
+    }
+    if (currentFieldKey === "phone" && !already.phone) {
+      const phoneMatch = allWords.match(/[\d][\d\s\-()]{5,}/);
+      if (phoneMatch) result.phone = phoneMatch[0].trim();
+    }
+    if (currentFieldKey === "email" && !already.email) {
+      const emailMatch = allWords.match(/[\w.+-]+@[\w.-]+\.\w{2,}/i);
+      if (emailMatch) result.email = emailMatch[0].toLowerCase();
+      // Also spoken: "kemar at gmail dot com"
+      const spokenEmail = allWords.match(/([\w.+-]+)\s+at\s+([\w.-]+)\s+dot\s+(\w{2,})/i);
+      if (spokenEmail) result.email = `${spokenEmail[1]}@${spokenEmail[2]}.${spokenEmail[3]}`.toLowerCase();
+    }
+    if (currentFieldKey === "addressUsa" && !already.addressUsa) {
+      // Any substantial text with a number = likely address
+      if (/\d/.test(allWords) && words.length >= 3) result.addressUsa = allWords;
+    }
+    if (currentFieldKey === "amount" && !already.amount) {
+      const numMatch = allWords.match(/[\d,]+/);
+      if (numMatch) result.amount = numMatch[0].replace(/,/g, "");
+    }
+    if (currentFieldKey === "city" && !already.city) {
+      if (/new\s*york|nyc/i.test(allWords)) result.city = "new_york";
+      if (/nashville/i.test(allWords)) result.city = "nashville";
+    }
+    if (currentFieldKey === "homeCountry" && !already.homeCountry) {
+      const countryWords = words.filter(w => /^[A-Z]/i.test(w) && !/^(country|home|my|is|the|of)$/i.test(w));
+      if (countryWords.length > 0) result.homeCountry = countryWords.map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(" ");
+    }
+    if (currentFieldKey === "homeCity" && !already.homeCity) {
+      const cityWords = words.filter(w => /^[A-Z]/i.test(w) && !/^(city|home|my|is|the|of)$/i.test(w));
+      if (cityWords.length > 0) result.homeCity = cityWords.map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(" ");
+    }
+    if (currentFieldKey === "homeAddress" && !already.homeAddress) {
+      if (words.length >= 2) result.homeAddress = allWords;
+    }
+    if (currentFieldKey === "passportNumber" && !already.passportNumber) {
+      const passMatch = allWords.match(/[A-Z0-9]{5,}/i);
+      if (passMatch) result.passportNumber = passMatch[0].toUpperCase();
+    }
+    if (currentFieldKey === "passportExpiry" && !already.passportExpiry) {
+      const dateMatch = allWords.match(/(\w+\s+\d{1,2}(?:st|nd|rd|th)?\s*,?\s*\d{4}|\d{1,2}[\/-]\d{1,2}[\/-]\d{2,4})/i);
+      if (dateMatch) result.passportExpiry = dateMatch[1];
+    }
+    if (currentFieldKey === "passportCountry" && !already.passportCountry) {
+      const countryWords = words.filter(w => /^[A-Z]/i.test(w) && !/^(country|passport|issued|by|is|the|of|my)$/i.test(w));
+      if (countryWords.length > 0) result.passportCountry = countryWords.map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(" ");
+    }
+    if (currentFieldKey === "usEntryDate" && !already.usEntryDate) {
+      const dateMatch = allWords.match(/(\w+\s+\d{1,2}(?:st|nd|rd|th)?\s*,?\s*\d{4}|\d{1,2}[\/-]\d{1,2}[\/-]\d{2,4})/i);
+      if (dateMatch) result.usEntryDate = dateMatch[1];
+    }
+  }
 
   // Name patterns — flexible: "my name is X Y", "I'm X Y Z", "call me X"
   // Also handles "my name is Mary Jane Watson" (first=Mary Jane, last=Watson)
@@ -202,6 +295,8 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
   const recognitionRef = useRef<SpeechRec | null>(null);
   const transcriptRef = useRef("");
   const fieldListRef = useRef<HTMLDivElement>(null);
+  const extractedRef = useRef<Record<string, string>>({});
+  const currentFieldIndexRef = useRef(0);
 
   /* ─── Merged data: currentData + extracted (extracted wins) ─── */
   const mergedData = useMemo(() => {
@@ -227,6 +322,10 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
 
   const hasAnyExtracted = Object.keys(extracted).length > 0;
   const allFilled = currentFieldIndex === -1 && fields.length > 0;
+
+  // Keep refs in sync for use inside speech callback closures
+  extractedRef.current = extracted;
+  currentFieldIndexRef.current = currentFieldIndex;
 
   /* ─── Mount animation ─── */
   useEffect(() => {
@@ -308,9 +407,11 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
       setTranscript(finalParts);
       setInterimText(interimParts);
 
-      // Real-time client-side extraction on every result
+      // Real-time client-side extraction — context-aware based on current highlighted field
       const fullText = finalParts + " " + interimParts;
-      const clientExtracted = extractFromTranscript(fullText);
+      const cfIdx = currentFieldIndexRef.current;
+      const cfKey = cfIdx >= 0 ? fields[cfIdx]?.key : undefined;
+      const clientExtracted = extractFromTranscript(fullText, cfKey, extractedRef.current);
       if (Object.keys(clientExtracted).length > 0) {
         setExtracted((prev) => ({ ...prev, ...clientExtracted }));
       }
