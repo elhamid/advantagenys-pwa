@@ -94,6 +94,7 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
 
   const recognitionRef = useRef<SpeechRec | null>(null);
   const transcriptRef = useRef("");
+  const interimRef = useRef(""); // track interim text for inclusion on stop
   const accumulatedRef = useRef("");
   const stoppedByUserRef = useRef(false);
 
@@ -160,6 +161,7 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
         }
       }
       transcriptRef.current = finalParts;
+      interimRef.current = interimParts;
       const full = accumulatedRef.current + (accumulatedRef.current && finalParts ? " " : "") + finalParts;
       setTranscript(full);
       setInterimText(interimParts);
@@ -178,10 +180,13 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
 
     recognition.onend = () => {
       if (recognitionRef.current !== recognition) return;
-      const seg = transcriptRef.current.trim();
+      // Include BOTH final and interim text — interim may contain words that
+      // never became "final" before iOS Safari dropped the session
+      const seg = (transcriptRef.current + " " + interimRef.current).trim();
       if (seg) {
         accumulatedRef.current = accumulatedRef.current ? accumulatedRef.current + " " + seg : seg;
       }
+      interimRef.current = "";
       console.log("[AVA] onend — accumulated so far:", accumulatedRef.current);
       // Auto-restart unless user tapped stop
       if (!stoppedByUserRef.current) {
