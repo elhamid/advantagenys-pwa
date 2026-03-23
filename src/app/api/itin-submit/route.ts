@@ -131,12 +131,13 @@ async function submitToJotForm(data: ItinPayload, documentUrls?: DocumentUrls): 
   params.append("submission[13_first]", data.firstName.trim());
   params.append("submission[13_last]", data.lastName.trim());
 
-  // q32 — Phone (send as both full and area+phone for JotForm compatibility)
+  // q32 — Phone (area code + phone number for JotForm display)
   const phoneDigits = data.phone.replace(/\D/g, "");
-  params.append("submission[32_full]", phoneDigits);
   if (phoneDigits.length >= 10) {
     params.append("submission[32_area]", phoneDigits.slice(0, 3));
     params.append("submission[32_phone]", phoneDigits.slice(3));
+  } else {
+    params.append("submission[32_full]", phoneDigits);
   }
 
   // q33 — Email
