@@ -505,7 +505,7 @@ export function ItinForm({ onSuccess }: Props) {
           ref={stepContentRef}
           aria-live="polite"
           className={`
-            flex-1 overflow-y-auto pb-20 transition-all duration-250 ease-out
+            flex-1 overflow-y-auto pb-32 transition-all duration-250 ease-out
             ${getStepAnimClass()}
           `}
         >
