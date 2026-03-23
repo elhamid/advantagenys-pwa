@@ -331,6 +331,16 @@ export default function DocumentScanner({
       {/* Body */}
       <div className="flex-1 flex flex-col items-center justify-center overflow-hidden relative">
 
+        {/* Video element — ALWAYS in DOM so ref exists when stream is assigned */}
+        <video
+          ref={videoRef}
+          className={`absolute inset-0 w-full h-full object-cover ${state === "live" ? "z-0" : "hidden"}`}
+          autoPlay
+          playsInline
+          muted
+          style={{ backgroundColor: "black" }}
+        />
+
         {/* INITIALIZING */}
         {state === "initializing" && (
           <div className="flex flex-col items-center gap-4 text-white/60">
@@ -342,14 +352,6 @@ export default function DocumentScanner({
         {/* LIVE */}
         {state === "live" && (
           <div className="relative w-full h-full">
-            <video
-              ref={videoRef}
-              className="absolute inset-0 w-full h-full object-cover z-0"
-              autoPlay
-              playsInline
-              muted
-              style={{ backgroundColor: "black" }}
-            />
             {/* Shutter flash overlay */}
             <div
               className="absolute inset-0 bg-white pointer-events-none z-10"
