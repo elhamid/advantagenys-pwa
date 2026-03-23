@@ -172,12 +172,8 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
           alt="Tropical Stars"
           width={192}
           height={90}
-          className="mb-3"
           priority
         />
-        <span className="text-white/60 text-lg font-semibold tracking-wide">
-          Tropical Stars
-        </span>
       </div>
 
       {/* IRS badge */}

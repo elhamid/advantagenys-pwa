@@ -74,7 +74,7 @@ export default function DocumentScanner({
     }
   }, []);
 
-  // Start rear camera stream
+  // Start rear camera stream — tries environment first, falls back to any camera
   const startCamera = useCallback(async () => {
     // Guard: check mediaDevices API exists
     if (
@@ -89,38 +89,46 @@ export default function DocumentScanner({
       return;
     }
 
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: { ideal: "environment" },
-          width: { ideal: 1920 },
-          height: { ideal: 1080 },
-        },
-        audio: false,
-      });
-      streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play();
-      }
-      setState("live");
-    } catch (err: unknown) {
-      const error = err as { name?: string };
-      if (
-        error.name === "NotAllowedError" ||
-        error.name === "PermissionDeniedError"
-      ) {
-        setState("denied");
-        setErrorMsg(
-          "Camera access was denied. Please allow camera access in your browser settings."
-        );
-      } else {
-        setState("fallback");
-        setErrorMsg(
-          "Camera is unavailable on this device. Please upload a photo instead."
-        );
+    // Try environment (rear) camera first, fall back to any camera
+    const constraints = [
+      { video: { facingMode: { ideal: "environment" }, width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false },
+      { video: { facingMode: "environment" }, audio: false },
+      { video: true, audio: false },
+    ];
+
+    for (const constraint of constraints) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia(constraint);
+        streamRef.current = stream;
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          videoRef.current.setAttribute("playsinline", "true");
+          videoRef.current.setAttribute("webkit-playsinline", "true");
+          await videoRef.current.play();
+        }
+        setState("live");
+        return;
+      } catch (err: unknown) {
+        const error = err as { name?: string };
+        if (
+          error.name === "NotAllowedError" ||
+          error.name === "PermissionDeniedError"
+        ) {
+          setState("denied");
+          setErrorMsg(
+            "Camera access was denied. Please allow camera access in your browser settings."
+          );
+          return;
+        }
+        // Try next constraint
       }
     }
+
+    // All constraints failed
+    setState("fallback");
+    setErrorMsg(
+      "Camera is unavailable on this device. Please upload a photo instead."
+    );
   }, []);
 
   // Start camera on mount, cleanup on unmount

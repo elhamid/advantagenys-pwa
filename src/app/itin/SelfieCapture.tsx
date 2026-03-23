@@ -65,25 +65,38 @@ export default function SelfieCapture({ onCapture, onClose }: SelfieCaptureProps
     }
 
     setState("requesting");
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 960 } },
-        audio: false,
-      });
-      streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play();
-      }
-      setState("preview");
-    } catch (err) {
-      const error = err as Error;
-      if (error.name === "NotAllowedError" || error.name === "PermissionDeniedError") {
-        setState("denied");
-      } else {
-        setState("unavailable");
+
+    // Try front camera first, fall back to any camera
+    const constraints = [
+      { video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 960 } }, audio: false },
+      { video: { facingMode: "user" }, audio: false },
+      { video: true, audio: false },
+    ];
+
+    for (const constraint of constraints) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia(constraint);
+        streamRef.current = stream;
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          videoRef.current.setAttribute("playsinline", "true");
+          videoRef.current.setAttribute("webkit-playsinline", "true");
+          await videoRef.current.play();
+        }
+        setState("preview");
+        return;
+      } catch (err) {
+        const error = err as Error;
+        if (error.name === "NotAllowedError" || error.name === "PermissionDeniedError") {
+          setState("denied");
+          return;
+        }
+        // Try next constraint
       }
     }
+
+    // All constraints failed
+    setState("unavailable");
   }, []);
 
   // Start camera on mount, cleanup on unmount

@@ -994,12 +994,13 @@ function StepLocation({ data, errors, update }: StepProps) {
 
       <div>
         <Label htmlFor="itin-addressUsa">US Address</Label>
-        <TextArea
+        <Input
           id="itin-addressUsa"
           value={data.addressUsa}
           onChange={(v) => update("addressUsa", v)}
           placeholder="Street, City, State, ZIP"
-          rows={2}
+          autoComplete="street-address"
+          large
         />
       </div>
 
