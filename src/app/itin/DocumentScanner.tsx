@@ -29,6 +29,7 @@ export default function DocumentScanner({
   const [errorMsg, setErrorMsg] = useState<string>("");
   const [mounted, setMounted] = useState(false);
   const [hintVisible, setHintVisible] = useState(false);
+  const [restarting, setRestarting] = useState(false);
 
   // Mount animation
   useEffect(() => {
@@ -38,17 +39,40 @@ export default function DocumentScanner({
 
   // Delayed hint text
   useEffect(() => {
-    if (state !== "live") return;
+    if (state !== "live") {
+      setHintVisible(false);
+      return;
+    }
     const t = setTimeout(() => setHintVisible(true), 1000);
     return () => clearTimeout(t);
   }, [state]);
 
+  // Stop all tracks and clear video srcObject
+  const stopCamera = useCallback(() => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
+    }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+  }, []);
+
   // Start rear camera stream
   const startCamera = useCallback(async () => {
-    if (!navigator.mediaDevices?.getUserMedia) {
+    // Guard: check mediaDevices API exists
+    if (
+      typeof navigator === "undefined" ||
+      !navigator.mediaDevices ||
+      !navigator.mediaDevices.getUserMedia
+    ) {
       setState("fallback");
+      setErrorMsg(
+        "Camera is not available on this device. Please upload a photo instead."
+      );
       return;
     }
+
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
@@ -83,83 +107,110 @@ export default function DocumentScanner({
     }
   }, []);
 
+  // Start camera on mount, cleanup on unmount
   useEffect(() => {
     startCamera();
-    return () => {
-      streamRef.current?.getTracks().forEach((t) => t.stop());
-    };
-  }, [startCamera]);
+    return () => stopCamera();
+  }, [startCamera, stopCamera]);
 
   // Process canvas: auto-crop to guide rect, contrast boost, output JPEG
-  const processImage = useCallback((rawCanvas: HTMLCanvasElement): File => {
-    const srcW = rawCanvas.width;
-    const srcH = rawCanvas.height;
+  const processImage = useCallback((rawCanvas: HTMLCanvasElement): File | null => {
+    try {
+      const srcW = rawCanvas.width;
+      const srcH = rawCanvas.height;
 
-    const shortSide = Math.min(srcW, srcH);
-    const guideW = shortSide * 0.8;
-    const guideH = guideW / GUIDE_ASPECT;
-    const guideX = (srcW - guideW) / 2;
-    const guideY = (srcH - guideH) / 2;
+      const shortSide = Math.min(srcW, srcH);
+      const guideW = shortSide * 0.8;
+      const guideH = guideW / GUIDE_ASPECT;
+      const guideX = (srcW - guideW) / 2;
+      const guideY = (srcH - guideH) / 2;
 
-    const cropCanvas = document.createElement("canvas");
-    const outW = Math.round(guideW);
-    const outH = Math.round(guideH);
-    cropCanvas.width = outW;
-    cropCanvas.height = outH;
-    const cropCtx = cropCanvas.getContext("2d")!;
-    cropCtx.drawImage(rawCanvas, guideX, guideY, guideW, guideH, 0, 0, outW, outH);
+      const cropCanvas = document.createElement("canvas");
+      const outW = Math.round(guideW);
+      const outH = Math.round(guideH);
+      cropCanvas.width = outW;
+      cropCanvas.height = outH;
+      const cropCtx = cropCanvas.getContext("2d");
+      if (!cropCtx) return null;
 
-    const imageData = cropCtx.getImageData(0, 0, outW, outH);
-    const data = imageData.data;
-    const contrast = 1.15;
-    const intercept = 128 * (1 - contrast);
-    for (let i = 0; i < data.length; i += 4) {
-      data[i] = Math.min(255, Math.max(0, data[i] * contrast + intercept));
-      data[i + 1] = Math.min(255, Math.max(0, data[i + 1] * contrast + intercept));
-      data[i + 2] = Math.min(255, Math.max(0, data[i + 2] * contrast + intercept));
+      cropCtx.drawImage(rawCanvas, guideX, guideY, guideW, guideH, 0, 0, outW, outH);
+
+      const imageData = cropCtx.getImageData(0, 0, outW, outH);
+      const data = imageData.data;
+      const contrast = 1.15;
+      const intercept = 128 * (1 - contrast);
+      for (let i = 0; i < data.length; i += 4) {
+        data[i] = Math.min(255, Math.max(0, data[i] * contrast + intercept));
+        data[i + 1] = Math.min(255, Math.max(0, data[i + 1] * contrast + intercept));
+        data[i + 2] = Math.min(255, Math.max(0, data[i + 2] * contrast + intercept));
+      }
+      cropCtx.putImageData(imageData, 0, 0);
+
+      const dataUrl = cropCanvas.toDataURL("image/jpeg", 0.85);
+      const byteString = atob(dataUrl.split(",")[1]);
+      const ab = new ArrayBuffer(byteString.length);
+      const ia = new Uint8Array(ab);
+      for (let i = 0; i < byteString.length; i++) {
+        ia[i] = byteString.charCodeAt(i);
+      }
+      const blob = new Blob([ab], { type: "image/jpeg" });
+      return new File([blob], `document-scan-${Date.now()}.jpg`, {
+        type: "image/jpeg",
+      });
+    } catch {
+      return null;
     }
-    cropCtx.putImageData(imageData, 0, 0);
-
-    const dataUrl = cropCanvas.toDataURL("image/jpeg", 0.85);
-    const byteString = atob(dataUrl.split(",")[1]);
-    const ab = new ArrayBuffer(byteString.length);
-    const ia = new Uint8Array(ab);
-    for (let i = 0; i < byteString.length; i++) {
-      ia[i] = byteString.charCodeAt(i);
-    }
-    const blob = new Blob([ab], { type: "image/jpeg" });
-    return new File([blob], `document-scan-${Date.now()}.jpg`, {
-      type: "image/jpeg",
-    });
   }, []);
 
   const handleCapture = useCallback(() => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
-    if (!video || !canvas) return;
+    if (!video || !canvas || video.videoWidth === 0) return;
 
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
-    const ctx = canvas.getContext("2d")!;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
     ctx.drawImage(video, 0, 0);
 
     const previewUrl = canvas.toDataURL("image/jpeg", 0.9);
-    setCapturedDataUrl(previewUrl);
-
     const file = processImage(canvas);
+
+    if (!file) {
+      // Canvas processing failed — stay on live, show transient error
+      setErrorMsg("Failed to process image. Please try again.");
+      return;
+    }
+
+    setCapturedDataUrl(previewUrl);
     setProcessedFile(file);
 
-    streamRef.current?.getTracks().forEach((t) => t.stop());
+    // Stop camera after successful capture
+    stopCamera();
     setState("preview");
-  }, [processImage]);
+  }, [processImage, stopCamera]);
 
   const handleRetake = useCallback(async () => {
+    if (restarting) return; // Prevent double-clicks
+
+    setRestarting(true);
     setCapturedDataUrl(null);
     setProcessedFile(null);
     setHintVisible(false);
+    setErrorMsg("");
+
+    // Stop any remaining tracks and clear srcObject
+    stopCamera();
+
+    // Transition to initializing immediately so user sees spinner
     setState("initializing");
+
+    // Small delay to let browser release the camera device
+    await new Promise((resolve) => setTimeout(resolve, 150));
+
     await startCamera();
-  }, [startCamera]);
+    setRestarting(false);
+  }, [startCamera, stopCamera, restarting]);
 
   const handleAccept = useCallback(() => {
     if (processedFile) {
@@ -178,10 +229,11 @@ export default function DocumentScanner({
           const canvas = document.createElement("canvas");
           canvas.width = img.naturalWidth;
           canvas.height = img.naturalHeight;
-          const ctx = canvas.getContext("2d")!;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) return;
           ctx.drawImage(img, 0, 0);
           const processed = processImage(canvas);
-          onCapture(processed);
+          if (processed) onCapture(processed);
         };
         img.src = ev.target?.result as string;
       };
@@ -190,10 +242,16 @@ export default function DocumentScanner({
     [processImage, onCapture]
   );
 
+  const handleTryAgain = useCallback(async () => {
+    setErrorMsg("");
+    setState("initializing");
+    await startCamera();
+  }, [startCamera]);
+
   const handleClose = useCallback(() => {
-    streamRef.current?.getTracks().forEach((t) => t.stop());
+    stopCamera();
     onClose();
-  }, [onClose]);
+  }, [stopCamera, onClose]);
 
   return (
     <div
@@ -208,7 +266,7 @@ export default function DocumentScanner({
       aria-modal="true"
       aria-label={label}
     >
-      {/* Header */}
+      {/* Header — always visible on every state */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-white/10 shrink-0 bg-[#0F1B2D]/95 backdrop-blur-sm">
         <div className="flex items-center gap-3">
           {/* Camera icon */}
@@ -335,13 +393,19 @@ export default function DocumentScanner({
               <p className="text-white/50 text-sm leading-relaxed">{errorMsg}</p>
             </div>
             <button
+              onClick={handleTryAgain}
+              className="min-h-[52px] w-full px-8 bg-white/8 hover:bg-white/14 active:scale-[0.95] text-white font-semibold rounded-full transition-all duration-150 text-base border border-white/15"
+              aria-label="Try requesting camera permission again"
+            >
+              Try Again
+            </button>
+            <button
               onClick={() => fileInputRef.current?.click()}
-              className="min-h-[52px] px-8 bg-[#4F56E8] hover:bg-[#5B63F0] active:scale-[0.98] text-white font-semibold rounded-full transition-all duration-150 text-base shadow-lg shadow-[#4F56E8]/30"
+              className="min-h-[52px] w-full px-8 bg-[#4F56E8] hover:bg-[#5B63F0] active:scale-[0.95] text-white font-semibold rounded-full transition-all duration-150 text-base shadow-lg shadow-[#4F56E8]/30"
               aria-label="Upload a photo from your device"
             >
               Upload a Photo Instead
             </button>
-            <p className="text-white/30 text-xs">You can also upload from your device</p>
             <input
               ref={fileInputRef}
               type="file"
@@ -369,12 +433,11 @@ export default function DocumentScanner({
             </div>
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="min-h-[52px] px-8 bg-[#4F56E8] hover:bg-[#5B63F0] active:scale-[0.98] text-white font-semibold rounded-full transition-all duration-150 text-base shadow-lg shadow-[#4F56E8]/30"
+              className="min-h-[52px] w-full px-8 bg-[#4F56E8] hover:bg-[#5B63F0] active:scale-[0.95] text-white font-semibold rounded-full transition-all duration-150 text-base shadow-lg shadow-[#4F56E8]/30"
               aria-label="Choose a photo from your device"
             >
               Choose Photo
             </button>
-            <p className="text-white/30 text-xs">You can also upload from your device</p>
             <input
               ref={fileInputRef}
               type="file"
@@ -409,13 +472,16 @@ export default function DocumentScanner({
             <>
               <button
                 onClick={handleRetake}
-                className="flex-1 min-h-[52px] px-4 bg-white/8 hover:bg-white/14 active:scale-[0.98] text-white font-semibold rounded-full transition-all duration-150 border border-white/15 text-base"
+                disabled={restarting}
+                className="flex-1 min-h-[52px] px-4 bg-white/8 hover:bg-white/14 active:scale-[0.95] text-white font-semibold rounded-full transition-all duration-150 border border-white/15 text-base disabled:opacity-50 disabled:pointer-events-none"
+                aria-label="Retake photo"
               >
-                Retake
+                {restarting ? "Restarting…" : "Retake"}
               </button>
               <button
                 onClick={handleAccept}
-                className="flex-1 min-h-[52px] px-4 bg-[#4F56E8] hover:bg-[#5B63F0] active:scale-[0.98] text-white font-semibold rounded-full transition-all duration-150 text-base shadow-lg shadow-[#4F56E8]/30"
+                className="flex-1 min-h-[52px] px-4 bg-[#4F56E8] hover:bg-[#5B63F0] active:scale-[0.95] text-white font-semibold rounded-full transition-all duration-150 text-base shadow-lg shadow-[#4F56E8]/30"
+                aria-label="Use this photo"
               >
                 Use Photo
               </button>

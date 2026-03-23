@@ -18,6 +18,7 @@ export default function SelfieCapture({ onCapture, onClose }: SelfieCaptureProps
   const [state, setState] = useState<CaptureState>("requesting");
   const [capturedDataUrl, setCapturedDataUrl] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [restarting, setRestarting] = useState(false);
 
   // Mount animation
   useEffect(() => {
@@ -25,7 +26,28 @@ export default function SelfieCapture({ onCapture, onClose }: SelfieCaptureProps
     return () => cancelAnimationFrame(frame);
   }, []);
 
+  // Stop all tracks and clear video srcObject
+  const stopCamera = useCallback(() => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
+    }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+  }, []);
+
   const startCamera = useCallback(async () => {
+    // Guard: check mediaDevices API exists
+    if (
+      typeof navigator === "undefined" ||
+      !navigator.mediaDevices ||
+      !navigator.mediaDevices.getUserMedia
+    ) {
+      setState("unavailable");
+      return;
+    }
+
     setState("requesting");
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -48,15 +70,13 @@ export default function SelfieCapture({ onCapture, onClose }: SelfieCaptureProps
     }
   }, []);
 
-  const stopCamera = useCallback(() => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((t) => t.stop());
-      streamRef.current = null;
-    }
-  }, []);
-
+  // Start camera on mount, cleanup on unmount
   useEffect(() => {
-    if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia) {
+    if (
+      typeof navigator === "undefined" ||
+      !navigator.mediaDevices ||
+      !navigator.mediaDevices.getUserMedia
+    ) {
       setState("unavailable");
       return;
     }
@@ -67,7 +87,7 @@ export default function SelfieCapture({ onCapture, onClose }: SelfieCaptureProps
   const takePhoto = useCallback(() => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
-    if (!video || !canvas) return;
+    if (!video || !canvas || video.videoWidth === 0) return;
 
     const vw = video.videoWidth;
     const vh = video.videoHeight;
@@ -84,7 +104,8 @@ export default function SelfieCapture({ onCapture, onClose }: SelfieCaptureProps
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Un-mirror: front camera captures mirrored, flip horizontally for document use
+    // Mirror horizontally: the saved image matches what the user saw in the
+    // mirrored video preview. This is the standard selfie camera behavior.
     ctx.save();
     ctx.translate(cropW, 0);
     ctx.scale(-1, 1);
@@ -97,10 +118,21 @@ export default function SelfieCapture({ onCapture, onClose }: SelfieCaptureProps
     setState("captured");
   }, [stopCamera]);
 
-  const retake = useCallback(() => {
+  const retake = useCallback(async () => {
+    if (restarting) return; // Prevent double-clicks
+
+    setRestarting(true);
     setCapturedDataUrl(null);
-    startCamera();
-  }, [startCamera]);
+
+    // Stop any remaining tracks and clear srcObject
+    stopCamera();
+
+    // Small delay to let browser release the camera device
+    await new Promise((resolve) => setTimeout(resolve, 150));
+
+    await startCamera();
+    setRestarting(false);
+  }, [startCamera, stopCamera, restarting]);
 
   const acceptPhoto = useCallback(() => {
     if (!capturedDataUrl) return;
@@ -121,6 +153,11 @@ export default function SelfieCapture({ onCapture, onClose }: SelfieCaptureProps
     [onCapture]
   );
 
+  const handleTryAgain = useCallback(async () => {
+    setState("requesting");
+    await startCamera();
+  }, [startCamera]);
+
   const handleClose = useCallback(() => {
     stopCamera();
     onClose();
@@ -138,7 +175,7 @@ export default function SelfieCapture({ onCapture, onClose }: SelfieCaptureProps
       aria-modal="true"
       aria-label="Take Selfie"
     >
-      {/* Header */}
+      {/* Header — always visible on every state */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-white/10 shrink-0 bg-[#0F1B2D]/95 backdrop-blur-sm">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl bg-[#4F56E8]/20 flex items-center justify-center">
@@ -229,7 +266,7 @@ export default function SelfieCapture({ onCapture, onClose }: SelfieCaptureProps
           </div>
         )}
 
-        {/* Captured preview */}
+        {/* Captured preview — displayed mirrored to match what the user saw */}
         {state === "captured" && capturedDataUrl && (
           <div className="relative flex items-center justify-center w-full max-w-sm">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -263,13 +300,19 @@ export default function SelfieCapture({ onCapture, onClose }: SelfieCaptureProps
               </p>
             </div>
             <button
+              onClick={handleTryAgain}
+              className="min-h-[52px] w-full px-8 bg-white/8 hover:bg-white/14 active:scale-[0.95] text-white font-semibold rounded-full transition-all duration-150 text-base border border-white/15"
+              aria-label="Try requesting camera permission again"
+            >
+              Try Again
+            </button>
+            <button
               onClick={() => fileInputRef.current?.click()}
-              className="min-h-[52px] px-8 bg-[#4F56E8] hover:bg-[#5B63F0] active:scale-[0.98] text-white font-semibold rounded-full transition-all duration-150 text-base shadow-lg shadow-[#4F56E8]/30"
+              className="min-h-[52px] w-full px-8 bg-[#4F56E8] hover:bg-[#5B63F0] active:scale-[0.95] text-white font-semibold rounded-full transition-all duration-150 text-base shadow-lg shadow-[#4F56E8]/30"
               aria-label="Upload a photo from your device"
             >
               Upload Photo Instead
             </button>
-            <p className="text-white/30 text-xs">You can also upload from your device</p>
             <input
               ref={fileInputRef}
               type="file"
@@ -297,12 +340,11 @@ export default function SelfieCapture({ onCapture, onClose }: SelfieCaptureProps
             </div>
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="min-h-[52px] px-8 bg-[#4F56E8] hover:bg-[#5B63F0] active:scale-[0.98] text-white font-semibold rounded-full transition-all duration-150 text-base shadow-lg shadow-[#4F56E8]/30"
+              className="min-h-[52px] w-full px-8 bg-[#4F56E8] hover:bg-[#5B63F0] active:scale-[0.95] text-white font-semibold rounded-full transition-all duration-150 text-base shadow-lg shadow-[#4F56E8]/30"
               aria-label="Upload a photo from your device"
             >
               Upload Photo
             </button>
-            <p className="text-white/30 text-xs">You can also upload from your device</p>
             <input
               ref={fileInputRef}
               type="file"
@@ -320,7 +362,7 @@ export default function SelfieCapture({ onCapture, onClose }: SelfieCaptureProps
         {state === "preview" && (
           <button
             onClick={takePhoto}
-            className="flex-1 min-h-[52px] bg-[#4F56E8] hover:bg-[#5B63F0] active:scale-[0.98] text-white rounded-full text-base font-bold tracking-wide transition-all duration-150 shadow-lg shadow-[#4F56E8]/30"
+            className="flex-1 min-h-[52px] bg-[#4F56E8] hover:bg-[#5B63F0] active:scale-[0.95] text-white rounded-full text-base font-bold tracking-wide transition-all duration-150 shadow-lg shadow-[#4F56E8]/30"
             aria-label="Take photo"
           >
             Take Photo
@@ -331,14 +373,15 @@ export default function SelfieCapture({ onCapture, onClose }: SelfieCaptureProps
           <>
             <button
               onClick={retake}
-              className="flex-1 min-h-[52px] bg-white/8 hover:bg-white/14 active:scale-[0.98] text-white rounded-full text-base font-semibold transition-all duration-150 border border-white/15"
+              disabled={restarting}
+              className="flex-1 min-h-[52px] bg-white/8 hover:bg-white/14 active:scale-[0.95] text-white rounded-full text-base font-semibold transition-all duration-150 border border-white/15 disabled:opacity-50 disabled:pointer-events-none"
               aria-label="Retake photo"
             >
-              Retake
+              {restarting ? "Restarting…" : "Retake"}
             </button>
             <button
               onClick={acceptPhoto}
-              className="flex-1 min-h-[52px] bg-[#4F56E8] hover:bg-[#5B63F0] active:scale-[0.98] text-white rounded-full text-base font-bold tracking-wide transition-all duration-150 shadow-lg shadow-[#4F56E8]/30"
+              className="flex-1 min-h-[52px] bg-[#4F56E8] hover:bg-[#5B63F0] active:scale-[0.95] text-white rounded-full text-base font-bold tracking-wide transition-all duration-150 shadow-lg shadow-[#4F56E8]/30"
               aria-label="Use this photo"
             >
               Use Photo

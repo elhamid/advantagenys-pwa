@@ -17,17 +17,19 @@ const CITIES = [
   { value: "nashville", label: "Nashville", icon: "🎵" },
 ] as const;
 
+const DEFAULT_EMPLOYER = "Tropical Stars Inc.";
+
 interface ItinData {
   // Step 1
   firstName: string;
   lastName: string;
   phone: string;
   email: string;
+  companyName: string;
   // Step 2
   city: string;
   addressUsa: string;
   addressHomeCountry: string;
-  companyName: string;
   amount: string;
   // Step 3
   documentScan: File | null;
@@ -47,10 +49,10 @@ const INITIAL: ItinData = {
   lastName: "",
   phone: "",
   email: "",
+  companyName: DEFAULT_EMPLOYER,
   city: "",
   addressUsa: "",
   addressHomeCountry: "",
-  companyName: "",
   amount: "",
   documentScan: null,
   selfie: null,
@@ -200,16 +202,7 @@ export function ItinForm({ onSuccess }: Props) {
 
   function nextStep() {
     if (validateStep(step)) {
-      // For document scan step, auto-open scanner if no document yet
-      if (step === 2 && !data.documentScan && !showDocScanner) {
-        setShowDocScanner(true);
-        return;
-      }
-      // For selfie step, auto-open camera if no selfie yet
-      if (step === 3 && !data.selfie && !showSelfieCapture) {
-        setShowSelfieCapture(true);
-        return;
-      }
+      // No auto-open behavior — user controls camera via CTA buttons
       transitionToStep(Math.min(step + 1, STEPS.length - 1));
     }
   }
@@ -286,7 +279,7 @@ export function ItinForm({ onSuccess }: Props) {
 
   return (
     <>
-      <div className="flex-1 flex flex-col px-4 sm:px-6 md:px-12 lg:px-24 pb-6 max-w-3xl mx-auto w-full">
+      <div className="flex-1 flex flex-col px-4 sm:px-6 md:px-12 lg:px-24 max-w-3xl mx-auto w-full relative">
         {/* ─── Progress Indicator ─── */}
         <div className="mb-6 sm:mb-8">
           <div className="flex items-center justify-between mb-3">
@@ -343,10 +336,10 @@ export function ItinForm({ onSuccess }: Props) {
           </div>
         </div>
 
-        {/* ─── Form Content ─── */}
+        {/* ─── Scrollable Form Content ─── */}
         <div
           className={`
-            flex-1 overflow-y-auto transition-all duration-300 ease-out
+            flex-1 overflow-y-auto pb-28 transition-all duration-300 ease-out
             ${animating
               ? slideDirection === "left"
                 ? "opacity-0 translate-x-4"
@@ -392,7 +385,7 @@ export function ItinForm({ onSuccess }: Props) {
 
         {/* ─── Submit Error ─── */}
         {submitError && (
-          <div className="mt-4 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-300 text-sm flex items-start gap-2">
+          <div className="px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-300 text-sm flex items-start gap-2 mb-2">
             <svg className="w-5 h-5 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
@@ -400,81 +393,81 @@ export function ItinForm({ onSuccess }: Props) {
           </div>
         )}
 
-        {/* ─── Navigation ─── */}
-        <div className="flex items-center gap-3 mt-6 pt-4 border-t border-white/5">
-          {step > 0 && (
-            <button
-              onClick={prevStep}
-              className="
-                flex items-center gap-2 px-5 py-3.5 rounded-xl text-sm font-semibold
-                bg-white/5 text-white/60
-                hover:bg-white/10 hover:text-white/80
-                active:scale-[0.97] transition-all duration-200
-              "
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M11 17l-5-5m0 0l5-5m-5 5h12" />
-              </svg>
-              Back
-            </button>
-          )}
+        {/* ─── Sticky Bottom Navigation ─── */}
+        <div className="sticky bottom-0 left-0 right-0 z-20 pt-6 pb-4">
+          {/* Gradient backdrop — blends into the dark background */}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0F1B2D] via-[#0F1B2D]/95 to-transparent pointer-events-none" />
 
-          {/* Skip button for optional steps (3 & 4) */}
-          {(step === 2 || step === 3) && (
-            <button
-              onClick={() => transitionToStep(step + 1)}
-              className="
-                px-5 py-3.5 rounded-xl text-sm font-medium
-                text-white/40 hover:text-white/60
-                transition-all duration-200
-              "
-            >
-              Skip
-            </button>
-          )}
-
-          <button
-            onClick={isLast ? handleSubmit : nextStep}
-            disabled={submitting}
-            className={`
-              flex-1 px-6 py-3.5 rounded-xl text-sm font-bold
-              transition-all duration-200 active:scale-[0.97]
-              ${
-                submitting
-                  ? "bg-[#4F56E8]/50 text-white/50 cursor-wait"
-                  : "bg-[#4F56E8] text-white hover:bg-[#5B63F0] shadow-[0_0_30px_rgba(79,86,232,0.25)]"
-              }
-            `}
-          >
-            {submitting ? (
-              <span className="flex items-center justify-center gap-2">
-                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                Submitting...
-              </span>
-            ) : isLast ? (
-              <span className="flex items-center justify-center gap-2">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                </svg>
-                Submit Application
-              </span>
-            ) : (
-              <span className="flex items-center justify-center gap-2">
-                {step === 2
-                  ? data.documentScan
-                    ? "Continue"
-                    : "Scan Document"
-                  : step === 3
-                  ? data.selfie
-                    ? "Continue"
-                    : "Take Photo"
-                  : "Continue"}
+          <div className="relative flex items-center gap-3">
+            {step > 0 && (
+              <button
+                onClick={prevStep}
+                className="
+                  flex items-center gap-2 px-5 py-3.5 rounded-xl text-sm font-semibold
+                  bg-white/5 text-white/60
+                  hover:bg-white/10 hover:text-white/80
+                  active:scale-[0.97] transition-all duration-200
+                  min-h-[48px]
+                "
+              >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M11 17l-5-5m0 0l5-5m-5 5h12" />
                 </svg>
-              </span>
+                Back
+              </button>
             )}
-          </button>
+
+            {/* Skip button for optional steps (3 & 4) */}
+            {(step === 2 || step === 3) && (
+              <button
+                onClick={() => transitionToStep(step + 1)}
+                className="
+                  px-5 py-3.5 rounded-xl text-sm font-medium
+                  text-white/40 hover:text-white/60
+                  transition-all duration-200
+                  min-h-[48px]
+                "
+              >
+                Skip
+              </button>
+            )}
+
+            <button
+              onClick={isLast ? handleSubmit : nextStep}
+              disabled={submitting}
+              className={`
+                flex-1 px-6 py-3.5 rounded-xl text-sm font-bold
+                transition-all duration-200 active:scale-[0.98]
+                min-h-[48px]
+                ${
+                  submitting
+                    ? "bg-[#4F56E8]/50 text-white/50 cursor-wait"
+                    : "bg-[#4F56E8] text-white hover:bg-[#5B63F0] shadow-[0_0_30px_rgba(79,86,232,0.25)]"
+                }
+              `}
+            >
+              {submitting ? (
+                <span className="flex items-center justify-center gap-2">
+                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Submitting...
+                </span>
+              ) : isLast ? (
+                <span className="flex items-center justify-center gap-2">
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg>
+                  Submit Application
+                </span>
+              ) : (
+                <span className="flex items-center justify-center gap-2">
+                  Continue
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </span>
+              )}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -484,10 +477,7 @@ export function ItinForm({ onSuccess }: Props) {
           onCapture={handleDocCapture}
           onClose={() => {
             setShowDocScanner(false);
-            // If they captured a doc, advance to next step
-            if (data.documentScan) {
-              transitionToStep(3);
-            }
+            // Stay on current step — do NOT auto-advance
           }}
           label="Scan Passport / ID"
         />
@@ -498,9 +488,7 @@ export function ItinForm({ onSuccess }: Props) {
           onCapture={handleSelfieCapture}
           onClose={() => {
             setShowSelfieCapture(false);
-            if (data.selfie) {
-              transitionToStep(4);
-            }
+            // Stay on current step — do NOT auto-advance
           }}
         />
       )}
@@ -514,7 +502,7 @@ export function ItinForm({ onSuccess }: Props) {
 
 function Label({ children, required }: { children: React.ReactNode; required?: boolean }) {
   return (
-    <label className="block text-sm font-medium text-white/60 mb-1.5">
+    <label className="block text-sm font-medium text-white/70 mb-1.5">
       {children}
       {required && <span className="text-[#818CF8] ml-0.5">*</span>}
     </label>
@@ -529,6 +517,7 @@ function Input({
   type = "text",
   inputMode,
   autoComplete,
+  large,
 }: {
   value: string;
   onChange: (v: string) => void;
@@ -537,6 +526,7 @@ function Input({
   type?: string;
   inputMode?: "numeric" | "tel" | "email" | "text" | "decimal";
   autoComplete?: string;
+  large?: boolean;
 }) {
   return (
     <>
@@ -548,10 +538,11 @@ function Input({
         inputMode={inputMode}
         autoComplete={autoComplete}
         className={`
-          w-full px-4 py-3.5 rounded-xl text-base
+          w-full px-4 py-3.5 rounded-xl
+          ${large ? "text-lg" : "text-base"}
           bg-white/[0.07] border
           text-white placeholder-white/25
-          focus:outline-none focus:ring-2 focus:ring-[#4F56E8]/50 focus:border-[#4F56E8]/50
+          focus:outline-none focus:border-[#4F56E8] focus:ring-1 focus:ring-[#4F56E8]/30
           transition-all duration-200
           ${error ? "border-red-400/50 ring-1 ring-red-400/20" : "border-white/10"}
         `}
@@ -579,10 +570,10 @@ function TextArea({
       placeholder={placeholder}
       rows={rows}
       className="
-        w-full px-4 py-3.5 rounded-xl text-base resize-none
+        w-full px-4 py-3.5 rounded-xl text-lg tracking-wide resize-none
         bg-white/[0.07] border border-white/10
         text-white placeholder-white/25
-        focus:outline-none focus:ring-2 focus:ring-[#4F56E8]/50 focus:border-[#4F56E8]/50
+        focus:outline-none focus:border-[#4F56E8] focus:ring-1 focus:ring-[#4F56E8]/30
         transition-all duration-200
       "
     />
@@ -600,6 +591,83 @@ function SectionHeader({
     <div>
       <h2 className="text-xl sm:text-2xl font-bold text-white mb-1">{title}</h2>
       <p className="text-white/40 text-sm">{subtitle}</p>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════
+   Employer Badge (Tropical Stars default)
+   ═══════════════════════════════════════════════ */
+
+function EmployerBadge({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+
+  if (editing) {
+    return (
+      <div>
+        <Label>Company / Employer</Label>
+        <div className="flex gap-2">
+          <Input
+            value={value}
+            onChange={onChange}
+            placeholder="Company name"
+            autoComplete="organization"
+          />
+          <button
+            type="button"
+            onClick={() => {
+              if (!value.trim()) onChange(DEFAULT_EMPLOYER);
+              setEditing(false);
+            }}
+            className="
+              shrink-0 px-4 py-3.5 rounded-xl text-sm font-medium
+              bg-white/5 border border-white/10 text-white/60
+              hover:bg-white/10 hover:text-white/80
+              active:scale-[0.97] transition-all duration-200
+              min-h-[48px]
+            "
+          >
+            Done
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <Label>Company / Employer</Label>
+      <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-white/[0.05] border border-white/10">
+        {/* Company icon */}
+        <div className="w-9 h-9 rounded-lg bg-[#4F56E8]/15 flex items-center justify-center shrink-0">
+          <svg className="w-5 h-5 text-[#818CF8]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" />
+          </svg>
+        </div>
+        <div className="flex-1 min-w-0">
+          <span className="text-white/80 text-base font-semibold block truncate">{value}</span>
+        </div>
+        <button
+          type="button"
+          onClick={() => setEditing(true)}
+          className="
+            shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium
+            text-white/40 hover:text-white/70 hover:bg-white/5
+            transition-all duration-200
+          "
+        >
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+          </svg>
+          Change
+        </button>
+      </div>
     </div>
   );
 }
@@ -636,6 +704,12 @@ function StepPersonal({ data, errors, update }: StepProps) {
         </span>
       </div>
 
+      {/* Employer badge — moved to Step 1 */}
+      <EmployerBadge
+        value={data.companyName}
+        onChange={(v) => update("companyName", v)}
+      />
+
       <div className="grid grid-cols-2 gap-4">
         <div>
           <Label required>First Name</Label>
@@ -669,6 +743,7 @@ function StepPersonal({ data, errors, update }: StepProps) {
           type="tel"
           inputMode="tel"
           autoComplete="tel"
+          large
         />
       </div>
 
@@ -724,6 +799,7 @@ function StepLocation({ data, errors, update }: StepProps) {
               className={`
                 py-5 px-4 rounded-xl text-base font-semibold text-center
                 transition-all duration-200 active:scale-[0.97]
+                min-h-[48px]
                 ${
                   data.city === city.value
                     ? "bg-[#4F56E8] text-white border-2 border-[#818CF8] shadow-[0_0_20px_rgba(79,86,232,0.3)]"
@@ -759,24 +835,15 @@ function StepLocation({ data, errors, update }: StepProps) {
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <Label>Company / Employer</Label>
-          <Input
-            value={data.companyName}
-            onChange={(v) => update("companyName", v)}
-            placeholder="Company name"
-          />
-        </div>
-        <div>
-          <Label>Annual Earnings ($)</Label>
-          <Input
-            value={data.amount}
-            onChange={(v) => update("amount", v)}
-            placeholder="0.00"
-            inputMode="decimal"
-          />
-        </div>
+      <div>
+        <Label>Annual Earnings ($)</Label>
+        <Input
+          value={data.amount}
+          onChange={(v) => update("amount", v)}
+          placeholder="0.00"
+          inputMode="decimal"
+          large
+        />
       </div>
     </div>
   );
@@ -833,6 +900,7 @@ function StepDocument({
                 bg-white/5 border border-white/10 text-white/60
                 hover:bg-white/10 hover:text-white/80
                 active:scale-[0.97] transition-all duration-200
+                min-h-[48px]
               "
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -847,6 +915,7 @@ function StepDocument({
                 px-4 py-3 rounded-xl text-sm font-medium
                 text-red-400/60 hover:text-red-400
                 transition-all duration-200
+                min-h-[48px]
               "
             >
               Remove
@@ -854,7 +923,7 @@ function StepDocument({
           </div>
         </div>
       ) : (
-        /* ─── Scan Prompt ─── */
+        /* ─── Scan Prompt — manual trigger, no auto-open ─── */
         <div className="space-y-4">
           <button
             type="button"
@@ -943,6 +1012,7 @@ function StepSelfie({
                 bg-white/5 border border-white/10 text-white/60
                 hover:bg-white/10 hover:text-white/80
                 active:scale-[0.97] transition-all duration-200
+                min-h-[48px]
               "
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -957,6 +1027,7 @@ function StepSelfie({
                 px-4 py-3 rounded-xl text-sm font-medium
                 text-red-400/60 hover:text-red-400
                 transition-all duration-200
+                min-h-[48px]
               "
             >
               Remove
@@ -964,7 +1035,7 @@ function StepSelfie({
           </div>
         </div>
       ) : (
-        /* ─── Capture Prompt ─── */
+        /* ─── Capture Prompt — manual trigger, no auto-open ─── */
         <div className="space-y-4">
           <button
             type="button"
@@ -1042,6 +1113,7 @@ function StepReview({
             <ReviewField label="Name" value={`${data.firstName} ${data.lastName}`} />
             <ReviewField label="Phone" value={data.phone} />
             <ReviewField label="Email" value={data.email || "Not provided"} muted={!data.email} />
+            <ReviewField label="Employer" value={data.companyName || "Not provided"} muted={!data.companyName} />
           </div>
         </div>
 
@@ -1052,7 +1124,11 @@ function StepReview({
           </h3>
           <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
             <ReviewField label="City" value={cityLabel} />
-            <ReviewField label="Company" value={data.companyName || "Not provided"} muted={!data.companyName} />
+            <ReviewField
+              label="Annual Earnings"
+              value={data.amount ? `$${data.amount}` : "Not provided"}
+              muted={!data.amount}
+            />
             <ReviewField
               label="US Address"
               value={data.addressUsa || "Not provided"}
@@ -1064,11 +1140,6 @@ function StepReview({
               value={data.addressHomeCountry || "Not provided"}
               muted={!data.addressHomeCountry}
               fullWidth
-            />
-            <ReviewField
-              label="Annual Earnings"
-              value={data.amount ? `$${data.amount}` : "Not provided"}
-              muted={!data.amount}
             />
           </div>
         </div>
