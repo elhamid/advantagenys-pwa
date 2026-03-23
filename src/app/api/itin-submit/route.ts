@@ -44,18 +44,28 @@ interface DocumentUrls {
 interface ItinPayload {
   firstName: string;
   lastName: string;
+  middleName: string;
+  dateOfBirth: string;
+  countryOfBirth: string;
+  cityOfBirth: string;
+  countryOfCitizenship: string;
   phone: string;
   email: string;
   city: string;
   addressUsa: string;
   addressHomeCountry: string;
+  homeCountry: string;
+  homeCity: string;
+  homeAddress: string;
+  usEntryDate: string;
   companyName: string;
   amount: string;
   hasPassport: boolean;
   passportNumber: string;
   passportExpiry: string;
+  passportCountry: string;
   comment: string;
-  // Backward-compat: base64 photo from legacy passportPhoto field
+  // Backward-compat
   passportPhotoBase64?: string;
   passportPhotoFilename?: string;
 }
@@ -129,19 +139,61 @@ async function submitToJotForm(data: ItinPayload): Promise<void> {
     params.append("submission[33]", data.email.trim());
   }
 
+  // q28 — Birth Date (YYYY-MM-DD → month/day/year)
+  if (data.dateOfBirth) {
+    const [year, month, day] = data.dateOfBirth.split("-");
+    if (year && month && day) {
+      params.append("submission[28_month]", month);
+      params.append("submission[28_day]", day);
+      params.append("submission[28_year]", year);
+    }
+  }
+
+  // q14 — City of Birth
+  if (data.cityOfBirth?.trim()) {
+    params.append("submission[14]", data.cityOfBirth.trim());
+  }
+
+  // q60 — Country of Birth
+  if (data.countryOfBirth?.trim()) {
+    params.append("submission[60]", data.countryOfBirth.trim());
+  }
+
+  // q35 — Citizenship
+  if (data.countryOfCitizenship?.trim()) {
+    params.append("submission[35]", data.countryOfCitizenship.trim());
+  }
+
   // q31 — US Address (single line → addr_line1)
   if (data.addressUsa.trim()) {
     params.append("submission[31_addr_line1]", data.addressUsa.trim());
   }
 
-  // q41 — Foreign (Non-US) Address
-  if (data.addressHomeCountry.trim()) {
-    params.append("submission[41_addr_line1]", data.addressHomeCountry.trim());
+  // q64 — Date of Entry into the US
+  if (data.usEntryDate?.trim()) {
+    params.append("submission[64]", data.usEntryDate.trim());
+  }
+
+  // q41 — Foreign (Non-US) Address (home country details)
+  if (data.homeAddress?.trim() || data.addressHomeCountry?.trim()) {
+    const addr = data.homeAddress?.trim() || data.addressHomeCountry?.trim() || "";
+    params.append("submission[41_addr_line1]", addr);
+    if (data.homeCity?.trim()) {
+      params.append("submission[41_addr_line2]", data.homeCity.trim());
+    }
+    if (data.homeCountry?.trim()) {
+      params.append("submission[41_country]", data.homeCountry.trim());
+    }
   }
 
   // q37 — Passport Number
-  if (data.passportNumber.trim()) {
+  if (data.passportNumber?.trim()) {
     params.append("submission[37]", data.passportNumber.trim());
+  }
+
+  // q38 — Passport Issued By (country)
+  if (data.passportCountry?.trim()) {
+    params.append("submission[38]", data.passportCountry.trim());
   }
 
   // q40 — Passport Expiration Date (YYYY-MM-DD → month/day/year)
@@ -159,9 +211,10 @@ async function submitToJotForm(data: ItinPayload): Promise<void> {
     params.append("submission[51]", `$${data.amount.trim()}`);
   }
 
-  // q66 — Referred By (use for company + city + comment)
+  // q66 — Referred By (company + city + middle name + comment)
   const referredParts = [
     data.companyName.trim() && `Company: ${data.companyName.trim()}`,
+    data.middleName?.trim() && `Middle Name: ${data.middleName.trim()}`,
     data.city && `City: ${data.city === "new_york" ? "New York" : "Nashville"}`,
     data.comment.trim() && `Notes: ${data.comment.trim()}`,
     "Source: ITIN Kiosk (advantagenys.com/itin)",
@@ -277,16 +330,26 @@ export async function POST(request: NextRequest) {
     const data: ItinPayload = {
       firstName: (formData.get("firstName") as string) || "",
       lastName: (formData.get("lastName") as string) || "",
+      middleName: (formData.get("middleName") as string) || "",
+      dateOfBirth: (formData.get("dateOfBirth") as string) || "",
+      countryOfBirth: (formData.get("countryOfBirth") as string) || "",
+      cityOfBirth: (formData.get("cityOfBirth") as string) || "",
+      countryOfCitizenship: (formData.get("countryOfCitizenship") as string) || "",
       phone: (formData.get("phone") as string) || "",
       email: (formData.get("email") as string) || "",
       city: (formData.get("city") as string) || "",
       addressUsa: (formData.get("addressUsa") as string) || "",
       addressHomeCountry: (formData.get("addressHomeCountry") as string) || "",
+      homeCountry: (formData.get("homeCountry") as string) || "",
+      homeCity: (formData.get("homeCity") as string) || "",
+      homeAddress: (formData.get("homeAddress") as string) || "",
+      usEntryDate: (formData.get("usEntryDate") as string) || "",
       companyName: (formData.get("companyName") as string) || "",
       amount: (formData.get("amount") as string) || "",
       hasPassport: formData.get("hasPassport") === "true",
       passportNumber: (formData.get("passportNumber") as string) || "",
       passportExpiry: (formData.get("passportExpiry") as string) || "",
+      passportCountry: (formData.get("passportCountry") as string) || "",
       comment: (formData.get("comment") as string) || "",
     };
 
