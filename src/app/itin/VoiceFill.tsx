@@ -250,7 +250,8 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
       setState("results");
     } catch (err) {
       console.error("[AVA] Processing error:", err);
-      setError("Could not process. Try again or fill manually.");
+      const msg = err instanceof Error ? err.message : "Unknown error";
+      setError(`Processing failed: ${msg}. Try again or fill manually.`);
       setState("idle");
     }
   }, [extracted, fields]);
