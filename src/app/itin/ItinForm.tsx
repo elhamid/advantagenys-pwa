@@ -29,6 +29,14 @@ const SignaturePad = dynamic(() => import("./SignaturePad"), {
     </div>
   ),
 });
+const VoiceFill = dynamic(() => import("./VoiceFill"), {
+  ssr: false,
+  loading: () => (
+    <div className="fixed inset-0 z-50 bg-[#0F1B2D] flex items-center justify-center">
+      <span className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+    </div>
+  ),
+});
 
 /* ═══════════════════════════════════════════════
    Types & Constants
@@ -161,6 +169,7 @@ export function ItinForm({ onSuccess }: Props) {
   const [showDocScanner, setShowDocScanner] = useState(false);
   const [showSelfieCapture, setShowSelfieCapture] = useState(false);
   const [showSignaturePad, setShowSignaturePad] = useState(false);
+  const [showVoiceFill, setShowVoiceFill] = useState(false);
 
   // Preview URLs for captured files
   const [docPreview, setDocPreview] = useState<string | null>(null);
@@ -274,6 +283,15 @@ export function ItinForm({ onSuccess }: Props) {
       sigPreviewRef.current = null;
     }
     setSigPreview(null);
+  }, [update]);
+
+  const handleVoiceFill = useCallback((fields: Partial<ItinData>) => {
+    Object.entries(fields).forEach(([key, value]) => {
+      if (value && key in INITIAL) {
+        update(key as keyof ItinData, value as ItinData[keyof ItinData]);
+      }
+    });
+    setShowVoiceFill(false);
   }, [update]);
 
   // ─── Validation ───
@@ -510,7 +528,12 @@ export function ItinForm({ onSuccess }: Props) {
           `}
         >
           {displayStep === 0 && (
-            <StepPersonal data={data} errors={errors} update={update} />
+            <StepPersonal
+              data={data}
+              errors={errors}
+              update={update}
+              onOpenVoiceFill={() => setShowVoiceFill(true)}
+            />
           )}
           {displayStep === 1 && (
             <StepLocation data={data} errors={errors} update={update} />
@@ -689,6 +712,14 @@ export function ItinForm({ onSuccess }: Props) {
           onClose={() => setShowSignaturePad(false)}
         />
       )}
+
+      {showVoiceFill && (
+        <VoiceFill
+          currentData={{ ...data }}
+          onFill={handleVoiceFill}
+          onClose={() => setShowVoiceFill(false)}
+        />
+      )}
     </>
   );
 }
@@ -831,12 +862,7 @@ function SectionDivider({ label }: { label: string }) {
    Country Select — reusable dropdown
    ═══════════════════════════════════════════════ */
 
-const TOP_COUNTRIES = [
-  "Jamaica", "Mexico", "Guatemala", "Honduras", "El Salvador", "Brazil",
-  "Colombia", "Ecuador", "Peru", "India", "China", "Philippines",
-  "South Korea", "Pakistan", "Bangladesh", "Nigeria", "Trinidad and Tobago",
-  "Guyana", "Haiti", "Dominican Republic",
-];
+const FIRST_COUNTRY = "Jamaica";
 
 const ALL_COUNTRIES = [
   "Afghanistan", "Albania", "Algeria", "Andorra", "Angola",
@@ -880,11 +906,10 @@ const ALL_COUNTRIES = [
   "Vatican City", "Venezuela", "Vietnam", "Yemen", "Zambia", "Zimbabwe",
 ];
 
-// Deduplicated list: top countries first, then alphabetical remainder
+// Jamaica first, then all countries alphabetically (no duplicates)
 const COUNTRY_OPTIONS = (() => {
-  const topSet = new Set(TOP_COUNTRIES);
-  const rest = ALL_COUNTRIES.filter((c) => !topSet.has(c));
-  return { top: TOP_COUNTRIES, rest };
+  const rest = ALL_COUNTRIES.filter((c) => c !== FIRST_COUNTRY);
+  return { first: FIRST_COUNTRY, rest };
 })();
 
 function CountrySelect({
@@ -931,20 +956,15 @@ function CountrySelect({
         <option value="" disabled className="bg-[#0F1B2D] text-white/40">
           Select country...
         </option>
-        <optgroup label="Common" className="bg-[#0F1B2D] text-white">
-          {COUNTRY_OPTIONS.top.map((c) => (
-            <option key={`top-${c}`} value={c} className="bg-[#0F1B2D] text-white">
-              {c}
-            </option>
-          ))}
-        </optgroup>
-        <optgroup label="All Countries" className="bg-[#0F1B2D] text-white">
-          {COUNTRY_OPTIONS.rest.map((c) => (
-            <option key={c} value={c} className="bg-[#0F1B2D] text-white">
-              {c}
-            </option>
-          ))}
-        </optgroup>
+        <option value={COUNTRY_OPTIONS.first} className="bg-[#0F1B2D] text-white font-semibold">
+          {COUNTRY_OPTIONS.first}
+        </option>
+        <option disabled className="bg-[#0F1B2D] text-white/20">──────────</option>
+        {COUNTRY_OPTIONS.rest.map((c) => (
+          <option key={c} value={c} className="bg-[#0F1B2D] text-white">
+            {c}
+          </option>
+        ))}
       </select>
       {error && <p className="mt-1 text-xs text-red-400">{error}</p>}
     </>
@@ -1039,13 +1059,44 @@ interface StepProps {
   update: <K extends keyof ItinData>(field: K, value: ItinData[K]) => void;
 }
 
-function StepPersonal({ data, errors, update }: StepProps) {
+interface StepPersonalProps extends StepProps {
+  onOpenVoiceFill: () => void;
+}
+
+function StepPersonal({ data, errors, update, onOpenVoiceFill }: StepPersonalProps) {
   return (
     <div className="space-y-3">
       <SectionHeader
         title="Personal Information"
         subtitle="W-7 application details for your ITIN."
       />
+
+      {/* AVA Voice Fill button */}
+      <button
+        type="button"
+        onClick={onOpenVoiceFill}
+        className="
+          w-full py-4 px-6 rounded-2xl
+          bg-gradient-to-r from-[#4F56E8]/20 to-[#818CF8]/20
+          border border-[#4F56E8]/30
+          flex items-center gap-4
+          hover:from-[#4F56E8]/30 hover:to-[#818CF8]/30
+          active:scale-[0.98] transition-all duration-200
+        "
+      >
+        <div className="w-12 h-12 rounded-full bg-[#4F56E8] flex items-center justify-center shrink-0">
+          <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+          </svg>
+        </div>
+        <div className="text-left">
+          <span className="text-white font-semibold text-base block">Fill with Voice</span>
+          <span className="text-white/40 text-sm">Speak to fill out the form with AI</span>
+        </div>
+        <svg className="w-5 h-5 text-white/30 ml-auto shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
 
       {/* IRS badge */}
       <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-[#4F56E8]/10 border border-[#4F56E8]/20">
@@ -1105,28 +1156,28 @@ function StepPersonal({ data, errors, update }: StepProps) {
         />
       </div>
 
-      {/* Date of Birth — full width */}
-      <div>
-        <Label required htmlFor="itin-dob">Date of Birth</Label>
-        <Input
-          id="itin-dob"
-          value={data.dateOfBirth}
-          onChange={(v) => update("dateOfBirth", v)}
-          error={errors.dateOfBirth}
-          type="date"
-        />
-      </div>
-
-      {/* City / Town of Birth — full width */}
-      <div>
-        <Label required htmlFor="itin-cityOfBirth">City / Town of Birth</Label>
-        <Input
-          id="itin-cityOfBirth"
-          value={data.cityOfBirth}
-          onChange={(v) => update("cityOfBirth", v)}
-          error={errors.cityOfBirth}
-          placeholder="Kingston"
-        />
+      {/* DOB | Birth City — compact 2-col */}
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <Label required htmlFor="itin-dob">Birth Date</Label>
+          <Input
+            id="itin-dob"
+            value={data.dateOfBirth}
+            onChange={(v) => update("dateOfBirth", v)}
+            error={errors.dateOfBirth}
+            type="date"
+          />
+        </div>
+        <div>
+          <Label required htmlFor="itin-cityOfBirth">Birth City</Label>
+          <Input
+            id="itin-cityOfBirth"
+            value={data.cityOfBirth}
+            onChange={(v) => update("cityOfBirth", v)}
+            error={errors.cityOfBirth}
+            placeholder="Kingston"
+          />
+        </div>
       </div>
 
       {/* Row 4: Country of Birth | Country of Citizenship */}
