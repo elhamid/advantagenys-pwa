@@ -518,6 +518,31 @@ export function ItinForm({ onSuccess }: Props) {
           </div>
         </div>
 
+        {/* AVA Voice — available on all steps */}
+        {step <= 2 && (
+          <button
+            type="button"
+            onClick={() => setShowVoiceFill(true)}
+            className="
+              mb-3 w-full py-3 px-4 rounded-xl
+              bg-[#4F56E8]/10 border border-[#4F56E8]/20
+              flex items-center gap-3
+              hover:bg-[#4F56E8]/20 active:scale-[0.98]
+              transition-all duration-200
+            "
+          >
+            <div className="w-9 h-9 rounded-full bg-[#4F56E8] flex items-center justify-center shrink-0">
+              <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+              </svg>
+            </div>
+            <span className="text-white/70 text-sm font-medium">Speak to fill with AVA</span>
+            <svg className="w-4 h-4 text-white/20 ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        )}
+
         {/* ─── Scrollable Form Content ─── */}
         <div
           ref={stepContentRef}
@@ -532,7 +557,6 @@ export function ItinForm({ onSuccess }: Props) {
               data={data}
               errors={errors}
               update={update}
-              onOpenVoiceFill={() => setShowVoiceFill(true)}
             />
           )}
           {displayStep === 1 && (
@@ -686,6 +710,7 @@ export function ItinForm({ onSuccess }: Props) {
 
       {showVoiceFill && (
         <VoiceFill
+          step={step}
           currentData={{ ...data }}
           onFill={handleVoiceFill}
           onClose={() => setShowVoiceFill(false)}
@@ -1030,44 +1055,13 @@ interface StepProps {
   update: <K extends keyof ItinData>(field: K, value: ItinData[K]) => void;
 }
 
-interface StepPersonalProps extends StepProps {
-  onOpenVoiceFill: () => void;
-}
-
-function StepPersonal({ data, errors, update, onOpenVoiceFill }: StepPersonalProps) {
+function StepPersonal({ data, errors, update }: StepProps) {
   return (
     <div className="space-y-3">
       <SectionHeader
         title="Personal Information"
         subtitle="W-7 application details for your ITIN."
       />
-
-      {/* AVA Voice Fill button */}
-      <button
-        type="button"
-        onClick={onOpenVoiceFill}
-        className="
-          w-full py-4 px-6 rounded-2xl
-          bg-gradient-to-r from-[#4F56E8]/20 to-[#818CF8]/20
-          border border-[#4F56E8]/30
-          flex items-center gap-4
-          hover:from-[#4F56E8]/30 hover:to-[#818CF8]/30
-          active:scale-[0.98] transition-all duration-200
-        "
-      >
-        <div className="w-12 h-12 rounded-full bg-[#4F56E8] flex items-center justify-center shrink-0">
-          <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-          </svg>
-        </div>
-        <div className="text-left">
-          <span className="text-white font-semibold text-base block">Fill with Voice</span>
-          <span className="text-white/40 text-sm">Speak to fill out the form with AI</span>
-        </div>
-        <svg className="w-5 h-5 text-white/30 ml-auto shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-        </svg>
-      </button>
 
       {/* IRS badge */}
       <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-[#4F56E8]/10 border border-[#4F56E8]/20">
