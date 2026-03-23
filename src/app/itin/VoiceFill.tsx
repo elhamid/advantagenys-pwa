@@ -177,8 +177,8 @@ function extractFromTranscript(text: string, currentFieldKey?: string, alreadyEx
   }
 
   // Name patterns — flexible: "my name is X Y", "I'm X Y Z", "call me X"
-  // Also handles "my name is Mary Jane Watson" (first=Mary Jane, last=Watson)
-  const nameIntro = text.match(/(?:my name is|i'm|i am|name's|call me)\s+(.+?)(?:\.|,|and\s+(?:i|my)|born|from|i was|$)/i);
+  // Also: just "Harry Harrison" (two+ capitalized words at the start or after a pause)
+  const nameIntro = text.match(/(?:my name is|i'm|i am|name's|call me|name)\s+(.+?)(?:\.|,|and\s+(?:i|my)|born|from|i was|date|$)/i);
   if (nameIntro) {
     const parts = nameIntro[1].trim().split(/\s+/).filter(p => p.length > 0);
     if (parts.length === 2) {
@@ -195,6 +195,15 @@ function extractFromTranscript(text: string, currentFieldKey?: string, alreadyEx
       if (parts.length > 3) result.middleName = parts.slice(2, -1).join(" ");
     } else if (parts.length === 1) {
       result.firstName = parts[0];
+    }
+  }
+
+  // Fallback: if transcript starts with two capitalized words (e.g., "Harry Harrison born in...")
+  if (!result.firstName && !result.lastName) {
+    const leadingNames = text.match(/^([A-Z][a-z]+)\s+([A-Z][a-z]+)/);
+    if (leadingNames) {
+      result.firstName = leadingNames[1];
+      result.lastName = leadingNames[2];
     }
   }
 
@@ -412,6 +421,14 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
       const fullTranscript = accumulatedRef.current + (accumulatedRef.current && finalParts ? " " : "") + finalParts;
       setTranscript(fullTranscript);
       setInterimText(interimParts);
+
+      // Real-time extraction from the FULL accumulated transcript
+      // Uses generic pattern matching — only fills when there's a confident match
+      const allText = fullTranscript + " " + interimParts;
+      const liveExtracted = extractFromTranscript(allText);
+      if (Object.keys(liveExtracted).length > 0) {
+        setExtracted((prev) => ({ ...prev, ...liveExtracted }));
+      }
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
