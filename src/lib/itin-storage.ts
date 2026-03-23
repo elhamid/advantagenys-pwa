@@ -26,7 +26,7 @@ const ALLOWED_CONTENT_TYPES = new Set([
 
 function getServiceClient(): SupabaseClient | null {
   const url = process.env.TASKBOARD_SUPABASE_URL;
-  const serviceKey = process.env.TASKBOARD_SUPABASE_SERVICE_KEY;
+  const serviceKey = process.env.TASKBOARD_SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!url || !serviceKey) {
     console.warn(
