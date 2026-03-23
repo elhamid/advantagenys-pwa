@@ -1,7 +1,9 @@
 // /api/itin-voice — AVA voice-powered form fill for ITIN applications
-// Accepts a speech transcript, extracts structured ITIN fields via OpenRouter (Gemini).
+// Uses AVA's real system prompt + knowledge base from taskboard, with extraction instructions appended.
 
 import { NextRequest } from "next/server";
+import { getSystemPrompt } from "@/lib/chat/system-prompt";
+import { findRelevantKnowledge } from "@/lib/chat/knowledge";
 
 // ============================================================================
 // Rate limiter — simple in-memory, 10 requests per minute per IP
@@ -54,43 +56,34 @@ const ALLOWED_FIELDS = new Set([
 ]);
 
 // ============================================================================
-// System prompt
+// ITIN extraction instructions (appended to AVA's real system prompt)
 // ============================================================================
 
-const SYSTEM_PROMPT = `You are a structured data extractor for ITIN (Individual Taxpayer Identification Number) applications.
+const EXTRACTION_INSTRUCTIONS = `
 
-Your task is to extract ITIN application fields from a speech transcript. Return ONLY a valid JSON object — no explanation, no markdown, no code fences.
+--- ITIN VOICE FILL MODE ---
+You are currently helping a client fill out their ITIN application by voice. Extract application fields from their speech transcript and return ONLY a valid JSON object — no explanation, no markdown, no code fences.
 
-Extractable fields (only include fields clearly mentioned in the transcript):
-- firstName: Given/first name
-- lastName: Family/last name
-- middleName: Middle name (if explicitly stated)
-- dateOfBirth: Date of birth in YYYY-MM-DD format (e.g. "March 5th 1990" → "1990-03-05")
-- countryOfBirth: Full official country name (e.g. "Jamaica", "Haiti", "Mexico")
-- cityOfBirth: City or town of birth
-- countryOfCitizenship: Full official country name (often same as countryOfBirth)
-- phone: Phone number with formatting (e.g. "929-555-0123")
-- email: Email address (lowercase)
-- companyName: Employer or company name
-- city: Appointment city — MUST be exactly "new_york" or "nashville". Map "New York" or "NYC" → "new_york"; map "Nashville" or "Tennessee" → "nashville". Only include if appointment city is mentioned.
-- addressUsa: Full US street address (street + city, e.g. "147 West 35th Street, New York")
-- homeCountry: Full country name for home country address
-- homeCity: City name in home country
-- homeAddress: Street address in home country
-- usEntryDate: US entry date in YYYY-MM-DD format
-- amount: Annual earnings as numbers only (e.g. "45000"), no currency symbols
-- passportNumber: Passport document number
-- passportExpiry: Passport expiry date in YYYY-MM-DD format
-- passportCountry: Full name of the country that issued the passport
+Extractable fields (only include fields clearly mentioned):
+- firstName, lastName, middleName
+- dateOfBirth (YYYY-MM-DD format, e.g. "March 5th 1990" → "1990-03-05")
+- countryOfBirth, cityOfBirth (full official country/city names)
+- countryOfCitizenship (full official country name)
+- phone, email
+- companyName (employer)
+- city (appointment city: MUST be exactly "new_york" or "nashville")
+- addressUsa (full US street address)
+- homeCountry, homeCity, homeAddress (home country details)
+- usEntryDate (YYYY-MM-DD format)
+- amount (annual earnings, numbers only)
+- passportNumber, passportExpiry (YYYY-MM-DD), passportCountry
 
 Rules:
-1. Extract ONLY fields clearly stated in the transcript. Do NOT guess or infer.
-2. If a field is ambiguous or not mentioned, omit it entirely.
-3. Convert all dates to YYYY-MM-DD format.
-4. Use full official country names (not abbreviations).
-5. For the "city" field, ONLY use "new_york" or "nashville" — no other values.
-6. Preserve any existing values from currentFields unless the transcript explicitly overrides them.
-7. Return a flat JSON object with string values only.`;
+1. Extract ONLY fields clearly stated. Do NOT guess or infer.
+2. Convert all dates to YYYY-MM-DD. Use full country names.
+3. For "city" field: map "New York"/"NYC" → "new_york", "Nashville" → "nashville".
+4. Preserve existing currentFields unless transcript explicitly overrides.
+5. Return flat JSON with string values only.`;
 
 // ============================================================================
 // Value sanitizer
@@ -178,7 +171,19 @@ export async function POST(request: NextRequest) {
 
   console.log("[itin-voice] Processing transcript:", trimmedTranscript.slice(0, 200));
 
-  // 6. Call OpenRouter
+  // 6. Build AVA's system prompt (from taskboard DB) + extraction instructions
+  const [avaPrompt, knowledge] = await Promise.all([
+    getSystemPrompt("ITIN Application Kiosk — Voice Fill Mode"),
+    findRelevantKnowledge("ITIN application passport tax immigrant"),
+  ]);
+
+  const knowledgeContext = knowledge.length > 0
+    ? `\n\nRelevant knowledge:\n${knowledge.map((k) => `- ${k.title}: ${k.content}`).join("\n")}`
+    : "";
+
+  const fullSystemPrompt = avaPrompt + knowledgeContext + EXTRACTION_INSTRUCTIONS;
+
+  // 7. Call OpenRouter with AVA's real identity
   let openrouterResponse: Response;
 
   try {
@@ -190,12 +195,12 @@ export async function POST(request: NextRequest) {
           "Content-Type": "application/json",
           Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
           "HTTP-Referer": "https://advantagenys.com",
-          "X-Title": "Advantage ITIN Voice",
+          "X-Title": "AVA ITIN Voice Fill",
         },
         body: JSON.stringify({
           model: "google/gemini-2.5-flash",
           messages: [
-            { role: "system", content: SYSTEM_PROMPT },
+            { role: "system", content: fullSystemPrompt },
             { role: "user", content: userMessage },
           ],
           stream: false,
