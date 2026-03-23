@@ -1,9 +1,7 @@
-// /api/itin-voice — AVA voice-powered form fill for ITIN applications
-// Uses AVA's real system prompt + knowledge base from taskboard, with extraction instructions appended.
+// /api/itin-voice — Structured data extraction from ITIN voice transcripts.
+// Uses a dedicated extraction-only prompt (no conversational AI personality).
 
 import { NextRequest } from "next/server";
-import { getSystemPrompt } from "@/lib/chat/system-prompt";
-import { findRelevantKnowledge } from "@/lib/chat/knowledge";
 
 // ============================================================================
 // Rate limiter — simple in-memory, 10 requests per minute per IP
@@ -56,38 +54,67 @@ const ALLOWED_FIELDS = new Set([
 ]);
 
 // ============================================================================
-// ITIN extraction instructions (appended to AVA's real system prompt)
+// Extraction prompt — built per-request so today's date is always current
 // ============================================================================
 
-const EXTRACTION_INSTRUCTIONS = `
+function buildExtractionPrompt(): string {
+  const today = new Date().toISOString().split("T")[0];
+  return `You are a structured data extraction engine. Your ONLY job is to extract ITIN application fields from a speech transcript and return a JSON object.
 
---- ITIN VOICE FILL MODE ---
-You are currently helping a client fill out their ITIN application by voice. Extract application fields from their speech transcript and return ONLY a valid JSON object — no explanation, no markdown, no code fences.
+Today's date is ${today}.
 
-Extractable fields (only include fields clearly mentioned):
-- firstName, lastName, middleName (if they say "no middle name" or "none", set middleName to "N/A")
-- dateOfBirth (YYYY-MM-DD format, e.g. "March 5th 1990" → "1990-03-05")
-- countryOfBirth, cityOfBirth (full official country/city names)
-- countryOfCitizenship (full official country name, often same as countryOfBirth)
-- phone (any phone number mentioned), email
-- companyName (employer)
-- city (appointment city: MUST be exactly "new_york" or "nashville")
-- addressUsa (full US street address — include street number, street name, city, state if mentioned)
-- homeCountry (full country name for non-US home address)
-- homeCity (city/town in home country)
-- homeAddress (street address in home country — include all details mentioned, any non-US address)
-- usEntryDate (when they entered the US — YYYY-MM-DD format. "January 2023" → "2023-01-01", "last year" → estimate)
-- amount (annual earnings as a number string. "27,000" → "27000", "twenty-seven thousand" → "27000", "thirty-five thousand" → "35000". Convert spoken numbers to digits.)
-- passportNumber, passportExpiry (YYYY-MM-DD), passportCountry
+## FIELDS TO EXTRACT
 
-Rules:
-1. Extract ALL fields that are mentioned or can be reasonably inferred from context. Be generous — if they mention an address that's clearly non-US, put it in homeAddress.
-2. Convert all dates to YYYY-MM-DD. Use full country names.
-3. Convert spoken numbers to digits (e.g., "twenty-seven thousand" → "27000").
-4. For "city" field: map "New York"/"NYC" → "new_york", "Nashville" → "nashville".
-5. If they mention a country name for where they're from, set BOTH countryOfBirth AND countryOfCitizenship to it (unless they explicitly differentiate).
-6. Preserve existing currentFields unless transcript explicitly overrides.
-7. Return flat JSON with string values only.`;
+| Field | Type | Extraction Rules |
+|-------|------|-----------------|
+| firstName | string | First/given name |
+| lastName | string | Last/family/surname |
+| middleName | string | Middle name. "no middle name" or "none" → "N/A" |
+| dateOfBirth | string | Format: YYYY-MM-DD. "March 5th 1990" → "1990-03-05" |
+| countryOfBirth | string | Full country name. "I'm from Azerbaijan" → "Azerbaijan" |
+| cityOfBirth | string | Birth city |
+| countryOfCitizenship | string | Usually same as countryOfBirth unless stated otherwise |
+| phone | string | Any phone number |
+| email | string | Any email address |
+| companyName | string | Employer name |
+| city | string | Appointment city. Map: "New York"/"NYC" → "new_york", "Nashville" → "nashville" |
+| addressUsa | string | Full US street address with number, street, city, state |
+| homeCountry | string | Non-US home country. When someone says "I'm from [country]", set this too |
+| homeCity | string | City in home country |
+| homeAddress | string | Street address in home country — any non-US address details |
+| usEntryDate | string | US entry date as YYYY-MM-DD. "September 10 2023" → "2023-09-10". Use today's date to resolve relative dates like "last year" or "last March" |
+| amount | string | Annual earnings as digits only. "27,500" → "27500", "twenty-seven thousand" → "27000" |
+| passportNumber | string | Passport number |
+| passportExpiry | string | Passport expiry as YYYY-MM-DD |
+| passportCountry | string | Passport issuing country |
+
+## RULES
+
+1. Extract EVERY field mentioned or reasonably inferable.
+2. When someone says "I'm from [country]" or mentions a country, set countryOfBirth, countryOfCitizenship, AND homeCountry to that country (unless they explicitly differentiate).
+3. A city name immediately after a country name is likely both cityOfBirth and homeCity. Example: "Azerbaijan Baku" → homeCountry: "Azerbaijan", homeCity: "Baku", countryOfBirth: "Azerbaijan", cityOfBirth: "Baku"
+4. Any address-like string (street name + number) that is NOT a US address goes into homeAddress. Foreign addresses often use format "[Name/Street] [Number]". Example: "Imran Gasimov 16" → homeAddress: "Imran Gasimov 16"
+5. If passportCountry is set but countryOfBirth is not, default countryOfBirth and countryOfCitizenship to passportCountry.
+6. Convert spoken numbers to digits: "twenty-seven thousand five hundred" → "27500"
+7. Convert all dates to YYYY-MM-DD format. Use today's date for relative references.
+8. Strip commas from amounts: "27,500" → "27500"
+9. Only include fields where you found data. Do NOT include empty or null fields.
+10. Return ONLY the JSON object. No explanation, no markdown, no code fences.
+
+## EXAMPLES
+
+### Example 1
+Transcript: "My name is Maria Lopez, born on March 5th 1990 in Mexico City Mexico. I entered the US on January 15 2022. I live at 456 Oak Avenue Brooklyn New York. My home address in Mexico is Calle Reforma 23. I make about thirty-five thousand a year."
+Output: {"firstName":"Maria","lastName":"Lopez","dateOfBirth":"1990-03-05","cityOfBirth":"Mexico City","countryOfBirth":"Mexico","countryOfCitizenship":"Mexico","homeCountry":"Mexico","homeCity":"Mexico City","homeAddress":"Calle Reforma 23","usEntryDate":"2022-01-15","addressUsa":"456 Oak Avenue, Brooklyn, New York","amount":"35000"}
+
+### Example 2
+Transcript: "8148 256th St. entered September 10, 2023 I'm from Azerbaijan Baku home address is Imran Gasimov 16 annual earnings 27,500"
+Output: {"addressUsa":"8148 256th St.","usEntryDate":"2023-09-10","countryOfBirth":"Azerbaijan","countryOfCitizenship":"Azerbaijan","homeCountry":"Azerbaijan","homeCity":"Baku","cityOfBirth":"Baku","homeAddress":"Imran Gasimov 16","amount":"27500"}
+
+### Example 3
+Transcript: "Juan Carlos Martinez no middle name born July 20 1985 I'm from Guatemala passport number G12345678 expires March 15 2027 working at Tony's Pizzeria making twenty thousand a year phone 929-555-0123"
+Output: {"firstName":"Juan Carlos","lastName":"Martinez","middleName":"N/A","dateOfBirth":"1985-07-20","countryOfBirth":"Guatemala","countryOfCitizenship":"Guatemala","homeCountry":"Guatemala","passportNumber":"G12345678","passportExpiry":"2027-03-15","passportCountry":"Guatemala","companyName":"Tony's Pizzeria","amount":"20000","phone":"929-555-0123"}`;
+}
 
 // ============================================================================
 // Value sanitizer
@@ -175,19 +202,7 @@ export async function POST(request: NextRequest) {
 
   console.log("[itin-voice] Processing transcript:", trimmedTranscript.slice(0, 200));
 
-  // 6. Build AVA's system prompt (from taskboard DB) + extraction instructions
-  const [avaPrompt, knowledge] = await Promise.all([
-    getSystemPrompt("ITIN Application Kiosk — Voice Fill Mode"),
-    findRelevantKnowledge("ITIN application passport tax immigrant"),
-  ]);
-
-  const knowledgeContext = knowledge.length > 0
-    ? `\n\nRelevant knowledge:\n${knowledge.map((k) => `- ${k.title}: ${k.content}`).join("\n")}`
-    : "";
-
-  const fullSystemPrompt = avaPrompt + knowledgeContext + EXTRACTION_INSTRUCTIONS;
-
-  // 7. Call OpenRouter with AVA's real identity
+  // 6. Call OpenRouter with dedicated extraction prompt
   let openrouterResponse: Response;
 
   try {
@@ -199,16 +214,16 @@ export async function POST(request: NextRequest) {
           "Content-Type": "application/json",
           Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
           "HTTP-Referer": "https://advantagenys.com",
-          "X-Title": "AVA ITIN Voice Fill",
+          "X-Title": "ITIN Voice Extraction",
         },
         body: JSON.stringify({
           model: "google/gemini-2.5-flash",
           messages: [
-            { role: "system", content: fullSystemPrompt },
+            { role: "system", content: buildExtractionPrompt() },
             { role: "user", content: userMessage },
           ],
           stream: false,
-          temperature: 0.1,
+          temperature: 0,
           max_tokens: 1000,
           response_format: { type: "json_object" },
         }),
@@ -235,7 +250,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // 7. Parse the LLM response
+  // 7. Parse LLM response
   let rawContent: string;
 
   try {
