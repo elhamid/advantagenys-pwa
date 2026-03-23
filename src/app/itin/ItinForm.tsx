@@ -742,6 +742,12 @@ function Input({
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        onFocus={(e) => {
+          // Scroll input into view after keyboard opens on iPad
+          setTimeout(() => {
+            e.target.scrollIntoView({ behavior: "smooth", block: "center" });
+          }, 350);
+        }}
         placeholder={placeholder}
         inputMode={inputMode}
         autoComplete={autoComplete}
@@ -778,6 +784,11 @@ function TextArea({
       id={id}
       value={value}
       onChange={(e) => onChange(e.target.value)}
+      onFocus={(e) => {
+        setTimeout(() => {
+          e.target.scrollIntoView({ behavior: "smooth", block: "center" });
+        }, 350);
+      }}
       placeholder={placeholder}
       rows={rows}
       className="
@@ -821,9 +832,10 @@ function SectionDivider({ label }: { label: string }) {
    ═══════════════════════════════════════════════ */
 
 const TOP_COUNTRIES = [
-  "Mexico", "Guatemala", "Honduras", "El Salvador", "Brazil",
+  "Jamaica", "Mexico", "Guatemala", "Honduras", "El Salvador", "Brazil",
   "Colombia", "Ecuador", "Peru", "India", "China", "Philippines",
-  "South Korea", "Pakistan", "Bangladesh", "Nigeria",
+  "South Korea", "Pakistan", "Bangladesh", "Nigeria", "Trinidad and Tobago",
+  "Guyana", "Haiti", "Dominican Republic",
 ];
 
 const ALL_COUNTRIES = [
@@ -894,6 +906,11 @@ function CountrySelect({
         id={id}
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        onFocus={(e) => {
+          setTimeout(() => {
+            e.target.scrollIntoView({ behavior: "smooth", block: "center" });
+          }, 350);
+        }}
         required={required}
         className={`
           w-full px-4 py-3.5 rounded-xl text-base appearance-none
@@ -1059,7 +1076,7 @@ function StepPersonal({ data, errors, update }: StepProps) {
             value={data.firstName}
             onChange={(v) => update("firstName", v)}
             error={errors.firstName}
-            placeholder="Juan"
+            placeholder="Kemar"
             autoComplete="given-name"
           />
         </div>
@@ -1070,7 +1087,7 @@ function StepPersonal({ data, errors, update }: StepProps) {
             value={data.lastName}
             onChange={(v) => update("lastName", v)}
             error={errors.lastName}
-            placeholder="Garcia"
+            placeholder="Campbell"
             autoComplete="family-name"
           />
         </div>
@@ -1088,28 +1105,28 @@ function StepPersonal({ data, errors, update }: StepProps) {
         />
       </div>
 
-      {/* Row 3: Date of Birth | City of Birth */}
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <Label required htmlFor="itin-dob">Date of Birth</Label>
-          <Input
-            id="itin-dob"
-            value={data.dateOfBirth}
-            onChange={(v) => update("dateOfBirth", v)}
-            error={errors.dateOfBirth}
-            type="date"
-          />
-        </div>
-        <div>
-          <Label required htmlFor="itin-cityOfBirth">City / Town of Birth</Label>
-          <Input
-            id="itin-cityOfBirth"
-            value={data.cityOfBirth}
-            onChange={(v) => update("cityOfBirth", v)}
-            error={errors.cityOfBirth}
-            placeholder="Guadalajara"
-          />
-        </div>
+      {/* Date of Birth — full width */}
+      <div>
+        <Label required htmlFor="itin-dob">Date of Birth</Label>
+        <Input
+          id="itin-dob"
+          value={data.dateOfBirth}
+          onChange={(v) => update("dateOfBirth", v)}
+          error={errors.dateOfBirth}
+          type="date"
+        />
+      </div>
+
+      {/* City / Town of Birth — full width */}
+      <div>
+        <Label required htmlFor="itin-cityOfBirth">City / Town of Birth</Label>
+        <Input
+          id="itin-cityOfBirth"
+          value={data.cityOfBirth}
+          onChange={(v) => update("cityOfBirth", v)}
+          error={errors.cityOfBirth}
+          placeholder="Kingston"
+        />
       </div>
 
       {/* Row 4: Country of Birth | Country of Citizenship */}
@@ -1265,7 +1282,7 @@ function StepLocation({ data, errors, update }: StepProps) {
             value={data.homeCity}
             onChange={(v) => update("homeCity", v)}
             error={errors.homeCity}
-            placeholder="City or town"
+            placeholder="e.g. Kingston"
           />
         </div>
       </div>
