@@ -344,10 +344,11 @@ export default function DocumentScanner({
           <div className="relative w-full h-full">
             <video
               ref={videoRef}
-              className="absolute inset-0 w-full h-full object-cover"
+              className="absolute inset-0 w-full h-full object-cover z-0"
               autoPlay
               playsInline
               muted
+              style={{ backgroundColor: "black" }}
             />
             {/* Shutter flash overlay */}
             <div
