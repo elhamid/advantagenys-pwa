@@ -336,6 +336,7 @@ export function ItinForm({ onSuccess }: Props) {
 
     if (s === 1) {
       if (!data.city) errs.city = "Please select appointment city";
+      if (!data.usEntryDate) errs.usEntryDate = "US entry date is required";
       if (!data.homeCountry) errs.homeCountry = "Home country is required";
       if (!data.homeCity.trim()) errs.homeCity = "Home city is required";
       if (!data.homeAddress.trim()) errs.homeAddress = "Home address is required";
@@ -1291,7 +1292,7 @@ function StepLocation({ data, errors, update }: StepProps) {
 
       {/* US Entry Date */}
       <div>
-        <Label htmlFor="itin-usEntryDate">Date of Entry to US (if applicable)</Label>
+        <Label required htmlFor="itin-usEntryDate">Date of Entry to US</Label>
         <Input
           id="itin-usEntryDate"
           value={data.usEntryDate}

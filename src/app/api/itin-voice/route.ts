@@ -65,25 +65,29 @@ const EXTRACTION_INSTRUCTIONS = `
 You are currently helping a client fill out their ITIN application by voice. Extract application fields from their speech transcript and return ONLY a valid JSON object — no explanation, no markdown, no code fences.
 
 Extractable fields (only include fields clearly mentioned):
-- firstName, lastName, middleName
+- firstName, lastName, middleName (if they say "no middle name" or "none", set middleName to "N/A")
 - dateOfBirth (YYYY-MM-DD format, e.g. "March 5th 1990" → "1990-03-05")
 - countryOfBirth, cityOfBirth (full official country/city names)
-- countryOfCitizenship (full official country name)
-- phone, email
+- countryOfCitizenship (full official country name, often same as countryOfBirth)
+- phone (any phone number mentioned), email
 - companyName (employer)
 - city (appointment city: MUST be exactly "new_york" or "nashville")
-- addressUsa (full US street address)
-- homeCountry, homeCity, homeAddress (home country details)
-- usEntryDate (YYYY-MM-DD format)
-- amount (annual earnings, numbers only)
+- addressUsa (full US street address — include street number, street name, city, state if mentioned)
+- homeCountry (full country name for non-US home address)
+- homeCity (city/town in home country)
+- homeAddress (street address in home country — include all details mentioned, any non-US address)
+- usEntryDate (when they entered the US — YYYY-MM-DD format. "January 2023" → "2023-01-01", "last year" → estimate)
+- amount (annual earnings as a number string. "27,000" → "27000", "twenty-seven thousand" → "27000", "thirty-five thousand" → "35000". Convert spoken numbers to digits.)
 - passportNumber, passportExpiry (YYYY-MM-DD), passportCountry
 
 Rules:
-1. Extract ONLY fields clearly stated. Do NOT guess or infer.
+1. Extract ALL fields that are mentioned or can be reasonably inferred from context. Be generous — if they mention an address that's clearly non-US, put it in homeAddress.
 2. Convert all dates to YYYY-MM-DD. Use full country names.
-3. For "city" field: map "New York"/"NYC" → "new_york", "Nashville" → "nashville".
-4. Preserve existing currentFields unless transcript explicitly overrides.
-5. Return flat JSON with string values only.`;
+3. Convert spoken numbers to digits (e.g., "twenty-seven thousand" → "27000").
+4. For "city" field: map "New York"/"NYC" → "new_york", "Nashville" → "nashville".
+5. If they mention a country name for where they're from, set BOTH countryOfBirth AND countryOfCitizenship to it (unless they explicitly differentiate).
+6. Preserve existing currentFields unless transcript explicitly overrides.
+7. Return flat JSON with string values only.`;
 
 // ============================================================================
 // Value sanitizer

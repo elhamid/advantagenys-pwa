@@ -29,11 +29,11 @@ const STEP_FIELDS: Record<number, FieldDef[]> = {
   ],
   1: [
     { key: "addressUsa", label: "US Address" },
-    { key: "usEntryDate", label: "Entry Date", optional: true },
+    { key: "usEntryDate", label: "US Entry Date" },
     { key: "homeCountry", label: "Home Country" },
     { key: "homeCity", label: "Home City" },
     { key: "homeAddress", label: "Home Address (non-US)" },
-    { key: "amount", label: "Annual Earnings" },
+    { key: "amount", label: "Annual Earnings ($)" },
   ],
   2: [
     { key: "passportNumber", label: "Passport Number" },
