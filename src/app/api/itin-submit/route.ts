@@ -115,7 +115,7 @@ async function extractValidatedFile(
  * Submit to JotForm Submissions API (parallel record).
  * Non-fatal — logs errors but never blocks the response.
  */
-async function submitToJotForm(data: ItinPayload): Promise<void> {
+async function submitToJotForm(data: ItinPayload, documentUrls?: DocumentUrls): Promise<void> {
   const apiKey = process.env.JOTFORM_API_KEY;
   const formId = process.env.JOTFORM_ITIN_FORM_ID || JOTFORM_PROD_ID;
 
@@ -211,11 +211,14 @@ async function submitToJotForm(data: ItinPayload): Promise<void> {
     params.append("submission[51]", `$${data.amount.trim()}`);
   }
 
-  // q66 — Referred By (company + city + middle name + comment)
+  // q66 — Referred By (company + city + middle name + documents + comment)
   const referredParts = [
     data.companyName.trim() && `Company: ${data.companyName.trim()}`,
     data.middleName?.trim() && `Middle Name: ${data.middleName.trim()}`,
     data.city && `City: ${data.city === "new_york" ? "New York" : "Nashville"}`,
+    documentUrls?.passportScan && `Passport Scan: ${documentUrls.passportScan}`,
+    documentUrls?.selfie && `Selfie: ${documentUrls.selfie}`,
+    documentUrls?.signature && `Signature: ${documentUrls.signature}`,
     data.comment.trim() && `Notes: ${data.comment.trim()}`,
     "Source: ITIN Kiosk (advantagenys.com/itin)",
   ].filter(Boolean);
@@ -453,7 +456,7 @@ export async function POST(request: NextRequest) {
     // Dual-write: taskboard + JotForm in parallel (both non-fatal)
     await Promise.allSettled([
       forwardToTaskboard(data, documentUrls),
-      submitToJotForm(data),
+      submitToJotForm(data, documentUrls),
     ]);
 
     return NextResponse.json({
