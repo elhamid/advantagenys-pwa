@@ -544,9 +544,10 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
         )}
 
         {/* === LISTENING STATE: Keep karaoke highlight + transcript === */}
-        {state === "listening" && currentKaraokeField && (
+        {state === "listening" && (
           <div className="flex flex-col items-center text-center w-full">
-            {/* Big cycling label — same as ready, keeps guiding while listening */}
+            {/* Big cycling label — keeps guiding while listening */}
+            {currentKaraokeField ? (
             <div
               className="mb-2"
               style={{
@@ -579,12 +580,17 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
                 {currentKaraokeField.hint}
               </p>
             </div>
+            ) : (
+              <div className="mb-2" style={{ minHeight: "80px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <h2 className="text-2xl font-bold text-white/60">Keep speaking...</h2>
+              </div>
+            )}
 
             {/* Dot progress track */}
             <div className="flex items-center gap-2 mt-4 mb-6">
               {fields.map((f) => {
                 const filled = isFilled(currentData[f.key]) || isFilled(extracted[f.key]);
-                const isCurrent = currentKaraokeField.key === f.key;
+                const isCurrent = currentKaraokeField?.key === f.key;
                 return (
                   <div
                     key={f.key}
@@ -632,36 +638,37 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
           </div>
         )}
 
-        {/* === DONE STATE: Compact pill results === */}
+        {/* === DONE STATE: Large readable results === */}
         {state === "done" && (
-          <div className="flex flex-col items-center w-full">
-            {/* Filled pills */}
+          <div className="flex flex-col w-full max-w-md mx-auto overflow-y-auto">
+            {/* Filled fields — large, readable */}
             {filledFields.length > 0 && (
-              <div className="flex flex-wrap items-center justify-center gap-2 mb-5 px-2">
-                {filledFields.map((f) => {
+              <div className="rounded-xl bg-white/[0.03] overflow-hidden mb-4">
+                {filledFields.map((f, i) => {
                   const val = getDisplayValue(f);
                   return (
-                    <span
+                    <div
                       key={f.key}
-                      className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 text-xs font-medium text-emerald-400 max-w-[180px]"
+                      className={`flex items-center gap-3 px-5 py-3.5 ${i < filledFields.length - 1 ? "border-b border-white/5" : ""}`}
                     >
-                      <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <svg className="w-5 h-5 text-emerald-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                       </svg>
-                      <span className="truncate">{val}</span>
-                    </span>
+                      <span className="text-white/50 text-sm shrink-0">{f.label}</span>
+                      <span className="text-white font-semibold text-base ml-auto text-right">{val}</span>
+                    </div>
                   );
                 })}
               </div>
             )}
 
-            {/* Unfilled pills */}
+            {/* Unfilled fields — clearly visible */}
             {unfilledFields.length > 0 && (
-              <div className="flex flex-wrap items-center justify-center gap-2 mb-5 px-2">
+              <div className="flex flex-wrap items-center justify-center gap-2 mb-4">
                 {unfilledFields.map((f) => (
                   <span
                     key={f.key}
-                    className="inline-flex items-center rounded-full bg-white/5 border border-white/10 px-3 py-1.5 text-xs font-medium text-white/30"
+                    className="inline-flex items-center rounded-full bg-amber-500/10 border border-amber-500/20 px-4 py-2 text-sm font-medium text-amber-400/80"
                     style={{ animation: "gentle-pulse 2s ease-in-out infinite" }}
                   >
                     {f.label}
@@ -670,9 +677,9 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
               </div>
             )}
 
-            {/* Summary line */}
-            <p className="text-xs text-white/30 mb-2">
-              {filledFields.length}/{fields.length} fields captured
+            {/* Summary */}
+            <p className="text-sm text-white/30 text-center">
+              {filledFields.length} of {fields.length} captured
             </p>
           </div>
         )}
