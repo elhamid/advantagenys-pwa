@@ -396,7 +396,9 @@ export function ItinForm({ onSuccess }: Props) {
       if (!data.homeAddress.trim()) errs.homeAddress = "Home address is required";
     }
 
-    // Step 3 (selfie) is optional — skip allowed
+    if (s === 3) {
+      if (!data.selfie) errs.selfie = "Passport photo is required";
+    }
 
     if (s === 4) {
       if (!data.signature) errs.signature = "Signature is required to submit";
@@ -707,8 +709,8 @@ export function ItinForm({ onSuccess }: Props) {
               </button>
             )}
 
-            {/* Skip button for optional steps (passport scan & selfie) */}
-            {(step === 0 || step === 3) && (
+            {/* Skip button — only passport scan step */}
+            {step === 0 && (
               <button
                 onClick={() => transitionToStep(step + 1)}
                 className="
