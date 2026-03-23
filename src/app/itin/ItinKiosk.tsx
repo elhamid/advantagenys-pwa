@@ -117,8 +117,23 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
         ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}
       `}
     >
+      {/* Tropical Stars branding */}
+      <div className="mb-6 flex flex-col items-center">
+        <Image
+          src="/images/tropical-stars-logo.png"
+          alt="Tropical Stars"
+          width={160}
+          height={75}
+          className="mb-3"
+          priority
+        />
+        <span className="text-white/60 text-base font-semibold tracking-wide">
+          Tropical Stars
+        </span>
+      </div>
+
       {/* IRS badge */}
-      <div className="mb-8">
+      <div className="mb-6">
         <span
           className="
             inline-flex items-center gap-2 px-4 py-2 rounded-full
