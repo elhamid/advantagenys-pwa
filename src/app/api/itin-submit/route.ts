@@ -1,21 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
+import { uploadMultipleItinDocuments } from "@/lib/itin-storage";
 
 /**
  * POST /api/itin-submit
  *
  * Native ITIN form submission from the /itin kiosk page.
- * Accepts FormData (supports passport photo file upload).
+ * Accepts FormData (supports document/selfie/signature file uploads).
  *
  * Dual-write pipeline:
  * 1. Validate required fields
- * 2. Forward to taskboard pwa-lead webhook → Supabase (client + task + itin_applicants)
- * 3. Submit to JotForm Submissions API → JotForm inbox (parallel record)
+ * 2. Upload documents to Supabase Storage (non-fatal)
+ * 3. Forward to taskboard pwa-lead webhook → Supabase (client + task + itin_applicants)
+ * 4. Submit to JotForm Submissions API → JotForm inbox (parallel record)
  *
  * Both writes are non-fatal — if one fails, the other still succeeds.
+ * Document upload failures are also non-fatal — form data is captured regardless.
  *
  * Env vars:
  * - PWA_WEBHOOK_SECRET + TASKBOARD_WEBHOOK_URL → taskboard write
  * - JOTFORM_API_KEY + JOTFORM_ITIN_FORM_ID → JotForm write
+ * - TASKBOARD_SUPABASE_URL + TASKBOARD_SUPABASE_SERVICE_KEY → document storage
  */
 
 // JotForm field mapping (from form 210224697492156 / test clone 260807759178168)
@@ -23,6 +27,15 @@ import { NextRequest, NextResponse } from "next/server";
 // 37=Passport#, 40=Passport Exp, 41=Foreign Addr, 48=Work Addr,
 // 51=Income, 29=Upload, 66=Referred By
 const JOTFORM_PROD_ID = "210224697492156";
+
+const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
+const ALLOWED_CONTENT_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
+
+interface DocumentUrls {
+  passportScan: string | null;
+  selfie: string | null;
+  signature: string | null;
+}
 
 interface ItinPayload {
   firstName: string;
@@ -38,6 +51,7 @@ interface ItinPayload {
   passportNumber: string;
   passportExpiry: string;
   comment: string;
+  // Backward-compat: base64 photo from legacy passportPhoto field
   passportPhotoBase64?: string;
   passportPhotoFilename?: string;
 }
@@ -49,6 +63,38 @@ function validate(data: ItinPayload): string | null {
     return "Valid phone number is required";
   if (!data.city) return "Appointment city is required";
   return null;
+}
+
+/**
+ * Extract a File from FormData, validate it, and return its Buffer.
+ * Returns null (silently) if the field is absent or empty.
+ * Returns null with a warning if validation fails (non-fatal).
+ */
+async function extractValidatedFile(
+  formData: FormData,
+  fieldName: string,
+  label: string
+): Promise<{ buffer: Buffer; filename: string; contentType: string } | null> {
+  const file = formData.get(fieldName) as File | null;
+  if (!file || file.size === 0) return null;
+
+  if (file.size > MAX_FILE_SIZE_BYTES) {
+    console.warn(
+      `[ITIN Kiosk] ${label} rejected: too large (${(file.size / 1024 / 1024).toFixed(1)}MB, max 10MB)`
+    );
+    return null;
+  }
+
+  const contentType = file.type || "application/octet-stream";
+  if (!ALLOWED_CONTENT_TYPES.has(contentType)) {
+    console.warn(
+      `[ITIN Kiosk] ${label} rejected: unsupported type "${contentType}" — only JPEG, PNG, WebP accepted`
+    );
+    return null;
+  }
+
+  const buffer = Buffer.from(await file.arrayBuffer());
+  return { buffer, filename: file.name || `${fieldName}.bin`, contentType };
 }
 
 /**
@@ -144,7 +190,10 @@ async function submitToJotForm(data: ItinPayload): Promise<void> {
  * Forward to taskboard pwa-lead webhook → Supabase.
  * Non-fatal — logs errors but never blocks the response.
  */
-async function forwardToTaskboard(data: ItinPayload): Promise<void> {
+async function forwardToTaskboard(
+  data: ItinPayload,
+  documentUrls: DocumentUrls
+): Promise<void> {
   const webhookSecret = process.env.PWA_WEBHOOK_SECRET;
   const webhookUrl =
     process.env.TASKBOARD_WEBHOOK_URL ||
@@ -154,6 +203,12 @@ async function forwardToTaskboard(data: ItinPayload): Promise<void> {
     console.warn("[Taskboard] PWA_WEBHOOK_SECRET not set — webhook skipped");
     return;
   }
+
+  // Build documents object — only include keys with actual URLs
+  const documents: Record<string, string> = {};
+  if (documentUrls.passportScan) documents.passportScan = documentUrls.passportScan;
+  if (documentUrls.selfie) documents.selfie = documentUrls.selfie;
+  if (documentUrls.signature) documents.signature = documentUrls.signature;
 
   const payload = {
     fullName: `${data.firstName.trim()} ${data.lastName.trim()}`,
@@ -173,8 +228,14 @@ async function forwardToTaskboard(data: ItinPayload): Promise<void> {
       passportNumber: data.passportNumber.trim() || undefined,
       passportExpiry: data.passportExpiry || undefined,
       comment: data.comment.trim() || undefined,
-      passportPhotoBase64: data.passportPhotoBase64,
-      passportPhotoFilename: data.passportPhotoFilename,
+      // Backward-compat: include base64 only when no Supabase URLs are available
+      ...(Object.keys(documents).length === 0 && data.passportPhotoBase64
+        ? {
+            passportPhotoBase64: data.passportPhotoBase64,
+            passportPhotoFilename: data.passportPhotoFilename,
+          }
+        : {}),
+      ...(Object.keys(documents).length > 0 ? { documents } : {}),
     },
   };
 
@@ -222,35 +283,105 @@ export async function POST(request: NextRequest) {
       comment: (formData.get("comment") as string) || "",
     };
 
-    // Handle passport photo
-    const photoFile = formData.get("passportPhoto") as File | null;
-    if (photoFile && photoFile.size > 0) {
-      const buffer = Buffer.from(await photoFile.arrayBuffer());
+    // Backward-compat: legacy passportPhoto field (base64, no Supabase)
+    const legacyPhotoFile = formData.get("passportPhoto") as File | null;
+    if (legacyPhotoFile && legacyPhotoFile.size > 0) {
+      const buffer = Buffer.from(await legacyPhotoFile.arrayBuffer());
       data.passportPhotoBase64 = buffer.toString("base64");
-      data.passportPhotoFilename = photoFile.name;
+      data.passportPhotoFilename = legacyPhotoFile.name;
     }
 
-    // Validate
+    // Validate required fields
     const error = validate(data);
     if (error) {
       return NextResponse.json({ success: false, error }, { status: 400 });
     }
+
+    // Extract new file fields (all optional, all non-fatal on failure)
+    const [documentScanFile, selfieFile, signatureFile] = await Promise.all([
+      extractValidatedFile(formData, "documentScan", "documentScan"),
+      extractValidatedFile(formData, "selfie", "selfie"),
+      extractValidatedFile(formData, "signature", "signature"),
+    ]);
 
     console.log("[ITIN Kiosk] Submission received:", {
       name: `${data.firstName} ${data.lastName}`,
       phone: data.phone,
       city: data.city,
       hasPassport: data.hasPassport,
-      hasPhoto: !!data.passportPhotoBase64,
+      hasDocumentScan: !!documentScanFile,
+      hasSelfie: !!selfieFile,
+      hasSignature: !!signatureFile,
     });
+
+    // Upload documents to Supabase Storage (non-fatal)
+    const documentUrls: DocumentUrls = {
+      passportScan: null,
+      selfie: null,
+      signature: null,
+    };
+
+    const docsToUpload: Array<{
+      file: Buffer;
+      filename: string;
+      type: "passport" | "selfie" | "signature";
+      contentType: string;
+    }> = [];
+
+    if (documentScanFile) {
+      docsToUpload.push({
+        file: documentScanFile.buffer,
+        filename: documentScanFile.filename,
+        type: "passport",
+        contentType: documentScanFile.contentType,
+      });
+    }
+    if (selfieFile) {
+      docsToUpload.push({
+        file: selfieFile.buffer,
+        filename: selfieFile.filename,
+        type: "selfie",
+        contentType: selfieFile.contentType,
+      });
+    }
+    if (signatureFile) {
+      docsToUpload.push({
+        file: signatureFile.buffer,
+        filename: signatureFile.filename,
+        type: "signature",
+        contentType: signatureFile.contentType,
+      });
+    }
+
+    if (docsToUpload.length > 0) {
+      try {
+        const uploadResults = await uploadMultipleItinDocuments(
+          docsToUpload,
+          data.phone
+        );
+        documentUrls.passportScan = uploadResults.passport ?? null;
+        documentUrls.selfie = uploadResults.selfie ?? null;
+        documentUrls.signature = uploadResults.signature ?? null;
+      } catch (uploadErr) {
+        // Non-fatal: log and continue
+        console.warn("[ITIN Kiosk] Document upload error (continuing):", uploadErr);
+      }
+    }
 
     // Dual-write: taskboard + JotForm in parallel (both non-fatal)
     await Promise.allSettled([
-      forwardToTaskboard(data),
+      forwardToTaskboard(data, documentUrls),
       submitToJotForm(data),
     ]);
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({
+      success: true,
+      documentsUploaded: {
+        passport: documentUrls.passportScan !== null,
+        selfie: documentUrls.selfie !== null,
+        signature: documentUrls.signature !== null,
+      },
+    });
   } catch (err) {
     console.error("[ITIN Kiosk] Unexpected error:", err);
     return NextResponse.json(

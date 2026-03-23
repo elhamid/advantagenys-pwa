@@ -254,10 +254,20 @@ function SuccessScreen({ onReset }: { onReset: () => void }) {
         Application Submitted
       </h2>
 
-      <p className="text-white/50 text-center text-base sm:text-lg max-w-md mb-4 leading-relaxed">
+      <p className="text-white/50 text-center text-base sm:text-lg max-w-md mb-2 leading-relaxed">
         Your ITIN application has been received. Our IRS Certified Acceptance Agent will review
         your information and contact you for next steps.
       </p>
+
+      {/* Document upload confirmation */}
+      <div className="flex items-center gap-2 mb-6 px-4 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+        <svg className="w-4 h-4 text-emerald-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+        </svg>
+        <span className="text-emerald-400/80 text-sm font-medium">
+          Documents securely uploaded
+        </span>
+      </div>
 
       <p className="text-white/30 text-sm text-center mb-10">
         Please hand the tablet back to our staff.
