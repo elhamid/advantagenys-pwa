@@ -176,6 +176,10 @@ export function ItinForm({ onSuccess }: Props) {
   const [selfiePreview, setSelfiePreview] = useState<string | null>(null);
   const [sigPreview, setSigPreview] = useState<string | null>(null);
 
+  // OCR status for passport auto-fill
+  const [ocrStatus, setOcrStatus] = useState<"idle" | "processing" | "success" | "failed">("idle");
+  const [ocrFields, setOcrFields] = useState<Record<string, string> | null>(null);
+
   // Refs for object URL cleanup on unmount
   const docPreviewRef = useRef<string | null>(null);
   const selfiePreviewRef = useRef<string | null>(null);
@@ -245,7 +249,7 @@ export function ItinForm({ onSuccess }: Props) {
   }, []);
 
   const handleDocCapture = useCallback(
-    (file: File) => {
+    async (file: File) => {
       update("documentScan", file);
       update("hasPassport", true);
       const url = createPreviewUrl(file);
@@ -253,6 +257,52 @@ export function ItinForm({ onSuccess }: Props) {
       docPreviewRef.current = url;
       setDocPreview(url);
       setShowDocScanner(false);
+
+      // Trigger passport OCR — convert file to base64 data URL
+      setOcrStatus("processing");
+      setOcrFields(null);
+      try {
+        const reader = new FileReader();
+        reader.onload = async () => {
+          const dataUrl = reader.result as string;
+          try {
+            const res = await fetch("/api/passport-ocr", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ image: dataUrl }),
+            });
+            if (res.ok) {
+              const responseData = await res.json();
+              if (responseData.success && responseData.fields) {
+                const fields = responseData.fields as Record<string, string>;
+                const applied: Record<string, string> = {};
+                for (const [key, value] of Object.entries(fields)) {
+                  if (value && key in INITIAL) {
+                    update(key as keyof ItinData, value as never);
+                    applied[key] = value;
+                  }
+                }
+                setOcrFields(applied);
+                setOcrStatus("success");
+              } else {
+                setOcrStatus("failed");
+              }
+            } else {
+              setOcrStatus("failed");
+            }
+          } catch {
+            setOcrStatus("failed");
+          }
+        };
+        reader.onerror = () => {
+          setOcrStatus("failed");
+        };
+        reader.readAsDataURL(file);
+      } catch {
+        // OCR is best-effort — form still works without it
+        console.warn("[passport-ocr] Failed, continuing without auto-fill");
+        setOcrStatus("failed");
+      }
     },
     [update, createPreviewUrl]
   );
@@ -289,6 +339,8 @@ export function ItinForm({ onSuccess }: Props) {
       docPreviewRef.current = null;
     }
     setDocPreview(null);
+    setOcrStatus("idle");
+    setOcrFields(null);
   }, [update]);
 
   const clearSelfie = useCallback(() => {
@@ -596,6 +648,8 @@ export function ItinForm({ onSuccess }: Props) {
               docPreview={docPreview}
               onOpenScanner={() => setShowDocScanner(true)}
               onClear={clearDoc}
+              ocrStatus={ocrStatus}
+              ocrFields={ocrFields}
             />
           )}
           {displayStep === 3 && (
@@ -1363,11 +1417,11 @@ function StepLocation({ data, errors, update }: StepProps) {
 
 function StepDocument({
   data,
-  errors,
-  update,
   docPreview,
   onOpenScanner,
   onClear,
+  ocrStatus,
+  ocrFields,
 }: {
   data: ItinData;
   errors: Partial<Record<keyof ItinData, string>>;
@@ -1375,12 +1429,26 @@ function StepDocument({
   docPreview: string | null;
   onOpenScanner: () => void;
   onClear: () => void;
+  ocrStatus: "idle" | "processing" | "success" | "failed";
+  ocrFields: Record<string, string> | null;
 }) {
+  const OCR_FIELD_LABELS: Record<string, string> = {
+    firstName: "First Name",
+    lastName: "Last Name",
+    middleName: "Middle Name",
+    dateOfBirth: "Date of Birth",
+    passportNumber: "Passport Number",
+    passportExpiry: "Passport Expiry",
+    passportCountry: "Issuing Country",
+    countryOfCitizenship: "Citizenship",
+    countryOfBirth: "Country of Birth",
+  };
+
   return (
     <div className="space-y-5">
       <SectionHeader
         title="Document Scan"
-        subtitle="Scan your passport or government-issued ID for verification."
+        subtitle="Scan your passport to auto-fill your application."
       />
 
       {data.documentScan && docPreview ? (
@@ -1401,6 +1469,43 @@ function StepDocument({
               Document Captured
             </div>
           </div>
+
+          {/* ─── OCR Status Indicator ─── */}
+          {ocrStatus === "processing" && (
+            <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[#4F56E8]/10 border border-[#4F56E8]/20">
+              <span className="w-4 h-4 border-2 border-[#818CF8] border-t-transparent rounded-full animate-spin shrink-0" />
+              <span className="text-[#818CF8] text-sm font-medium">Reading passport...</span>
+            </div>
+          )}
+          {ocrStatus === "success" && ocrFields && Object.keys(ocrFields).length > 0 && (
+            <div className="rounded-xl bg-emerald-500/10 border border-emerald-500/20 px-4 py-3">
+              <div className="flex items-center gap-2 mb-2">
+                <svg className="w-4 h-4 text-emerald-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+                <span className="text-emerald-400 text-sm font-semibold">Passport data extracted</span>
+              </div>
+              <div className="space-y-1">
+                {Object.entries(ocrFields).map(([key, value]) => (
+                  <div key={key} className="flex items-center gap-2 text-xs">
+                    <span className="text-white/40">{OCR_FIELD_LABELS[key] || key}:</span>
+                    <span className="text-white/70 font-medium">{value}</span>
+                    <svg className="w-3 h-3 text-emerald-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {ocrStatus === "failed" && (
+            <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
+              <svg className="w-4 h-4 text-amber-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <span className="text-amber-400 text-sm font-medium">Could not read passport -- you can proceed anyway</span>
+            </div>
+          )}
 
           <div className="flex gap-3">
             <button
@@ -1456,10 +1561,10 @@ function StepDocument({
             </div>
             <div className="text-center">
               <span className="text-base font-semibold text-white/80 block">
-                Tap to Scan Document
+                Tap to Scan Passport
               </span>
               <span className="text-sm text-white/40 mt-1 block">
-                Passport, driver&apos;s license, or national ID
+                We&apos;ll auto-fill your details from the scan
               </span>
             </div>
           </button>
@@ -1469,40 +1574,6 @@ function StepDocument({
           </p>
         </div>
       )}
-
-      {/* ─── Passport Details ─── */}
-      <SectionDivider label="Passport Details (Optional)" />
-
-      <div>
-        <Label htmlFor="itin-passportNumber">Passport Number</Label>
-        <Input
-          id="itin-passportNumber"
-          value={data.passportNumber}
-          onChange={(v) => update("passportNumber", v)}
-          placeholder="e.g. G12345678"
-          autoComplete="off"
-        />
-      </div>
-
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <Label htmlFor="itin-passportExpiry">Passport Expiry</Label>
-          <Input
-            id="itin-passportExpiry"
-            value={data.passportExpiry}
-            onChange={(v) => update("passportExpiry", v)}
-            type="date"
-          />
-        </div>
-        <div>
-          <Label htmlFor="itin-passportCountry">Country of Issuance</Label>
-          <CountrySelect
-            id="itin-passportCountry"
-            value={data.passportCountry}
-            onChange={(v) => update("passportCountry", v)}
-          />
-        </div>
-      </div>
     </div>
   );
 }

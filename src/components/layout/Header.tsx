@@ -14,6 +14,9 @@ const NAV_ITEMS = [
   { label: "Contact", href: "/contact" },
 ];
 
+// ITIN gets its own highlighted nav entry — separate from NAV_ITEMS so it can be styled distinctly
+const ITIN_NAV = { label: "ITIN", href: "/itin" };
+
 interface HeaderProps {
   mobileNavOpen?: boolean;
   onMobileNavOpen?: () => void;
@@ -74,6 +77,31 @@ export function Header({
               {item.label}
             </Link>
           ))}
+          {/* ITIN — highlighted pill in nav */}
+          <Link
+            href={ITIN_NAV.href}
+            className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold tracking-wide text-emerald-700 transition-all duration-200 hover:text-white hover:shadow-[0_0_14px_rgba(5,150,105,0.35)]"
+            style={{
+              background: "linear-gradient(135deg, rgba(209,250,229,1) 0%, rgba(167,243,208,1) 100%)",
+              border: "1px solid rgba(52,211,153,0.5)",
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLAnchorElement).style.background =
+                "linear-gradient(135deg, #059669 0%, #0d9488 100%)";
+              (e.currentTarget as HTMLAnchorElement).style.borderColor = "transparent";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLAnchorElement).style.background =
+                "linear-gradient(135deg, rgba(209,250,229,1) 0%, rgba(167,243,208,1) 100%)";
+              (e.currentTarget as HTMLAnchorElement).style.borderColor = "rgba(52,211,153,0.5)";
+            }}
+          >
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+              <path d="M12 2L4 6v5c0 5.25 3.5 10.15 8 11.5C16.5 21.15 20 16.25 20 11V6l-8-4z" />
+              <path d="M9 12l2 2 4-4" />
+            </svg>
+            ITIN
+          </Link>
         </nav>
 
         {/* Desktop CTA — single "Get Started" button */}

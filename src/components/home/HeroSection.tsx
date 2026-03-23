@@ -130,6 +130,28 @@ export function HeroSection() {
               Call
             </a>
           </div>
+          {/* ITIN application badge */}
+          <a
+            href="/itin"
+            className="mt-1 inline-flex items-center gap-2.5 rounded-full px-5 py-2.5 text-sm font-semibold text-white transition-all duration-200 active:scale-[0.97] hover:scale-[1.02]"
+            style={{
+              background: "linear-gradient(135deg, rgba(5,150,105,0.85) 0%, rgba(13,148,136,0.85) 100%)",
+              border: "1px solid rgba(52,211,153,0.35)",
+              boxShadow: "0 0 20px rgba(16,185,129,0.3), inset 0 1px 0 rgba(255,255,255,0.1)",
+              backdropFilter: "blur(8px)",
+            }}
+          >
+            {/* IRS shield */}
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-emerald-200">
+              <path d="M12 2L4 6v5c0 5.25 3.5 10.15 8 11.5C16.5 21.15 20 16.25 20 11V6l-8-4z" />
+              <path d="M9 12l2 2 4-4" />
+            </svg>
+            <span>
+              <span className="text-emerald-100 font-bold tracking-wide">ITIN</span>
+              <span className="text-white/80 font-medium"> Application</span>
+            </span>
+            <span className="text-emerald-200/70 text-xs font-medium tracking-wide">— Apply Now →</span>
+          </a>
         </motion.div>
       </div>
 

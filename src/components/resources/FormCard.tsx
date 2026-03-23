@@ -18,7 +18,8 @@ export function FormCard({ form, index = 0, kioskMode = false }: FormCardProps) 
   const colorClass = categoryColors[form.category];
   const categoryLabel = categories.find((c) => c.key === form.category)?.label || form.category;
   const isLink = form.type === "link";
-  const formUrl = isLink ? (form.linkUrl || "#") : `/resources/forms/${form.slug}`;
+  const isItinForm = form.id === "210224697492156" || form.slug === "itin-registration-form";
+  const formUrl = isItinForm ? "/itin" : isLink ? (form.linkUrl || "#") : `/resources/forms/${form.slug}`;
   const shareUrl = isLink ? (form.linkUrl || "#") : `/resources/forms/${form.slug}`;
   const Icon = categoryIcons[form.category];
 
@@ -68,6 +69,16 @@ export function FormCard({ form, index = 0, kioskMode = false }: FormCardProps) 
               </svg>
               Open
             </a>
+          ) : isItinForm ? (
+            <Link
+              href="/itin"
+              className={`flex-1 inline-flex items-center justify-center gap-2 font-bold rounded-[var(--radius)] bg-emerald-600 text-white hover:bg-emerald-500 shadow-md hover:shadow-lg transition-all duration-200 active:scale-[0.97] ${kioskMode ? "px-4 py-3.5 text-base" : "px-4 py-3 text-sm"}`}
+            >
+              <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+              Apply for ITIN Now
+            </Link>
           ) : (
             <Link
               href={formUrl}
