@@ -83,17 +83,25 @@ type VoiceState = "idle" | "listening" | "processing";
 function extractFromTranscript(text: string): Record<string, string> {
   const result: Record<string, string> = {};
 
-  // Name patterns: "my name is X Y" or "I'm X Y" or "I am X Y"
-  const nameMatch = text.match(/(?:my name is|i'm|i am)\s+([A-Z][a-z]+)\s+([A-Z][a-z]+)/i);
-  if (nameMatch) {
-    result.firstName = nameMatch[1];
-    result.lastName = nameMatch[2];
-    // Check for three-part name: "my name is X Y Z"
-    const threePartMatch = text.match(/(?:my name is|i'm|i am)\s+([A-Z][a-z]+)\s+([A-Z][a-z]+)\s+([A-Z][a-z]+)/i);
-    if (threePartMatch) {
-      result.firstName = threePartMatch[1];
-      result.middleName = threePartMatch[2];
-      result.lastName = threePartMatch[3];
+  // Name patterns — flexible: "my name is X Y", "I'm X Y Z", "call me X"
+  // Also handles "my name is Mary Jane Watson" (first=Mary Jane, last=Watson)
+  const nameIntro = text.match(/(?:my name is|i'm|i am|name's|call me)\s+(.+?)(?:\.|,|and\s+(?:i|my)|born|from|i was|$)/i);
+  if (nameIntro) {
+    const parts = nameIntro[1].trim().split(/\s+/).filter(p => p.length > 0);
+    if (parts.length === 2) {
+      result.firstName = parts[0];
+      result.lastName = parts[1];
+    } else if (parts.length === 3) {
+      result.firstName = parts[0];
+      result.middleName = parts[1];
+      result.lastName = parts[2];
+    } else if (parts.length > 3) {
+      // Four+ parts: first two = first name, last = last name, middle = rest
+      result.firstName = parts.slice(0, 2).join(" ");
+      result.lastName = parts[parts.length - 1];
+      if (parts.length > 3) result.middleName = parts.slice(2, -1).join(" ");
+    } else if (parts.length === 1) {
+      result.firstName = parts[0];
     }
   }
 
@@ -105,9 +113,13 @@ function extractFromTranscript(text: string): Record<string, string> {
   const lastMatch = text.match(/last\s*name\s+(?:is\s+)?([A-Z][a-z]+)/i);
   if (lastMatch) result.lastName = lastMatch[1];
 
-  // "middle name X"
-  const middleMatch = text.match(/middle\s*name\s+(?:is\s+)?([A-Z][a-z]+)/i);
-  if (middleMatch) result.middleName = middleMatch[1];
+  // "middle name X" or "no middle name" / "skip middle" / "don't have a middle name"
+  if (/(?:no|don't have|skip|none)\s+(?:a\s+)?middle/i.test(text)) {
+    result.middleName = "N/A";
+  } else {
+    const middleMatch = text.match(/middle\s*name\s+(?:is\s+)?([A-Z][a-z]+)/i);
+    if (middleMatch) result.middleName = middleMatch[1];
+  }
 
   // Date of birth: "born on March 5 1990" or "date of birth is March 5th 1990" etc
   const dobMatch = text.match(/(?:born|birth|birthday|date of birth)\s+(?:on\s+)?(?:is\s+)?(.+?\d{4})/i);
@@ -530,13 +542,25 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
           const filled = hasValue(value);
           const isCurrent = i === currentFieldIndex;
 
+          /* Current unfilled field = HUGE karaoke highlight */
+          if (isCurrent) {
+            return (
+              <div
+                key={f.key}
+                className="flex flex-col items-center justify-center px-5 py-6 mx-1 mb-2 rounded-2xl bg-white/[0.06] transition-all duration-300"
+              >
+                <span className="text-3xl sm:text-4xl font-bold text-white mb-1 tracking-tight">
+                  {f.label}
+                </span>
+                <span className="text-base text-white/25 italic">{f.hint}</span>
+              </div>
+            );
+          }
+
           return (
             <div
               key={f.key}
-              className={`
-                flex items-center px-4 py-4 mx-1 rounded-xl mb-1 transition-all duration-300
-                ${isCurrent ? "bg-white/[0.06]" : ""}
-              `}
+              className="flex items-center px-4 py-2.5 mx-1 rounded-xl mb-0.5 transition-all duration-300"
             >
               {/* Check or number */}
               <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 mr-3">
@@ -552,12 +576,8 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
               </div>
 
               {/* Label */}
-              <span className={`text-base font-medium shrink-0 transition-colors duration-300 ${
-                filled
-                  ? "text-white/35"
-                  : isCurrent
-                    ? "text-white"
-                    : "text-white/25"
+              <span className={`text-sm font-medium shrink-0 transition-colors duration-300 ${
+                filled ? "text-white/40" : "text-white/20"
               }`}>
                 {f.label}
                 {f.optional && !filled && (
@@ -571,14 +591,10 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
               }`} />
 
               {/* Value or placeholder */}
-              <span className={`text-base text-right shrink-0 max-w-[45%] truncate transition-all duration-300 ${
-                filled
-                  ? "text-white font-semibold"
-                  : isCurrent
-                    ? "text-white/20 italic"
-                    : "text-transparent"
+              <span className={`text-sm text-right shrink-0 max-w-[50%] truncate transition-all duration-300 ${
+                filled ? "text-white font-semibold" : "text-transparent"
               }`}>
-                {filled ? value : isCurrent ? "..." : ""}
+                {filled ? value : ""}
               </span>
             </div>
           );
