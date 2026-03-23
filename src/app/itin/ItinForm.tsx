@@ -50,6 +50,9 @@ const CITIES = [
 const DEFAULT_EMPLOYER = "Tropical Stars Inc.";
 
 interface ItinData {
+  // Step 0 — Passport Scan
+  documentScan: File | null;
+  passportCountry: string;
   // Step 1 — Personal
   firstName: string;
   lastName: string;
@@ -70,12 +73,9 @@ interface ItinData {
   homeAddress: string;
   usEntryDate: string;
   amount: string;
-  // Step 3 — Document
-  documentScan: File | null;
-  passportCountry: string;
-  // Step 4
+  // Step 3 — Selfie
   selfie: File | null;
-  // Step 5
+  // Step 4 — Review & Sign
   signature: File | null;
   // Legacy (backward compat)
   hasPassport: boolean;
@@ -114,9 +114,9 @@ const INITIAL: ItinData = {
 };
 
 const STEPS = [
+  { label: "Passport", shortLabel: "Scan" },
   { label: "Personal", shortLabel: "Info" },
   { label: "Location", shortLabel: "Location" },
-  { label: "Document", shortLabel: "Scan" },
   { label: "Photo", shortLabel: "Selfie" },
   { label: "Review", shortLabel: "Sign" },
 ] as const;
@@ -375,7 +375,9 @@ export function ItinForm({ onSuccess }: Props) {
   function validateStep(s: number): boolean {
     const errs: Partial<Record<keyof ItinData, string>> = {};
 
-    if (s === 0) {
+    // Step 0: Passport scan — no required fields (scanning encouraged, not mandatory)
+
+    if (s === 1) {
       if (!data.firstName.trim()) errs.firstName = "First name is required";
       if (!data.lastName.trim()) errs.lastName = "Last name is required";
       if (!data.dateOfBirth) errs.dateOfBirth = "Date of birth is required";
@@ -386,7 +388,7 @@ export function ItinForm({ onSuccess }: Props) {
         errs.phone = "Valid phone number is required";
     }
 
-    if (s === 1) {
+    if (s === 2) {
       if (!data.city) errs.city = "Please select appointment city";
       if (!data.usEntryDate) errs.usEntryDate = "US entry date is required";
       if (!data.homeCountry) errs.homeCountry = "Home country is required";
@@ -394,7 +396,7 @@ export function ItinForm({ onSuccess }: Props) {
       if (!data.homeAddress.trim()) errs.homeAddress = "Home address is required";
     }
 
-    // Steps 2 (document) and 3 (selfie) are optional — skip allowed
+    // Step 3 (selfie) is optional — skip allowed
 
     if (s === 4) {
       if (!data.signature) errs.signature = "Signature is required to submit";
@@ -513,13 +515,13 @@ export function ItinForm({ onSuccess }: Props) {
   // Completed steps for progress indicator
   const completedSteps = useMemo(() => {
     const completed = new Set<number>();
-    if (data.firstName && data.lastName && data.phone && data.dateOfBirth && data.countryOfBirth && data.cityOfBirth && data.countryOfCitizenship) completed.add(0);
-    if (data.city && data.homeCountry && data.homeCity) completed.add(1);
-    if (data.documentScan) completed.add(2);
+    if (data.documentScan) completed.add(0);
+    if (data.firstName && data.lastName && data.phone) completed.add(1);
+    if (data.city) completed.add(2);
     if (data.selfie) completed.add(3);
     if (data.signature) completed.add(4);
     return completed;
-  }, [data.firstName, data.lastName, data.phone, data.dateOfBirth, data.countryOfBirth, data.cityOfBirth, data.countryOfCitizenship, data.city, data.homeCountry, data.homeCity, data.documentScan, data.selfie, data.signature]);
+  }, [data.documentScan, data.firstName, data.lastName, data.phone, data.city, data.selfie, data.signature]);
 
   // Compute animation classes for step content
   const getStepAnimClass = () => {
@@ -597,7 +599,7 @@ export function ItinForm({ onSuccess }: Props) {
         </div>
 
         {/* AVA Voice — available on all steps */}
-        {step <= 2 && (
+        {(step === 1 || step === 2) && (
           <div className="flex flex-col items-center mb-5">
             <button
               type="button"
@@ -631,16 +633,6 @@ export function ItinForm({ onSuccess }: Props) {
           `}
         >
           {displayStep === 0 && (
-            <StepPersonal
-              data={data}
-              errors={errors}
-              update={update}
-            />
-          )}
-          {displayStep === 1 && (
-            <StepLocation data={data} errors={errors} update={update} />
-          )}
-          {displayStep === 2 && (
             <StepDocument
               data={data}
               errors={errors}
@@ -651,6 +643,16 @@ export function ItinForm({ onSuccess }: Props) {
               ocrStatus={ocrStatus}
               ocrFields={ocrFields}
             />
+          )}
+          {displayStep === 1 && (
+            <StepPersonal
+              data={data}
+              errors={errors}
+              update={update}
+            />
+          )}
+          {displayStep === 2 && (
+            <StepLocation data={data} errors={errors} update={update} />
           )}
           {displayStep === 3 && (
             <StepSelfie
@@ -705,8 +707,8 @@ export function ItinForm({ onSuccess }: Props) {
               </button>
             )}
 
-            {/* Skip button for optional steps (3 & 4) */}
-            {(step === 2 || step === 3) && (
+            {/* Skip button for optional steps (passport scan & selfie) */}
+            {(step === 0 || step === 3) && (
               <button
                 onClick={() => transitionToStep(step + 1)}
                 className="
@@ -1126,7 +1128,7 @@ function EmployerBadge({
 }
 
 /* ═══════════════════════════════════════════════
-   Step 1 — Personal Info
+   Step 1 — Personal Info (renders at displayStep 1)
    ═══════════════════════════════════════════════ */
 
 interface StepProps {
@@ -1294,7 +1296,7 @@ function StepPersonal({ data, errors, update }: StepProps) {
 }
 
 /* ═══════════════════════════════════════════════
-   Step 2 — Location & Work
+   Step 2 — Location & Work (renders at displayStep 2)
    ═══════════════════════════════════════════════ */
 
 function StepLocation({ data, errors, update }: StepProps) {
@@ -1412,7 +1414,7 @@ function StepLocation({ data, errors, update }: StepProps) {
 }
 
 /* ═══════════════════════════════════════════════
-   Step 3 — Document Scan
+   Step 0 — Passport Scan (renders at displayStep 0)
    ═══════════════════════════════════════════════ */
 
 function StepDocument({
@@ -1447,8 +1449,8 @@ function StepDocument({
   return (
     <div className="space-y-5">
       <SectionHeader
-        title="Document Scan"
-        subtitle="Scan your passport to auto-fill your application."
+        title="Scan Your Passport"
+        subtitle="Place your passport face-down and scan it. We'll fill in your details automatically."
       />
 
       {data.documentScan && docPreview ? (
@@ -1579,7 +1581,7 @@ function StepDocument({
 }
 
 /* ═══════════════════════════════════════════════
-   Step 4 — Selfie Verification
+   Step 3 — Selfie Verification (renders at displayStep 3)
    ═══════════════════════════════════════════════ */
 
 function StepSelfie({
@@ -1690,7 +1692,7 @@ function StepSelfie({
 }
 
 /* ═══════════════════════════════════════════════
-   Step 5 — Review & Sign
+   Step 4 — Review & Sign (renders at displayStep 4)
    ═══════════════════════════════════════════════ */
 
 function StepReview({

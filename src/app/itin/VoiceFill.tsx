@@ -16,7 +16,8 @@ interface FieldDef {
 }
 
 const STEP_FIELDS: Record<number, FieldDef[]> = {
-  0: [
+  0: [], // Passport scan — no voice fields
+  1: [   // Personal Info
     { key: "firstName", label: "First Name" },
     { key: "lastName", label: "Last Name" },
     { key: "middleName", label: "Middle Name", optional: true },
@@ -27,7 +28,7 @@ const STEP_FIELDS: Record<number, FieldDef[]> = {
     { key: "phone", label: "Phone" },
     { key: "email", label: "Email", optional: true },
   ],
-  1: [
+  2: [   // Location & Work
     { key: "addressUsa", label: "US Address" },
     { key: "usEntryDate", label: "US Entry Date" },
     { key: "homeCountry", label: "Home Country" },
@@ -35,13 +36,8 @@ const STEP_FIELDS: Record<number, FieldDef[]> = {
     { key: "homeAddress", label: "Home Address (non-US)" },
     { key: "amount", label: "Annual Earnings ($)" },
   ],
-  2: [
-    { key: "passportNumber", label: "Passport Number" },
-    { key: "passportExpiry", label: "Passport Expiry", optional: true },
-    { key: "passportCountry", label: "Issuing Country" },
-  ],
-  3: [],
-  4: [],
+  3: [], // Selfie
+  4: [], // Review
 };
 
 /* ═══════════════════════════════════════════════
