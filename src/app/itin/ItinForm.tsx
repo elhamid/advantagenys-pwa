@@ -1337,7 +1337,7 @@ function StepLocation({ data, errors, update }: StepProps) {
 
       {/* US Address with autocomplete */}
       <div>
-        <Label htmlFor="itin-addressUsa">US Address</Label>
+        <Label htmlFor="itin-addressUsa">U.S. Address (Street, City, ZIP)</Label>
         <AddressAutocomplete
           id="itin-addressUsa"
           value={data.addressUsa}
@@ -1598,8 +1598,8 @@ function StepSelfie({
   return (
     <div className="space-y-5">
       <SectionHeader
-        title="Photo Verification"
-        subtitle="Take a clear photo of yourself for identity verification."
+        title="Passport Photo"
+        subtitle="Take a passport-style photo: face the camera, neutral expression, eyes open"
       />
 
       {data.selfie && selfiePreview ? (
@@ -1674,16 +1674,16 @@ function StepSelfie({
             </div>
             <div className="text-center">
               <span className="text-base font-semibold text-white/80 block">
-                Tap to Take Photo
+                Take Passport Photo
               </span>
               <span className="text-sm text-white/40 mt-1 block">
-                Look directly at the camera, face centered
+                White background preferred, no glasses or head coverings
               </span>
             </div>
           </button>
 
           <p className="text-center text-white/25 text-xs">
-            Your photo helps verify your identity. You can skip and provide it in person.
+            2x2 inch passport-style photo required for IRS W-7. You can skip and provide it in person.
           </p>
         </div>
       )}
@@ -1765,7 +1765,7 @@ function StepReview({
               muted={!data.usEntryDate}
             />
             <ReviewField
-              label="US Address"
+              label="U.S. Address"
               value={data.addressUsa || "Not provided"}
               muted={!data.addressUsa}
               fullWidth

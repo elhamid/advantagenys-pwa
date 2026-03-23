@@ -29,7 +29,7 @@ const STEP_FIELDS: Record<number, FieldDef[]> = {
     { key: "email", label: "Email", optional: true },
   ],
   2: [   // Location & Work
-    { key: "addressUsa", label: "US Address" },
+    { key: "addressUsa", label: "U.S. Address (Street, City, ZIP)" },
     { key: "usEntryDate", label: "US Entry Date" },
     { key: "homeCountry", label: "Home Country" },
     { key: "homeCity", label: "Home City" },

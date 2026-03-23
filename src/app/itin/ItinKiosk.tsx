@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 import { ItinForm } from "./ItinForm";
 
-const AUTO_RESET_MS = 120_000; // 2 min idle after submit → reset
+const AUTO_RESET_MS = 30_000; // 30 sec after submit → reset to welcome
 
 type Stage = "welcome" | "form" | "success";
 
@@ -357,7 +357,7 @@ function SuccessScreen({ onReset }: { onReset: () => void }) {
 
       {/* Auto-reset notice */}
       <p className="mt-8 text-white/20 text-xs">
-        This screen will reset automatically in 2 minutes.
+        This screen will reset automatically in 30 seconds.
       </p>
     </div>
   );
