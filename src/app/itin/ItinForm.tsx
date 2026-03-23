@@ -523,7 +523,7 @@ export function ItinForm({ onSuccess }: Props) {
           ref={stepContentRef}
           aria-live="polite"
           className={`
-            flex-1 overflow-y-auto pb-32 transition-all duration-250 ease-out
+            flex-1 overflow-y-auto pb-4 transition-all duration-250 ease-out
             ${getStepAnimClass()}
           `}
         >
@@ -579,37 +579,8 @@ export function ItinForm({ onSuccess }: Props) {
           </div>
         )}
 
-        {/* ─── Keyboard Dismiss Button ─── */}
-        {kbHeight > 0 && (
-          <div
-            className="fixed left-0 right-0 z-30 flex justify-end px-4 sm:px-6 md:px-12 lg:px-24 transition-[bottom] duration-200 ease-out"
-            style={{ bottom: `${kbHeight}px` }}
-          >
-            <button
-              type="button"
-              onClick={() => (document.activeElement as HTMLElement)?.blur()}
-              className="
-                mb-1 px-4 py-2 rounded-lg text-xs font-semibold
-                bg-white/10 backdrop-blur-sm text-white/70
-                hover:bg-white/20 hover:text-white
-                active:scale-[0.97] transition-all duration-150
-              "
-            >
-              Done
-            </button>
-          </div>
-        )}
-
-        {/* ─── Fixed Bottom Navigation — follows keyboard ─── */}
-        <div
-          className="fixed left-0 right-0 z-20 px-4 sm:px-6 md:px-12 lg:px-24 pt-3 pb-4 transition-[bottom] duration-200 ease-out"
-          style={{
-            bottom: kbHeight > 0 ? `${kbHeight}px` : "0px",
-            paddingBottom: kbHeight > 0 ? undefined : "max(1rem, env(safe-area-inset-bottom))",
-          }}
-        >
-          {/* Gradient backdrop — blends into the dark background */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0F1B2D] via-[#0F1B2D]/98 to-transparent pointer-events-none" />
+        {/* ─── Bottom Navigation ─── */}
+        <div className="shrink-0 pt-3 pb-4" style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}>
 
           <div className="relative flex items-center gap-3">
             {step > 0 && (
@@ -1156,28 +1127,26 @@ function StepPersonal({ data, errors, update, onOpenVoiceFill }: StepPersonalPro
         />
       </div>
 
-      {/* DOB | Birth City — compact 2-col */}
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <Label required htmlFor="itin-dob">Birth Date</Label>
-          <Input
-            id="itin-dob"
-            value={data.dateOfBirth}
-            onChange={(v) => update("dateOfBirth", v)}
-            error={errors.dateOfBirth}
-            type="date"
-          />
-        </div>
-        <div>
-          <Label required htmlFor="itin-cityOfBirth">Birth City</Label>
-          <Input
-            id="itin-cityOfBirth"
-            value={data.cityOfBirth}
-            onChange={(v) => update("cityOfBirth", v)}
-            error={errors.cityOfBirth}
-            placeholder="Kingston"
-          />
-        </div>
+      <div>
+        <Label required htmlFor="itin-dob">Date of Birth</Label>
+        <Input
+          id="itin-dob"
+          value={data.dateOfBirth}
+          onChange={(v) => update("dateOfBirth", v)}
+          error={errors.dateOfBirth}
+          type="date"
+        />
+      </div>
+
+      <div>
+        <Label required htmlFor="itin-cityOfBirth">City / Town of Birth</Label>
+        <Input
+          id="itin-cityOfBirth"
+          value={data.cityOfBirth}
+          onChange={(v) => update("cityOfBirth", v)}
+          error={errors.cityOfBirth}
+          placeholder="Kingston"
+        />
       </div>
 
       {/* Row 4: Country of Birth | Country of Citizenship */}
