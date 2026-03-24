@@ -116,9 +116,11 @@ async function extractValidatedFile(
  * Submit to JotForm Submissions API (parallel record).
  * Non-fatal — logs errors but never blocks the response.
  */
-async function submitToJotForm(data: ItinPayload, documentUrls?: DocumentUrls): Promise<void> {
+const JOTFORM_TEST_ID = "260813948166061";
+
+async function submitToJotForm(data: ItinPayload, documentUrls?: DocumentUrls, isTest = false): Promise<void> {
   const apiKey = process.env.JOTFORM_API_KEY;
-  const formId = process.env.JOTFORM_ITIN_FORM_ID || JOTFORM_PROD_ID;
+  const formId = isTest ? JOTFORM_TEST_ID : (process.env.JOTFORM_ITIN_FORM_ID || JOTFORM_PROD_ID);
 
   if (!apiKey) {
     console.warn("[JotForm] JOTFORM_API_KEY not set — JotForm write skipped");
@@ -340,6 +342,9 @@ async function forwardToTaskboard(
 }
 
 export async function POST(request: NextRequest) {
+  const isTest = request.nextUrl.searchParams.get("test") === "1";
+  if (isTest) console.log("[itin-submit] TEST MODE — using staging JotForm");
+
   try {
     const formData = await request.formData();
 
@@ -470,7 +475,7 @@ export async function POST(request: NextRequest) {
     // Dual-write: taskboard + JotForm in parallel (both non-fatal)
     await Promise.allSettled([
       forwardToTaskboard(data, documentUrls),
-      submitToJotForm(data, documentUrls),
+      submitToJotForm(data, documentUrls, isTest),
     ]);
 
     return NextResponse.json({

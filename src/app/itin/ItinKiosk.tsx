@@ -8,7 +8,7 @@ const AUTO_RESET_MS = 30_000; // 30 sec after submit → reset to welcome
 
 type Stage = "welcome" | "form" | "success";
 
-export function ItinKiosk() {
+export function ItinKiosk({ testMode = false }: { testMode?: boolean }) {
   const [stage, setStage] = useState<Stage>("welcome");
   const [fadeIn, setFadeIn] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -104,7 +104,7 @@ export function ItinKiosk() {
       {/* Main content */}
       <div className="relative z-10 flex-1 flex flex-col">
         {stage === "welcome" && <WelcomeScreen onStart={startForm} />}
-        {stage === "form" && <ItinForm onSuccess={() => setStage("success")} />}
+        {stage === "form" && <ItinForm onSuccess={() => setStage("success")} testMode={testMode} />}
         {stage === "success" && <SuccessScreen onReset={resetToWelcome} />}
       </div>
 

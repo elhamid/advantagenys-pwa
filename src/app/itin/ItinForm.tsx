@@ -125,6 +125,7 @@ const STEPS = [
 
 interface Props {
   onSuccess: () => void;
+  testMode?: boolean;
 }
 
 /* ═══════════════════════════════════════════════
@@ -160,7 +161,7 @@ function useKeyboardHeight() {
    Main Form Component
    ═══════════════════════════════════════════════ */
 
-export function ItinForm({ onSuccess }: Props) {
+export function ItinForm({ onSuccess, testMode = false }: Props) {
   const [step, setStep] = useState(0);
   const [data, setData] = useState<ItinData>(INITIAL);
   const [errors, setErrors] = useState<Partial<Record<keyof ItinData, string>>>({});
@@ -501,7 +502,8 @@ export function ItinForm({ onSuccess }: Props) {
         payload.append("signature", data.signature);
       }
 
-      const res = await fetch("/api/itin-submit", {
+      const submitUrl = testMode ? "/api/itin-submit?test=1" : "/api/itin-submit";
+      const res = await fetch(submitUrl, {
         method: "POST",
         body: payload,
       });
