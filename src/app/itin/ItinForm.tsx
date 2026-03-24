@@ -47,8 +47,6 @@ const CITIES = [
   { value: "nashville", label: "Nashville", icon: "🎵" },
 ] as const;
 
-const DEFAULT_EMPLOYER = "Tropical Stars Inc.";
-
 interface ItinData {
   // Step 0 — Passport Scan
   documentScan: File | null;
@@ -95,7 +93,7 @@ const INITIAL: ItinData = {
   countryOfCitizenship: "",
   phone: "",
   email: "",
-  companyName: DEFAULT_EMPLOYER,
+  companyName: "",
   city: "",
   addressUsa: "",
   zipCode: "",
@@ -123,9 +121,17 @@ const STEPS = [
   { label: "Review", shortLabel: "Sign" },
 ] as const;
 
+/** Convert YYYY-MM-DD to MM/DD/YYYY for display */
+function formatDateUS(d: string): string {
+  if (!d) return "";
+  const [y, m, day] = d.split("-");
+  return y && m && day ? `${m}/${day}/${y}` : d;
+}
+
 interface Props {
   onSuccess: () => void;
   testMode?: boolean;
+  companyName?: string;
 }
 
 /* ═══════════════════════════════════════════════
@@ -161,9 +167,12 @@ function useKeyboardHeight() {
    Main Form Component
    ═══════════════════════════════════════════════ */
 
-export function ItinForm({ onSuccess, testMode = false }: Props) {
+export function ItinForm({ onSuccess, testMode = false, companyName }: Props) {
   const [step, setStep] = useState(0);
-  const [data, setData] = useState<ItinData>(INITIAL);
+  const [data, setData] = useState<ItinData>(() => ({
+    ...INITIAL,
+    companyName: companyName || "",
+  }));
   const [errors, setErrors] = useState<Partial<Record<keyof ItinData, string>>>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -662,6 +671,7 @@ export function ItinForm({ onSuccess, testMode = false }: Props) {
               data={data}
               errors={errors}
               update={update}
+              companyLocked={!!companyName}
             />
           )}
           {displayStep === 2 && (
@@ -1070,95 +1080,48 @@ function CountrySelect({
    Employer Badge (Tropical Stars default)
    ═══════════════════════════════════════════════ */
 
-const COMPANY_OPTIONS = [
-  "Tropical Stars Inc.",
-  "Other",
-];
-
 function EmployerBadge({
   value,
   onChange,
+  locked,
 }: {
   value: string;
   onChange: (v: string) => void;
+  locked: boolean;
 }) {
-  const isCustom = !COMPANY_OPTIONS.includes(value) && value !== DEFAULT_EMPLOYER;
-  const [showCustom, setShowCustom] = useState(isCustom);
-
-  if (showCustom) {
+  // Locked badge — company was selected on the welcome screen
+  if (locked && value) {
     return (
       <div>
-        <Label htmlFor="itin-company">Company / Employer</Label>
-        <div className="flex gap-2">
-          <Input
-            id="itin-company"
-            value={value === "Other" ? "" : value}
-            onChange={onChange}
-            placeholder="Enter company name"
-            autoComplete="organization"
-          />
-          <button
-            type="button"
-            onClick={() => {
-              if (!value.trim() || value === "Other") onChange(DEFAULT_EMPLOYER);
-              setShowCustom(false);
-            }}
-            className="
-              shrink-0 px-4 py-3.5 rounded-xl text-sm font-medium
-              bg-white/5 border border-white/10 text-white/60
-              hover:bg-white/10 hover:text-white/80
-              active:scale-[0.97] transition-all duration-200
-              min-h-[48px]
-            "
-          >
-            Done
-          </button>
+        <Label>Company / Employer</Label>
+        <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-white/[0.05] border border-white/10">
+          <div className="w-9 h-9 rounded-lg bg-[#4F56E8]/15 flex items-center justify-center shrink-0">
+            <svg className="w-5 h-5 text-[#818CF8]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" />
+            </svg>
+          </div>
+          <div className="flex-1 min-w-0">
+            <span className="text-white/80 text-base font-semibold block truncate">{value}</span>
+          </div>
+          <svg className="w-4 h-4 text-white/20 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+          </svg>
         </div>
       </div>
     );
   }
 
+  // Editable text field — individual applicant path
   return (
     <div>
-      <Label>Company / Employer</Label>
-      <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-white/[0.05] border border-white/10">
-        {/* Company icon */}
-        <div className="w-9 h-9 rounded-lg bg-[#4F56E8]/15 flex items-center justify-center shrink-0">
-          <svg className="w-5 h-5 text-[#818CF8]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" />
-          </svg>
-        </div>
-        <div className="flex-1 min-w-0">
-          <span className="text-white/80 text-base font-semibold block truncate">{value}</span>
-        </div>
-        <select
-          value={COMPANY_OPTIONS.includes(value) ? value : "Other"}
-          onChange={(e) => {
-            if (e.target.value === "Other") {
-              onChange("");
-              setShowCustom(true);
-            } else {
-              onChange(e.target.value);
-            }
-          }}
-          className="
-            shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium appearance-none
-            bg-white/5 border border-white/10 text-white/60
-            hover:bg-white/10 hover:text-white/80
-            transition-all duration-200 cursor-pointer
-            pr-7
-          "
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' fill='none' viewBox='0 0 24 24' stroke='rgba(255,255,255,0.4)' stroke-width='2.5'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E")`,
-            backgroundRepeat: "no-repeat",
-            backgroundPosition: "right 0.5rem center",
-          }}
-        >
-          {COMPANY_OPTIONS.map((c) => (
-            <option key={c} value={c} className="bg-[#0F1B2D] text-white">{c === "Other" ? "Select different..." : c}</option>
-          ))}
-        </select>
-      </div>
+      <Label htmlFor="itin-company">Company / Employer (optional)</Label>
+      <Input
+        id="itin-company"
+        value={value}
+        onChange={onChange}
+        placeholder="Enter company name (if applicable)"
+        autoComplete="organization"
+      />
     </div>
   );
 }
@@ -1171,9 +1134,10 @@ interface StepProps {
   data: ItinData;
   errors: Partial<Record<keyof ItinData, string>>;
   update: <K extends keyof ItinData>(field: K, value: ItinData[K]) => void;
+  companyLocked?: boolean;
 }
 
-function StepPersonal({ data, errors, update }: StepProps) {
+function StepPersonal({ data, errors, update, companyLocked = false }: StepProps) {
   return (
     <div className="space-y-3">
       <SectionHeader
@@ -1199,6 +1163,7 @@ function StepPersonal({ data, errors, update }: StepProps) {
       <EmployerBadge
         value={data.companyName}
         onChange={(v) => update("companyName", v)}
+        locked={companyLocked}
       />
 
       {/* Row 1: First / Last name */}
@@ -1341,12 +1306,7 @@ function I94Lookup({ data, onClose }: { data: ItinData; onClose: () => void }) {
     { label: "Last Name", value: data.lastName.toUpperCase() },
     {
       label: "Birth Date",
-      value: data.dateOfBirth
-        ? (() => {
-            const [y, m, d] = data.dateOfBirth.split("-");
-            return `${m}/${d}/${y}`;
-          })()
-        : "",
+      value: formatDateUS(data.dateOfBirth),
     },
     { label: "Passport Number", value: data.passportNumber.toUpperCase() },
     {
@@ -1916,7 +1876,7 @@ function StepReview({
               label="Name"
               value={[data.firstName, data.middleName, data.lastName].filter(Boolean).join(" ")}
             />
-            <ReviewField label="Date of Birth" value={data.dateOfBirth || "Not provided"} muted={!data.dateOfBirth} />
+            <ReviewField label="Date of Birth" value={formatDateUS(data.dateOfBirth) || "Not provided"} muted={!data.dateOfBirth} />
             <ReviewField label="Birth City" value={data.cityOfBirth || "Not provided"} muted={!data.cityOfBirth} />
             <ReviewField label="Birth Country" value={data.countryOfBirth || "Not provided"} muted={!data.countryOfBirth} />
             <ReviewField label="Citizenship" value={data.countryOfCitizenship || "Not provided"} muted={!data.countryOfCitizenship} />
@@ -1944,7 +1904,7 @@ function StepReview({
             <ReviewField label="Appointment City" value={cityLabel} />
             <ReviewField
               label="US Entry Date"
-              value={data.usEntryDate || "Not provided"}
+              value={formatDateUS(data.usEntryDate) || "Not provided"}
               muted={!data.usEntryDate}
             />
             <ReviewField
@@ -1985,7 +1945,7 @@ function StepReview({
           </h3>
           <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
             <ReviewField label="Number" value={data.passportNumber || "Not provided"} muted={!data.passportNumber} />
-            <ReviewField label="Expiry" value={data.passportExpiry || "Not provided"} muted={!data.passportExpiry} />
+            <ReviewField label="Expiry" value={formatDateUS(data.passportExpiry) || "Not provided"} muted={!data.passportExpiry} />
             <ReviewField label="Issuing Country" value={data.passportCountry || "Not provided"} muted={!data.passportCountry} />
           </div>
         </div>

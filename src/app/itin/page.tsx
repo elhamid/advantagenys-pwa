@@ -16,6 +16,11 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-export default function ItinPage() {
-  return <ItinKiosk />;
+export default async function ItinPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ company?: string }>;
+}) {
+  const params = await searchParams;
+  return <ItinKiosk companySlug={params.company} />;
 }

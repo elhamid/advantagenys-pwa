@@ -6,10 +6,28 @@ import { ItinForm } from "./ItinForm";
 
 const AUTO_RESET_MS = 30_000; // 30 sec after submit → reset to welcome
 
+const COMPANIES = [
+  { slug: "tropical-stars", name: "Tropical Stars Inc.", logo: "/images/tropical-stars-logo.png" },
+] as const;
+
+type Company = (typeof COMPANIES)[number];
+
+function findCompany(slug?: string): Company | null {
+  if (!slug) return null;
+  return COMPANIES.find((c) => c.slug === slug) ?? null;
+}
+
 type Stage = "welcome" | "form" | "success";
 
-export function ItinKiosk({ testMode = false }: { testMode?: boolean }) {
+interface ItinKioskProps {
+  testMode?: boolean;
+  companySlug?: string;
+}
+
+export function ItinKiosk({ testMode = false, companySlug }: ItinKioskProps) {
+  const preselected = findCompany(companySlug);
   const [stage, setStage] = useState<Stage>("welcome");
+  const [selectedCompany, setSelectedCompany] = useState<Company | null>(preselected);
   const [fadeIn, setFadeIn] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -34,9 +52,10 @@ export function ItinKiosk({ testMode = false }: { testMode?: boolean }) {
 
   const resetToWelcome = useCallback(() => {
     setStage("welcome");
+    setSelectedCompany(preselected);
     setShowConfirm(false);
     if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
-  }, []);
+  }, [preselected]);
 
   const handleStartOver = useCallback(() => {
     if (stage === "form") {
@@ -46,9 +65,6 @@ export function ItinKiosk({ testMode = false }: { testMode?: boolean }) {
     }
   }, [stage, resetToWelcome]);
 
-  const startForm = useCallback(() => {
-    setStage("form");
-  }, []);
 
   return (
     <div
@@ -103,8 +119,22 @@ export function ItinKiosk({ testMode = false }: { testMode?: boolean }) {
 
       {/* Main content */}
       <div className="relative z-10 flex-1 flex flex-col">
-        {stage === "welcome" && <WelcomeScreen onStart={startForm} />}
-        {stage === "form" && <ItinForm onSuccess={() => setStage("success")} testMode={testMode} />}
+        {stage === "welcome" && (
+          <WelcomeScreen
+            preselectedCompany={preselected}
+            onStart={(company) => {
+              setSelectedCompany(company);
+              setStage("form");
+            }}
+          />
+        )}
+        {stage === "form" && (
+          <ItinForm
+            onSuccess={() => setStage("success")}
+            testMode={testMode}
+            companyName={selectedCompany?.name}
+          />
+        )}
         {stage === "success" && <SuccessScreen onReset={resetToWelcome} />}
       </div>
 
@@ -150,12 +180,78 @@ export function ItinKiosk({ testMode = false }: { testMode?: boolean }) {
 }
 
 /* ─── Welcome Screen ─── */
-function WelcomeScreen({ onStart }: { onStart: () => void }) {
+function WelcomeScreen({
+  preselectedCompany,
+  onStart,
+}: {
+  preselectedCompany: Company | null;
+  onStart: (company: Company | null) => void;
+}) {
   const [visible, setVisible] = useState(false);
+  const [pickedSlug, setPickedSlug] = useState<string>(
+    preselectedCompany?.slug ?? ""
+  );
 
   useEffect(() => {
     requestAnimationFrame(() => setVisible(true));
   }, []);
+
+  // If company is preselected via URL, show simplified welcome
+  if (preselectedCompany) {
+    return (
+      <div
+        className={`
+          flex-1 flex flex-col items-center justify-center px-6 pb-12
+          transition-all duration-700 ease-out
+          ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}
+        `}
+      >
+        {/* Company branding */}
+        <div className="mb-6 flex flex-col items-center">
+          <Image
+            src={preselectedCompany.logo}
+            alt={preselectedCompany.name}
+            width={192}
+            height={90}
+            priority
+          />
+        </div>
+
+        {/* Company badge */}
+        <div className="mb-4 px-5 py-2.5 rounded-full bg-white/[0.06] border border-white/10">
+          <span className="text-white/70 text-sm font-semibold">
+            {preselectedCompany.name}
+          </span>
+        </div>
+
+        <WelcomeHeading />
+
+        {/* CTA */}
+        <button
+          onClick={() => onStart(preselectedCompany)}
+          className="
+            group relative px-12 py-5 rounded-2xl
+            bg-[#4F56E8] text-white font-bold text-xl
+            shadow-[0_0_40px_rgba(79,86,232,0.3)]
+            hover:shadow-[0_0_60px_rgba(79,86,232,0.4)]
+            hover:bg-[#5B63F0]
+            active:scale-[0.97]
+            transition-all duration-300 ease-out
+          "
+        >
+          <span className="flex items-center gap-3">
+            Start Application
+            <ArrowRight />
+          </span>
+        </button>
+
+        <TrustIndicators />
+      </div>
+    );
+  }
+
+  // No preselected company — show two-path selector
+  const pickedCompany = COMPANIES.find((c) => c.slug === pickedSlug) ?? null;
 
   return (
     <div
@@ -165,18 +261,119 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
         ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}
       `}
     >
-      {/* Tropical Stars branding */}
-      <div className="mb-6 flex flex-col items-center">
+      {/* Logo */}
+      <div className="mb-5 flex flex-col items-center">
         <Image
-          src="/images/tropical-stars-logo.png"
-          alt="Tropical Stars"
-          width={192}
-          height={90}
+          src="/icons/icon-192.png"
+          alt="Advantage Services"
+          width={64}
+          height={64}
           priority
+          className="rounded-xl"
         />
       </div>
 
-      {/* IRS badge */}
+      <WelcomeHeading />
+
+      {/* Two paths */}
+      <div className="w-full max-w-md space-y-4 mb-8">
+        {/* Path 1: Employer sent me */}
+        <div className="rounded-2xl bg-white/[0.04] border border-white/10 p-5">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-xl bg-[#4F56E8]/15 flex items-center justify-center shrink-0">
+              <svg className="w-5 h-5 text-[#818CF8]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" />
+              </svg>
+            </div>
+            <div>
+              <h3 className="text-white font-semibold text-base">My employer sent me</h3>
+              <p className="text-white/40 text-sm">Select your company</p>
+            </div>
+          </div>
+
+          <select
+            value={pickedSlug}
+            onChange={(e) => setPickedSlug(e.target.value)}
+            className="
+              w-full px-4 py-3.5 rounded-xl text-base font-medium appearance-none
+              bg-white/[0.06] border border-white/10 text-white
+              hover:bg-white/[0.08] transition-all duration-200 cursor-pointer
+              mb-3 pr-10
+            "
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' viewBox='0 0 24 24' stroke='rgba(255,255,255,0.4)' stroke-width='2.5'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E")`,
+              backgroundRepeat: "no-repeat",
+              backgroundPosition: "right 0.75rem center",
+            }}
+          >
+            <option value="" className="bg-[#0F1B2D] text-white/50">Choose company...</option>
+            {COMPANIES.map((c) => (
+              <option key={c.slug} value={c.slug} className="bg-[#0F1B2D] text-white">
+                {c.name}
+              </option>
+            ))}
+          </select>
+
+          <button
+            onClick={() => onStart(pickedCompany)}
+            disabled={!pickedCompany}
+            className={`
+              w-full py-3.5 rounded-xl font-semibold text-base
+              transition-all duration-200 active:scale-[0.97]
+              ${
+                pickedCompany
+                  ? "bg-[#4F56E8] text-white hover:bg-[#5B63F0] shadow-[0_0_30px_rgba(79,86,232,0.2)]"
+                  : "bg-white/5 text-white/25 cursor-not-allowed"
+              }
+            `}
+          >
+            <span className="flex items-center justify-center gap-2">
+              Continue with employer
+              <ArrowRight />
+            </span>
+          </button>
+        </div>
+
+        {/* Divider */}
+        <div className="flex items-center gap-4">
+          <div className="flex-1 h-px bg-white/10" />
+          <span className="text-white/30 text-xs font-semibold uppercase tracking-wider">or</span>
+          <div className="flex-1 h-px bg-white/10" />
+        </div>
+
+        {/* Path 2: Individual */}
+        <button
+          onClick={() => onStart(null)}
+          className="
+            w-full rounded-2xl bg-white/[0.04] border border-white/10 p-5
+            hover:bg-white/[0.06] hover:border-white/15
+            active:scale-[0.98] transition-all duration-200 text-left
+          "
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-white/[0.06] flex items-center justify-center shrink-0">
+              <svg className="w-5 h-5 text-white/50" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <h3 className="text-white font-semibold text-base">I&apos;m applying individually</h3>
+              <p className="text-white/40 text-sm">No employer referral</p>
+            </div>
+            <ArrowRight />
+          </div>
+        </button>
+      </div>
+
+      <TrustIndicators />
+    </div>
+  );
+}
+
+/* ─── Shared Welcome Parts ─── */
+function WelcomeHeading() {
+  return (
+    <>
       <div className="mb-6">
         <span
           className="
@@ -196,7 +393,6 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
         </span>
       </div>
 
-      {/* Title */}
       <h1
         className="
           text-4xl sm:text-5xl md:text-6xl font-bold text-center
@@ -212,65 +408,55 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
         <br />
         <span className="text-white/40">No mailing your passport. We certify on-site.</span>
       </p>
+    </>
+  );
+}
 
-      {/* CTA */}
-      <button
-        onClick={onStart}
-        className="
-          group relative px-12 py-5 rounded-2xl
-          bg-[#4F56E8] text-white font-bold text-xl
-          shadow-[0_0_40px_rgba(79,86,232,0.3)]
-          hover:shadow-[0_0_60px_rgba(79,86,232,0.4)]
-          hover:bg-[#5B63F0]
-          active:scale-[0.97]
-          transition-all duration-300 ease-out
-        "
-      >
-        <span className="flex items-center gap-3">
-          Start Application
-          <svg
-            className="w-6 h-6 group-hover:translate-x-1 transition-transform duration-200"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2.5}
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-          </svg>
-        </span>
-      </button>
-
-      {/* Trust indicators */}
-      <div className="mt-10 flex flex-wrap items-center justify-center gap-8 text-white/50 text-base font-medium">
-        <span className="flex items-center gap-2">
-          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-            <path
-              fillRule="evenodd"
-              d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
-              clipRule="evenodd"
-            />
-          </svg>
-          Secure &amp; Encrypted
-        </span>
-        <span className="flex items-center gap-2">
-          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
-          </svg>
-          Takes 5–10 minutes
-        </span>
-        <span className="flex items-center gap-2">
-          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-            <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
-            <path
-              fillRule="evenodd"
-              d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm9.707 5.707a1 1 0 00-1.414-1.414L9 12.586l-1.293-1.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-              clipRule="evenodd"
-            />
-          </svg>
-          Have your passport ready
-        </span>
-      </div>
+function TrustIndicators() {
+  return (
+    <div className="mt-10 flex flex-wrap items-center justify-center gap-8 text-white/50 text-base font-medium">
+      <span className="flex items-center gap-2">
+        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+          <path
+            fillRule="evenodd"
+            d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+            clipRule="evenodd"
+          />
+        </svg>
+        Secure &amp; Encrypted
+      </span>
+      <span className="flex items-center gap-2">
+        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+        </svg>
+        Takes 5-10 minutes
+      </span>
+      <span className="flex items-center gap-2">
+        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+          <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+          <path
+            fillRule="evenodd"
+            d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm9.707 5.707a1 1 0 00-1.414-1.414L9 12.586l-1.293-1.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+            clipRule="evenodd"
+          />
+        </svg>
+        Have your passport ready
+      </span>
     </div>
+  );
+}
+
+function ArrowRight() {
+  return (
+    <svg
+      className="w-5 h-5 shrink-0"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={2.5}
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+    </svg>
   );
 }
 
