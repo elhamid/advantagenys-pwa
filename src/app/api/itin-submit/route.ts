@@ -179,9 +179,10 @@ async function submitToJotForm(data: ItinPayload, documentUrls?: DocumentUrls): 
     }
   }
 
-  // q64 — Date of Entry into the US
+  // q64 — Date of Entry into the US (YYYY-MM-DD → MM/DD/YYYY)
   if (data.usEntryDate?.trim()) {
-    params.append("submission[64]", data.usEntryDate.trim());
+    const [y, m, d] = data.usEntryDate.split("-");
+    params.append("submission[64]", (y && m && d) ? `${m}/${d}/${y}` : data.usEntryDate.trim());
   }
 
   // q41 — Foreign (Non-US) Address (home country details)
