@@ -1375,8 +1375,8 @@ function StepLocation({ data, errors, update }: StepProps) {
         />
       </div>
 
-      <div>
-        <Label required htmlFor="itin-zipCode">ZIP Code</Label>
+      <div className="w-32">
+        <Label required htmlFor="itin-zipCode">ZIP</Label>
         <Input
           id="itin-zipCode"
           value={data.zipCode}

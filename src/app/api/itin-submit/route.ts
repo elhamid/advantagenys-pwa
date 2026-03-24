@@ -126,11 +126,13 @@ async function submitToJotForm(data: ItinPayload, documentUrls?: DocumentUrls): 
   }
 
   // Build JotForm submission payload using question IDs
+  // ALL CAPS for TaxWise copy/paste compatibility
+  const UP = (s: string) => s.trim().toUpperCase();
   const params = new URLSearchParams();
 
   // q13 — First/Last Name
-  params.append("submission[13_first]", data.firstName.trim());
-  params.append("submission[13_last]", data.lastName.trim());
+  params.append("submission[13_first]", UP(data.firstName));
+  params.append("submission[13_last]", UP(data.lastName));
 
   // q32 — Phone (area code + phone number for JotForm display)
   const phoneDigits = data.phone.replace(/\D/g, "");
@@ -158,22 +160,22 @@ async function submitToJotForm(data: ItinPayload, documentUrls?: DocumentUrls): 
 
   // q14 — City of Birth
   if (data.cityOfBirth?.trim()) {
-    params.append("submission[14]", data.cityOfBirth.trim());
+    params.append("submission[14]", UP(data.cityOfBirth));
   }
 
   // q60 — Country of Birth
   if (data.countryOfBirth?.trim()) {
-    params.append("submission[60]", data.countryOfBirth.trim());
+    params.append("submission[60]", UP(data.countryOfBirth));
   }
 
   // q35 — Citizenship
   if (data.countryOfCitizenship?.trim()) {
-    params.append("submission[35]", data.countryOfCitizenship.trim());
+    params.append("submission[35]", UP(data.countryOfCitizenship));
   }
 
   // q31 — US Address (single line → addr_line1 + postal)
   if (data.addressUsa.trim()) {
-    params.append("submission[31_addr_line1]", data.addressUsa.trim());
+    params.append("submission[31_addr_line1]", UP(data.addressUsa));
     if (data.zipCode.trim()) {
       params.append("submission[31_postal]", data.zipCode.trim());
     }
@@ -188,23 +190,23 @@ async function submitToJotForm(data: ItinPayload, documentUrls?: DocumentUrls): 
   // q41 — Foreign (Non-US) Address (home country details)
   if (data.homeAddress?.trim() || data.addressHomeCountry?.trim()) {
     const addr = data.homeAddress?.trim() || data.addressHomeCountry?.trim() || "";
-    params.append("submission[41_addr_line1]", addr);
+    params.append("submission[41_addr_line1]", addr.toUpperCase());
     if (data.homeCity?.trim()) {
-      params.append("submission[41_addr_line2]", data.homeCity.trim());
+      params.append("submission[41_addr_line2]", UP(data.homeCity));
     }
     if (data.homeCountry?.trim()) {
-      params.append("submission[41_country]", data.homeCountry.trim());
+      params.append("submission[41_country]", UP(data.homeCountry));
     }
   }
 
   // q37 — Passport Number
   if (data.passportNumber?.trim()) {
-    params.append("submission[37]", data.passportNumber.trim());
+    params.append("submission[37]", UP(data.passportNumber));
   }
 
   // q38 — Passport Issued By (country)
   if (data.passportCountry?.trim()) {
-    params.append("submission[38]", data.passportCountry.trim());
+    params.append("submission[38]", UP(data.passportCountry));
   }
 
   // q40 — Passport Expiration Date (YYYY-MM-DD → month/day/year)
