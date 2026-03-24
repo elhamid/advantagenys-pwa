@@ -67,6 +67,7 @@ interface ItinData {
   // Step 2 — Location
   city: string;
   addressUsa: string;
+  zipCode: string;
   addressHomeCountry: string; // street address (backward compat key)
   homeCountry: string;
   homeCity: string;
@@ -97,6 +98,7 @@ const INITIAL: ItinData = {
   companyName: DEFAULT_EMPLOYER,
   city: "",
   addressUsa: "",
+  zipCode: "",
   addressHomeCountry: "",
   homeCountry: "",
   homeCity: "",
@@ -392,6 +394,7 @@ export function ItinForm({ onSuccess }: Props) {
 
     if (s === 2) {
       if (!data.city) errs.city = "Please select appointment city";
+      if (!data.zipCode.trim()) errs.zipCode = "ZIP code is required";
       if (!data.usEntryDate) errs.usEntryDate = "US entry date is required";
       if (!data.homeCountry) errs.homeCountry = "Home country is required";
       if (!data.homeCity.trim()) errs.homeCity = "Home city is required";
@@ -460,29 +463,32 @@ export function ItinForm({ onSuccess }: Props) {
 
     try {
       const payload = new FormData();
-      payload.append("firstName", data.firstName.trim());
-      payload.append("lastName", data.lastName.trim());
-      payload.append("middleName", data.middleName.trim());
+      // All text uppercase for TaxWise compatibility
+      const up = (s: string) => s.trim().toUpperCase();
+      payload.append("firstName", up(data.firstName));
+      payload.append("lastName", up(data.lastName));
+      payload.append("middleName", up(data.middleName));
       payload.append("dateOfBirth", data.dateOfBirth);
-      payload.append("countryOfBirth", data.countryOfBirth);
-      payload.append("cityOfBirth", data.cityOfBirth.trim());
-      payload.append("countryOfCitizenship", data.countryOfCitizenship);
+      payload.append("countryOfBirth", up(data.countryOfBirth));
+      payload.append("cityOfBirth", up(data.cityOfBirth));
+      payload.append("countryOfCitizenship", up(data.countryOfCitizenship));
       payload.append("phone", data.phone.trim());
-      payload.append("email", data.email.trim());
+      payload.append("email", data.email.trim().toLowerCase());
       payload.append("city", data.city);
-      payload.append("addressUsa", data.addressUsa.trim());
-      payload.append("addressHomeCountry", data.addressHomeCountry.trim());
-      payload.append("homeCountry", data.homeCountry);
-      payload.append("homeCity", data.homeCity.trim());
-      payload.append("homeAddress", data.homeAddress.trim());
+      payload.append("addressUsa", up(data.addressUsa));
+      payload.append("zipCode", data.zipCode.trim());
+      payload.append("addressHomeCountry", up(data.addressHomeCountry));
+      payload.append("homeCountry", up(data.homeCountry));
+      payload.append("homeCity", up(data.homeCity));
+      payload.append("homeAddress", up(data.homeAddress));
       payload.append("usEntryDate", data.usEntryDate);
-      payload.append("companyName", data.companyName.trim());
+      payload.append("companyName", up(data.companyName));
       payload.append("amount", data.amount.trim());
       payload.append("hasPassport", String(!!data.documentScan));
-      payload.append("passportNumber", data.passportNumber.trim());
+      payload.append("passportNumber", up(data.passportNumber));
       payload.append("passportExpiry", data.passportExpiry);
-      payload.append("passportCountry", data.passportCountry);
-      payload.append("comment", data.comment.trim());
+      payload.append("passportCountry", up(data.passportCountry));
+      payload.append("comment", up(data.comment));
 
       if (data.documentScan) {
         payload.append("documentScan", data.documentScan);
@@ -1360,12 +1366,25 @@ function StepLocation({ data, errors, update }: StepProps) {
 
       {/* US Address with autocomplete */}
       <div>
-        <Label htmlFor="itin-addressUsa">U.S. Address (Street, City, ZIP)</Label>
+        <Label required htmlFor="itin-addressUsa">U.S. Address (Street, City, State)</Label>
         <AddressAutocomplete
           id="itin-addressUsa"
           value={data.addressUsa}
           onChange={(v) => update("addressUsa", v)}
-          placeholder="123 Main St, City, State, ZIP"
+          placeholder="123 Main St, City, State"
+        />
+      </div>
+
+      <div>
+        <Label required htmlFor="itin-zipCode">ZIP Code</Label>
+        <Input
+          id="itin-zipCode"
+          value={data.zipCode}
+          onChange={(v) => update("zipCode", v)}
+          error={errors.zipCode}
+          placeholder="11004"
+          inputMode="numeric"
+          autoComplete="postal-code"
         />
       </div>
 
@@ -1789,7 +1808,7 @@ function StepReview({
             />
             <ReviewField
               label="U.S. Address"
-              value={data.addressUsa || "Not provided"}
+              value={`${data.addressUsa || "Not provided"}${data.zipCode ? ` ${data.zipCode}` : ""}`}
               muted={!data.addressUsa}
               fullWidth
             />

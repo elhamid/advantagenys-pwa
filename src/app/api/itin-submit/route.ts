@@ -53,6 +53,7 @@ interface ItinPayload {
   email: string;
   city: string;
   addressUsa: string;
+  zipCode: string;
   addressHomeCountry: string;
   homeCountry: string;
   homeCity: string;
@@ -170,9 +171,12 @@ async function submitToJotForm(data: ItinPayload, documentUrls?: DocumentUrls): 
     params.append("submission[35]", data.countryOfCitizenship.trim());
   }
 
-  // q31 — US Address (single line → addr_line1)
+  // q31 — US Address (single line → addr_line1 + postal)
   if (data.addressUsa.trim()) {
     params.append("submission[31_addr_line1]", data.addressUsa.trim());
+    if (data.zipCode.trim()) {
+      params.append("submission[31_postal]", data.zipCode.trim());
+    }
   }
 
   // q64 — Date of Entry into the US
@@ -348,6 +352,7 @@ export async function POST(request: NextRequest) {
       email: (formData.get("email") as string) || "",
       city: (formData.get("city") as string) || "",
       addressUsa: (formData.get("addressUsa") as string) || "",
+      zipCode: (formData.get("zipCode") as string) || "",
       addressHomeCountry: (formData.get("addressHomeCountry") as string) || "",
       homeCountry: (formData.get("homeCountry") as string) || "",
       homeCity: (formData.get("homeCity") as string) || "",
