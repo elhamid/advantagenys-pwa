@@ -1375,28 +1375,30 @@ function StepLocation({ data, errors, update }: StepProps) {
         />
       </div>
 
-      <div className="w-32">
-        <Label required htmlFor="itin-zipCode">ZIP</Label>
-        <Input
-          id="itin-zipCode"
-          value={data.zipCode}
-          onChange={(v) => update("zipCode", v)}
-          error={errors.zipCode}
-          placeholder="11004"
-          inputMode="numeric"
-          autoComplete="postal-code"
-        />
-      </div>
-
-      {/* US Entry Date */}
-      <div>
-        <Label required htmlFor="itin-usEntryDate">Date of Entry to US</Label>
-        <Input
-          id="itin-usEntryDate"
-          value={data.usEntryDate}
-          onChange={(v) => update("usEntryDate", v)}
-          type="date"
-        />
+      {/* ZIP + Entry Date side by side */}
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <Label required htmlFor="itin-zipCode">ZIP</Label>
+          <Input
+            id="itin-zipCode"
+            value={data.zipCode}
+            onChange={(v) => update("zipCode", v)}
+            error={errors.zipCode}
+            placeholder="11004"
+            inputMode="numeric"
+            autoComplete="postal-code"
+          />
+        </div>
+        <div>
+          <Label required htmlFor="itin-usEntryDate">Entry Date</Label>
+          <Input
+            id="itin-usEntryDate"
+            value={data.usEntryDate}
+            onChange={(v) => update("usEntryDate", v)}
+            error={errors.usEntryDate}
+            type="date"
+          />
+        </div>
       </div>
 
       <SectionDivider label="Home Country Information" />
