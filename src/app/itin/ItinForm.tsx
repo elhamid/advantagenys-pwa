@@ -172,6 +172,7 @@ export function ItinForm({ onSuccess }: Props) {
   const [showSelfieCapture, setShowSelfieCapture] = useState(false);
   const [showSignaturePad, setShowSignaturePad] = useState(false);
   const [showVoiceFill, setShowVoiceFill] = useState(false);
+  const [showI94Lookup, setShowI94Lookup] = useState(false);
 
   // Preview URLs for captured files
   const [docPreview, setDocPreview] = useState<string | null>(null);
@@ -662,7 +663,7 @@ export function ItinForm({ onSuccess }: Props) {
             />
           )}
           {displayStep === 2 && (
-            <StepLocation data={data} errors={errors} update={update} />
+            <StepLocation data={data} errors={errors} update={update} onShowI94={() => setShowI94Lookup(true)} />
           )}
           {displayStep === 3 && (
             <StepSelfie
@@ -807,6 +808,10 @@ export function ItinForm({ onSuccess }: Props) {
           onFill={handleVoiceFill}
           onClose={() => setShowVoiceFill(false)}
         />
+      )}
+
+      {showI94Lookup && (
+        <I94Lookup data={data} onClose={() => setShowI94Lookup(false)} />
       )}
     </>
   );
@@ -1325,10 +1330,114 @@ function StepPersonal({ data, errors, update }: StepProps) {
 }
 
 /* ═══════════════════════════════════════════════
+   I-94 Entry Date Lookup Modal
+   ═══════════════════════════════════════════════ */
+
+function I94Lookup({ data, onClose }: { data: ItinData; onClose: () => void }) {
+  const fields = [
+    { label: "First Name", value: data.firstName.toUpperCase() },
+    { label: "Last Name", value: data.lastName.toUpperCase() },
+    {
+      label: "Birth Date",
+      value: data.dateOfBirth
+        ? (() => {
+            const [y, m, d] = data.dateOfBirth.split("-");
+            return `${m}/${d}/${y}`;
+          })()
+        : "",
+    },
+    { label: "Passport Number", value: data.passportNumber.toUpperCase() },
+    {
+      label: "Country",
+      value: (data.countryOfBirth || data.passportCountry).toUpperCase(),
+    },
+  ].filter((f) => f.value);
+
+  const [copied, setCopied] = useState<string | null>(null);
+
+  const copyField = (value: string, label: string) => {
+    navigator.clipboard.writeText(value);
+    setCopied(label);
+    setTimeout(() => setCopied(null), 1500);
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="mx-4 w-full max-w-sm rounded-2xl bg-[#1A2D45] border border-white/10 p-6 shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h3 className="text-lg font-bold text-white text-center mb-1">Look Up Entry Date</h3>
+        <p className="text-white/40 text-xs text-center mb-5">
+          Copy your info below, then paste on the I-94 website
+        </p>
+
+        {/* Copyable fields */}
+        <div className="space-y-2 mb-5">
+          {fields.map((f) => (
+            <div
+              key={f.label}
+              className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-white/[0.05] border border-white/10"
+            >
+              <span className="text-white/40 text-xs w-24 shrink-0">{f.label}</span>
+              <span className="text-white font-semibold text-sm flex-1 truncate">{f.value}</span>
+              <button
+                onClick={() => copyField(f.value, f.label)}
+                className="shrink-0 px-2.5 py-1 rounded-lg text-xs font-medium bg-white/10 text-white/60 hover:bg-white/20 hover:text-white active:scale-[0.95] transition-all"
+              >
+                {copied === f.label ? "✓" : "Copy"}
+              </button>
+            </div>
+          ))}
+        </div>
+
+        {/* Open CBP site */}
+        <a
+          href="https://i94.cbp.dhs.gov"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="
+            w-full flex items-center justify-center gap-2 py-3.5 rounded-xl
+            bg-[#4F56E8] text-white font-semibold text-sm
+            hover:bg-[#5B63F0] active:scale-[0.97] transition-all duration-200
+            shadow-[0_0_20px_rgba(79,86,232,0.2)]
+          "
+        >
+          Open I-94 Website
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+            />
+          </svg>
+        </a>
+
+        <button
+          onClick={onClose}
+          className="w-full mt-3 py-2.5 rounded-xl text-white/40 text-sm font-medium hover:text-white/60 transition-all"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════
    Step 2 — Location & Work (renders at displayStep 2)
    ═══════════════════════════════════════════════ */
 
-function StepLocation({ data, errors, update }: StepProps) {
+function StepLocation({ data, errors, update, onShowI94 }: StepProps & { onShowI94?: () => void }) {
   return (
     <div className="space-y-3">
       <SectionHeader
@@ -1398,6 +1507,15 @@ function StepLocation({ data, errors, update }: StepProps) {
             error={errors.usEntryDate}
             type="date"
           />
+          {onShowI94 && (
+            <button
+              type="button"
+              onClick={onShowI94}
+              className="text-[#818CF8] text-xs font-medium mt-1 hover:text-[#4F56E8] transition-colors"
+            >
+              Don&apos;t remember? Look up →
+            </button>
+          )}
         </div>
       </div>
 
