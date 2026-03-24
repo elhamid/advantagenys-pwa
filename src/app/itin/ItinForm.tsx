@@ -117,7 +117,6 @@ const STEPS = [
   { label: "Passport", shortLabel: "Scan" },
   { label: "Personal", shortLabel: "Info" },
   { label: "Location", shortLabel: "Location" },
-  { label: "Photo", shortLabel: "Selfie" },
   { label: "Review", shortLabel: "Sign" },
 ] as const;
 
@@ -413,10 +412,6 @@ export function ItinForm({ onSuccess, testMode = false, companyName }: Props) {
     }
 
     if (s === 3) {
-      if (!data.selfie) errs.selfie = "Passport photo is required";
-    }
-
-    if (s === 4) {
       if (!data.signature) errs.signature = "Signature is required to submit";
     }
 
@@ -540,10 +535,9 @@ export function ItinForm({ onSuccess, testMode = false, companyName }: Props) {
     if (data.documentScan) completed.add(0);
     if (data.firstName && data.lastName && data.phone) completed.add(1);
     if (data.city) completed.add(2);
-    if (data.selfie) completed.add(3);
-    if (data.signature) completed.add(4);
+    if (data.signature) completed.add(3);
     return completed;
-  }, [data.documentScan, data.firstName, data.lastName, data.phone, data.city, data.selfie, data.signature]);
+  }, [data.documentScan, data.firstName, data.lastName, data.phone, data.city, data.signature]);
 
   // Compute animation classes for step content
   const getStepAnimClass = () => {
@@ -678,14 +672,6 @@ export function ItinForm({ onSuccess, testMode = false, companyName }: Props) {
             <StepLocation data={data} errors={errors} update={update} onShowI94={() => setShowI94Lookup(true)} />
           )}
           {displayStep === 3 && (
-            <StepSelfie
-              data={data}
-              selfiePreview={selfiePreview}
-              onOpenCamera={() => setShowSelfieCapture(true)}
-              onClear={clearSelfie}
-            />
-          )}
-          {displayStep === 4 && (
             <StepReview
               data={data}
               errors={errors}

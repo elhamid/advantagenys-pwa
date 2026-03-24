@@ -36,8 +36,7 @@ const STEP_FIELDS: Record<number, FieldDef[]> = {
     { key: "homeAddress", label: "Home Address (non-US)" },
     { key: "amount", label: "Annual Earnings ($)" },
   ],
-  3: [], // Selfie
-  4: [], // Review
+  3: [], // Review
 };
 
 /* ═══════════════════════════════════════════════
