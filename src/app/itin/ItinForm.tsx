@@ -1363,6 +1363,13 @@ function I94Lookup({ data, onClose }: { data: ItinData; onClose: () => void }) {
     setTimeout(() => setCopied(null), 1500);
   };
 
+  const copyAll = () => {
+    const text = fields.map(f => `${f.label}: ${f.value}`).join("\n");
+    navigator.clipboard.writeText(text);
+    setCopied("ALL");
+    setTimeout(() => setCopied(null), 2000);
+  };
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
@@ -1373,9 +1380,21 @@ function I94Lookup({ data, onClose }: { data: ItinData; onClose: () => void }) {
         onClick={(e) => e.stopPropagation()}
       >
         <h3 className="text-lg font-bold text-white text-center mb-1">Look Up Entry Date</h3>
-        <p className="text-white/40 text-xs text-center mb-5">
-          Copy your info below, then paste on the I-94 website
+        <p className="text-white/40 text-xs text-center mb-4">
+          Tap &quot;Copy All&quot; then paste each field on the I-94 site
         </p>
+
+        {/* Copy All button */}
+        <button
+          onClick={copyAll}
+          className={`w-full mb-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
+            copied === "ALL"
+              ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+              : "bg-white/10 text-white/70 border border-white/10 hover:bg-white/15"
+          }`}
+        >
+          {copied === "ALL" ? "✓ Copied to clipboard" : "Copy All Fields"}
+        </button>
 
         {/* Copyable fields */}
         <div className="space-y-2 mb-5">
@@ -1398,7 +1417,7 @@ function I94Lookup({ data, onClose }: { data: ItinData; onClose: () => void }) {
 
         {/* Open CBP site */}
         <a
-          href="https://i94.cbp.dhs.gov"
+          href="https://i94.cbp.dhs.gov/search/history-search"
           target="_blank"
           rel="noopener noreferrer"
           className="
