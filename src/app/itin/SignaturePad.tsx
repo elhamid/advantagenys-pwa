@@ -321,8 +321,8 @@ export default function SignaturePad({ onSave, onSign, onClose }: SignaturePadPr
 
       {/* Large instruction */}
       <div className="px-5 pt-4 pb-2 shrink-0">
-        <p className="text-xl font-bold text-white/70 text-center">USE THE ENTIRE PAD TO SIGN</p>
-        <p className="text-sm text-white/30 text-center mt-1">Sign big and clear — use your finger or stylus
+        <p className="text-xl font-bold text-orange-400 text-center">USE THE ENTIRE PAD TO SIGN</p>
+        <p className="text-sm text-orange-400/60 text-center mt-1">Sign big and clear — use your finger or stylus
         </p>
       </div>
 

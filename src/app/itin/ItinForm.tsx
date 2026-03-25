@@ -127,6 +127,14 @@ function formatDateUS(d: string): string {
   return y && m && day ? `${m}/${day}/${y}` : d;
 }
 
+/** Format raw digits as (XXX) XXX-XXXX for display */
+function formatPhoneDisplay(raw: string): string {
+  const digits = raw.replace(/\D/g, "");
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+  return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6, 10)}`;
+}
+
 interface Props {
   onSuccess: () => void;
   testMode?: boolean;
@@ -676,7 +684,6 @@ export function ItinForm({ onSuccess, testMode = false, companyName }: Props) {
               data={data}
               errors={errors}
               docPreview={docPreview}
-              selfiePreview={selfiePreview}
               sigPreview={sigPreview}
               onOpenSignaturePad={() => setShowSignaturePad(true)}
               onClearSignature={clearSignature}
@@ -1241,10 +1248,10 @@ function StepPersonal({ data, errors, update, companyLocked = false }: StepProps
         <Label required htmlFor="itin-phone">Phone Number</Label>
         <Input
           id="itin-phone"
-          value={data.phone}
-          onChange={(v) => update("phone", v)}
+          value={formatPhoneDisplay(data.phone)}
+          onChange={(v) => update("phone", v.replace(/\D/g, "").slice(0, 10))}
           error={errors.phone}
-          placeholder="(929) 555-0123"
+          placeholder="(555) 666-7777"
           type="tel"
           inputMode="tel"
           autoComplete="tel"
@@ -1828,7 +1835,6 @@ function StepReview({
   data,
   errors,
   docPreview,
-  selfiePreview,
   sigPreview,
   onOpenSignaturePad,
   onClearSignature,
@@ -1836,7 +1842,6 @@ function StepReview({
   data: ItinData;
   errors: Partial<Record<keyof ItinData, string>>;
   docPreview: string | null;
-  selfiePreview: string | null;
   sigPreview: string | null;
   onOpenSignaturePad: () => void;
   onClearSignature: () => void;
@@ -1961,24 +1966,6 @@ function StepReview({
               </span>
             </div>
 
-            {/* Selfie thumbnail */}
-            <div className="text-center">
-              {selfiePreview ? (
-                <div className="w-14 h-14 rounded-full overflow-hidden border border-white/10 mb-1 mx-auto">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={selfiePreview} alt="Selfie" className="w-full h-full object-cover" />
-                </div>
-              ) : (
-                <div className="w-14 h-14 rounded-full border border-dashed border-white/15 bg-white/[0.03] flex items-center justify-center mb-1 mx-auto">
-                  <svg className="w-5 h-5 text-white/20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-                  </svg>
-                </div>
-              )}
-              <span className={`text-[10px] ${selfiePreview ? "text-emerald-400" : "text-white/25"}`}>
-                {selfiePreview ? "Captured" : "No photo"}
-              </span>
-            </div>
           </div>
         </div>
       </div>

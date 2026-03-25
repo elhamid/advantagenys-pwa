@@ -142,7 +142,7 @@ async function submitToJotForm(data: ItinPayload, documentUrls?: DocumentUrls, i
   // q32 — Phone as XXX-XXX-XXXX format
   const phoneDigits = data.phone.replace(/\D/g, "");
   if (phoneDigits.length >= 10) {
-    params.append("submission[32_full]", `${phoneDigits.slice(0, 3)}-${phoneDigits.slice(3, 6)}-${phoneDigits.slice(6, 10)}`);
+    params.append("submission[32_full]", phoneDigits.slice(0, 10));
   } else {
     params.append("submission[32_full]", phoneDigits);
   }
