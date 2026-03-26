@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ITIN Application - Advantage Business Consulting</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #0F1B2D;
+      color: #fff;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px 10px 60px; }
+    .logo { text-align: center; margin-bottom: 20px; }
+    .logo img { width: 48px; height: 48px; border-radius: 10px; }
+    h1 { text-align: center; font-size: 24px; margin-bottom: 6px; }
+    .subtitle { text-align: center; color: #8899aa; font-size: 14px; margin-bottom: 30px; }
+    .section-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #818CF8;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 32px;
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .field { margin-bottom: 16px; }
+    .field label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      color: #cbd5e1;
+      margin-bottom: 6px;
+    }
+    .field label .req { color: #ef4444; }
+    .field input,
+    .field select,
+    .field textarea {
+      width: 100%;
+      padding: 12px 14px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 10px;
+      color: #fff;
+      font-size: 16px;
+      font-family: inherit;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+      outline: none;
+      border-color: #4F56E8;
+      background: rgba(255,255,255,0.09);
+    }
+    .field select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23818CF8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 36px;
+    }
+    .field select option { background: #1a2742; color: #fff; }
+    .row { display: table; width: 100%; }
+    .row .col { display: table-cell; vertical-align: top; }
+    .row .col-half { width: 48%; }
+    .row .col-spacer { width: 4%; }
+    .date-row { display: table; width: 100%; }
+    .date-row .date-col { display: table-cell; vertical-align: top; padding-right: 8px; }
+    .date-row .date-col:last-child { padding-right: 0; }
+    .date-row .date-col-month { width: 35%; }
+    .date-row .date-col-day { width: 28%; }
+    .date-row .date-col-year { width: 37%; }
+    .checkbox-field {
+      margin: 24px 0;
+      padding: 16px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+    }
+    .checkbox-field label {
+      font-size: 14px;
+      color: #cbd5e1;
+      cursor: pointer;
+    }
+    .checkbox-field input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      margin-right: 10px;
+      vertical-align: middle;
+      -webkit-appearance: checkbox;
+      appearance: checkbox;
+    }
+    .submit-btn {
+      display: block;
+      width: 100%;
+      background: #4F56E8;
+      color: #fff;
+      text-align: center;
+      padding: 18px 32px;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      margin-top: 24px;
+      font-family: inherit;
+    }
+    .submit-btn:disabled {
+      background: #3a3f7a;
+      cursor: not-allowed;
+    }
+    .error-msg {
+      background: rgba(239,68,68,0.15);
+      border: 1px solid rgba(239,68,68,0.3);
+      color: #fca5a5;
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 14px;
+      margin-bottom: 16px;
+      display: none;
+    }
+    .success-section {
+      text-align: center;
+      padding: 60px 20px;
+      display: none;
+    }
+    .success-section .check {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: rgba(16,185,129,0.15);
+      border: 2px solid #10B981;
+      margin: 0 auto 24px;
+      line-height: 80px;
+      font-size: 40px;
+    }
+    .success-section h2 { font-size: 24px; margin-bottom: 12px; }
+    .success-section p { color: #8899aa; font-size: 16px; margin-bottom: 24px; }
+    .success-section a {
+      display: inline-block;
+      background: #4F56E8;
+      color: #fff;
+      padding: 14px 28px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 16px;
+    }
+    .other-company-field { display: none; margin-top: 8px; }
+    .back-link {
+      display: inline-block;
+      color: #818CF8;
+      text-decoration: none;
+      font-size: 14px;
+      margin-bottom: 20px;
+    }
+    .spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      -webkit-animation: spin 0.8s linear infinite;
+      animation: spin 0.8s linear infinite;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+    @-webkit-keyframes spin { to { -webkit-transform: rotate(360deg); } }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="/legacy" class="back-link">&#8592; Back to Home</a>
+
+    <div class="logo">
+      <img src="/icons/icon-192.png" alt="Advantage Services">
+    </div>
+    <h1>ITIN Application</h1>
+    <p class="subtitle">Individual Taxpayer Identification Number</p>
+
+    <div style="background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.25);border-radius:12px;padding:12px 16px;margin-bottom:24px;text-align:center;font-size:13px;color:#FBBF24;line-height:1.5;">
+      Simplified form for your device. For voice fill and passport scanning, visit on a newer device.
+    </div>
+
+    <!-- Form Section -->
+    <div id="form-section">
+      <div id="error-msg" class="error-msg"></div>
+
+      <form id="itin-form" novalidate>
+        <!-- Personal Information -->
+        <div class="section-title">Personal Information</div>
+
+        <div class="row">
+          <div class="col col-half">
+            <div class="field">
+              <label>First Name <span class="req">*</span></label>
+              <input type="text" id="firstName" autocomplete="given-name" required>
+            </div>
+          </div>
+          <div class="col col-spacer"></div>
+          <div class="col col-half">
+            <div class="field">
+              <label>Last Name <span class="req">*</span></label>
+              <input type="text" id="lastName" autocomplete="family-name" required>
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Middle Name <span style="color:#64748b;font-weight:400;">(optional)</span></label>
+          <input type="text" id="middleName" autocomplete="additional-name">
+        </div>
+
+        <div class="field">
+          <label>Date of Birth <span class="req">*</span></label>
+          <div class="date-row">
+            <div class="date-col date-col-month">
+              <select id="dobMonth">
+                <option value="">Month</option>
+                <option value="01">01 - January</option>
+                <option value="02">02 - February</option>
+                <option value="03">03 - March</option>
+                <option value="04">04 - April</option>
+                <option value="05">05 - May</option>
+                <option value="06">06 - June</option>
+                <option value="07">07 - July</option>
+                <option value="08">08 - August</option>
+                <option value="09">09 - September</option>
+                <option value="10">10 - October</option>
+                <option value="11">11 - November</option>
+                <option value="12">12 - December</option>
+              </select>
+            </div>
+            <div class="date-col date-col-day">
+              <select id="dobDay">
+                <option value="">Day</option>
+              </select>
+            </div>
+            <div class="date-col date-col-year">
+              <select id="dobYear">
+                <option value="">Year</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>City of Birth</label>
+          <input type="text" id="cityOfBirth">
+        </div>
+
+        <div class="field">
+          <label>Country of Birth</label>
+          <select id="countryOfBirth">
+            <option value="">Select country</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Country of Citizenship</label>
+          <select id="countryOfCitizenship">
+            <option value="">Select country</option>
+          </select>
+        </div>
+
+        <div class="row">
+          <div class="col col-half">
+            <div class="field">
+              <label>Phone <span class="req">*</span></label>
+              <input type="tel" id="phone" autocomplete="tel" required>
+            </div>
+          </div>
+          <div class="col col-spacer"></div>
+          <div class="col col-half">
+            <div class="field">
+              <label>Email</label>
+              <input type="email" id="email" autocomplete="email">
+            </div>
+          </div>
+        </div>
+
+        <!-- Location & Work -->
+        <div class="section-title">Location &amp; Work</div>
+
+        <div class="field">
+          <label>Company</label>
+          <select id="companySelect">
+            <option value="">Select company</option>
+            <option value="Tropical Stars">Tropical Stars</option>
+            <option value="Other">Other</option>
+          </select>
+          <div id="otherCompanyField" class="other-company-field">
+            <input type="text" id="companyOther" placeholder="Enter company name">
+          </div>
+        </div>
+
+        <div class="field">
+          <label>U.S. Address</label>
+          <input type="text" id="addressUsa" autocomplete="street-address" placeholder="Street address">
+        </div>
+
+        <div class="row">
+          <div class="col col-half">
+            <div class="field">
+              <label>ZIP Code</label>
+              <input type="text" id="zipCode" autocomplete="postal-code" maxlength="10" placeholder="e.g. 11004">
+            </div>
+          </div>
+          <div class="col col-spacer"></div>
+          <div class="col col-half">
+            <div class="field">
+              <label>Date of Entry to US</label>
+              <div class="date-row">
+                <div class="date-col date-col-month">
+                  <select id="entryMonth">
+                    <option value="">MM</option>
+                    <option value="01">01</option>
+                    <option value="02">02</option>
+                    <option value="03">03</option>
+                    <option value="04">04</option>
+                    <option value="05">05</option>
+                    <option value="06">06</option>
+                    <option value="07">07</option>
+                    <option value="08">08</option>
+                    <option value="09">09</option>
+                    <option value="10">10</option>
+                    <option value="11">11</option>
+                    <option value="12">12</option>
+                  </select>
+                </div>
+                <div class="date-col date-col-day">
+                  <select id="entryDay">
+                    <option value="">DD</option>
+                  </select>
+                </div>
+                <div class="date-col date-col-year">
+                  <select id="entryYear">
+                    <option value="">YYYY</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Home Country</label>
+          <select id="homeCountry">
+            <option value="">Select country</option>
+          </select>
+        </div>
+
+        <div class="row">
+          <div class="col col-half">
+            <div class="field">
+              <label>Home City</label>
+              <input type="text" id="homeCity">
+            </div>
+          </div>
+          <div class="col col-spacer"></div>
+          <div class="col col-half">
+            <div class="field">
+              <label>Home Address (non-US)</label>
+              <input type="text" id="homeAddress">
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Annual Earnings ($)</label>
+          <input type="text" id="amount" placeholder="e.g. 25000" inputmode="numeric">
+        </div>
+
+        <!-- Passport Information -->
+        <div class="section-title">Passport Information</div>
+
+        <div class="field">
+          <label>Passport Number</label>
+          <input type="text" id="passportNumber">
+        </div>
+
+        <div class="field">
+          <label>Passport Expiry Date</label>
+          <div class="date-row">
+            <div class="date-col date-col-month">
+              <select id="passExpMonth">
+                <option value="">Month</option>
+                <option value="01">01 - Jan</option>
+                <option value="02">02 - Feb</option>
+                <option value="03">03 - Mar</option>
+                <option value="04">04 - Apr</option>
+                <option value="05">05 - May</option>
+                <option value="06">06 - Jun</option>
+                <option value="07">07 - Jul</option>
+                <option value="08">08 - Aug</option>
+                <option value="09">09 - Sep</option>
+                <option value="10">10 - Oct</option>
+                <option value="11">11 - Nov</option>
+                <option value="12">12 - Dec</option>
+              </select>
+            </div>
+            <div class="date-col date-col-day">
+              <select id="passExpDay">
+                <option value="">Day</option>
+              </select>
+            </div>
+            <div class="date-col date-col-year">
+              <select id="passExpYear">
+                <option value="">Year</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Issuing Country</label>
+          <select id="passportCountry">
+            <option value="">Select country</option>
+          </select>
+        </div>
+
+        <!-- Authorization -->
+        <div class="section-title">Authorization</div>
+
+        <div class="checkbox-field">
+          <label>
+            <input type="checkbox" id="certify">
+            I certify that the information provided is true and correct to the best of my knowledge.
+          </label>
+        </div>
+
+        <div class="field">
+          <label>Type your full name as signature <span class="req">*</span></label>
+          <input type="text" id="signatureText" placeholder="e.g. JOHN MICHAEL DOE" autocomplete="off">
+        </div>
+
+        <button type="submit" class="submit-btn" id="submitBtn">Submit Application</button>
+      </form>
+    </div>
+
+    <!-- Success Section -->
+    <div id="success-section" class="success-section">
+      <div class="check">&#10003;</div>
+      <h2>Application Submitted</h2>
+      <p>Thank you! Our team will review your application and contact you within 1-2 business days.</p>
+      <p style="margin-bottom:30px;">If you need immediate assistance, call <a href="tel:9292929230" style="color:#10B981;text-decoration:none;font-weight:600;">(929) 292-9230</a></p>
+      <a href="/legacy">Back to Home</a>
+    </div>
+
+    <div class="contact-info" style="margin-top:40px;text-align:center;color:#64748b;font-size:13px;">
+      <p>Advantage Business Consulting</p>
+      <p style="margin-top:4px;"><a href="tel:9292929230" style="color:#818CF8;text-decoration:none;">(929) 292-9230</a></p>
+    </div>
+  </div>
+
+  <script>
+    /* ============================================
+       Country list
+       ============================================ */
+    var COUNTRIES = [
+      "Jamaica",
+      "Afghanistan", "Albania", "Argentina", "Azerbaijan",
+      "Bangladesh", "Brazil",
+      "China", "Colombia", "Cuba",
+      "Dominican Republic",
+      "Ecuador", "Egypt", "El Salvador", "Ethiopia",
+      "Ghana", "Guatemala", "Guyana",
+      "Haiti", "Honduras",
+      "India", "Indonesia", "Iraq",
+      "Japan",
+      "Kenya",
+      "Mexico", "Morocco",
+      "Nepal", "Nicaragua", "Nigeria",
+      "Pakistan", "Panama", "Paraguay", "Peru", "Philippines", "Poland",
+      "Russia",
+      "Senegal", "South Korea", "Sri Lanka",
+      "Thailand", "Trinidad and Tobago", "Turkey",
+      "Ukraine", "United Kingdom", "Uzbekistan",
+      "Venezuela", "Vietnam"
+    ];
+
+    function populateCountryDropdown(selectId) {
+      var sel = document.getElementById(selectId);
+      for (var i = 0; i < COUNTRIES.length; i++) {
+        var opt = document.createElement("option");
+        opt.value = COUNTRIES[i];
+        opt.textContent = COUNTRIES[i];
+        sel.appendChild(opt);
+      }
+    }
+
+    populateCountryDropdown("countryOfBirth");
+    populateCountryDropdown("countryOfCitizenship");
+    populateCountryDropdown("homeCountry");
+    populateCountryDropdown("passportCountry");
+
+    /* ============================================
+       Populate day dropdowns (1-31)
+       ============================================ */
+    function populateDays(selectId) {
+      var sel = document.getElementById(selectId);
+      for (var d = 1; d <= 31; d++) {
+        var opt = document.createElement("option");
+        var val = d < 10 ? "0" + d : "" + d;
+        opt.value = val;
+        opt.textContent = val;
+        sel.appendChild(opt);
+      }
+    }
+
+    populateDays("dobDay");
+    populateDays("entryDay");
+    populateDays("passExpDay");
+
+    /* ============================================
+       Populate year dropdowns
+       ============================================ */
+    function populateYears(selectId, startYear, endYear) {
+      var sel = document.getElementById(selectId);
+      for (var y = endYear; y >= startYear; y--) {
+        var opt = document.createElement("option");
+        opt.value = "" + y;
+        opt.textContent = "" + y;
+        sel.appendChild(opt);
+      }
+    }
+
+    // DOB: 1930 to current year
+    populateYears("dobYear", 1930, 2026);
+    // Entry date: 1980 to current year
+    populateYears("entryYear", 1980, 2026);
+    // Passport expiry: current year to 2040
+    populateYears("passExpYear", 2024, 2040);
+
+    /* ============================================
+       Company dropdown toggle
+       ============================================ */
+    var companySelect = document.getElementById("companySelect");
+    var otherCompanyField = document.getElementById("otherCompanyField");
+
+    companySelect.onchange = function() {
+      if (companySelect.value === "Other") {
+        otherCompanyField.style.display = "block";
+      } else {
+        otherCompanyField.style.display = "none";
+      }
+    };
+
+    /* ============================================
+       Read ?company= from URL and pre-select
+       ============================================ */
+    (function() {
+      var params = {};
+      var search = window.location.search;
+      if (search) {
+        var parts = search.substring(1).split("&");
+        for (var i = 0; i < parts.length; i++) {
+          var kv = parts[i].split("=");
+          if (kv.length === 2) {
+            params[decodeURIComponent(kv[0])] = decodeURIComponent(kv[1]);
+          }
+        }
+      }
+      if (params.company) {
+        var val = params.company;
+        // Check if it matches a known option
+        var found = false;
+        for (var j = 0; j < companySelect.options.length; j++) {
+          if (companySelect.options[j].value.toLowerCase() === val.toLowerCase()) {
+            companySelect.value = companySelect.options[j].value;
+            found = true;
+            break;
+          }
+        }
+        if (!found && val) {
+          companySelect.value = "Other";
+          otherCompanyField.style.display = "block";
+          document.getElementById("companyOther").value = val;
+        }
+      }
+    })();
+
+    /* ============================================
+       Form validation and submission
+       ============================================ */
+    function showError(msg) {
+      var el = document.getElementById("error-msg");
+      el.textContent = msg;
+      el.style.display = "block";
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+
+    function hideError() {
+      document.getElementById("error-msg").style.display = "none";
+    }
+
+    function buildDateString(monthId, dayId, yearId) {
+      var m = document.getElementById(monthId).value;
+      var d = document.getElementById(dayId).value;
+      var y = document.getElementById(yearId).value;
+      if (m && d && y) {
+        return y + "-" + m + "-" + d;
+      }
+      return "";
+    }
+
+    function getCompanyName() {
+      var val = companySelect.value;
+      if (val === "Other") {
+        return document.getElementById("companyOther").value.trim();
+      }
+      return val;
+    }
+
+    var form = document.getElementById("itin-form");
+    var submitBtn = document.getElementById("submitBtn");
+
+    form.onsubmit = function(e) {
+      e.preventDefault();
+      hideError();
+
+      var firstName = document.getElementById("firstName").value.trim();
+      var lastName = document.getElementById("lastName").value.trim();
+      var phone = document.getElementById("phone").value.trim();
+      var signatureText = document.getElementById("signatureText").value.trim();
+      var certify = document.getElementById("certify").checked;
+
+      // Validation
+      if (!firstName) { showError("First name is required."); return; }
+      if (!lastName) { showError("Last name is required."); return; }
+      if (!phone || phone.replace(/\D/g, "").length < 7) {
+        showError("A valid phone number is required.");
+        return;
+      }
+      if (!certify) {
+        showError("Please certify that the information is true and correct.");
+        return;
+      }
+      if (!signatureText) {
+        showError("Please type your full name as signature.");
+        return;
+      }
+
+      // Disable button
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span class="spinner"></span>Submitting...';
+
+      // Collect all fields (ALL CAPS for TaxWise)
+      var UP = function(s) { return (s || "").trim().toUpperCase(); };
+
+      var fd = new FormData();
+      fd.append("firstName", UP(firstName));
+      fd.append("lastName", UP(lastName));
+      fd.append("middleName", UP(document.getElementById("middleName").value));
+      fd.append("dateOfBirth", buildDateString("dobMonth", "dobDay", "dobYear"));
+      fd.append("cityOfBirth", UP(document.getElementById("cityOfBirth").value));
+      fd.append("countryOfBirth", UP(document.getElementById("countryOfBirth").value));
+      fd.append("countryOfCitizenship", UP(document.getElementById("countryOfCitizenship").value));
+      fd.append("phone", phone);
+      fd.append("email", document.getElementById("email").value.trim());
+      fd.append("companyName", UP(getCompanyName()));
+      fd.append("city", "new_york");
+      fd.append("addressUsa", UP(document.getElementById("addressUsa").value));
+      fd.append("zipCode", document.getElementById("zipCode").value.trim());
+      fd.append("usEntryDate", buildDateString("entryMonth", "entryDay", "entryYear"));
+      fd.append("homeCountry", UP(document.getElementById("homeCountry").value));
+      fd.append("homeCity", UP(document.getElementById("homeCity").value));
+      fd.append("homeAddress", UP(document.getElementById("homeAddress").value));
+      fd.append("addressHomeCountry", UP(document.getElementById("homeAddress").value));
+      fd.append("amount", document.getElementById("amount").value.trim());
+      fd.append("hasPassport", "true");
+      fd.append("passportNumber", UP(document.getElementById("passportNumber").value));
+      fd.append("passportExpiry", buildDateString("passExpMonth", "passExpDay", "passExpYear"));
+      fd.append("passportCountry", UP(document.getElementById("passportCountry").value));
+      fd.append("comment", "Submitted via legacy form. Signature: " + UP(signatureText));
+
+      var xhr = new XMLHttpRequest();
+      xhr.open("POST", "/api/itin-submit");
+      xhr.onload = function() {
+        if (xhr.status === 200 || xhr.status === 201) {
+          document.getElementById("form-section").style.display = "none";
+          document.getElementById("success-section").style.display = "block";
+          window.scrollTo(0, 0);
+        } else {
+          var msg = "Submission failed.";
+          try {
+            var resp = JSON.parse(xhr.responseText);
+            if (resp.error) msg = resp.error;
+          } catch (ignored) {}
+          showError(msg + " Please call (929) 292-9230 for assistance.");
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = "Submit Application";
+        }
+      };
+      xhr.onerror = function() {
+        showError("Network error. Please check your connection or call (929) 292-9230 for assistance.");
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = "Submit Application";
+      };
+      xhr.send(fd);
+    };
+  </script>
+</body>
+</html>

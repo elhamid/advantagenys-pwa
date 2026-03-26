@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import nodemailer from "nodemailer";
 import { uploadMultipleItinDocuments } from "@/lib/itin-storage";
 
 /**
@@ -267,6 +268,70 @@ async function submitToJotForm(data: ItinPayload, documentUrls?: DocumentUrls, i
 }
 
 /**
+ * Send email notification to the office when a new ITIN kiosk submission arrives.
+ * Non-fatal — skipped silently if SMTP env vars are absent.
+ */
+async function sendNotificationEmail(data: ItinPayload): Promise<void> {
+  const smtpUser = process.env.SMTP_USER;
+  const smtpPass = process.env.SMTP_PASS;
+  const notifyTo = process.env.ITIN_NOTIFY_EMAIL || "229advantage@gmail.com";
+
+  if (!smtpUser || !smtpPass) {
+    console.warn("[email] SMTP_USER or SMTP_PASS not set — notification skipped");
+    return;
+  }
+
+  const transporter = nodemailer.createTransport({
+    host: "mail.privateemail.com",
+    port: 465,
+    secure: true,
+    auth: { user: smtpUser, pass: smtpPass },
+  });
+
+  const fullName = `${data.firstName}${data.middleName ? " " + data.middleName : ""} ${data.lastName}`.trim();
+  const subject = `New ITIN Application: ${fullName}`;
+
+  const body = `New ITIN application submitted via kiosk.
+
+Name: ${data.firstName}${data.middleName ? " " + data.middleName : ""} ${data.lastName}
+Phone: ${data.phone}
+Email: ${data.email || "Not provided"}
+Date of Birth: ${data.dateOfBirth}
+Country of Birth: ${data.countryOfBirth}
+City of Birth: ${data.cityOfBirth}
+Citizenship: ${data.countryOfCitizenship}
+
+US Address: ${data.addressUsa}${data.zipCode ? " " + data.zipCode : ""}
+Entry Date: ${data.usEntryDate || "Not provided"}
+
+Home Country: ${data.homeCountry || "Not provided"}
+Home City: ${data.homeCity || "Not provided"}
+Home Address: ${data.homeAddress || "Not provided"}
+
+Passport: ${data.passportNumber || "Not provided"}
+Passport Expiry: ${data.passportExpiry || "Not provided"}
+Passport Country: ${data.passportCountry || "Not provided"}
+
+Company: ${data.companyName || "Individual"}
+Annual Earnings: ${data.amount ? "$" + data.amount : "Not provided"}
+
+---
+Submitted via ITIN Kiosk at advantagenys.com/itin`.trim();
+
+  try {
+    await transporter.sendMail({
+      from: `"Advantage Services" <${smtpUser}>`,
+      to: notifyTo,
+      subject,
+      text: body,
+    });
+    console.log("[email] Notification sent to", notifyTo);
+  } catch (err) {
+    console.error("[email] Failed to send notification:", err);
+  }
+}
+
+/**
  * Forward to taskboard pwa-lead webhook → Supabase.
  * Non-fatal — logs errors but never blocks the response.
  */
@@ -474,10 +539,11 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Dual-write: taskboard + JotForm in parallel (both non-fatal)
+    // Triple-write: taskboard + JotForm + email notification in parallel (all non-fatal)
     await Promise.allSettled([
       forwardToTaskboard(data, documentUrls),
       submitToJotForm(data, documentUrls, isTest),
+      sendNotificationEmail(data),
     ]);
 
     return NextResponse.json({
