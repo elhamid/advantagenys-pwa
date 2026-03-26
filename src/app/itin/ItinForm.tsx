@@ -1485,9 +1485,18 @@ function StepLocation({ data, errors, update, onShowI94 }: StepProps & { onShowI
             <button
               type="button"
               onClick={onShowI94}
-              className="text-[#818CF8] text-xs font-medium mt-1 hover:text-[#4F56E8] transition-colors"
+              className="
+                mt-2 w-full py-2.5 px-4 rounded-xl text-sm font-semibold
+                bg-[#4F56E8]/10 border border-[#4F56E8]/25 text-[#818CF8]
+                hover:bg-[#4F56E8]/20 hover:text-white
+                active:scale-[0.97] transition-all duration-200
+                flex items-center justify-center gap-2
+              "
             >
-              Don&apos;t remember? Look up →
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              Look Up Entry Date (I-94)
             </button>
           )}
         </div>
