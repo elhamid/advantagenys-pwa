@@ -141,6 +141,11 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
       return;
     }
 
+    // Detect platform for speech behavior differences
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isChrome = /Chrome\//.test(navigator.userAgent) && !/Edg\//.test(navigator.userAgent);
+    const needsAutoRestart = isIOS; // iOS Safari drops continuous mode; Chrome doesn't
+
     const recognition = new Ctor();
     recognition.continuous = true;
     recognition.interimResults = true;
@@ -160,9 +165,14 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
       }
       transcriptRef.current = finalParts;
       interimRef.current = interimParts;
-      // Show current session text only — accumulated is combined on stop
-      // This prevents duplication when iOS Safari auto-restarts mid-speech
-      setTranscript(finalParts);
+
+      if (needsAutoRestart) {
+        // iOS: show only current session text (accumulated shown between restarts)
+        setTranscript(finalParts);
+      } else {
+        // Chrome/Android: continuous mode works — finalParts has everything, show directly
+        setTranscript(finalParts);
+      }
       setInterimText(interimParts);
     };
 
@@ -179,25 +189,24 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
 
     recognition.onend = () => {
       if (recognitionRef.current !== recognition) return;
-      // Only accumulate FINAL text — interim is a duplicate of what becomes final
-      // Including interim caused repeated words on iOS Safari auto-restart
       const seg = transcriptRef.current.trim();
       if (seg) {
         accumulatedRef.current = accumulatedRef.current ? accumulatedRef.current + " " + seg : seg;
       }
       interimRef.current = "";
-      console.log("[AVA] onend — accumulated so far:", accumulatedRef.current);
-      // Auto-restart unless user tapped stop
-      if (!stoppedByUserRef.current) {
+
+      if (needsAutoRestart && !stoppedByUserRef.current) {
+        // iOS Safari: auto-restart, show accumulated between sessions
         transcriptRef.current = "";
-        // Show accumulated text while restarting so user sees everything
         setTranscript(accumulatedRef.current);
         setInterimText("");
         try { recognition.start(); return; } catch { /* fall through */ }
       }
+
+      // Chrome/other: continuous mode keeps running — onend means user stopped or error
+      // iOS: auto-restart failed — fall through to process
       recognitionRef.current = null;
       const fullText = accumulatedRef.current.trim();
-      console.log("[AVA] Final transcript to process:", fullText);
       if (fullText) {
         processTranscript(fullText);
       } else {
