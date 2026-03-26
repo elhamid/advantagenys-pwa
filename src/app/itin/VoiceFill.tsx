@@ -178,9 +178,9 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
 
     recognition.onend = () => {
       if (recognitionRef.current !== recognition) return;
-      // Include BOTH final and interim text — interim may contain words that
-      // never became "final" before iOS Safari dropped the session
-      const seg = (transcriptRef.current + " " + interimRef.current).trim();
+      // Only accumulate FINAL text — interim is a duplicate of what becomes final
+      // Including interim caused repeated words on iOS Safari auto-restart
+      const seg = transcriptRef.current.trim();
       if (seg) {
         accumulatedRef.current = accumulatedRef.current ? accumulatedRef.current + " " + seg : seg;
       }

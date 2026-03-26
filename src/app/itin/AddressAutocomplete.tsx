@@ -205,7 +205,7 @@ export default function AddressAutocomplete({
         onBlur={handleBlur}
         onFocus={handleFocus}
         placeholder={placeholder}
-        inputMode="numeric"
+        inputMode="text"
         autoComplete="off"
         role="combobox"
         aria-expanded={showDropdown}
