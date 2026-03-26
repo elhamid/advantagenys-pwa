@@ -160,8 +160,9 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
       }
       transcriptRef.current = finalParts;
       interimRef.current = interimParts;
-      const full = accumulatedRef.current + (accumulatedRef.current && finalParts ? " " : "") + finalParts;
-      setTranscript(full);
+      // Show current session text only — accumulated is combined on stop
+      // This prevents duplication when iOS Safari auto-restarts mid-speech
+      setTranscript(finalParts);
       setInterimText(interimParts);
     };
 
