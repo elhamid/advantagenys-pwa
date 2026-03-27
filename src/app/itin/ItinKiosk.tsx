@@ -4,7 +4,6 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 import { ItinForm } from "./ItinForm";
 
-const AUTO_RESET_MS = 30_000; // 30 sec after submit → reset to welcome
 
 const COMPANIES = [
   { slug: "tropical-stars", name: "Tropical Stars Inc.", logo: "/images/tropical-stars-logo.png" },
@@ -30,31 +29,18 @@ export function ItinKiosk({ testMode = false, companySlug }: ItinKioskProps) {
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(preselected);
   const [fadeIn, setFadeIn] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Fade-in on mount
   useEffect(() => {
     requestAnimationFrame(() => setFadeIn(true));
   }, []);
 
-  // Auto-reset after success
-  useEffect(() => {
-    if (stage === "success") {
-      resetTimerRef.current = setTimeout(() => {
-        resetToWelcome();
-      }, AUTO_RESET_MS);
-    }
-    return () => {
-      if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stage]);
+  // Auto-reset is now handled inside SuccessScreen (kiosk: 30s reset, personal: 10s redirect)
 
   const resetToWelcome = useCallback(() => {
     setStage("welcome");
     setSelectedCompany(preselected);
     setShowConfirm(false);
-    if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
   }, [preselected]);
 
   const handleStartOver = useCallback(() => {
@@ -135,7 +121,7 @@ export function ItinKiosk({ testMode = false, companySlug }: ItinKioskProps) {
             companyName={selectedCompany?.name}
           />
         )}
-        {stage === "success" && <SuccessScreen onReset={resetToWelcome} />}
+        {stage === "success" && <SuccessScreen onReset={resetToWelcome} isKiosk={!!preselected} />}
       </div>
 
       {/* Start Over confirmation overlay */}
@@ -461,12 +447,32 @@ function ArrowRight() {
 }
 
 /* ─── Success Screen ─── */
-function SuccessScreen({ onReset }: { onReset: () => void }) {
+function SuccessScreen({ onReset, isKiosk }: { onReset: () => void; isKiosk: boolean }) {
   const [visible, setVisible] = useState(false);
+  const [countdown, setCountdown] = useState(isKiosk ? 30 : 10);
 
   useEffect(() => {
     requestAnimationFrame(() => setVisible(true));
   }, []);
+
+  // Auto-redirect: kiosk resets to welcome, personal phone goes to homepage
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          if (isKiosk) {
+            onReset();
+          } else {
+            window.location.href = "/";
+          }
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [isKiosk, onReset]);
 
   return (
     <div
@@ -491,7 +497,7 @@ function SuccessScreen({ onReset }: { onReset: () => void }) {
       </div>
 
       <h2 className="text-3xl sm:text-4xl font-bold text-center mb-4">
-        Application Submitted
+        {isKiosk ? "Application Submitted" : "You're All Done!"}
       </h2>
 
       <p className="text-white/50 text-center text-base sm:text-lg max-w-md mb-2 leading-relaxed">
@@ -509,37 +515,59 @@ function SuccessScreen({ onReset }: { onReset: () => void }) {
         </span>
       </div>
 
-      <p className="text-white/30 text-sm text-center mb-10">
-        Please hand the tablet back to our staff.
-      </p>
-
-      {/* Actions */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <button
-          onClick={onReset}
-          className="
-            px-8 py-4 rounded-xl
-            bg-[#4F56E8] text-white font-semibold text-base
-            hover:bg-[#5B63F0] active:scale-[0.97]
-            transition-all duration-200
-          "
-        >
-          Next Applicant
-        </button>
-        <a
-          href="https://wa.me/19299331396"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="
-            px-8 py-4 rounded-xl text-center
-            bg-white/10 text-white/70 font-semibold text-base
-            hover:bg-white/15 hover:text-white/90 active:scale-[0.97]
-            transition-all duration-200
-          "
-        >
-          Contact via WhatsApp
-        </a>
-      </div>
+      {isKiosk ? (
+        <>
+          <p className="text-white/30 text-sm text-center mb-10">
+            Please hand the tablet back to our staff. Resets in {countdown}s.
+          </p>
+          <button
+            onClick={onReset}
+            className="
+              px-8 py-4 rounded-xl
+              bg-[#4F56E8] text-white font-semibold text-base
+              hover:bg-[#5B63F0] active:scale-[0.97]
+              transition-all duration-200
+            "
+          >
+            Next Applicant
+          </button>
+        </>
+      ) : (
+        <>
+          <p className="text-white/40 text-sm text-center mb-6">
+            We&apos;ll be in touch shortly. Thank you for choosing Advantage Services.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4">
+            <a
+              href="/"
+              className="
+                px-8 py-4 rounded-xl text-center
+                bg-[#4F56E8] text-white font-semibold text-base
+                hover:bg-[#5B63F0] active:scale-[0.97]
+                transition-all duration-200
+              "
+            >
+              Back to Home
+            </a>
+            <a
+              href="https://wa.me/19299331396"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="
+                px-8 py-4 rounded-xl text-center
+                bg-white/10 text-white/70 font-semibold text-base
+                hover:bg-white/15 hover:text-white/90 active:scale-[0.97]
+                transition-all duration-200
+              "
+            >
+              Contact via WhatsApp
+            </a>
+          </div>
+          <p className="text-white/20 text-xs text-center mt-6">
+            Redirecting to homepage in {countdown}s...
+          </p>
+        </>
+      )}
 
       {/* Auto-reset notice */}
       <p className="mt-8 text-white/20 text-xs">
