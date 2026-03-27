@@ -836,7 +836,7 @@ function Label({
   htmlFor?: string;
 }) {
   return (
-    <label htmlFor={htmlFor} className="notranslate block text-sm font-medium text-white/70 mb-1.5" translate="no">
+    <label htmlFor={htmlFor} className="block text-sm font-medium text-white/70 mb-1.5">
       {children}
       {required && <span className="text-[#818CF8] ml-0.5">*</span>}
     </label>

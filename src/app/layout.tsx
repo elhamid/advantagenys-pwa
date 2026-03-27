@@ -57,6 +57,32 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${jakarta.variable} ${jetbrains.variable}`}>
+      <head>
+        {/* Prevent Google/Chrome/Samsung Translate from crashing React.
+            Translation wraps text nodes in <font> tags, which reparents them.
+            React then calls removeChild/insertBefore on the wrong parent and throws.
+            This patch makes those calls resilient to reparented nodes. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+if(typeof Node!=='undefined'){
+  var oRC=Node.prototype.removeChild;
+  Node.prototype.removeChild=function(c){
+    if(c.parentNode!==this){
+      if(c.parentNode)return c.parentNode.removeChild(c);
+      return c;
+    }
+    return oRC.apply(this,arguments);
+  };
+  var oIB=Node.prototype.insertBefore;
+  Node.prototype.insertBefore=function(n,r){
+    if(r&&r.parentNode!==this)return this.appendChild(n);
+    return oIB.apply(this,arguments);
+  };
+}`,
+          }}
+        />
+      </head>
       <body className="font-[family-name:var(--font-heading)] antialiased" suppressHydrationWarning>
         <ServiceWorkerRegistration />
         <LayoutShell>{children}</LayoutShell>

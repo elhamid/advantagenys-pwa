@@ -28,8 +28,20 @@ export class ItinErrorBoundary extends Component<Props, State> {
     return { hasError: true };
   }
 
-  componentDidCatch(error: Error) {
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error("[ITIN] Render crash:", error.message);
+
+    // Report to server so we can see client errors in Vercel logs
+    fetch("/api/client-error", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        message: error.message,
+        stack: error.stack?.slice(0, 500),
+        url: typeof window !== "undefined" ? window.location.href : "",
+        component: errorInfo.componentStack?.slice(0, 500),
+      }),
+    }).catch(() => {});
 
     // Auto-retry once — translation DOM mutations often settle after first render
     if (this.state.retryCount < 1) {
