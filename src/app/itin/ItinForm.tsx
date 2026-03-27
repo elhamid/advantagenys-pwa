@@ -302,6 +302,15 @@ export function ItinForm({ onSuccess, testMode = false, companyName }: Props) {
                     applied[key] = value;
                   }
                 }
+                // Cross-populate: passport country → home country + citizenship
+                if (applied.countryOfBirth && !applied.homeCountry) {
+                  update("homeCountry", applied.countryOfBirth as never);
+                  applied.homeCountry = applied.countryOfBirth;
+                }
+                if (applied.countryOfBirth && !applied.countryOfCitizenship) {
+                  update("countryOfCitizenship", applied.countryOfBirth as never);
+                  applied.countryOfCitizenship = applied.countryOfBirth;
+                }
                 setOcrFields(applied);
                 setOcrStatus("success");
               } else {
@@ -1456,6 +1465,7 @@ function StepLocation({ data, errors, update, onShowI94 }: StepProps & { onShowI
           id="itin-addressUsa"
           value={data.addressUsa}
           onChange={(v) => update("addressUsa", v)}
+          onZipCode={(zip) => update("zipCode", zip)}
           placeholder="123 Main St, City, State"
         />
       </div>

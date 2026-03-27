@@ -43,6 +43,7 @@ interface Prediction {
 interface Props {
   value: string;
   onChange: (v: string) => void;
+  onZipCode?: (zip: string) => void;
   id?: string;
   placeholder?: string;
 }
@@ -54,8 +55,9 @@ interface Props {
 export default function AddressAutocomplete({
   value,
   onChange,
+  onZipCode,
   id,
-  placeholder = "123 Main St, City, State, ZIP",
+  placeholder = "123 Main St, City, State",
 }: Props) {
   const [predictions, setPredictions] = useState<Prediction[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -131,15 +133,34 @@ export default function AddressAutocomplete({
     [onChange, apiReady, fetchPredictions]
   );
 
-  // Select a prediction
+  // Select a prediction — also extract ZIP via Places Details
   const handleSelect = useCallback(
     (prediction: Prediction) => {
       onChange(prediction.description);
       setPredictions([]);
       setShowDropdown(false);
       setActiveIndex(-1);
+
+      // Extract ZIP code from place details if callback provided
+      if (onZipCode && window.google?.maps?.places) {
+        const div = document.createElement("div");
+        const service = new google.maps.places.PlacesService(div);
+        service.getDetails(
+          { placeId: prediction.placeId, fields: ["address_component"] },
+          (place) => {
+            if (place?.address_components) {
+              const zip = place.address_components.find((c) =>
+                c.types.includes("postal_code")
+              );
+              if (zip?.long_name) {
+                onZipCode(zip.long_name);
+              }
+            }
+          }
+        );
+      }
     },
-    [onChange]
+    [onChange, onZipCode]
   );
 
   // Keyboard navigation
