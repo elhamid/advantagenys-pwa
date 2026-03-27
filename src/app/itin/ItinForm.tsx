@@ -65,6 +65,7 @@ interface ItinData {
   // Step 2 — Location
   city: string;
   addressUsa: string;
+  aptNumber: string;
   zipCode: string;
   addressHomeCountry: string; // street address (backward compat key)
   homeCountry: string;
@@ -96,6 +97,7 @@ const INITIAL: ItinData = {
   companyName: "",
   city: "",
   addressUsa: "",
+  aptNumber: "",
   zipCode: "",
   addressHomeCountry: "",
   homeCountry: "",
@@ -499,6 +501,7 @@ export function ItinForm({ onSuccess, testMode = false, companyName }: Props) {
       payload.append("email", data.email.trim().toLowerCase());
       payload.append("city", data.city);
       payload.append("addressUsa", up(data.addressUsa));
+      payload.append("aptNumber", up(data.aptNumber));
       payload.append("zipCode", data.zipCode.trim());
       payload.append("addressHomeCountry", up(data.addressHomeCountry));
       payload.append("homeCountry", up(data.homeCountry));
@@ -1470,6 +1473,17 @@ function StepLocation({ data, errors, update, onShowI94 }: StepProps & { onShowI
         />
       </div>
 
+      {/* Apt / Unit number */}
+      <div className="w-40">
+        <Label htmlFor="itin-aptNumber">Apt / Unit #</Label>
+        <Input
+          id="itin-aptNumber"
+          value={data.aptNumber}
+          onChange={(v) => update("aptNumber", v)}
+          placeholder="Apt 4B"
+        />
+      </div>
+
       {/* ZIP + Entry Date side by side */}
       <div className="grid grid-cols-2 gap-3">
         <div>
@@ -1921,7 +1935,7 @@ function StepReview({
             />
             <ReviewField
               label="U.S. Address"
-              value={`${data.addressUsa || "Not provided"}${data.zipCode ? ` ${data.zipCode}` : ""}`}
+              value={`${data.addressUsa || "Not provided"}${data.aptNumber ? `, ${data.aptNumber}` : ""}${data.zipCode ? ` ${data.zipCode}` : ""}`}
               muted={!data.addressUsa}
               fullWidth
             />

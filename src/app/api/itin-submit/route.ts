@@ -54,6 +54,7 @@ interface ItinPayload {
   email: string;
   city: string;
   addressUsa: string;
+  aptNumber: string;
   zipCode: string;
   addressHomeCountry: string;
   homeCountry: string;
@@ -181,6 +182,9 @@ async function submitToJotForm(data: ItinPayload, documentUrls?: DocumentUrls, i
   // q31 — US Address (single line → addr_line1 + postal)
   if (data.addressUsa.trim()) {
     params.append("submission[31_addr_line1]", UP(data.addressUsa));
+    if (data.aptNumber.trim()) {
+      params.append("submission[31_addr_line2]", UP(data.aptNumber));
+    }
     if (data.zipCode.trim()) {
       params.append("submission[31_postal]", data.zipCode.trim());
     }
@@ -427,6 +431,7 @@ export async function POST(request: NextRequest) {
       email: (formData.get("email") as string) || "",
       city: (formData.get("city") as string) || "",
       addressUsa: (formData.get("addressUsa") as string) || "",
+      aptNumber: (formData.get("aptNumber") as string) || "",
       zipCode: (formData.get("zipCode") as string) || "",
       addressHomeCountry: (formData.get("addressHomeCountry") as string) || "",
       homeCountry: (formData.get("homeCountry") as string) || "",
