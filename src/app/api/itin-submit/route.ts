@@ -555,9 +555,10 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (err) {
-    console.error("[ITIN Kiosk] Unexpected error:", err);
+    const errMsg = err instanceof Error ? err.message : String(err);
+    console.error("[ITIN Kiosk] Unexpected error:", errMsg, err);
     return NextResponse.json(
-      { success: false, error: "Invalid request" },
+      { success: false, error: `Submission failed: ${errMsg}` },
       { status: 400 }
     );
   }

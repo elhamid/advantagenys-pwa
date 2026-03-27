@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { ItinKiosk } from "../itin/ItinKiosk";
+import { ItinErrorBoundary } from "../itin/ItinErrorBoundary";
 
 export const metadata: Metadata = {
   title: "ITIN Test Form",
@@ -20,5 +21,9 @@ export default async function ItinTestPage({
   searchParams: Promise<{ company?: string }>;
 }) {
   const params = await searchParams;
-  return <ItinKiosk testMode companySlug={params.company} />;
+  return (
+    <ItinErrorBoundary>
+      <ItinKiosk testMode companySlug={params.company} />
+    </ItinErrorBoundary>
+  );
 }

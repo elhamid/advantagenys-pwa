@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { ItinKiosk } from "./ItinKiosk";
+import { ItinErrorBoundary } from "./ItinErrorBoundary";
 
 export const metadata: Metadata = {
   title: "ITIN Application — IRS Certified Acceptance Agent",
@@ -22,5 +23,9 @@ export default async function ItinPage({
   searchParams: Promise<{ company?: string }>;
 }) {
   const params = await searchParams;
-  return <ItinKiosk companySlug={params.company} />;
+  return (
+    <ItinErrorBoundary>
+      <ItinKiosk companySlug={params.company} />
+    </ItinErrorBoundary>
+  );
 }
