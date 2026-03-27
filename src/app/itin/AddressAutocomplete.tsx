@@ -143,21 +143,27 @@ export default function AddressAutocomplete({
 
       // Extract ZIP code from place details if callback provided
       if (onZipCode && window.google?.maps?.places) {
-        const div = document.createElement("div");
-        const service = new google.maps.places.PlacesService(div);
-        service.getDetails(
-          { placeId: prediction.placeId, fields: ["address_component"] },
-          (place) => {
-            if (place?.address_components) {
-              const zip = place.address_components.find((c) =>
-                c.types.includes("postal_code")
-              );
-              if (zip?.long_name) {
-                onZipCode(zip.long_name);
+        try {
+          const div = document.createElement("div");
+          document.body.appendChild(div);
+          const service = new google.maps.places.PlacesService(div);
+          service.getDetails(
+            { placeId: prediction.placeId, fields: ["address_components"] },
+            (place, status) => {
+              div.remove();
+              if (status === google.maps.places.PlacesServiceStatus.OK && place?.address_components) {
+                const zip = place.address_components.find((c) =>
+                  c.types.includes("postal_code")
+                );
+                if (zip?.long_name) {
+                  onZipCode(zip.long_name);
+                }
               }
             }
-          }
-        );
+          );
+        } catch {
+          // Places Details failed — user enters ZIP manually
+        }
       }
     },
     [onChange, onZipCode]
