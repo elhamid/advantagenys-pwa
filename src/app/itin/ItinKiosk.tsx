@@ -69,7 +69,7 @@ export function ItinKiosk({ testMode = false, companySlug }: ItinKioskProps) {
   return (
     <div
       className={`
-        min-h-screen min-h-[100dvh] flex flex-col
+        notranslate min-h-screen min-h-[100dvh] flex flex-col
         bg-gradient-to-br from-[#0F1B2D] via-[#1A3A5C] to-[#0F1B2D]
         text-white overflow-hidden relative
         transition-opacity duration-700
