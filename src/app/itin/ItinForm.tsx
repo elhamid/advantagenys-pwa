@@ -836,7 +836,7 @@ function Label({
   htmlFor?: string;
 }) {
   return (
-    <label htmlFor={htmlFor} className="block text-sm font-medium text-white/70 mb-1.5">
+    <label htmlFor={htmlFor} className="notranslate block text-sm font-medium text-white/70 mb-1.5" translate="no">
       {children}
       {required && <span className="text-[#818CF8] ml-0.5">*</span>}
     </label>
@@ -880,6 +880,7 @@ function Input({
         placeholder={placeholder}
         inputMode={inputMode}
         autoComplete={autoComplete}
+        translate="no"
         className={`
           w-full px-4 py-3.5 rounded-xl
           ${large ? "text-lg" : "text-base"}
@@ -1029,6 +1030,7 @@ function CountrySelect({
         id={id}
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        translate="no"
         onFocus={(e) => {
           setTimeout(() => {
             e.target.scrollIntoView({ behavior: "smooth", block: "center" });

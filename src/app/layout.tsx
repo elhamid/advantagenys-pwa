@@ -57,7 +57,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${jakarta.variable} ${jetbrains.variable}`}>
-      <body className="font-[family-name:var(--font-heading)] antialiased">
+      <body className="font-[family-name:var(--font-heading)] antialiased" suppressHydrationWarning>
         <ServiceWorkerRegistration />
         <LayoutShell>{children}</LayoutShell>
         <JsonLd type="LocalBusiness" />
