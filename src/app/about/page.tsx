@@ -14,11 +14,11 @@ const TEAM_PHOTOS: Record<string, string> = {
 };
 
 const PHOTO_POSITIONS: Record<string, string> = {
-  Jay: "object-[50%_25%]",
-  Kedar: "object-[50%_25%]",
-  Zia: "object-[50%_25%]",
-  Akram: "object-[50%_25%]",
-  Riaz: "object-[50%_25%]",
+  Jay: "object-[50%_10%]",
+  Kedar: "object-[50%_10%]",
+  Zia: "object-[50%_10%]",
+  Akram: "object-[50%_10%]",
+  Riaz: "object-[50%_10%]",
   Hamid: "object-center",
 };
 
