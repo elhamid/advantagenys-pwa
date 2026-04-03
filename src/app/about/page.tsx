@@ -10,7 +10,7 @@ const TEAM_PHOTOS: Record<string, string> = {
   Zia: "/images/team/zia.jpg",
   Akram: "/images/team/akram.jpg",
   Riaz: "/images/team/riaz-v7.jpg",
-  Hamid: "/images/team/hamid-v14.jpg",
+  Hamid: "/images/team/hamid-v11.jpg",
 };
 
 const PHOTO_POSITIONS: Record<string, string> = {
@@ -49,7 +49,8 @@ export default function AboutPage() {
                     alt={member.fullName}
                     fill
                     className={`object-cover ${PHOTO_POSITIONS[member.name]}`}
-                    sizes="80px"
+                    sizes="160px"
+                    quality={90}
                   />
                 </div>
                 <div>

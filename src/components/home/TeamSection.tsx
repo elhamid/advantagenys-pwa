@@ -13,7 +13,7 @@ const TEAM_PHOTOS: Record<string, string> = {
   Zia: "/images/team/zia.jpg",
   Akram: "/images/team/akram.jpg",
   Riaz: "/images/team/riaz-v7.jpg",
-  Hamid: "/images/team/hamid-v14.jpg",
+  Hamid: "/images/team/hamid-v11.jpg",
 };
 
 const PHOTO_POSITIONS: Record<string, string> = {
