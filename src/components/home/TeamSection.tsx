@@ -22,7 +22,7 @@ const PHOTO_POSITIONS: Record<string, string> = {
   Zia: "object-[50%_10%]",
   Akram: "object-[50%_10%]",
   Riaz: "object-[50%_10%]",
-  Hamid: "object-center",
+  Hamid: "object-[50%_10%]",
 };
 
 function ScrollReveal({
