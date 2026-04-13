@@ -8,7 +8,7 @@ import { Footer } from "./Footer";
 import { BottomNav } from "./BottomNav";
 import { ChatWidget } from "@/components/chat/ChatWidget";
 
-const CHROMELESS_PREFIXES = ["/resources/kiosk", "/itin"];
+const CHROMELESS_PREFIXES = ["/resources/kiosk", "/itin", "/tv"];
 
 export function LayoutShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
