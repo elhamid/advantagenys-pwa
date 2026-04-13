@@ -5,20 +5,26 @@ import { AnimatePresence, motion } from "framer-motion";
 import HeroSlide from "./slides/HeroSlide";
 import StatsSlide from "./slides/StatsSlide";
 import ServicesSlideA from "./slides/ServicesSlideA";
+import JaySpotlightSlide from "./slides/JaySpotlightSlide";
 import ReviewSlide from "./slides/ReviewSlide";
 import ServicesSlideB from "./slides/ServicesSlideB";
+import ZiaSpotlightSlide from "./slides/ZiaSpotlightSlide";
 import ITINSlide from "./slides/ITINSlide";
 import TeamSlide from "./slides/TeamSlide";
+import HamidSpotlightSlide from "./slides/HamidSpotlightSlide";
 import ContactSlide from "./slides/ContactSlide";
 
 const SLIDES = [
   HeroSlide,
   StatsSlide,
   ServicesSlideA,
+  JaySpotlightSlide,
   ReviewSlide,
   ServicesSlideB,
+  ZiaSpotlightSlide,
   ITINSlide,
   TeamSlide,
+  HamidSpotlightSlide,
   ContactSlide,
 ];
 
