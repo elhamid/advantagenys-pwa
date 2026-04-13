@@ -25,8 +25,12 @@ export default function ContactSlide({ cycleCount }: { cycleCount: number }) {
         </div>
       </div>
       <div className="mt-10 flex items-center gap-4">
-        <div className="w-[80px] h-[80px] bg-white rounded-lg flex items-center justify-center">
-          <div className="w-[70px] h-[70px] bg-[#E2E8F0] rounded flex items-center justify-center text-[10px] text-[#475569]">QR</div>
+        <div className="w-[80px] h-[80px] bg-white rounded-lg p-1">
+          <img
+            src="/images/qr-advantagenys.png"
+            alt="Scan to visit advantagenys.com"
+            className="w-full h-full"
+          />
         </div>
         <p className="text-[16px] text-white/40">advantagenys.com</p>
       </div>
