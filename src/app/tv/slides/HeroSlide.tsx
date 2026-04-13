@@ -1,28 +1,54 @@
-import Image from "next/image";
 import { ADDRESS } from "@/lib/constants";
+
+const FONT = "'Plus Jakarta Sans', system-ui, sans-serif";
 
 export default function HeroSlide({ cycleCount }: { cycleCount: number }) {
   return (
-    <div className="relative h-full w-full">
-      <Image
+    <div style={{ position: 'relative', height: '100%', width: '100%', fontFamily: FONT }}>
+      <img
         src="/images/office-exterior-hd.jpg"
         alt="Advantage Services Office"
-        fill
-        className="object-cover"
-        sizes="1920px"
-        quality={90}
-        priority
+        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }}
       />
-      <div className="absolute inset-0 bg-gradient-to-b from-[#0A0F1A]/80 via-[#0A0F1A]/60 to-[#0A0F1A]/90" />
-      <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-16">
-        <p className="text-[18px] uppercase tracking-[4px] text-[#F9A825] mb-6">Welcome To</p>
-        <h1 className="text-[72px] font-extrabold text-white leading-tight mb-6">Advantage Services</h1>
-        <div className="w-[80px] h-[3px] bg-[#F9A825] rounded-full mb-8" />
-        <p className="text-[32px] text-white/90 font-medium max-w-[900px] leading-snug">One Stop Shop For All Business Solutions</p>
-        <div className="mt-12 border border-[#F9A825]/40 rounded-2xl px-10 py-4">
-          <p className="text-[22px] text-white/80">20+ Years Serving NYC Small Businesses</p>
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          background: 'linear-gradient(to bottom, rgba(10,15,26,0.8), rgba(10,15,26,0.6), rgba(10,15,26,0.9))',
+        }}
+      />
+      <div
+        style={{
+          position: 'relative',
+          zIndex: 10,
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          textAlign: 'center',
+          padding: '0 64px',
+        }}
+      >
+        <p style={{ fontSize: 18, textTransform: 'uppercase', letterSpacing: 4, color: '#F9A825', marginBottom: 24 }}>
+          Welcome To
+        </p>
+        <h1 style={{ fontSize: 72, fontWeight: 800, color: '#FFFFFF', lineHeight: 1.1, marginBottom: 24, margin: '0 0 24px 0' }}>
+          Advantage Services
+        </h1>
+        <div style={{ width: 80, height: 3, backgroundColor: '#F9A825', borderRadius: 9999, marginBottom: 32 }} />
+        <p style={{ fontSize: 32, color: 'rgba(255,255,255,0.9)', fontWeight: 500, maxWidth: 900, lineHeight: 1.3 }}>
+          One Stop Shop For All Business Solutions
+        </p>
+        <div style={{ marginTop: 48, border: '1px solid rgba(249,168,37,0.4)', borderRadius: 16, padding: '16px 40px' }}>
+          <p style={{ fontSize: 22, color: 'rgba(255,255,255,0.8)' }}>20+ Years Serving NYC Small Businesses</p>
         </div>
-        <p className="absolute bottom-12 text-[18px] text-white/50">{ADDRESS.full}</p>
+        <p style={{ position: 'absolute', bottom: 48, fontSize: 18, color: 'rgba(255,255,255,0.5)' }}>
+          {ADDRESS.full}
+        </p>
       </div>
     </div>
   );

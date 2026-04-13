@@ -88,7 +88,7 @@ export default function TVSlider() {
   const SlideComponent = SLIDES[current];
 
   return (
-    <div className="relative h-full w-full select-none">
+    <div style={{ position: 'relative', height: '100%', width: '100%', userSelect: 'none' }}>
       <AnimatePresence mode="wait">
         <motion.div
           key={current}
@@ -96,7 +96,7 @@ export default function TVSlider() {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: TRANSITION_DURATION, ease: "easeInOut" }}
-          className="absolute inset-0"
+          style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
         >
           <SlideComponent cycleCount={cycleCount} />
         </motion.div>

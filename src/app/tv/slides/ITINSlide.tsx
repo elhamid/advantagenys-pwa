@@ -1,42 +1,85 @@
-import Image from "next/image";
+const FONT = "'Plus Jakarta Sans', system-ui, sans-serif";
 
 export default function ITINSlide({ cycleCount }: { cycleCount: number }) {
   return (
-    <div className="h-full w-full bg-gradient-to-br from-[#4F56E8] to-[#1E293B] flex items-center justify-center px-20">
-      <div className="flex items-center gap-20 max-w-[1400px] w-full">
-        <div className="flex-1">
-          <p className="text-[16px] uppercase tracking-[4px] text-[#F9A825] mb-4">Featured Service</p>
-          <h2 className="text-[52px] font-extrabold text-white leading-tight mb-6">ITIN Registration</h2>
-          <div className="w-[60px] h-[3px] bg-[#F9A825] rounded-full mb-8" />
-          <div className="inline-block bg-white/10 border border-[#F9A825]/40 rounded-xl px-6 py-3 mb-8">
-            <p className="text-[20px] text-[#F9A825] font-semibold">IRS Certified Acceptance Agent</p>
+    <div
+      style={{
+        height: '100%',
+        width: '100%',
+        background: 'linear-gradient(135deg, #4F56E8 0%, #1E293B 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '0 80px',
+        fontFamily: FONT,
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: 80, maxWidth: 1400, width: '100%' }}>
+        <div style={{ flex: 1 }}>
+          <p style={{ fontSize: 16, textTransform: 'uppercase', letterSpacing: 4, color: '#F9A825', marginBottom: 16 }}>
+            Featured Service
+          </p>
+          <h2 style={{ fontSize: 52, fontWeight: 800, color: '#FFFFFF', lineHeight: 1.1, marginBottom: 24, margin: '0 0 24px 0' }}>
+            ITIN Registration
+          </h2>
+          <div style={{ width: 60, height: 3, backgroundColor: '#F9A825', borderRadius: 9999, marginBottom: 32 }} />
+          <div
+            style={{
+              display: 'inline-block',
+              backgroundColor: 'rgba(255,255,255,0.1)',
+              border: '1px solid rgba(249,168,37,0.4)',
+              borderRadius: 12,
+              padding: '12px 24px',
+              marginBottom: 32,
+            }}
+          >
+            <p style={{ fontSize: 20, color: '#F9A825', fontWeight: 600, margin: 0 }}>IRS Certified Acceptance Agent</p>
           </div>
-          <ul className="space-y-5 mb-10">
+          <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 40px 0' }}>
             {["No need to mail your passport", "Certify & file on-site", "2,250+ ITINs processed"].map((item) => (
-              <li key={item} className="text-[24px] text-white/90 flex items-center gap-4">
-                <span className="text-[#F9A825] text-[20px]">✓</span>
+              <li
+                key={item}
+                style={{
+                  fontSize: 24,
+                  color: 'rgba(255,255,255,0.9)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 16,
+                  marginBottom: 20,
+                }}
+              >
+                <span style={{ color: '#F9A825', fontSize: 20 }}>{"\u2713"}</span>
                 {item}
               </li>
             ))}
           </ul>
-          <div className="border-t border-white/10 pt-6">
-            <p className="text-[16px] uppercase tracking-[3px] text-white/40 mb-3">Also Available</p>
-            <p className="text-[20px] text-white/60">Immigration · Citizenship · Legal Services</p>
+          <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: 24 }}>
+            <p style={{ fontSize: 16, textTransform: 'uppercase', letterSpacing: 3, color: 'rgba(255,255,255,0.4)', marginBottom: 12 }}>
+              Also Available
+            </p>
+            <p style={{ fontSize: 20, color: 'rgba(255,255,255,0.6)', margin: 0 }}>
+              Immigration &middot; Citizenship &middot; Legal Services
+            </p>
           </div>
         </div>
-        <div className="shrink-0">
-          <div className="relative w-[300px] h-[300px] rounded-2xl overflow-hidden border-2 border-white/10">
-            <Image
+        <div style={{ flexShrink: 0 }}>
+          <div
+            style={{
+              width: 300,
+              height: 300,
+              borderRadius: 16,
+              overflow: 'hidden',
+              border: '2px solid rgba(255,255,255,0.1)',
+            }}
+          >
+            <img
               src="/images/team/kedar.jpg"
               alt="Kedar Gupta — IRS Certified Tax Preparer & Acceptance Agent"
-              fill
-              className="object-cover object-[50%_10%]"
-              sizes="300px"
-              quality={90}
+              style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: '50% 10%' }}
             />
           </div>
-          <p className="text-center mt-4 text-[18px] text-white font-semibold">Kedar Gupta</p>
-          <p className="text-center text-[14px] text-white/50">IRS Certified Tax Preparer</p>
+          <p style={{ textAlign: 'center', marginTop: 16, fontSize: 18, color: '#FFFFFF', fontWeight: 600 }}>Kedar Gupta</p>
+          <p style={{ textAlign: 'center', fontSize: 14, color: 'rgba(255,255,255,0.5)', margin: 0 }}>IRS Certified Tax Preparer</p>
         </div>
       </div>
     </div>

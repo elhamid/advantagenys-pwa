@@ -23,7 +23,7 @@ export default function TVPage() {
       {PRELOAD_IMAGES.map((src) => (
         <link key={src} rel="preload" as="image" href={src} />
       ))}
-      <main className="h-screen w-screen overflow-hidden bg-[#0A0F1A]">
+      <main style={{ height: '100vh', width: '100vw', overflow: 'hidden', backgroundColor: '#0A0F1A' }}>
         <TVSlider />
       </main>
     </>

@@ -4,6 +4,8 @@ import { useState, useEffect, useRef } from "react";
 import { STATS } from "@/lib/constants";
 import { GOOGLE_RATING } from "@/lib/reviews";
 
+const FONT = "'Plus Jakarta Sans', system-ui, sans-serif";
+
 const DISPLAY_STATS = [
   { count: STATS.businessSetups.count, label: "Businesses Formed", suffix: "+" },
   { count: STATS.taxClients.count, label: "Tax Clients Served", suffix: "+" },
@@ -43,24 +45,46 @@ function CountUp({ target, duration = 2000, isRating = false }: { target: number
 
 export default function StatsSlide({ cycleCount }: { cycleCount: number }) {
   return (
-    <div className="h-full w-full bg-gradient-to-br from-[#4F56E8] to-[#1E293B] flex flex-col items-center justify-center px-16">
-      <p className="text-[18px] uppercase tracking-[4px] text-[#F9A825] mb-16">Trusted By NYC Small Businesses</p>
-      <div className="grid grid-cols-4 gap-12 max-w-[1400px] w-full">
+    <div
+      style={{
+        height: '100%',
+        width: '100%',
+        background: 'linear-gradient(135deg, #4F56E8 0%, #1E293B 100%)',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '0 64px',
+        fontFamily: FONT,
+      }}
+    >
+      <p style={{ fontSize: 18, textTransform: 'uppercase', letterSpacing: 4, color: '#F9A825', marginBottom: 64 }}>
+        Trusted By NYC Small Businesses
+      </p>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(4, 1fr)',
+          gap: 48,
+          maxWidth: 1400,
+          width: '100%',
+        }}
+      >
         {DISPLAY_STATS.map((stat) => (
-          <div key={stat.label} className="text-center">
-            <div className="text-[80px] font-extrabold text-white leading-none mb-4">
+          <div key={stat.label} style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: 80, fontWeight: 800, color: '#FFFFFF', lineHeight: 1, marginBottom: 16 }}>
               <CountUp target={stat.count} isRating={stat.isRating} />
-              <span className="text-[#F9A825]">{stat.suffix}</span>
+              <span style={{ color: '#F9A825' }}>{stat.suffix}</span>
             </div>
             {stat.isRating && (
-              <div className="text-[28px] text-[#F9A825] mb-2">{"★".repeat(5)}</div>
+              <div style={{ fontSize: 28, color: '#F9A825', marginBottom: 8 }}>{"★".repeat(5)}</div>
             )}
-            <p className="text-[22px] text-white/70">{stat.label}</p>
+            <p style={{ fontSize: 22, color: 'rgba(255,255,255,0.7)' }}>{stat.label}</p>
           </div>
         ))}
       </div>
-      <div className="mt-16 w-[80px] h-[3px] bg-[#F9A825] rounded-full" />
-      <p className="mt-6 text-[20px] text-white/50">Since 2004</p>
+      <div style={{ marginTop: 64, width: 80, height: 3, backgroundColor: '#F9A825', borderRadius: 9999 }} />
+      <p style={{ marginTop: 24, fontSize: 20, color: 'rgba(255,255,255,0.5)' }}>Since 2004</p>
     </div>
   );
 }

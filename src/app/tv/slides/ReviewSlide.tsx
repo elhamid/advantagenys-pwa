@@ -1,24 +1,61 @@
 import { REVIEWS, GOOGLE_RATING } from "@/lib/reviews";
 
+const FONT = "'Plus Jakarta Sans', system-ui, sans-serif";
+
 export default function ReviewSlide({ cycleCount }: { cycleCount: number }) {
   const review = REVIEWS[cycleCount % REVIEWS.length];
 
   return (
-    <div className="h-full w-full bg-[#0A0F1A] flex flex-col items-center justify-center px-20">
-      <div className="text-[120px] leading-none text-[#F9A825]/30 font-serif mb-[-20px]">&ldquo;</div>
-      <blockquote className="text-[32px] text-white text-center leading-relaxed max-w-[1000px] mb-10">
+    <div
+      style={{
+        height: '100%',
+        width: '100%',
+        backgroundColor: '#0A0F1A',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '0 80px',
+        fontFamily: FONT,
+      }}
+    >
+      <div style={{ fontSize: 120, lineHeight: 1, color: 'rgba(249,168,37,0.3)', fontFamily: 'Georgia, serif', marginBottom: -20 }}>
+        &ldquo;
+      </div>
+      <blockquote
+        style={{
+          fontSize: 32,
+          color: '#FFFFFF',
+          textAlign: 'center',
+          lineHeight: 1.6,
+          maxWidth: 1000,
+          marginBottom: 40,
+          margin: '0 0 40px 0',
+          padding: 0,
+          border: 'none',
+        }}
+      >
         {review.text}
       </blockquote>
-      <div className="flex items-center gap-3 mb-8">
-        <p className="text-[24px] font-semibold text-white">{review.name}</p>
-        <span className="text-white/30">|</span>
-        <p className="text-[20px] text-white/50">{review.date}</p>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 32 }}>
+        <p style={{ fontSize: 24, fontWeight: 600, color: '#FFFFFF', margin: 0 }}>{review.name}</p>
+        <span style={{ color: 'rgba(255,255,255,0.3)' }}>|</span>
+        <p style={{ fontSize: 20, color: 'rgba(255,255,255,0.5)', margin: 0 }}>{review.date}</p>
       </div>
-      <div className="text-[32px] text-[#F9A825] mb-8">{"★".repeat(review.rating)}</div>
-      <div className="border border-white/10 rounded-xl px-8 py-3 flex items-center gap-4">
-        <span className="text-[20px] font-bold text-white">{GOOGLE_RATING.rating}</span>
-        <span className="text-[18px] text-[#F9A825]">★</span>
-        <span className="text-[18px] text-white/50">Google Reviews</span>
+      <div style={{ fontSize: 32, color: '#F9A825', marginBottom: 32 }}>{"★".repeat(review.rating)}</div>
+      <div
+        style={{
+          border: '1px solid rgba(255,255,255,0.1)',
+          borderRadius: 12,
+          padding: '12px 32px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 16,
+        }}
+      >
+        <span style={{ fontSize: 20, fontWeight: 700, color: '#FFFFFF' }}>{GOOGLE_RATING.rating}</span>
+        <span style={{ fontSize: 18, color: '#F9A825' }}>★</span>
+        <span style={{ fontSize: 18, color: 'rgba(255,255,255,0.5)' }}>Google Reviews</span>
       </div>
     </div>
   );
