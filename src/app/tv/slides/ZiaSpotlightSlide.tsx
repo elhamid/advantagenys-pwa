@@ -20,15 +20,15 @@ export default function ZiaSpotlightSlide({ cycleCount }: { cycleCount: number }
             Your Business Partner
           </p>
           <h2 style={{ fontSize: 48, fontWeight: 800, color: '#FFFFFF', lineHeight: 1.1, margin: '0 0 24px 0' }}>
-            Formation &amp; Consulting
+            Licensing &amp; Permits
           </h2>
           <div style={{ width: 60, height: 3, backgroundColor: '#F9A825', borderRadius: 9999, marginBottom: 32 }} />
           <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 40px 0' }}>
             {[
-              "LLC, Corporation & Non-Profit formation",
-              "Business tax & payroll services",
-              "Licensing guidance for all industries",
-              "One-on-one business consulting",
+              "Contractor licensing & renewals",
+              "Restaurant permits & compliance",
+              "Retail & vendor licenses",
+              "Full guidance through the licensing maze",
             ].map((item) => (
               <li
                 key={item}
@@ -47,7 +47,7 @@ export default function ZiaSpotlightSlide({ cycleCount }: { cycleCount: number }
             ))}
           </ul>
           <p style={{ fontSize: 20, color: 'rgba(255,255,255,0.5)', margin: 0, fontStyle: 'italic' }}>
-            &ldquo;From formation to payroll &mdash; we walk with you every step.&rdquo;
+            &ldquo;We handle the permits so you can focus on your craft.&rdquo;
           </p>
         </div>
         <div style={{ flexShrink: 0 }}>

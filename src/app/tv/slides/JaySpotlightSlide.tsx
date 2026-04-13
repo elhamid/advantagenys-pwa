@@ -20,7 +20,7 @@ export default function JaySpotlightSlide({ cycleCount }: { cycleCount: number }
             Meet Our President
           </p>
           <h2 style={{ fontSize: 48, fontWeight: 800, color: '#FFFFFF', lineHeight: 1.1, margin: '0 0 24px 0' }}>
-            Insurance &amp; Licensing
+            Immigration Services
           </h2>
           <div style={{ width: 60, height: 3, backgroundColor: '#F9A825', borderRadius: 9999, marginBottom: 32 }} />
           <div
@@ -37,10 +37,10 @@ export default function JaySpotlightSlide({ cycleCount }: { cycleCount: number }
           </div>
           <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 40px 0' }}>
             {[
-              "General liability & workers comp",
-              "Contractor & restaurant licensing",
-              "Business formation & EIN setup",
-              "Full-service tax preparation",
+              "Immigration application assistance",
+              "Citizenship & naturalization support",
+              "ITIN registration & filing",
+              "Serving immigrant entrepreneurs since 2004",
             ].map((item) => (
               <li
                 key={item}
@@ -59,7 +59,7 @@ export default function JaySpotlightSlide({ cycleCount }: { cycleCount: number }
             ))}
           </ul>
           <p style={{ fontSize: 20, color: 'rgba(255,255,255,0.5)', margin: 0, fontStyle: 'italic' }}>
-            &ldquo;We handle the licensing maze so you can focus on your business.&rdquo;
+            &ldquo;We&apos;ve helped thousands of immigrants build their American dream.&rdquo;
           </p>
         </div>
         <div style={{ flexShrink: 0 }}>

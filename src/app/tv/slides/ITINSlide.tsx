@@ -20,7 +20,7 @@ export default function ITINSlide({ cycleCount }: { cycleCount: number }) {
             Featured Service
           </p>
           <h2 style={{ fontSize: 52, fontWeight: 800, color: '#FFFFFF', lineHeight: 1.1, marginBottom: 24, margin: '0 0 24px 0' }}>
-            ITIN Registration
+            Audit Defense
           </h2>
           <div style={{ width: 60, height: 3, backgroundColor: '#F9A825', borderRadius: 9999, marginBottom: 32 }} />
           <div
@@ -33,10 +33,10 @@ export default function ITINSlide({ cycleCount }: { cycleCount: number }) {
               marginBottom: 32,
             }}
           >
-            <p style={{ fontSize: 20, color: '#F9A825', fontWeight: 600, margin: 0 }}>IRS Certified Acceptance Agent</p>
+            <p style={{ fontSize: 20, color: '#F9A825', fontWeight: 600, margin: 0 }}>IRS Certified Tax Preparer</p>
           </div>
           <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 40px 0' }}>
-            {["No need to mail your passport", "Certify & file on-site", "2,250+ ITINs processed"].map((item) => (
+            {["Workers comp audit representation", "Sales tax audit defense", "Fine reduction & penalty abatement", "5,700+ tax clients served"].map((item) => (
               <li
                 key={item}
                 style={{
@@ -53,14 +53,7 @@ export default function ITINSlide({ cycleCount }: { cycleCount: number }) {
               </li>
             ))}
           </ul>
-          <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: 24 }}>
-            <p style={{ fontSize: 16, textTransform: 'uppercase', letterSpacing: 3, color: 'rgba(255,255,255,0.4)', marginBottom: 12 }}>
-              Also Available
-            </p>
-            <p style={{ fontSize: 20, color: 'rgba(255,255,255,0.6)', margin: 0 }}>
-              Immigration &middot; Citizenship &middot; Legal Services
-            </p>
-          </div>
+          <div style={{ width: 60, height: 3, backgroundColor: '#F9A825', borderRadius: 9999 }} />
         </div>
         <div style={{ flexShrink: 0 }}>
           <div
