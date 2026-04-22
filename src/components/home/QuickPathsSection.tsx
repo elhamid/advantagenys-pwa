@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Container } from "@/components/ui/Container";
 import { PHONE, SEGMENTS, SERVICES } from "@/lib/constants";
+import { useInAppBrowser, safeBlankTarget } from "@/hooks/useInAppBrowser";
 
 const SEGMENT_LABELS: Record<string, string> = {
   Contractors: "Licensing & Compliance",
@@ -13,6 +14,7 @@ const SEGMENT_LABELS: Record<string, string> = {
 const FEATURED_SERVICES = SERVICES.slice(0, 5);
 
 export function QuickPathsSection() {
+  const inAppBrowser = useInAppBrowser();
   return (
     <section className="relative bg-white py-10 md:py-14">
       <Container className="space-y-8">
@@ -88,7 +90,7 @@ export function QuickPathsSection() {
               <div className="flex flex-shrink-0 flex-col gap-3 md:flex-row md:flex-nowrap">
                 <a
                   href={PHONE.whatsappLink}
-                  target="_blank"
+                  target={safeBlankTarget(inAppBrowser)}
                   rel="noopener noreferrer"
                   className="inline-flex items-center justify-center rounded-full bg-emerald-400 px-5 py-3 text-sm font-semibold text-slate-950 transition-colors hover:bg-emerald-300 md:whitespace-nowrap"
                 >

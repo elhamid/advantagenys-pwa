@@ -5,12 +5,14 @@ import { motion } from "framer-motion";
 import { useReducedMotion, useScroll, useTransform } from "framer-motion";
 import Image from "next/image";
 import { PHONE } from "@/lib/constants";
+import { useInAppBrowser, safeBlankTarget } from "@/hooks/useInAppBrowser";
 
 const EASE: [number, number, number, number] = [0.25, 0.1, 0.25, 1.0];
 
 export function HeroSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const prefersReducedMotion = useReducedMotion();
+  const inAppBrowser = useInAppBrowser();
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start start", "end start"],
@@ -110,7 +112,7 @@ export function HeroSection() {
           <div className="flex items-center gap-3">
             <a
               href={PHONE.whatsappLink}
-              target="_blank"
+              target={safeBlankTarget(inAppBrowser)}
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 rounded-full bg-emerald-500 px-6 py-3 text-sm font-semibold text-white hover:bg-emerald-600 transition-colors duration-300"
             >

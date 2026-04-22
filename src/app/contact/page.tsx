@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Container } from "@/components/ui/Container";
 import { ContactFormTabs } from "@/components/contact/ContactFormTabs";
+import { WhatsAppLink } from "@/components/ui/WhatsAppLink";
 import { PHONE, ADDRESS, HOURS } from "@/lib/constants";
 
 export const metadata: Metadata = {
@@ -40,12 +41,9 @@ export default function ContactPage() {
               {PHONE.main}
             </a>
 
-            <a
+            <WhatsAppLink
               href={PHONE.whatsappLink}
-              target="_blank"
-              rel="noopener noreferrer"
               className="flex items-center gap-2.5 px-5 py-3.5 rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] text-sm font-medium text-[var(--text)] hover:border-[var(--blue-accent)] hover:shadow-sm transition-all"
-              style={{ transition: "var(--transition)" }}
             >
               <svg
                 width="18"
@@ -58,7 +56,7 @@ export default function ContactPage() {
                 <path d="M12 2C6.478 2 2 6.478 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.832-1.438A9.96 9.96 0 0012 22c5.522 0 10-4.478 10-10S17.522 2 12 2zm0 18a7.96 7.96 0 01-4.11-1.14l-.29-.174-3.01.79.81-2.95-.19-.3A7.96 7.96 0 014 12c0-4.41 3.59-8 8-8s8 3.59 8 8-3.59 8-8 8z" />
               </svg>
               WhatsApp
-            </a>
+            </WhatsAppLink>
 
             <a
               href={ADDRESS.googleMaps}
