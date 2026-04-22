@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 import { ItinForm } from "./ItinForm";
+import { useInAppBrowser, safeBlankTarget } from "@/hooks/useInAppBrowser";
 
 
 const COMPANIES = [
@@ -448,6 +449,7 @@ function ArrowRight() {
 
 /* ─── Success Screen ─── */
 function SuccessScreen({ onReset, isKiosk }: { onReset: () => void; isKiosk: boolean }) {
+  const inAppBrowser = useInAppBrowser();
   const [visible, setVisible] = useState(false);
   const [countdown, setCountdown] = useState(isKiosk ? 30 : 10);
 
@@ -551,7 +553,7 @@ function SuccessScreen({ onReset, isKiosk }: { onReset: () => void; isKiosk: boo
             </a>
             <a
               href="https://wa.me/19299331396"
-              target="_blank"
+              target={safeBlankTarget(inAppBrowser)}
               rel="noopener noreferrer"
               className="
                 px-8 py-4 rounded-xl text-center

@@ -4,6 +4,7 @@ import { useRef, type ReactNode } from "react";
 import { motion, useInView } from "framer-motion";
 import Image from "next/image";
 import { PHONE, ADDRESS, HOURS } from "@/lib/constants";
+import { useInAppBrowser, safeBlankTarget } from "@/hooks/useInAppBrowser";
 
 const EASE: [number, number, number, number] = [0.25, 0.1, 0.25, 1.0];
 
@@ -32,6 +33,7 @@ function ScrollReveal({
 }
 
 export function FinalCTA() {
+  const inAppBrowser = useInAppBrowser();
   return (
     <section className="relative overflow-hidden py-20 md:py-28 lg:py-36">
       {/* Background */}
@@ -76,7 +78,7 @@ export function FinalCTA() {
               </a>
               <a
                 href={PHONE.whatsappLink}
-                target="_blank"
+                target={safeBlankTarget(inAppBrowser)}
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-2 border border-green-500 text-green-400 font-semibold rounded-full px-8 py-4 text-sm hover:bg-green-500/10 transition-colors duration-300"
               >

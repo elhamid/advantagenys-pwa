@@ -1,4 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createRateLimiter, getClientIp } from "@/lib/rate-limit";
+
+// 60 requests / minute / IP — enough headroom for legitimate JotForm replays
+// but chokes off spam from a single source. JotForm's own servers rotate
+// egress IPs so genuine traffic won't share an IP across forms.
+const limiter = createRateLimiter(60, 60_000, { label: "api/webhooks/jotform" });
 
 interface JotFormAnswer {
   name: string;
@@ -41,15 +47,28 @@ function validatePayload(submission: JotFormSubmission): boolean {
 }
 
 export async function POST(request: NextRequest) {
-  const webhookSecret = request.headers.get("x-jotform-webhook-secret");
-  const expectedSecret = process.env.JOTFORM_API_KEY;
-
-  // If a webhook secret header is provided, validate it
-  if (webhookSecret && webhookSecret !== expectedSecret) {
+  // IP rate limit
+  const ip = getClientIp(request.headers);
+  if (limiter.isLimited(ip)) {
     return NextResponse.json(
-      { error: "Unauthorized" },
-      { status: 401 }
+      { error: "Too many requests" },
+      { status: 429 }
     );
+  }
+
+  // Fail-closed webhook auth — if JOTFORM_WEBHOOK_SECRET is configured, the
+  // incoming request MUST carry a matching x-jotform-webhook-secret header.
+  // Missing header => 401. Mismatched header => 401. Only the absence of the
+  // env var (local dev / early-stage) skips verification.
+  const expectedSecret = process.env.JOTFORM_WEBHOOK_SECRET;
+  if (expectedSecret) {
+    const webhookSecret = request.headers.get("x-jotform-webhook-secret");
+    if (!webhookSecret || webhookSecret !== expectedSecret) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
   }
 
   try {

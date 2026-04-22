@@ -2,29 +2,13 @@
 // Uses a dedicated extraction-only prompt (no conversational AI personality).
 
 import { NextRequest } from "next/server";
+import { createRateLimiter, getClientIp } from "@/lib/rate-limit";
 
 // ============================================================================
-// Rate limiter — simple in-memory, 10 requests per minute per IP
+// Rate limiter — 10 requests per minute per IP (shared helper)
 // ============================================================================
 
-const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
-
-function isRateLimited(ip: string): boolean {
-  const now = Date.now();
-  const entry = rateLimitMap.get(ip);
-
-  if (!entry || now > entry.resetAt) {
-    rateLimitMap.set(ip, { count: 1, resetAt: now + 60_000 });
-    return false;
-  }
-
-  if (entry.count >= 10) {
-    return true;
-  }
-
-  entry.count++;
-  return false;
-}
+const limiter = createRateLimiter(10, 60_000, { label: "api/itin-voice" });
 
 // ============================================================================
 // Allowed ITIN field keys — used to strip unknown keys from LLM response
@@ -142,13 +126,10 @@ function sanitizeValue(value: unknown): string | undefined {
 
 export async function POST(request: NextRequest) {
   // 1. Extract client IP for rate limiting
-  const ip =
-    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-    request.headers.get("x-real-ip") ||
-    "unknown";
+  const ip = getClientIp(request.headers);
 
   // 2. Rate limit check
-  if (isRateLimited(ip)) {
+  if (limiter.isLimited(ip)) {
     return Response.json(
       { success: false, error: "Too many requests. Please wait a moment." },
       { status: 429 }

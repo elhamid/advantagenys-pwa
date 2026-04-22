@@ -1,8 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { Turnstile } from "@marsidev/react-turnstile";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { useUtmParams } from "@/hooks/useUtmParams";
+import type { CorporateRegistrationLead } from "@/lib/leads/types";
 
 const businessTypes = [
   "LLC",
@@ -16,7 +19,7 @@ const businessTypes = [
 const yesNoOptions = ["Yes", "No", "Not Sure"] as const;
 
 interface CorporateRegistrationData {
-  ownerName: string;
+  fullName: string;
   phone: string;
   email: string;
   desiredBusinessName: string;
@@ -34,8 +37,10 @@ interface CorporateRegistrationData {
 }
 
 export function CorporateRegistrationForm() {
+  const utm = useUtmParams();
+  const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
   const [formData, setFormData] = useState<CorporateRegistrationData>({
-    ownerName: "",
+    fullName: "",
     phone: "",
     email: "",
     desiredBusinessName: "",
@@ -54,17 +59,40 @@ export function CorporateRegistrationForm() {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [turnstileToken, setTurnstileToken] = useState<string>("");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitting(true);
     setError(null);
 
+    const payload: CorporateRegistrationLead & { turnstileToken?: string } = {
+      type: "corporate-registration",
+      source: "website-corporate-registration",
+      fullName: formData.fullName,
+      phone: formData.phone,
+      email: formData.email || undefined,
+      desiredBusinessName: formData.desiredBusinessName || undefined,
+      businessType: formData.businessType || undefined,
+      businessAddress: formData.businessAddress || undefined,
+      city: formData.city || undefined,
+      state: formData.state || undefined,
+      zipCode: formData.zipCode || undefined,
+      natureOfBusiness: formData.natureOfBusiness || undefined,
+      numberOfMembers: formData.numberOfMembers || undefined,
+      needEIN: formData.needEIN || undefined,
+      needSalesTax: formData.needSalesTax || undefined,
+      needPayroll: formData.needPayroll || undefined,
+      additionalNotes: formData.additionalNotes || undefined,
+      utm: Object.keys(utm).length > 0 ? utm : undefined,
+      turnstileToken: turnstileToken || undefined,
+    };
+
     try {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...formData, type: "corporate-registration" }),
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();
@@ -88,7 +116,7 @@ export function CorporateRegistrationForm() {
       <Card className="text-center py-12">
         <div className="text-4xl mb-4 text-[var(--green)]">&#10003;</div>
         <h3 className="text-xl font-bold text-[var(--text)] mb-2">
-          Thank You, {formData.ownerName}!
+          Thank You, {formData.fullName}!
         </h3>
         <p className="text-[var(--text-secondary)]">
           Your corporate registration request has been received.
@@ -106,6 +134,14 @@ export function CorporateRegistrationForm() {
   const inputClasses =
     "w-full rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-[var(--text)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--blue-accent)] focus:border-transparent transition-all";
 
+  // If Turnstile site key is missing in production, disable the form and
+  // surface a clear error. Prevents silent lead loss from misconfigured envs.
+  const missingTurnstileInProd =
+    !turnstileSiteKey &&
+    typeof window !== "undefined" &&
+    window.location.hostname !== "localhost" &&
+    window.location.hostname !== "127.0.0.1";
+
   function update(field: keyof CorporateRegistrationData) {
     return (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
       setFormData((prev) => ({ ...prev, [field]: e.target.value }));
@@ -119,15 +155,15 @@ export function CorporateRegistrationForm() {
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Owner Name */}
         <div>
-          <label htmlFor="ownerName" className="block text-sm font-medium text-[var(--text)] mb-1">
+          <label htmlFor="corpFullName" className="block text-sm font-medium text-[var(--text)] mb-1">
             Business Owner Full Name <span className="text-red-500">*</span>
           </label>
           <input
             type="text"
-            id="ownerName"
+            id="corpFullName"
             required
-            value={formData.ownerName}
-            onChange={update("ownerName")}
+            value={formData.fullName}
+            onChange={update("fullName")}
             placeholder="Your full name"
             className={inputClasses}
           />
@@ -371,13 +407,38 @@ export function CorporateRegistrationForm() {
           />
         </div>
 
+        {/* Turnstile — render only when site key is configured */}
+        {turnstileSiteKey && (
+          <Turnstile
+            siteKey={turnstileSiteKey}
+            onSuccess={(token) => setTurnstileToken(token)}
+            options={{ size: "invisible" }}
+          />
+        )}
+
+        {/* Missing-config warning — blocks submit + surfaces the problem */}
+        {missingTurnstileInProd && (
+          <p className="text-sm text-red-500 text-center">
+            Verification service is not configured. Please call{" "}
+            <a href="tel:+19299331396" className="underline font-medium">
+              (929) 933-1396
+            </a>{" "}
+            to reach us directly.
+          </p>
+        )}
+
         {/* Error */}
         {error && (
           <p className="text-sm text-red-500 text-center">{error}</p>
         )}
 
         {/* Submit */}
-        <Button type="submit" size="lg" className="w-full" disabled={submitting}>
+        <Button
+          type="submit"
+          size="lg"
+          className="w-full"
+          disabled={submitting || missingTurnstileInProd}
+        >
           {submitting ? "Submitting..." : "Submit Registration"}
         </Button>
 

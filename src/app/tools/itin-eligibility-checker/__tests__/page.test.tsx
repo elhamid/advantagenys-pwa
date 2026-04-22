@@ -201,8 +201,8 @@ describe("ItinEligibilityChecker – lead capture form submission", () => {
     expect(JSON.parse(opts.body)).toMatchObject({
       fullName: "Maria Lopez",
       phone: "9295550001",
-      source: "itin-checker",
-      serviceType: "itin",
+      source: "tool-itin-eligibility",
+      type: "contact",
     });
   });
 

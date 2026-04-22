@@ -45,7 +45,8 @@ describe('FormsGrid', () => {
     expect(clearButton).toBeDefined()
     fireEvent.click(clearButton!)
 
-    expect(screen.getByText(/23 items/i)).toBeInTheDocument()
+    // 19 active entries (4 retired: Sales Tax, Bookkeeping, New I-130 pair)
+    expect(screen.getByText(/19 items/i)).toBeInTheDocument()
     expect(screen.queryByText(/matching/i)).not.toBeInTheDocument()
     expect(container).toBeTruthy()
   })

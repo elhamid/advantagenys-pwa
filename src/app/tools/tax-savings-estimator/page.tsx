@@ -6,6 +6,7 @@ import { Container } from "@/components/ui/Container";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { PHONE } from "@/lib/constants";
+import { useUtmParams } from "@/hooks/useUtmParams";
 
 /* ---------- types ---------- */
 type FilingStatus = "individual" | "sole-prop" | "llc" | "s-corp" | "c-corp";
@@ -140,6 +141,7 @@ const jsonLd = {
 
 /* ---------- component ---------- */
 export default function TaxSavingsEstimator() {
+  const utm = useUtmParams();
   const [step, setStep] = useState(1);
   const [filing, setFiling] = useState<FilingStatus | null>(null);
   const [revenue, setRevenue] = useState<RevenueRange | null>(null);
@@ -161,12 +163,13 @@ export default function TaxSavingsEstimator() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          type: "contact",
+          source: "tool-tax-savings",
           fullName: leadForm.fullName,
           phone: leadForm.phone,
-          email: leadForm.email,
-          source: "tax-estimator",
-          serviceType: "tax",
+          email: leadForm.email || undefined,
           message: `Tax Estimator: ${filing}, revenue ${revenue}, deductions awareness: ${deductions}`,
+          utm: Object.keys(utm).length > 0 ? utm : undefined,
         }),
       });
       const data = await res.json();

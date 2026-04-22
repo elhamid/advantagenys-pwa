@@ -19,7 +19,8 @@
     "clsx": "^2.1.1",
     "framer-motion": "^12.35.0",
     "gsap": "^3.14.2",
-    "next": "16.1.6",
+    "isomorphic-dompurify": "^3.9.0",
+    "next": "^16.2.4",
     "nodemailer": "^8.0.4",
     "react": "19.2.3",
     "react-dom": "19.2.3"

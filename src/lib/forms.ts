@@ -125,46 +125,53 @@ export const forms: FormConfig[] = [
     slug: toSlug("Divorce Application"),
   },
   {
+    // Retired 2026-04-22 — launch-readiness gate. Keep entry for slug history;
+    // marked inactive so it never appears in the resources grid.
     id: "222615377389062",
     title: "Sales Tax Return Form",
     description: "Quarterly/annual NYS sales tax filing",
     category: "tax",
     platform: "jotform",
     embedUrl: "https://form.jotform.com/222615377389062",
-    active: true,
+    active: false,
     priority: 10,
     slug: toSlug("Sales Tax Return Form"),
   },
   {
+    // Retired 2026-04-22 — launch-readiness gate.
     id: "260414184804049",
     title: "Bookkeeping Form",
     description: "Upload bank statements and financial documents",
     category: "financial",
     platform: "jotform",
     embedUrl: "https://form.jotform.com/260414184804049",
-    active: true,
+    active: false,
     priority: 11,
     slug: toSlug("Bookkeeping Form"),
   },
   {
+    // Retired 2026-04-22 — launch-readiness gate. Superseded by I-130
+    // Petitioner (220887424251052).
     id: "243156342192150",
     title: "New I-130 Petitioner",
     description: "Updated immigration petition form",
     category: "immigration",
     platform: "jotform",
     embedUrl: "https://form.jotform.com/243156342192150",
-    active: true,
+    active: false,
     priority: 12,
     slug: toSlug("New I-130 Petitioner"),
   },
   {
+    // Retired 2026-04-22 — launch-readiness gate. Superseded by I-130
+    // Beneficiary (220896671023154).
     id: "243156183104146",
     title: "New I-130 Beneficiary",
     description: "Updated beneficiary information form",
     category: "immigration",
     platform: "jotform",
     embedUrl: "https://form.jotform.com/243156183104146",
-    active: true,
+    active: false,
     priority: 13,
     slug: toSlug("New I-130 Beneficiary"),
   },

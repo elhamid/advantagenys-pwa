@@ -55,61 +55,11 @@ export function containsPromptInjection(input: string): boolean {
 }
 
 // ============================================================================
-// Rate Limiter Factory
+// Rate Limiter — re-export from shared helper
 // ============================================================================
-// In-memory — resets on Vercel cold starts. Best-effort throttling.
+// Historically the chat route created its own in-memory limiter here. The
+// launch-readiness audit consolidated all limiters onto `src/lib/rate-limit.ts`
+// for consistency. This re-export preserves the chat-route import surface.
 
-export interface RateLimiter {
-  readonly max: number;
-  readonly windowMs: number;
-  isLimited: (ip: string) => boolean;
-  remaining: (ip: string) => number;
-}
-
-export function createRateLimiter(
-  max: number,
-  windowMs = 60_000
-): RateLimiter {
-  const map = new Map<string, number[]>();
-
-  function getRecent(ip: string): number[] {
-    const now = Date.now();
-    const timestamps = map.get(ip) || [];
-    return timestamps.filter((t) => now - t < windowMs);
-  }
-
-  // Periodic cleanup every 5 minutes
-  const interval = setInterval(() => {
-    for (const [ip] of map.entries()) {
-      const recent = getRecent(ip);
-      if (recent.length === 0) {
-        map.delete(ip);
-      } else {
-        map.set(ip, recent);
-      }
-    }
-  }, 300_000);
-  if (typeof interval === "object" && "unref" in interval) {
-    interval.unref();
-  }
-
-  return {
-    max,
-    windowMs,
-
-    isLimited(ip: string): boolean {
-      const recent = getRecent(ip);
-      if (recent.length >= max) {
-        map.set(ip, recent);
-        return true;
-      }
-      recent.push(Date.now());
-      map.set(ip, recent);
-      return false;
-    },
-
-    remaining(ip: string): number {
-      return Math.max(0, max - getRecent(ip).length);
-    },
-  };
-}
+export { createRateLimiter } from "@/lib/rate-limit";
+export type { RateLimiter } from "@/lib/rate-limit";

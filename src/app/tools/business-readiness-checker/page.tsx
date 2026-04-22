@@ -6,6 +6,7 @@ import { Container } from "@/components/ui/Container";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { PHONE } from "@/lib/constants";
+import { useUtmParams } from "@/hooks/useUtmParams";
 
 /* ---------- questions ---------- */
 const questions = [
@@ -104,6 +105,7 @@ const jsonLd = {
 
 /* ---------- component ---------- */
 export default function BusinessReadinessChecker() {
+  const utm = useUtmParams();
   const [currentQ, setCurrentQ] = useState(0);
   const [answers, setAnswers] = useState<Record<string, boolean>>({});
   const [showGate, setShowGate] = useState(false);
@@ -138,11 +140,12 @@ export default function BusinessReadinessChecker() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          type: "contact",
+          source: "tool-biz-readiness",
           fullName: leadForm.fullName,
           phone: leadForm.phone,
-          source: "business-readiness",
-          serviceType: "formation",
           message: `Business Readiness Score: ${score}/${totalQuestions}. Gaps: ${gaps.join(", ") || "None"}`,
+          utm: Object.keys(utm).length > 0 ? utm : undefined,
         }),
       });
       const data = await res.json();

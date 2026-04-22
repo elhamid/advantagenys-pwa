@@ -75,6 +75,7 @@ describe("InsuranceForm", () => {
       businessType: "LLC",
       insuranceTypesNeeded: ["General Liability", "Workers' Compensation"],
       type: "insurance",
+      source: "website-insurance",
     });
 
     expect(await screen.findByText(/thank you, morgan policy/i)).toBeInTheDocument();
