@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Turnstile } from "@marsidev/react-turnstile";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { useUtmParams } from "@/hooks/useUtmParams";
@@ -37,6 +38,7 @@ interface CorporateRegistrationData {
 
 export function CorporateRegistrationForm() {
   const utm = useUtmParams();
+  const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
   const [formData, setFormData] = useState<CorporateRegistrationData>({
     fullName: "",
     phone: "",
@@ -57,13 +59,14 @@ export function CorporateRegistrationForm() {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [turnstileToken, setTurnstileToken] = useState<string>("");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitting(true);
     setError(null);
 
-    const payload: CorporateRegistrationLead = {
+    const payload: CorporateRegistrationLead & { turnstileToken?: string } = {
       type: "corporate-registration",
       source: "website-corporate-registration",
       fullName: formData.fullName,
@@ -82,6 +85,7 @@ export function CorporateRegistrationForm() {
       needPayroll: formData.needPayroll || undefined,
       additionalNotes: formData.additionalNotes || undefined,
       utm: Object.keys(utm).length > 0 ? utm : undefined,
+      turnstileToken: turnstileToken || undefined,
     };
 
     try {
@@ -129,6 +133,14 @@ export function CorporateRegistrationForm() {
 
   const inputClasses =
     "w-full rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-[var(--text)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--blue-accent)] focus:border-transparent transition-all";
+
+  // If Turnstile site key is missing in production, disable the form and
+  // surface a clear error. Prevents silent lead loss from misconfigured envs.
+  const missingTurnstileInProd =
+    !turnstileSiteKey &&
+    typeof window !== "undefined" &&
+    window.location.hostname !== "localhost" &&
+    window.location.hostname !== "127.0.0.1";
 
   function update(field: keyof CorporateRegistrationData) {
     return (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
@@ -395,13 +407,38 @@ export function CorporateRegistrationForm() {
           />
         </div>
 
+        {/* Turnstile — render only when site key is configured */}
+        {turnstileSiteKey && (
+          <Turnstile
+            siteKey={turnstileSiteKey}
+            onSuccess={(token) => setTurnstileToken(token)}
+            options={{ size: "invisible" }}
+          />
+        )}
+
+        {/* Missing-config warning — blocks submit + surfaces the problem */}
+        {missingTurnstileInProd && (
+          <p className="text-sm text-red-500 text-center">
+            Verification service is not configured. Please call{" "}
+            <a href="tel:+19299331396" className="underline font-medium">
+              (929) 933-1396
+            </a>{" "}
+            to reach us directly.
+          </p>
+        )}
+
         {/* Error */}
         {error && (
           <p className="text-sm text-red-500 text-center">{error}</p>
         )}
 
         {/* Submit */}
-        <Button type="submit" size="lg" className="w-full" disabled={submitting}>
+        <Button
+          type="submit"
+          size="lg"
+          className="w-full"
+          disabled={submitting || missingTurnstileInProd}
+        >
           {submitting ? "Submitting..." : "Submit Registration"}
         </Button>
 
