@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import type { NextRequest } from "next/server";
 import { GET, POST } from "../route";
 
-const originalSecret = process.env.JOTFORM_API_KEY;
+const originalSecret = process.env.JOTFORM_WEBHOOK_SECRET;
 
 function buildRequest(body: string, headers: Record<string, string> = {}) {
   return new Request("http://localhost/api/webhooks/jotform", {
@@ -13,11 +13,15 @@ function buildRequest(body: string, headers: Record<string, string> = {}) {
 }
 
 beforeEach(() => {
-  process.env.JOTFORM_API_KEY = "test-jotform-secret";
+  process.env.JOTFORM_WEBHOOK_SECRET = "test-jotform-secret";
 });
 
 afterEach(() => {
-  process.env.JOTFORM_API_KEY = originalSecret;
+  if (originalSecret === undefined) {
+    delete process.env.JOTFORM_WEBHOOK_SECRET;
+  } else {
+    process.env.JOTFORM_WEBHOOK_SECRET = originalSecret;
+  }
 });
 
 describe("/api/webhooks/jotform", () => {
@@ -31,6 +35,34 @@ describe("/api/webhooks/jotform", () => {
 
     expect(response.status).toBe(401);
     await expect(response.json()).resolves.toEqual({ error: "Unauthorized" });
+  });
+
+  it("rejects requests missing the secret header when secret is configured (fail-closed)", async () => {
+    const response = await POST(
+      buildRequest("rawRequest={}", {
+        "content-type": "application/x-www-form-urlencoded",
+      })
+    );
+
+    expect(response.status).toBe(401);
+    await expect(response.json()).resolves.toEqual({ error: "Unauthorized" });
+  });
+
+  it("skips verification when JOTFORM_WEBHOOK_SECRET is not configured (local dev)", async () => {
+    delete process.env.JOTFORM_WEBHOOK_SECRET;
+
+    const response = await POST(
+      buildRequest(
+        JSON.stringify({
+          formID: "form-dev",
+          submissionID: "submission-dev",
+          answers: {},
+        }),
+        { "content-type": "application/json" }
+      )
+    );
+
+    expect(response.status).toBe(200);
   });
 
   it("parses a rawRequest payload and returns the structured response", async () => {
@@ -91,6 +123,7 @@ describe("/api/webhooks/jotform", () => {
     const response = await POST(
       buildRequest("not-json", {
         "content-type": "application/x-www-form-urlencoded",
+        "x-jotform-webhook-secret": "test-jotform-secret",
       })
     );
 

@@ -56,15 +56,19 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const webhookSecret = request.headers.get("x-jotform-webhook-secret");
-  const expectedSecret = process.env.JOTFORM_API_KEY;
-
-  // If a webhook secret header is provided, validate it
-  if (webhookSecret && webhookSecret !== expectedSecret) {
-    return NextResponse.json(
-      { error: "Unauthorized" },
-      { status: 401 }
-    );
+  // Fail-closed webhook auth — if JOTFORM_WEBHOOK_SECRET is configured, the
+  // incoming request MUST carry a matching x-jotform-webhook-secret header.
+  // Missing header => 401. Mismatched header => 401. Only the absence of the
+  // env var (local dev / early-stage) skips verification.
+  const expectedSecret = process.env.JOTFORM_WEBHOOK_SECRET;
+  if (expectedSecret) {
+    const webhookSecret = request.headers.get("x-jotform-webhook-secret");
+    if (!webhookSecret || webhookSecret !== expectedSecret) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
   }
 
   try {
