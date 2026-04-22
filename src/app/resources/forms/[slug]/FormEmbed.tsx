@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import type { FormConfig } from "@/lib/forms";
-import { useInAppBrowser } from "@/hooks/useInAppBrowser";
+import { useInAppBrowser, safeBlankTarget } from "@/hooks/useInAppBrowser";
 
 interface FormEmbedProps {
   form: FormConfig;
@@ -55,7 +55,7 @@ export function FormEmbed({ form }: FormEmbedProps) {
           </p>
           <a
             href={rawFormUrl}
-            target="_blank"
+            target={safeBlankTarget(inAppBrowser)}
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 rounded-full bg-amber-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-amber-700 transition-colors"
           >
