@@ -9,11 +9,13 @@ import { JsonLd } from "@/components/seo/JsonLd";
 import { FAQSection } from "@/components/seo/FAQSection";
 import { PerServiceReviews } from "@/components/home/PerServiceReviews";
 import { getServiceFAQs } from "@/lib/chat/get-faqs";
+import { makeCanonical } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Business Formation in Queens, NYC | Advantage Services",
   description:
     "LLC, Corporation, and Non-Profit formation services in Queens, NYC. Fast filing, registered agent service, EIN application, and operating agreements. Advantage Services.",
+  alternates: { canonical: makeCanonical("/services/business-formation") },
 };
 
 const formations = [

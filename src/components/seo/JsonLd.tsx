@@ -66,11 +66,44 @@ type BreadcrumbListData = {
   }[];
 };
 
+type PersonData = {
+  "@context": "https://schema.org";
+  "@type": "Person";
+  name: string;
+  jobTitle: string;
+  worksFor: {
+    "@type": "LocalBusiness";
+    name: string;
+    url: string;
+  };
+  hasCredential?: {
+    "@type": "EducationalOccupationalCredential";
+    name: string;
+  }[];
+  knowsAbout?: string[];
+};
+
+type AggregateRatingData = {
+  "@context": "https://schema.org";
+  "@type": "LocalBusiness";
+  name: string;
+  url: string;
+  aggregateRating: {
+    "@type": "AggregateRating";
+    ratingValue: number;
+    reviewCount: number;
+    bestRating: number;
+    worstRating: number;
+  };
+};
+
 type JsonLdData =
   | LocalBusinessData
   | ServiceData
   | FAQPageData
-  | BreadcrumbListData;
+  | BreadcrumbListData
+  | PersonData
+  | AggregateRatingData;
 
 type JsonLdProps =
   | { type: "LocalBusiness" }
@@ -84,6 +117,18 @@ type JsonLdProps =
   | {
       type: "BreadcrumbList";
       items: Array<{ name: string; url: string }>;
+    }
+  | {
+      type: "Person";
+      name: string;
+      jobTitle: string;
+      credentials?: string[];
+      knowsAbout?: string[];
+    }
+  | {
+      type: "AggregateRating";
+      ratingValue: number;
+      reviewCount: number;
     };
 
 function buildData(props: JsonLdProps): JsonLdData {
@@ -166,6 +211,45 @@ function buildData(props: JsonLdProps): JsonLdData {
           name: item.name,
           item: item.url,
         })),
+      };
+
+    case "Person":
+      return {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        name: props.name,
+        jobTitle: props.jobTitle,
+        worksFor: {
+          "@type": "LocalBusiness",
+          name: "Advantage Services",
+          url: "https://advantagenys.com",
+        },
+        ...(props.credentials && props.credentials.length
+          ? {
+              hasCredential: props.credentials.map((c) => ({
+                "@type": "EducationalOccupationalCredential" as const,
+                name: c,
+              })),
+            }
+          : {}),
+        ...(props.knowsAbout && props.knowsAbout.length
+          ? { knowsAbout: props.knowsAbout }
+          : {}),
+      };
+
+    case "AggregateRating":
+      return {
+        "@context": "https://schema.org",
+        "@type": "LocalBusiness",
+        name: "Advantage Services",
+        url: "https://advantagenys.com",
+        aggregateRating: {
+          "@type": "AggregateRating",
+          ratingValue: props.ratingValue,
+          reviewCount: props.reviewCount,
+          bestRating: 5,
+          worstRating: 1,
+        },
       };
   }
 }

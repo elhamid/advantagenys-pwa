@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { useChat } from "@/hooks/useChat";
 import { ChatMessage } from "./ChatMessage";
+import { chatMessageSent } from "@/lib/analytics/events";
 
 interface ChatPanelProps {
   pageContext: string;
@@ -47,6 +48,7 @@ export function ChatPanel({ pageContext, onClose }: ChatPanelProps) {
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
+    chatMessageSent();
     sendMessage(input.trim());
     setInput("");
   }

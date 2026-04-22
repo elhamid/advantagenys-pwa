@@ -3,11 +3,13 @@ import { Container } from "@/components/ui/Container";
 import { ContactFormTabs } from "@/components/contact/ContactFormTabs";
 import { WhatsAppLink } from "@/components/ui/WhatsAppLink";
 import { PHONE, ADDRESS, HOURS } from "@/lib/constants";
+import { makeCanonical } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Contact",
   description:
     "Contact Advantage Services. Call, WhatsApp, or visit us in Cambria Heights, NY. Free consultation.",
+  alternates: { canonical: makeCanonical("/contact") },
 };
 
 export default function ContactPage() {

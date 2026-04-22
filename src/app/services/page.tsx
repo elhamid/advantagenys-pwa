@@ -5,11 +5,13 @@ import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { PHONE } from "@/lib/constants";
+import { makeCanonical } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Services",
   description:
     "ITIN registration, business formation, licensing, tax, insurance, and audit defense services for NYC small businesses. IRS Certified Acceptance Agent on staff.",
+  alternates: { canonical: makeCanonical("/services") },
 };
 
 const serviceCategories = [

@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import TVSlider from "./TVSlider";
+import { makeCanonical } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Advantage Services",
   robots: { index: false, follow: false },
+  alternates: { canonical: makeCanonical("/tv") },
 };
 
 const PRELOAD_IMAGES = [

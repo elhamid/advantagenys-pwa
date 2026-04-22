@@ -2,12 +2,14 @@ import type { NextConfig } from "next";
 
 const CONTENT_SECURITY_POLICY = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com https://www.googletagmanager.com https://www.google-analytics.com",
+  // Script origins: GTM + GA4 + Meta Pixel + Clarity + Vercel Analytics + Turnstile.
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com https://www.googletagmanager.com https://www.google-analytics.com https://connect.facebook.net https://*.facebook.com https://www.clarity.ms https://*.clarity.ms https://va.vercel-scripts.com",
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: https: blob:",
   "font-src 'self' data:",
-  "connect-src 'self' https://challenges.cloudflare.com https://*.supabase.co https://api.openai.com https://api.groq.com https://api.anthropic.com https://region1.google-analytics.com https://api.brevo.com https://api.jotform.com wss:",
-  "frame-src 'self' https://challenges.cloudflare.com https://form.jotform.com https://www.jotform.com",
+  // Connect: add GA4 collect, Meta Pixel beacon, Clarity beacon, Vercel Analytics.
+  "connect-src 'self' https://challenges.cloudflare.com https://*.supabase.co https://api.openai.com https://api.groq.com https://api.anthropic.com https://region1.google-analytics.com https://www.google-analytics.com https://api.brevo.com https://api.jotform.com https://www.facebook.com https://*.facebook.com https://*.clarity.ms https://c.bing.com https://vitals.vercel-insights.com https://vitals.vercel-analytics.com wss:",
+  "frame-src 'self' https://challenges.cloudflare.com https://form.jotform.com https://www.jotform.com https://www.googletagmanager.com https://td.doubleclick.net",
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",

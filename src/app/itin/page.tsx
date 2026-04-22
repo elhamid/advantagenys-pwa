@@ -1,12 +1,14 @@
 import type { Metadata, Viewport } from "next";
 import { ItinKiosk } from "./ItinKiosk";
 import { ItinErrorBoundary } from "./ItinErrorBoundary";
+import { makeCanonical } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "ITIN Application — IRS Certified Acceptance Agent",
   description:
     "Apply for your Individual Taxpayer Identification Number (ITIN). IRS Certified Acceptance Agent on-site — no mailing your passport. Fast processing for contractors and immigrant workers.",
   robots: { index: false, follow: false },
+  alternates: { canonical: makeCanonical("/itin") },
 };
 
 export const viewport: Viewport = {

@@ -9,11 +9,13 @@ import { JsonLd } from "@/components/seo/JsonLd";
 import { FAQSection } from "@/components/seo/FAQSection";
 import { PerServiceReviews } from "@/components/home/PerServiceReviews";
 import { getServiceFAQs } from "@/lib/chat/get-faqs";
+import { makeCanonical } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Audit Defense in Queens, NYC | Advantage Services",
   description:
     "Workers comp audit defense, sales tax audit representation, and fine reduction in Queens, NYC. Unemployment insurance audit defense for NYC businesses. Advantage Services.",
+  alternates: { canonical: makeCanonical("/services/audit-defense") },
 };
 
 const auditTypes = [

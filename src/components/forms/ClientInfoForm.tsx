@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Turnstile } from "@marsidev/react-turnstile";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { useUtmParams } from "@/hooks/useUtmParams";
 import type { ClientInfoLead } from "@/lib/leads/types";
+import { formStart, formSubmit } from "@/lib/analytics/events";
 
 const serviceOptions = [
   "Business Formation",
@@ -73,6 +74,14 @@ export function ClientInfoForm() {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   }
+  const startedRef = useRef(false);
+
+  function handleFirstFocus() {
+    if (startedRef.current) return;
+    startedRef.current = true;
+    formStart("client-info");
+  }
+
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -111,6 +120,8 @@ export function ClientInfoForm() {
       if (!res.ok || !data.success) {
         throw new Error(data.error || "Something went wrong. Please try again.");
       }
+
+      formSubmit("client-info");
 
       setSubmitted(true);
     } catch (err) {
@@ -160,7 +171,7 @@ export function ClientInfoForm() {
       <h2 className="text-xl font-bold text-[var(--text)] mb-6">
         Client Information
       </h2>
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleSubmit} onFocus={handleFirstFocus} className="space-y-5">
         {/* Full Legal Name */}
         <div>
           <label htmlFor="fullName" className="block text-sm font-medium text-[var(--text)] mb-1">

@@ -1,9 +1,19 @@
 import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 import { LayoutShell } from "@/components/layout/LayoutShell";
 import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
 import { JsonLd } from "@/components/seo/JsonLd";
+import { GTM, GTMNoScript } from "@/lib/analytics/gtm";
+
+// Measurement env vars (all public; optional):
+//   NEXT_PUBLIC_GTM_ID          — Google Tag Manager container (e.g. GTM-XXXXXXX)
+//   NEXT_PUBLIC_META_PIXEL_ID   — Meta Pixel ID (loaded INSIDE GTM, not here)
+//   NEXT_PUBLIC_GA4_ID          — GA4 Measurement ID (loaded INSIDE GTM)
+//   NEXT_PUBLIC_CLARITY_ID      — Microsoft Clarity project ID (loaded INSIDE GTM)
+// Vercel Analytics + Speed Insights autoload via env in Vercel.
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -29,6 +39,28 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     siteName: "Advantage Services",
+    images: [
+      {
+        url: "/images/og-default.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Advantage Business Consulting — Queens, NYC",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Advantage Services",
+    description:
+      "LLC, tax, licensing, ITIN, and audit defense for NYC businesses. IRS Certified Acceptance Agent.",
+    images: [
+      {
+        url: "/images/og-default.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Advantage Business Consulting — Queens, NYC",
+      },
+    ],
   },
   manifest: "/manifest.json",
   icons: {
@@ -82,11 +114,22 @@ if(typeof Node!=='undefined'){
 }`,
           }}
         />
+        <GTM />
       </head>
       <body className="font-[family-name:var(--font-heading)] antialiased" suppressHydrationWarning>
+        <GTMNoScript />
+        {/* Skip-to-content link — WCAG AA */}
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:rounded-md focus:bg-[var(--blue-accent)] focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white focus:shadow-lg focus:outline-2 focus:outline-offset-2 focus:outline-white"
+        >
+          Skip to content
+        </a>
         <ServiceWorkerRegistration />
         <LayoutShell>{children}</LayoutShell>
         <JsonLd type="LocalBusiness" />
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

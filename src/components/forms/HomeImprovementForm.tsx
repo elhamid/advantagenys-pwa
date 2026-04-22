@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Turnstile } from "@marsidev/react-turnstile";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { useUtmParams } from "@/hooks/useUtmParams";
 import type { HomeImprovementLead } from "@/lib/leads/types";
+import { formStart, formSubmit } from "@/lib/analytics/events";
 
 const licenseTypes = [
   "Home Improvement Contractor",
@@ -58,6 +59,14 @@ export function HomeImprovementForm() {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   }
+  const startedRef = useRef(false);
+
+  function handleFirstFocus() {
+    if (startedRef.current) return;
+    startedRef.current = true;
+    formStart("home-improvement");
+  }
+
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -95,6 +104,8 @@ export function HomeImprovementForm() {
       if (!res.ok || !data.success) {
         throw new Error(data.error || "Something went wrong. Please try again.");
       }
+
+      formSubmit("home-improvement");
 
       setSubmitted(true);
     } catch (err) {
@@ -144,7 +155,7 @@ export function HomeImprovementForm() {
       <h2 className="text-xl font-bold text-[var(--text)] mb-6">
         Home Improvement Licensing Application
       </h2>
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleSubmit} onFocus={handleFirstFocus} className="space-y-5">
         {/* Full Name */}
         <div>
           <label htmlFor="hiFullName" className="block text-sm font-medium text-[var(--text)] mb-1">

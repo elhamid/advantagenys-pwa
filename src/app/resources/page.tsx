@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import { Container } from "@/components/ui/Container";
 import { FormsGrid } from "@/components/resources/FormsGrid";
+import { makeCanonical } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Client Resources",
   description:
     "Access all forms and documents you need for your business services. Tax filing, business formation, immigration, licensing, and more.",
+  alternates: { canonical: makeCanonical("/resources") },
 };
 
 export default function ResourcesPage() {

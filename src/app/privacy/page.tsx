@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import { Container } from "@/components/ui/Container";
+import { makeCanonical } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
   description:
     "Privacy Policy for Advantage Services LLC. Learn how we collect, use, and protect your personal and business information.",
+  alternates: { canonical: makeCanonical("/privacy") },
 };
 
 export default function PrivacyPage() {

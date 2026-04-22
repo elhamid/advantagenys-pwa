@@ -9,11 +9,13 @@ import { JsonLd } from "@/components/seo/JsonLd";
 import { FAQSection } from "@/components/seo/FAQSection";
 import { PerServiceReviews } from "@/components/home/PerServiceReviews";
 import { getServiceFAQs } from "@/lib/chat/get-faqs";
+import { makeCanonical } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Business Insurance in Queens, NYC | Advantage Services",
   description:
     "Business insurance for Queens, NYC small businesses. General liability, workers compensation, and disability insurance. Licensed broker with competitive rates. Advantage Services.",
+  alternates: { canonical: makeCanonical("/services/insurance") },
 };
 
 const insuranceTypes = [

@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import { Container } from "@/components/ui/Container";
+import { makeCanonical } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Terms of Service",
   description:
     "Terms of Service for Advantage Services LLC. Understand the terms governing use of our website and business consulting services.",
+  alternates: { canonical: makeCanonical("/terms") },
 };
 
 export default function TermsPage() {

@@ -7,11 +7,13 @@ import { PHONE } from "@/lib/constants";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { FAQSection } from "@/components/seo/FAQSection";
 import { getServiceFAQs } from "@/lib/chat/get-faqs";
+import { makeCanonical } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Financial Services in Queens, NYC | Advantage Services",
   description:
     "Bookkeeping, financial statements, and business analysis for Queens, NYC small businesses. Keep your books clean and your finances in order. Advantage Services.",
+  alternates: { canonical: makeCanonical("/services/financial-services") },
 };
 
 const services = [

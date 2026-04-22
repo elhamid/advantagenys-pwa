@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import { FormsGrid } from "@/components/resources/FormsGrid";
+import { makeCanonical } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Forms Kiosk",
   description: "Quick-access forms kiosk for staff use.",
   robots: { index: false, follow: false },
+  alternates: { canonical: makeCanonical("/resources/kiosk") },
 };
 
 export default function KioskPage() {

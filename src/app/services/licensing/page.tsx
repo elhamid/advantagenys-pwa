@@ -9,11 +9,13 @@ import { JsonLd } from "@/components/seo/JsonLd";
 import { FAQSection } from "@/components/seo/FAQSection";
 import { PerServiceReviews } from "@/components/home/PerServiceReviews";
 import { getServiceFAQs } from "@/lib/chat/get-faqs";
+import { makeCanonical } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Business Licensing in Queens, NYC | Advantage Services",
   description:
     "Business licensing and permit services in Queens, NYC for contractors, restaurants, delis, and retail businesses. HIC, liquor, food, and specialty licenses. Advantage Services.",
+  alternates: { canonical: makeCanonical("/services/licensing") },
 };
 
 const licenses = [

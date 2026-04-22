@@ -9,11 +9,13 @@ import { JsonLd } from "@/components/seo/JsonLd";
 import { FAQSection } from "@/components/seo/FAQSection";
 import { PerServiceReviews } from "@/components/home/PerServiceReviews";
 import { getServiceFAQs } from "@/lib/chat/get-faqs";
+import { makeCanonical } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Tax Services in Queens, NYC | Advantage Services",
   description:
     "Business and personal tax preparation in Queens, NYC. ITIN processing by IRS Certified Acceptance Agent, payroll and sales tax services, and IRS representation. Advantage Services.",
+  alternates: { canonical: makeCanonical("/services/tax-services") },
 };
 
 const taxServices = [

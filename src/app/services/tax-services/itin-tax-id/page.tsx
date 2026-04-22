@@ -8,11 +8,13 @@ import { PHONE } from "@/lib/constants";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { FAQSection } from "@/components/seo/FAQSection";
 import { getServiceFAQs } from "@/lib/chat/get-faqs";
+import { makeCanonical } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "ITIN Tax ID Application in Queens, NYC | Advantage Services",
   description:
     "ITIN application and renewal by IRS Certified Acceptance Agent in Queens, NYC. 2,250+ ITINs processed. No need to mail original documents. Advantage Services.",
+  alternates: { canonical: makeCanonical("/services/tax-services/itin-tax-id") },
 };
 
 const stats = [

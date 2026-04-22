@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { PHONE } from "@/lib/constants";
 import { useUtmParams } from "@/hooks/useUtmParams";
+import { toolComplete } from "@/lib/analytics/events";
 
 /* ---------- questions ---------- */
 const questions = [
@@ -152,6 +153,7 @@ export default function BusinessReadinessChecker() {
       if (!res.ok || !data.success) {
         throw new Error(data.error || "Something went wrong.");
       }
+      toolComplete("business-readiness-checker");
       setCaptured(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");

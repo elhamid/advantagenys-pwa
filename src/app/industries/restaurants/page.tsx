@@ -4,11 +4,13 @@ import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { JsonLd } from "@/components/seo/JsonLd";
+import { makeCanonical } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Restaurant Business Services in Queens, NYC | Advantage Services",
   description:
     "Business services for restaurants in Queens, NYC. Health permits, liquor license, fire dept, sales tax, workers comp, and insurance. Advantage Services.",
+  alternates: { canonical: makeCanonical("/industries/restaurants") },
 };
 
 const painPoints = [
