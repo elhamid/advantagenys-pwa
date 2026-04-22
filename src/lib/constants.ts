@@ -40,7 +40,7 @@ export const TEAM = [
   { name: "Hamid", fullName: "Hamid Elsevar", role: "Growth Operator", specialties: ["Tech", "AI", "Business Development"] },
 ] as const;
 
-// Real client stats — original from nysconsultants.com (2023-2024), updated +35% for 2026
+// Real client stats — based on internal records.
 export const STATS = {
   businessSetups: { count: 1700, label: "Business Set-ups", suffix: "+" },
   taxClients: { count: 5700, label: "Tax Clients", suffix: "+" },

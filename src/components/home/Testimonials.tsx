@@ -4,24 +4,19 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Container } from "@/components/ui/Container";
 import { Card } from "@/components/ui/Card";
+import { REVIEWS } from "@/lib/reviews";
 
-const TESTIMONIALS = [
-  {
-    quote: "They handled my LLC, insurance, and tax filing all in one place. Saved me weeks of running around.",
-    name: "Restaurant Owner",
-    location: "Queens, NY",
-  },
-  {
-    quote: "Got my ITIN and LLC set up faster than I expected. They walked me through every step.",
-    name: "Immigrant Entrepreneur",
-    location: "Brooklyn, NY",
-  },
-  {
-    quote: "When we got audited, Advantage reduced our fine by over 60%. Worth every penny.",
-    name: "General Contractor",
-    location: "Bronx, NY",
-  },
-];
+// Real Google Reviews — Palmyre (business/licensing/insurance), Delacia (tax),
+// Oshane (immigration). Unattributed quotes were removed for ads-compliance.
+const REVIEW_NAMES = ["Palmyre Seraphin", "Delacia P.", "Oshane Hinds"] as const;
+const TESTIMONIALS = REVIEW_NAMES
+  .map((name) => REVIEWS.find((r) => r.name === name))
+  .filter((r): r is (typeof REVIEWS)[number] => Boolean(r))
+  .map((r) => ({
+    quote: r.text,
+    name: r.name,
+    location: r.date,
+  }));
 
 const AUTOPLAY_MS = 4000;
 const RESUME_MS = 8000;

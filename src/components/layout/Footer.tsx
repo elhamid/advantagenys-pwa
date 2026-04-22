@@ -1,11 +1,34 @@
 import Link from "next/link";
 import { Container } from "@/components/ui/Container";
 import { PHONE, ADDRESS, HOURS, SERVICES, SEGMENTS } from "@/lib/constants";
+import { GOOGLE_RATING } from "@/lib/reviews";
 
 export function Footer() {
   return (
     <footer className="bg-[var(--navy)] text-white pt-16 pb-8">
       <Container>
+        {/* Trust strip — Google rating, credentials, tenure, languages */}
+        <div className="mb-10 border-b border-slate-700 pb-8">
+          <ul className="flex flex-col items-center justify-center gap-3 text-center text-xs text-slate-300 sm:flex-row sm:flex-wrap sm:gap-x-6 sm:gap-y-2 sm:text-sm">
+            <li>
+              <a
+                href={GOOGLE_RATING.mapsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-white transition-colors"
+              >
+                <span className="font-semibold text-white">{GOOGLE_RATING.rating}/5</span>{" "}
+                on Google · {GOOGLE_RATING.totalReviews} reviews
+              </a>
+            </li>
+            <li className="hidden sm:inline-block text-slate-600">·</li>
+            <li>IRS Certified Acceptance Agent</li>
+            <li className="hidden sm:inline-block text-slate-600">·</li>
+            <li>Since 2004</li>
+            <li className="hidden sm:inline-block text-slate-600">·</li>
+            <li>6 languages spoken</li>
+          </ul>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
           <div>
             <div className="mb-4">

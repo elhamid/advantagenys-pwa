@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { PHONE } from "@/lib/constants";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { FAQSection } from "@/components/seo/FAQSection";
+import { PerServiceReviews } from "@/components/home/PerServiceReviews";
 import { getServiceFAQs } from "@/lib/chat/get-faqs";
 
 export const metadata: Metadata = {
@@ -276,6 +277,8 @@ export default async function TaxServicesPage() {
           </div>
         </Container>
       </section>
+
+      <PerServiceReviews segment="tax" />
 
       {/* CTA */}
       <section className="py-16">
