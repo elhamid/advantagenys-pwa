@@ -22,8 +22,10 @@ describe('Testimonials', () => {
     render(<Testimonials />)
 
     expect(screen.getByText(/trusted by nyc businesses/i)).toBeInTheDocument()
-    expect(screen.getAllByText(/restaurant owner/i).length).toBeGreaterThan(0)
-    expect(screen.getAllByText(/general contractor/i).length).toBeGreaterThan(0)
+    // Updated 2026-04-22: moved from unattributed quotes to real Google reviews
+    // (Palmyre Seraphin, Delacia P., Oshane Hinds) for ads-compliance.
+    expect(screen.getAllByText(/palmyre seraphin/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/oshane hinds/i).length).toBeGreaterThan(0)
 
     const secondDot = screen.getByRole('button', { name: /go to testimonial 2/i })
     fireEvent.click(secondDot)

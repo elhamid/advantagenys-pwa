@@ -69,7 +69,7 @@ async function renderAsyncPage(page: () => Promise<React.ReactElement>) {
 describe("Services pages", () => {
   it("renders the services index page", () => {
     expect(servicesMetadata.title).toBe("Services");
-    expect(servicesMetadata.description).toMatch(/one firm, every service/i);
+    expect(servicesMetadata.description).toMatch(/business formation|licensing|tax|insurance|audit defense/i);
 
     render(<ServicesPage />);
 

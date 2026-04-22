@@ -19,7 +19,8 @@
   /* Neutrals */
   --text: #1E293B;
   --text-secondary: #475569;
-  --text-muted: #94A3B8;
+  /* Darkened from #94A3B8 for WCAG AA contrast (4.6:1 on default bg). */
+  --text-muted: #64748B;
   --bg: #F8FAFC;
   --surface: #FFFFFF;
   --border: #E2E8F0;

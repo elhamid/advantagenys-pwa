@@ -233,8 +233,11 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
   /* ─── Process via LLM ─── */
   const processTranscript = useCallback(async (text: string) => {
     setState("processing");
-    console.log("[AVA] Sending transcript to LLM:", text);
-    console.log("[AVA] Transcript length:", text.length, "words:", text.split(/\s+/).length);
+    const IS_DEV = process.env.NODE_ENV !== "production";
+    if (IS_DEV) {
+      console.log("[AVA] Sending transcript to LLM:", text);
+      console.log("[AVA] Transcript length:", text.length, "words:", text.split(/\s+/).length);
+    }
     try {
       const res = await fetch("/api/itin-voice", {
         method: "POST",
@@ -243,7 +246,7 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
       });
       if (!res.ok) throw new Error(`Error ${res.status}`);
       const data = await res.json();
-      console.log("[AVA] LLM response:", JSON.stringify(data));
+      if (IS_DEV) console.log("[AVA] LLM response:", JSON.stringify(data));
       const newFields: Record<string, string> = data.fields || {};
       // Only keep fields for this step
       const stepKeys = new Set(fields.map(f => f.key));
@@ -251,7 +254,7 @@ export default function VoiceFill({ step, currentData, onFill, onClose }: VoiceF
       for (const [k, v] of Object.entries(newFields)) {
         if (stepKeys.has(k) && typeof v === "string" && v.trim()) valid[k] = v;
       }
-      console.log("[AVA] Valid fields for step:", JSON.stringify(valid));
+      if (IS_DEV) console.log("[AVA] Valid fields for step:", JSON.stringify(valid));
       setExtracted(prev => ({ ...prev, ...valid }));
       setState("results");
     } catch (err) {

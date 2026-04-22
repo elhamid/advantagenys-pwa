@@ -77,8 +77,8 @@ describe("HOURS", () => {
 });
 
 describe("SERVICES", () => {
-  it("has 7 service entries", () => {
-    expect(SERVICES).toHaveLength(7);
+  it("has 8 service entries", () => {
+    expect(SERVICES).toHaveLength(8);
   });
 
   it("every service has name, href, icon, description", () => {
@@ -90,9 +90,10 @@ describe("SERVICES", () => {
     });
   });
 
-  it("every href starts with '/services/'", () => {
+  // ITIN Registration deep-links to the intake form; other services live under /services/.
+  it("every href starts with /services/ or points to the ITIN registration form", () => {
     SERVICES.forEach((service) => {
-      expect(service.href).toMatch(/^\/services\//);
+      expect(service.href).toMatch(/^\/(services\/|resources\/forms\/itin-registration-form)/);
     });
   });
 

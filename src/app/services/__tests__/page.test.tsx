@@ -36,7 +36,7 @@ vi.mock("@/components/ui/Button", () => ({
 describe("ServicesPage", () => {
   it("exports services metadata", () => {
     expect(metadata.title).toBe("Services");
-    expect(metadata.description).toMatch(/one firm, every service/i);
+    expect(metadata.description).toMatch(/business formation|licensing|tax|insurance|audit defense/i);
   });
 
   it("renders the services index and CTAs", () => {
