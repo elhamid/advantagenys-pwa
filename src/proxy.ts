@@ -2,15 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 
 function isLegacyBrowser(ua: string): boolean {
   // iOS Safari version < 16
-  var iosSafari = ua.match(/OS (\d+)_/);
+  const iosSafari = ua.match(/OS (\d+)_/);
   if (iosSafari && parseInt(iosSafari[1]) < 16) return true;
 
   // Android WebView or Chrome < 90
-  var chrome = ua.match(/Chrome\/(\d+)/);
+  const chrome = ua.match(/Chrome\/(\d+)/);
   if (chrome && parseInt(chrome[1]) < 90 && !ua.includes("Edg/")) return true;
 
   // Old Firefox < 100
-  var firefox = ua.match(/Firefox\/(\d+)/);
+  const firefox = ua.match(/Firefox\/(\d+)/);
   if (firefox && parseInt(firefox[1]) < 100) return true;
 
   // IE
@@ -20,8 +20,8 @@ function isLegacyBrowser(ua: string): boolean {
 }
 
 export function proxy(request: NextRequest) {
-  var ua = request.headers.get("user-agent") || "";
-  var path = request.nextUrl.pathname;
+  const ua = request.headers.get("user-agent") || "";
+  const path = request.nextUrl.pathname;
 
   // Don't redirect if already on legacy pages, API routes, or static files
   if (
@@ -38,8 +38,8 @@ export function proxy(request: NextRequest) {
   if (isLegacyBrowser(ua)) {
     // Preserve the intended path -- /itin goes to /legacy/itin, everything else to /legacy
     if (path.startsWith("/itin")) {
-      var company = request.nextUrl.searchParams.get("company");
-      var url = new URL("/legacy/itin", request.url);
+      const company = request.nextUrl.searchParams.get("company");
+      const url = new URL("/legacy/itin", request.url);
       if (company) url.searchParams.set("company", company);
       return NextResponse.redirect(url);
     }

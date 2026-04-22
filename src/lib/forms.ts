@@ -12,6 +12,12 @@ export interface FormConfig {
   priority: number;
   encrypted?: boolean;
   slug: string;
+  // Taskboard/CRM outreach templates — optional, populated for top revenue forms.
+  shortLinkSlug?: string;
+  whatsappText?: string;
+  emailSubject?: string;
+  emailBody?: string;
+  ogImage?: string;
 }
 
 function toSlug(title: string): string {
@@ -34,6 +40,12 @@ export const forms: FormConfig[] = [
     active: true,
     priority: 1,
     slug: toSlug("ITIN Registration Form"),
+    shortLinkSlug: "itin",
+    whatsappText:
+      "Hi {firstName}, here is the secure link to apply for your ITIN with us — we are an IRS Certified Acceptance Agent so you won't need to mail your passport. https://advantagenys.com/r/itin",
+    emailSubject: "Your ITIN application — next step",
+    emailBody:
+      "Hi {firstName},\n\nThanks for reaching out about your ITIN. Because we are an IRS Certified Acceptance Agent, we can certify your documents on-site — no need to mail your passport to the IRS.\n\nPlease complete the short intake form here:\nhttps://advantagenys.com/r/itin\n\nOnce we receive it, our team will schedule your certification appointment.\n\nAdvantage Business Consulting\n(929) 933-1396",
   },
   {
     id: "220756155957061",
@@ -57,6 +69,12 @@ export const forms: FormConfig[] = [
     priority: 3,
     encrypted: true,
     slug: toSlug("Tax Return Questionnaire"),
+    shortLinkSlug: "tax",
+    whatsappText:
+      "Hi {firstName}, please complete your annual tax return intake here: https://advantagenys.com/r/tax — it is encrypted end-to-end.",
+    emailSubject: "Annual tax return — intake form",
+    emailBody:
+      "Hi {firstName},\n\nPlease complete your annual tax return questionnaire at the link below. It is end-to-end encrypted.\n\nhttps://advantagenys.com/r/tax\n\nOur team will review and reach out with anything missing.\n\nAdvantage Business Consulting\n(929) 933-1396",
   },
   {
     id: "220887424251052",
@@ -90,6 +108,12 @@ export const forms: FormConfig[] = [
     active: true,
     priority: 6,
     slug: toSlug("L2-V3-HIL-NYC Qualification Check"),
+    shortLinkSlug: "contractor",
+    whatsappText:
+      "Hi {firstName}, take this 2-minute qualifier to see if you are ready for a NYC Home Improvement Contractor license: https://advantagenys.com/r/contractor",
+    emailSubject: "NYC Contractor License — quick qualifier",
+    emailBody:
+      "Hi {firstName},\n\nHere is the 2-minute qualifier to check your eligibility for a NYC Home Improvement Contractor (HIC) license:\n\nhttps://advantagenys.com/r/contractor\n\nWe will follow up with a custom plan once you finish.\n\nAdvantage Business Consulting\n(929) 933-1396",
   },
   {
     id: "241705190161044",
@@ -218,6 +242,12 @@ export const forms: FormConfig[] = [
     active: true,
     priority: 17,
     slug: toSlug("Corporation Services"),
+    shortLinkSlug: "corp",
+    whatsappText:
+      "Hi {firstName}, here is the LLC/Corporation registration form so we can get your entity filed: https://advantagenys.com/r/corp",
+    emailSubject: "LLC/Corporation registration — intake form",
+    emailBody:
+      "Hi {firstName},\n\nTo start your entity formation, please fill out the short registration form at:\n\nhttps://advantagenys.com/r/corp\n\nWe will review, file with NY DOS, and get your EIN set up.\n\nAdvantage Business Consulting\n(929) 933-1396",
   },
   {
     id: "native-insurance",
@@ -229,6 +259,12 @@ export const forms: FormConfig[] = [
     active: true,
     priority: 18,
     slug: toSlug("Client Form for Insurance"),
+    shortLinkSlug: "insurance",
+    whatsappText:
+      "Hi {firstName}, please share your business details so we can quote coverage (GL, workers comp, disability): https://advantagenys.com/r/insurance",
+    emailSubject: "Business insurance — quote intake",
+    emailBody:
+      "Hi {firstName},\n\nTo quote your business insurance (general liability, workers compensation, disability), please fill out our short intake at:\n\nhttps://advantagenys.com/r/insurance\n\nAs a licensed broker we compare multiple carriers to find the best rate for your situation.\n\nAdvantage Business Consulting\n(929) 933-1396",
   },
   {
     id: "link-office-address",
@@ -288,6 +324,12 @@ export const forms: FormConfig[] = [
     active: true,
     priority: 23,
     slug: toSlug("Home Improvement Licensing"),
+    shortLinkSlug: "hic",
+    whatsappText:
+      "Hi {firstName}, here is the HIC license application form — we will handle filing and the insurance requirements: https://advantagenys.com/r/hic",
+    emailSubject: "Home Improvement Contractor license — application",
+    emailBody:
+      "Hi {firstName},\n\nTo start your NYC Home Improvement Contractor (HIC) license application, please fill out:\n\nhttps://advantagenys.com/r/hic\n\nWe will review your answers and handle filing with NYC Consumer Affairs plus the insurance requirements.\n\nAdvantage Business Consulting\n(929) 933-1396",
   },
 ];
 
@@ -316,6 +358,10 @@ export const categoryColors: Record<FormConfig["category"], string> = {
 
 export function getFormBySlug(slug: string): FormConfig | undefined {
   return forms.find((f) => f.slug === slug);
+}
+
+export function getFormByShortLinkSlug(shortLinkSlug: string): FormConfig | undefined {
+  return forms.find((f) => f.shortLinkSlug === shortLinkSlug && f.active);
 }
 
 export function getFormsByCategory(category: CategoryKey): FormConfig[] {
