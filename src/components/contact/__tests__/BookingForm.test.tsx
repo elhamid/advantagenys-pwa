@@ -128,10 +128,10 @@ describe('BookingForm', () => {
   })
 
   // ---------------------------------------------------------------------------
-  // 5. Network/API error still shows success (BookingForm treats errors as success
-  //    by design: "treat as success for now" comment in component)
+  // 5. Network/API error surfaces a user-visible error (no silent fake success)
+  //    — A1 launch-readiness gate: fake-success was dropping leads silently.
   // ---------------------------------------------------------------------------
-  it('shows success state even when fetch rejects (graceful degradation)', async () => {
+  it('surfaces an error to the user when fetch rejects', async () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('Network failure')))
 
     const user = userEvent.setup()
@@ -145,8 +145,12 @@ describe('BookingForm', () => {
     await user.click(screen.getByRole('button', { name: /book appointment/i }))
 
     await waitFor(() => {
-      expect(screen.getByText(/thank you, test user/i)).toBeInTheDocument()
+      expect(screen.getByText(/network failure/i)).toBeInTheDocument()
     })
+
+    // Form must remain visible so the user can retry — no silent drop
+    expect(screen.getByRole('button', { name: /book appointment/i })).toBeInTheDocument()
+    expect(screen.queryByText(/thank you, test user/i)).not.toBeInTheDocument()
   })
 
   // ---------------------------------------------------------------------------

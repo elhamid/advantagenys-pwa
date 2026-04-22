@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { NextRequest } from 'next/server'
-import { POST } from '../route'
+import { POST, _testing } from '../route'
 
 // Helper to build a NextRequest with a JSON body
 function makeRequest(payload: unknown): NextRequest {
@@ -36,7 +36,7 @@ const validBooking = {
 
 // Produces a fetch mock that routes by URL:
 //   Cloudflare siteverify  → turnstileSuccess flag controls success
-//   anything else          → 200 OK (webhook stub)
+//   anything else          → webhookStatus controls response
 function makeFetchMock({
   turnstileSuccess = true,
   webhookStatus = 200,
@@ -82,11 +82,16 @@ describe('POST /api/contact', () => {
     process.env.TASKBOARD_WEBHOOK_URL = originalWebhookUrl
     // Ensure webhook secret is present for webhook-related tests by default
     process.env.PWA_WEBHOOK_SECRET = 'test-pwa-secret'
+    // Default to "test" NODE_ENV — dev-ergonomic path for Turnstile skip tests
+    vi.stubEnv('NODE_ENV', 'test')
     global.fetch = makeFetchMock()
+    // Reset rate limiter between tests (module-level singleton)
+    _testing.contactLimiter.reset()
   })
 
   afterEach(() => {
     vi.restoreAllMocks()
+    vi.unstubAllEnvs()
     process.env.PWA_WEBHOOK_SECRET = originalWebhookSecret
   })
 
@@ -101,7 +106,7 @@ describe('POST /api/contact', () => {
   })
 
   // -----------------------------------------------------------------------
-  // 2. Valid booking payload → 200 + booking fields preserved in response
+  // 2. Valid booking payload → 200
   // -----------------------------------------------------------------------
   it('returns 200 and success:true for a valid booking payload', async () => {
     const res = await POST(makeRequest(validBooking))
@@ -115,6 +120,7 @@ describe('POST /api/contact', () => {
   // -----------------------------------------------------------------------
   it('returns 400 when fullName is missing', async () => {
     const { fullName: _omit, ...payload } = validContact
+    void _omit
     const res = await POST(makeRequest(payload))
     expect(res.status).toBe(400)
     const body = await res.json()
@@ -135,6 +141,7 @@ describe('POST /api/contact', () => {
   // -----------------------------------------------------------------------
   it('returns 400 when phone is missing', async () => {
     const { phone: _omit, ...payload } = validContact
+    void _omit
     const res = await POST(makeRequest(payload))
     expect(res.status).toBe(400)
     const body = await res.json()
@@ -171,6 +178,7 @@ describe('POST /api/contact', () => {
 
   it('accepts a request with no email field (email is optional)', async () => {
     const { email: _omit, ...payload } = validContact
+    void _omit
     const res = await POST(makeRequest(payload))
     expect(res.status).toBe(200)
   })
@@ -200,18 +208,21 @@ describe('POST /api/contact', () => {
 
   it('returns 403 when turnstileToken is absent but TURNSTILE_SECRET_KEY is set', async () => {
     const { turnstileToken: _omit, ...payload } = validContact
+    void _omit
     const res = await POST(makeRequest(payload))
     expect(res.status).toBe(403)
     const body = await res.json()
     expect(body.error).toMatch(/human verification/i)
   })
 
-  it('skips Turnstile check when TURNSTILE_SECRET_KEY is not set', async () => {
+  it('skips Turnstile in development when TURNSTILE_SECRET_KEY is absent', async () => {
     delete process.env.TURNSTILE_SECRET_KEY
+    vi.stubEnv('NODE_ENV', 'development')
     const fetchSpy = makeFetchMock()
     global.fetch = fetchSpy
-    // Omit token — should still succeed because the key is absent
+    // Omit token — should still succeed because the key is absent in dev
     const { turnstileToken: _omit, ...payload } = validContact
+    void _omit
     const res = await POST(makeRequest(payload))
     expect(res.status).toBe(200)
     // Cloudflare siteverify must NOT have been called
@@ -221,8 +232,29 @@ describe('POST /api/contact', () => {
     expect(cloudflareCalled).toBe(false)
   })
 
+  it('fails closed with 503 in production when TURNSTILE_SECRET_KEY is missing', async () => {
+    delete process.env.TURNSTILE_SECRET_KEY
+    vi.stubEnv('NODE_ENV', 'production')
+    const fetchSpy = makeFetchMock()
+    global.fetch = fetchSpy
+
+    const { turnstileToken: _omit, ...payload } = validContact
+    void _omit
+    const res = await POST(makeRequest(payload))
+    expect(res.status).toBe(503)
+    const body = await res.json()
+    expect(body.success).toBe(false)
+    expect(body.error).toMatch(/verification service unavailable/i)
+
+    // Cloudflare siteverify must NOT have been called either
+    const cloudflareCalled = (fetchSpy.mock.calls as [string][]).some(([url]) =>
+      url.includes('cloudflare.com/turnstile'),
+    )
+    expect(cloudflareCalled).toBe(false)
+  })
+
   // -----------------------------------------------------------------------
-  // 8. Webhook forwarding — payload includes all contact fields + source
+  // 8. Webhook forwarding — payload includes full discriminated fields
   // -----------------------------------------------------------------------
   it('forwards full contact payload to the webhook including source field', async () => {
     const fetchSpy = makeFetchMock()
@@ -243,7 +275,11 @@ describe('POST /api/contact', () => {
     expect(sentBody.businessType).toBe(validContact.businessType)
     expect(sentBody.services).toEqual(validContact.services)
     expect(sentBody.message).toBe(validContact.message)
+    // Default source derived from absent `source` + contact type
     expect(sentBody.source).toBe('website-contact-form')
+    expect(sentBody.type).toBe('contact')
+    // turnstileToken must be stripped from outgoing payload
+    expect(sentBody.turnstileToken).toBeUndefined()
   })
 
   it('sends x-pwa-secret header to webhook', async () => {
@@ -261,17 +297,18 @@ describe('POST /api/contact', () => {
   })
 
   // -----------------------------------------------------------------------
-  // 9. Webhook env var missing → skip webhook silently, still return 200
+  // 9. Webhook env var missing → webhook skipped. With Supabase also absent,
+  //    both durable writes fail → 502.
   // -----------------------------------------------------------------------
-  it('returns 200 and does not call webhook when PWA_WEBHOOK_SECRET is absent', async () => {
+  it('returns 502 when PWA_WEBHOOK_SECRET is absent and Supabase is unavailable', async () => {
     delete process.env.PWA_WEBHOOK_SECRET
     const fetchSpy = makeFetchMock()
     global.fetch = fetchSpy
 
     const res = await POST(makeRequest(validContact))
-    expect(res.status).toBe(200)
+    expect(res.status).toBe(502)
 
-    // Only the Cloudflare siteverify call should have been made (if at all)
+    // Only the Cloudflare siteverify call should have been made (webhook skipped)
     const webhookCalled = (fetchSpy.mock.calls as unknown as [string][]).some(
       ([url]) => !String(url).includes('cloudflare.com'),
     )
@@ -279,18 +316,18 @@ describe('POST /api/contact', () => {
   })
 
   // -----------------------------------------------------------------------
-  // 10. Webhook failure → still returns 200 (fire-and-forget)
+  // 10. Durable-write failure modes — webhook fails → 502 (when Supabase also absent)
   // -----------------------------------------------------------------------
-  it('returns 200 even when the webhook returns a non-OK status', async () => {
+  it('returns 502 when the webhook returns a non-OK status and Supabase is absent', async () => {
     global.fetch = makeFetchMock({ webhookStatus: 500 })
     const res = await POST(makeRequest(validContact))
-    expect(res.status).toBe(200)
+    expect(res.status).toBe(502)
   })
 
-  it('returns 200 even when the webhook fetch throws a network error', async () => {
+  it('returns 502 when the webhook fetch throws and Supabase is absent', async () => {
     global.fetch = makeFetchMock({ webhookThrows: true })
     const res = await POST(makeRequest(validContact))
-    expect(res.status).toBe(200)
+    expect(res.status).toBe(502)
   })
 
   // -----------------------------------------------------------------------
@@ -313,6 +350,7 @@ describe('POST /api/contact', () => {
     expect(sentBody.serviceType).toBe(validBooking.serviceType)
     expect(sentBody.preferredDate).toBe(validBooking.preferredDate)
     expect(sentBody.preferredTime).toBe(validBooking.preferredTime)
+    expect(sentBody.source).toBe('website-booking')
   })
 
   it('does not include booking fields in the webhook payload for a contact submission', async () => {
@@ -327,10 +365,105 @@ describe('POST /api/contact', () => {
     expect(webhookCall).toBeDefined()
 
     const sentBody = JSON.parse(webhookCall![1].body as string)
-    expect(sentBody.type).toBeUndefined()
+    expect(sentBody.type).toBe('contact')
     expect(sentBody.serviceType).toBeUndefined()
     expect(sentBody.preferredDate).toBeUndefined()
     expect(sentBody.preferredTime).toBeUndefined()
+  })
+
+  // -----------------------------------------------------------------------
+  // 12. Source allowlist — accept known sources, reject unknown
+  // -----------------------------------------------------------------------
+  it('accepts an allowlisted custom source and forwards it to the webhook', async () => {
+    const fetchSpy = makeFetchMock()
+    global.fetch = fetchSpy
+
+    await POST(
+      makeRequest({
+        ...validContact,
+        source: 'tool-tax-savings',
+      }),
+    )
+
+    const webhookCall = (fetchSpy.mock.calls as unknown as [string, RequestInit][]).find(
+      ([url]) => !String(url).includes('cloudflare.com'),
+    )
+    expect(webhookCall).toBeDefined()
+    const sentBody = JSON.parse(webhookCall![1].body as string)
+    expect(sentBody.source).toBe('tool-tax-savings')
+  })
+
+  it('returns 400 when source is not on the allowlist', async () => {
+    const res = await POST(
+      makeRequest({
+        ...validContact,
+        source: 'evil-scraper-bot',
+      }),
+    )
+    expect(res.status).toBe(400)
+    const body = await res.json()
+    expect(body.error).toMatch(/unknown source/i)
+  })
+
+  // -----------------------------------------------------------------------
+  // 13. UTM passthrough
+  // -----------------------------------------------------------------------
+  it('forwards UTM params to the webhook when provided', async () => {
+    const fetchSpy = makeFetchMock()
+    global.fetch = fetchSpy
+
+    await POST(
+      makeRequest({
+        ...validContact,
+        utm: {
+          utm_source: 'google',
+          utm_medium: 'cpc',
+          utm_campaign: 'spring-launch',
+          referrer: 'https://google.com',
+        },
+      }),
+    )
+
+    const webhookCall = (fetchSpy.mock.calls as unknown as [string, RequestInit][]).find(
+      ([url]) => !String(url).includes('cloudflare.com'),
+    )
+    expect(webhookCall).toBeDefined()
+    const sentBody = JSON.parse(webhookCall![1].body as string)
+    expect(sentBody.utm).toEqual({
+      utm_source: 'google',
+      utm_medium: 'cpc',
+      utm_campaign: 'spring-launch',
+      referrer: 'https://google.com',
+    })
+  })
+
+  // -----------------------------------------------------------------------
+  // 14. Native-form type variants validate + forward
+  // -----------------------------------------------------------------------
+  it('accepts a client-info submission and forwards it with type=client-info', async () => {
+    const fetchSpy = makeFetchMock()
+    global.fetch = fetchSpy
+
+    const res = await POST(
+      makeRequest({
+        fullName: 'Jane Client',
+        phone: '9295551212',
+        email: 'jane@example.com',
+        type: 'client-info',
+        serviceInterested: 'Tax Services',
+        referralSource: 'Google',
+        turnstileToken: 'valid-token',
+      }),
+    )
+    expect(res.status).toBe(200)
+
+    const webhookCall = (fetchSpy.mock.calls as unknown as [string, RequestInit][]).find(
+      ([url]) => !String(url).includes('cloudflare.com'),
+    )
+    const sentBody = JSON.parse(webhookCall![1].body as string)
+    expect(sentBody.type).toBe('client-info')
+    expect(sentBody.serviceInterested).toBe('Tax Services')
+    expect(sentBody.source).toBe('website-client-info')
   })
 
   // -----------------------------------------------------------------------

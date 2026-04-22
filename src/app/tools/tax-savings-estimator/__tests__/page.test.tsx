@@ -199,8 +199,8 @@ describe("TaxSavingsEstimator – lead capture form", () => {
     expect(JSON.parse(opts.body)).toMatchObject({
       fullName: "Jane Doe",
       phone: "9295551234",
-      source: "tax-estimator",
-      serviceType: "tax",
+      source: "tool-tax-savings",
+      type: "contact",
     });
   });
 

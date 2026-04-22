@@ -77,6 +77,7 @@ describe("HomeImprovementForm", () => {
       hasExistingLicense: "yes",
       licenseNumber: "LIC-12345",
       type: "home-improvement",
+      source: "website-home-improvement",
     });
 
     expect(await screen.findByText(/thank you, jamie contractor/i)).toBeInTheDocument();

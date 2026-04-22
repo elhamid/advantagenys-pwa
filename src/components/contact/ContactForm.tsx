@@ -4,6 +4,8 @@ import { useState } from "react";
 import { Turnstile } from "@marsidev/react-turnstile";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { useUtmParams } from "@/hooks/useUtmParams";
+import type { ContactLead } from "@/lib/leads/types";
 
 const businessTypes = [
   "Contractor",
@@ -33,6 +35,8 @@ interface FormData {
 }
 
 export function ContactForm() {
+  const utm = useUtmParams();
+  const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
   const [formData, setFormData] = useState<FormData>({
     fullName: "",
     phone: "",
@@ -60,11 +64,24 @@ export function ContactForm() {
     setSubmitting(true);
     setError(null);
 
+    const payload: ContactLead & { turnstileToken?: string } = {
+      type: "contact",
+      source: "website-contact-form",
+      fullName: formData.fullName,
+      phone: formData.phone,
+      email: formData.email || undefined,
+      businessType: formData.businessType || undefined,
+      services: formData.services.length > 0 ? formData.services : undefined,
+      message: formData.message || undefined,
+      utm: Object.keys(utm).length > 0 ? utm : undefined,
+      turnstileToken: turnstileToken || undefined,
+    };
+
     try {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...formData, turnstileToken }),
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();
@@ -99,6 +116,14 @@ export function ContactForm() {
 
   const inputClasses =
     "w-full rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-[var(--text)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--blue-accent)] focus:border-transparent transition-all";
+
+  // If Turnstile site key is missing in production, disable the form and
+  // surface a clear error. Prevents silent lead loss from misconfigured envs.
+  const missingTurnstileInProd =
+    !turnstileSiteKey &&
+    typeof window !== "undefined" &&
+    window.location.hostname !== "localhost" &&
+    window.location.hostname !== "127.0.0.1";
 
   return (
     <Card>
@@ -211,12 +236,25 @@ export function ContactForm() {
           />
         </div>
 
-        {/* Turnstile */}
-        <Turnstile
-          siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "1x00000000000000000000AA"}
-          onSuccess={(token) => setTurnstileToken(token)}
-          options={{ size: "invisible" }}
-        />
+        {/* Turnstile — render only when site key is configured */}
+        {turnstileSiteKey && (
+          <Turnstile
+            siteKey={turnstileSiteKey}
+            onSuccess={(token) => setTurnstileToken(token)}
+            options={{ size: "invisible" }}
+          />
+        )}
+
+        {/* Missing-config warning — blocks submit + surfaces the problem */}
+        {missingTurnstileInProd && (
+          <p className="text-sm text-red-500 text-center">
+            Verification service is not configured. Please call{" "}
+            <a href="tel:+19299331396" className="underline font-medium">
+              (929) 933-1396
+            </a>{" "}
+            to reach us directly.
+          </p>
+        )}
 
         {/* Error */}
         {error && (
@@ -224,7 +262,12 @@ export function ContactForm() {
         )}
 
         {/* Submit */}
-        <Button type="submit" size="lg" className="w-full" disabled={submitting}>
+        <Button
+          type="submit"
+          size="lg"
+          className="w-full"
+          disabled={submitting || missingTurnstileInProd}
+        >
           {submitting ? "Sending..." : "Request Free Consultation"}
         </Button>
 

@@ -6,6 +6,7 @@ import { Container } from "@/components/ui/Container";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { PHONE } from "@/lib/constants";
+import { useUtmParams } from "@/hooks/useUtmParams";
 
 /* ---------- flow types ---------- */
 type Answer = "yes" | "no" | null;
@@ -93,6 +94,7 @@ const jsonLd = {
 
 /* ---------- component ---------- */
 export default function ItinEligibilityChecker() {
+  const utm = useUtmParams();
   const [currentQ, setCurrentQ] = useState(0);
   const [outcome, setOutcome] = useState<Outcome>(null);
   const [showGate, setShowGate] = useState(false);
@@ -128,11 +130,12 @@ export default function ItinEligibilityChecker() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          type: "contact",
+          source: "tool-itin-eligibility",
           fullName: leadForm.fullName,
           phone: leadForm.phone,
-          source: "itin-checker",
-          serviceType: "itin",
           message: `ITIN Eligibility: ${outcome}. Answers: ${JSON.stringify(answers)}`,
+          utm: Object.keys(utm).length > 0 ? utm : undefined,
         }),
       });
       const data = await res.json();

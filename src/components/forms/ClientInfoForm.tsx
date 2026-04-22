@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { useUtmParams } from "@/hooks/useUtmParams";
+import type { ClientInfoLead } from "@/lib/leads/types";
 
 const serviceOptions = [
   "Business Formation",
@@ -26,7 +28,7 @@ const referralSources = [
 ] as const;
 
 interface ClientInfoFormData {
-  fullLegalName: string;
+  fullName: string;
   dateOfBirth: string;
   phone: string;
   email: string;
@@ -42,8 +44,9 @@ interface ClientInfoFormData {
 }
 
 export function ClientInfoForm() {
+  const utm = useUtmParams();
   const [formData, setFormData] = useState<ClientInfoFormData>({
-    fullLegalName: "",
+    fullName: "",
     dateOfBirth: "",
     phone: "",
     email: "",
@@ -73,11 +76,30 @@ export function ClientInfoForm() {
     setLoading(true);
     setError(null);
 
+    const payload: ClientInfoLead = {
+      type: "client-info",
+      source: "website-client-info",
+      fullName: formData.fullName,
+      phone: formData.phone,
+      email: formData.email || undefined,
+      dateOfBirth: formData.dateOfBirth || undefined,
+      address: formData.address || undefined,
+      city: formData.city || undefined,
+      state: formData.state || undefined,
+      zipCode: formData.zipCode || undefined,
+      ssnOrItin: formData.ssnOrItin || undefined,
+      businessName: formData.businessName || undefined,
+      serviceInterested: formData.serviceInterested || undefined,
+      referralSource: formData.referralSource || undefined,
+      additionalNotes: formData.additionalNotes || undefined,
+      utm: Object.keys(utm).length > 0 ? utm : undefined,
+    };
+
     try {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...formData, type: "client-info" }),
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();
@@ -88,13 +110,11 @@ export function ClientInfoForm() {
 
       setSubmitted(true);
     } catch (err) {
-      if (err instanceof Error && err.message !== "Something went wrong. Please try again.") {
-        setError(err.message);
-      } else {
-        // API route may not exist yet; treat as success for now
-        console.log("Client info submission:", { ...formData, type: "client-info" });
-        setSubmitted(true);
-      }
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Something went wrong. Please try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -105,7 +125,7 @@ export function ClientInfoForm() {
       <Card className="text-center py-12">
         <div className="text-4xl mb-4 text-[var(--green)]">&#10003;</div>
         <h3 className="text-xl font-bold text-[var(--text)] mb-2">
-          Thank You, {formData.fullLegalName}!
+          Thank You, {formData.fullName}!
         </h3>
         <p className="text-[var(--text-secondary)]">
           Your information has been received. We&apos;ll be in touch within 1 business day.
@@ -131,15 +151,15 @@ export function ClientInfoForm() {
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Full Legal Name */}
         <div>
-          <label htmlFor="fullLegalName" className="block text-sm font-medium text-[var(--text)] mb-1">
+          <label htmlFor="fullName" className="block text-sm font-medium text-[var(--text)] mb-1">
             Full Legal Name <span className="text-red-500">*</span>
           </label>
           <input
             type="text"
-            id="fullLegalName"
-            name="fullLegalName"
+            id="fullName"
+            name="fullName"
             required
-            value={formData.fullLegalName}
+            value={formData.fullName}
             onChange={handleChange}
             placeholder="As it appears on your ID"
             className={inputClasses}

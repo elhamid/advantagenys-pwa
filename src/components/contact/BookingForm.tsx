@@ -4,6 +4,8 @@ import { useState } from "react";
 import { Turnstile } from "@marsidev/react-turnstile";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { useUtmParams } from "@/hooks/useUtmParams";
+import type { BookingLead } from "@/lib/leads/types";
 
 const serviceTypes = [
   "Business Formation",
@@ -34,6 +36,8 @@ interface BookingFormData {
 }
 
 export function BookingForm() {
+  const utm = useUtmParams();
+  const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
   const [formData, setFormData] = useState<BookingFormData>({
     fullName: "",
     phone: "",
@@ -45,25 +49,48 @@ export function BookingForm() {
   });
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [turnstileToken, setTurnstileToken] = useState<string>("");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
+    setError(null);
+
+    const payload: BookingLead & { turnstileToken?: string } = {
+      type: "booking",
+      source: "website-booking",
+      fullName: formData.fullName,
+      phone: formData.phone,
+      email: formData.email || undefined,
+      serviceType: formData.serviceType || undefined,
+      preferredDate: formData.preferredDate || undefined,
+      preferredTime: formData.preferredTime || undefined,
+      description: formData.description || undefined,
+      utm: Object.keys(utm).length > 0 ? utm : undefined,
+      turnstileToken: turnstileToken || undefined,
+    };
 
     try {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...formData, type: "booking", turnstileToken }),
+        body: JSON.stringify(payload),
       });
 
-      if (!res.ok) throw new Error("Submission failed");
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Something went wrong. Please try again.");
+      }
+
       setSubmitted(true);
-    } catch {
-      // API route may not exist yet; treat as success for now
-      console.log("Booking form submission:", { ...formData, type: "booking" });
-      setSubmitted(true);
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Something went wrong. Please try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -94,6 +121,12 @@ export function BookingForm() {
 
   // Set min date to today
   const today = new Date().toISOString().split("T")[0];
+
+  const missingTurnstileInProd =
+    !turnstileSiteKey &&
+    typeof window !== "undefined" &&
+    window.location.hostname !== "localhost" &&
+    window.location.hostname !== "127.0.0.1";
 
   return (
     <Card>
@@ -223,15 +256,38 @@ export function BookingForm() {
           />
         </div>
 
-        {/* Turnstile */}
-        <Turnstile
-          siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "1x00000000000000000000AA"}
-          onSuccess={(token) => setTurnstileToken(token)}
-          options={{ size: "invisible" }}
-        />
+        {/* Turnstile — render only when site key is configured */}
+        {turnstileSiteKey && (
+          <Turnstile
+            siteKey={turnstileSiteKey}
+            onSuccess={(token) => setTurnstileToken(token)}
+            options={{ size: "invisible" }}
+          />
+        )}
+
+        {/* Missing-config warning */}
+        {missingTurnstileInProd && (
+          <p className="text-sm text-red-500 text-center">
+            Verification service is not configured. Please call{" "}
+            <a href="tel:+19299331396" className="underline font-medium">
+              (929) 933-1396
+            </a>{" "}
+            to reach us directly.
+          </p>
+        )}
+
+        {/* Error */}
+        {error && (
+          <p className="text-sm text-red-500 text-center">{error}</p>
+        )}
 
         {/* Submit */}
-        <Button type="submit" size="lg" className="w-full" disabled={loading}>
+        <Button
+          type="submit"
+          size="lg"
+          className="w-full"
+          disabled={loading || missingTurnstileInProd}
+        >
           {loading ? "Submitting..." : "Book Appointment"}
         </Button>
 

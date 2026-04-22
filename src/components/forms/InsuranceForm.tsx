@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { useUtmParams } from "@/hooks/useUtmParams";
+import type { InsuranceLead } from "@/lib/leads/types";
 
 const businessTypes = [
   "LLC",
@@ -50,6 +52,7 @@ interface InsuranceFormData {
 }
 
 export function InsuranceForm() {
+  const utm = useUtmParams();
   const [formData, setFormData] = useState<InsuranceFormData>({
     fullName: "",
     phone: "",
@@ -86,11 +89,36 @@ export function InsuranceForm() {
     setSubmitting(true);
     setError(null);
 
+    const payload: InsuranceLead = {
+      type: "insurance",
+      source: "website-insurance",
+      fullName: formData.fullName,
+      phone: formData.phone,
+      email: formData.email || undefined,
+      businessName: formData.businessName || undefined,
+      businessType: formData.businessType || undefined,
+      businessAddress: formData.businessAddress || undefined,
+      city: formData.city || undefined,
+      state: formData.state || undefined,
+      zipCode: formData.zipCode || undefined,
+      industryTrade: formData.industryTrade || undefined,
+      numberOfEmployees: formData.numberOfEmployees || undefined,
+      annualRevenue: formData.annualRevenue || undefined,
+      insuranceTypesNeeded:
+        formData.insuranceTypesNeeded.length > 0
+          ? formData.insuranceTypesNeeded
+          : undefined,
+      currentProvider: formData.currentProvider || undefined,
+      policyExpiration: formData.policyExpiration || undefined,
+      notes: formData.notes || undefined,
+      utm: Object.keys(utm).length > 0 ? utm : undefined,
+    };
+
     try {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...formData, type: "insurance" }),
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();

@@ -174,8 +174,8 @@ describe("BusinessReadinessChecker – lead gate submission", () => {
     expect(JSON.parse(opts.body)).toMatchObject({
       fullName: "Test User",
       phone: "9295551234",
-      source: "business-readiness",
-      serviceType: "formation",
+      source: "tool-biz-readiness",
+      type: "contact",
     });
   });
 

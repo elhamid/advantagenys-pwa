@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { useUtmParams } from "@/hooks/useUtmParams";
+import type { HomeImprovementLead } from "@/lib/leads/types";
 
 const licenseTypes = [
   "Home Improvement Contractor",
@@ -28,6 +30,7 @@ interface HomeImprovementFormData {
 }
 
 export function HomeImprovementForm() {
+  const utm = useUtmParams();
   const [formData, setFormData] = useState<HomeImprovementFormData>({
     fullName: "",
     phone: "",
@@ -58,11 +61,29 @@ export function HomeImprovementForm() {
     setLoading(true);
     setError(null);
 
+    const payload: HomeImprovementLead = {
+      type: "home-improvement",
+      source: "website-home-improvement",
+      fullName: formData.fullName,
+      phone: formData.phone,
+      email: formData.email || undefined,
+      businessName: formData.businessName || undefined,
+      businessAddress: formData.businessAddress || undefined,
+      city: formData.city || undefined,
+      state: formData.state || undefined,
+      zipCode: formData.zipCode || undefined,
+      licenseType: formData.licenseType || undefined,
+      hasExistingLicense: formData.hasExistingLicense || undefined,
+      licenseNumber: formData.licenseNumber || undefined,
+      additionalNotes: formData.additionalNotes || undefined,
+      utm: Object.keys(utm).length > 0 ? utm : undefined,
+    };
+
     try {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...formData, type: "home-improvement" }),
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();
@@ -73,13 +94,11 @@ export function HomeImprovementForm() {
 
       setSubmitted(true);
     } catch (err) {
-      if (err instanceof Error && err.message !== "Something went wrong. Please try again.") {
-        setError(err.message);
-      } else {
-        // API route may not exist yet; treat as success for now
-        console.log("Home improvement submission:", { ...formData, type: "home-improvement" });
-        setSubmitted(true);
-      }
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Something went wrong. Please try again."
+      );
     } finally {
       setLoading(false);
     }
