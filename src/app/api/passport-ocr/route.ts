@@ -2,29 +2,13 @@
 // Uses Gemini 2.5 Flash multimodal via OpenRouter for OCR + field extraction.
 
 import { NextRequest } from "next/server";
+import { createRateLimiter, getClientIp } from "@/lib/rate-limit";
 
 // ============================================================================
-// Rate limiter — 5 requests per minute per IP
+// Rate limiter — 5 requests per minute per IP (shared helper)
 // ============================================================================
 
-const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
-
-function isRateLimited(ip: string): boolean {
-  const now = Date.now();
-  const entry = rateLimitMap.get(ip);
-
-  if (!entry || now > entry.resetAt) {
-    rateLimitMap.set(ip, { count: 1, resetAt: now + 60_000 });
-    return false;
-  }
-
-  if (entry.count >= 5) {
-    return true;
-  }
-
-  entry.count++;
-  return false;
-}
+const limiter = createRateLimiter(5, 60_000, { label: "api/passport-ocr" });
 
 // ============================================================================
 // Allowed passport field keys — strip unknown keys from LLM response
@@ -109,13 +93,10 @@ function isValidImageDataUrl(url: string): boolean {
 
 export async function POST(request: NextRequest) {
   // 1. Extract client IP for rate limiting
-  const ip =
-    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-    request.headers.get("x-real-ip") ||
-    "unknown";
+  const ip = getClientIp(request.headers);
 
   // 2. Rate limit check
-  if (isRateLimited(ip)) {
+  if (limiter.isLimited(ip)) {
     return Response.json(
       { success: false, error: "Too many requests. Please wait a moment." },
       { status: 429 }

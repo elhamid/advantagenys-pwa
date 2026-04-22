@@ -1,4 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createRateLimiter, getClientIp } from "@/lib/rate-limit";
+
+// 60 requests / minute / IP — enough headroom for legitimate JotForm replays
+// but chokes off spam from a single source. JotForm's own servers rotate
+// egress IPs so genuine traffic won't share an IP across forms.
+const limiter = createRateLimiter(60, 60_000, { label: "api/webhooks/jotform" });
 
 interface JotFormAnswer {
   name: string;
@@ -41,6 +47,15 @@ function validatePayload(submission: JotFormSubmission): boolean {
 }
 
 export async function POST(request: NextRequest) {
+  // IP rate limit
+  const ip = getClientIp(request.headers);
+  if (limiter.isLimited(ip)) {
+    return NextResponse.json(
+      { error: "Too many requests" },
+      { status: 429 }
+    );
+  }
+
   const webhookSecret = request.headers.get("x-jotform-webhook-secret");
   const expectedSecret = process.env.JOTFORM_API_KEY;
 

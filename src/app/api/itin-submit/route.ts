@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 import { uploadMultipleItinDocuments } from "@/lib/itin-storage";
+import { createRateLimiter, getClientIp } from "@/lib/rate-limit";
+
+// 5 submissions / minute / IP — prevents scripted spam. The same-phone
+// duplicate guard below handles accidental double-submits.
+const ipLimiter = createRateLimiter(5, 60_000, { label: "api/itin-submit" });
 
 /**
  * POST /api/itin-submit
@@ -415,6 +420,15 @@ async function forwardToTaskboard(
 export async function POST(request: NextRequest) {
   const isTest = request.nextUrl.searchParams.get("test") === "1";
   if (isTest) console.log("[itin-submit] TEST MODE — using staging JotForm");
+
+  // IP rate limit — 5/minute/IP on top of same-phone dup guard
+  const ip = getClientIp(request.headers);
+  if (ipLimiter.isLimited(ip)) {
+    return NextResponse.json(
+      { success: false, error: "Too many submissions. Please wait a moment." },
+      { status: 429 }
+    );
+  }
 
   try {
     const formData = await request.formData();
