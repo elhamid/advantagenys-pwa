@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, type ReactNode } from "react";
-import { motion, useInView } from "framer-motion";
+import { motion, useInView, useReducedMotion } from "framer-motion";
 import Image from "next/image";
 import { PHONE, ADDRESS, HOURS } from "@/lib/constants";
 import { useInAppBrowser, safeBlankTarget } from "@/hooks/useInAppBrowser";
@@ -20,11 +20,14 @@ function ScrollReveal({
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-60px" });
+  const reduceMotion = useReducedMotion();
+  const initial = reduceMotion ? false : { opacity: 0, y: 32 };
+  const animate = reduceMotion ? {} : isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 32 };
   return (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, y: 32 }}
-      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 32 }}
+      initial={initial}
+      animate={animate}
       transition={{ type: "spring", stiffness: 260, damping: 25, delay }}
       className={className}
     >

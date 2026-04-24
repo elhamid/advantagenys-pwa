@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { Container } from "@/components/ui/Container";
 import { Card } from "@/components/ui/Card";
 import { REVIEWS } from "@/lib/reviews";
@@ -25,6 +25,7 @@ export function Testimonials() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const resumeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const reduceMotion = useReducedMotion();
 
   const pauseAutoplay = useCallback(() => {
     setIsPaused(true);
@@ -84,9 +85,9 @@ export function Testimonials() {
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeIndex}
-                initial={{ opacity: 0, x: 40 }}
+                initial={reduceMotion ? false : { opacity: 0, x: 40 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -40 }}
+                exit={reduceMotion ? { opacity: 0 } : { opacity: 0, x: -40 }}
                 transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1.0] }}
               >
                 <Card>
