@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Container } from "@/components/ui/Container";
 import { ContactFormTabs } from "@/components/contact/ContactFormTabs";
 import { WhatsAppLink } from "@/components/ui/WhatsAppLink";
@@ -89,7 +90,9 @@ export default function ContactPage() {
 
         {/* Forms with Tab Toggle */}
         <div className="max-w-2xl">
-          <ContactFormTabs />
+          <Suspense fallback={<div className="h-64" />}>
+            <ContactFormTabs />
+          </Suspense>
         </div>
       </Container>
     </section>

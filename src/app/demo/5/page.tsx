@@ -12,7 +12,7 @@ const TEAM_PHOTOS: Record<string, string> = {
   Zia: "/images/team/zia.jpg",
   Akram: "/images/team/akram.jpg",
   Riaz: "/images/team/riaz-v7.jpg",
-  Hamid: "/images/team/hamid-v13.jpg",
+  Hamid: "/images/team/hamid-v11.png",
 };
 
 /* ═══════════════════════════════════════════════════════════════
