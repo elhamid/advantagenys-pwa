@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
+import { AnimatePresence } from "framer-motion";
 import { ChatPanel } from "./ChatPanel";
 import { chatOpen } from "@/lib/analytics/events";
 
@@ -62,15 +63,17 @@ export function ChatWidget() {
 
   return (
     <div
-      className="fixed z-40"
+      className="fixed z-50"
       style={{
         right: "calc(1.5rem + env(safe-area-inset-right))",
         bottom: "calc(1.5rem + env(safe-area-inset-bottom))",
       }}
     >
-      {open && (
-        <ChatPanel pageContext={pathname} onClose={() => setOpen(false)} />
-      )}
+      <AnimatePresence>
+        {open && (
+          <ChatPanel pageContext={pathname} onClose={() => setOpen(false)} />
+        )}
+      </AnimatePresence>
 
       {/* Page-aware nudge pill */}
       {!open && nudge && (
@@ -79,7 +82,7 @@ export function ChatWidget() {
           role="status"
           aria-live="polite"
         >
-          <span className="rounded-full bg-slate-900 px-3.5 py-2 text-xs font-semibold text-white shadow-lg">
+          <span className="rounded-full bg-slate-900 px-3.5 py-2 text-sm font-semibold text-white shadow-lg">
             {nudge}
           </span>
         </div>
@@ -92,7 +95,7 @@ export function ChatWidget() {
           setOpen(next);
           setNudge(null);
         }}
-        className="w-14 h-14 rounded-full shadow-[var(--shadow-lg)] flex items-center justify-center text-white transition-transform hover:scale-105 active:scale-95"
+        className="w-12 h-12 sm:w-14 sm:h-14 rounded-full shadow-[var(--shadow-lg)] flex items-center justify-center text-white transition-transform hover:scale-105 active:scale-95"
         style={{ background: "var(--blue-accent)" }}
         aria-label={open ? "Close chat" : "Chat with Ava"}
       >
