@@ -93,8 +93,37 @@ const taxServices = [
   },
 ];
 
+const PAGE_FAQS = [
+  {
+    question: "Do I need an accountant to file my business taxes in New York?",
+    answer:
+      "You are not legally required to use an accountant, but businesses with employees, multiple revenue streams, or complex deductions almost always pay more in taxes or penalties when filing on their own. An experienced preparer typically finds deductions and credits that offset the cost of professional services. We handle federal, NY State, and local filings for LLCs, S-Corps, C-Corps, and partnerships.",
+  },
+  {
+    question: "What is an ITIN and do I need one?",
+    answer:
+      "An ITIN (Individual Taxpayer Identification Number) is a tax processing number issued by the IRS for individuals who are not eligible for a Social Security Number. If you earn income in the US but do not have an SSN — for example, as an immigrant contractor or self-employed worker — you need an ITIN to file your taxes. As an IRS Certified Acceptance Agent, we certify your documents in person so you do not have to mail your original passport to the IRS.",
+  },
+  {
+    question: "What happens if I receive a letter from the IRS?",
+    answer:
+      "Do not ignore it. Most IRS notices are not as serious as they look, but they have response deadlines. Failing to respond can turn a small issue into a lien, levy, or audit. Bring the letter to us and we will review it, explain what the IRS is asking, and respond on your behalf. We handle IRS notices, audits, installment agreements, and penalty abatement.",
+  },
+  {
+    question: "How does payroll tax work for a small business in NY?",
+    answer:
+      "Employers must withhold federal income tax, Social Security, and Medicare from employee wages, and deposit those amounts with the IRS on a set schedule. In New York, you also owe state withholding and unemployment insurance. Quarterly filings (Form 941, NYS-45) and annual filings (W-2s, 1099s, Form 940) are required. Payroll tax penalties for late deposits accumulate quickly — we file everything on time to keep you compliant.",
+  },
+  {
+    question: "What is the difference between sales tax and income tax for my business?",
+    answer:
+      "Sales tax is collected from customers on taxable sales and remitted to New York State — it is not your money. Income tax is based on your business profit and is owed to federal and state governments. Many small business owners confuse the two or spend sales tax collections before remitting them, which leads to serious penalties. We handle both sales tax filings and business income tax returns.",
+  },
+];
+
 export default async function TaxServicesPage() {
-  const faqs = await getServiceFAQs("tax");
+  const dbFaqs = await getServiceFAQs("tax");
+  const faqs = dbFaqs.length > 0 ? dbFaqs : PAGE_FAQS;
   return (
     <>
       <JsonLd
@@ -303,7 +332,7 @@ export default async function TaxServicesPage() {
               </Button>
             </div>
           </div>
-          {faqs.length > 0 && <FAQSection faqs={faqs} />}
+          <FAQSection faqs={faqs} title="Frequently asked questions" />
         </Container>
       </section>
     </>

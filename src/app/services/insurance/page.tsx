@@ -60,8 +60,37 @@ const insuranceTypes = [
   },
 ];
 
+const PAGE_FAQS = [
+  {
+    question: "Is workers compensation insurance required in New York State?",
+    answer:
+      "Yes. New York State requires virtually all employers — including those with just one employee — to carry workers compensation insurance. Failure to maintain coverage is a criminal offense and can result in fines, stop-work orders, and personal liability for any workplace injuries. Coverage must be in place before your first employee starts work.",
+  },
+  {
+    question: "What is the difference between workers compensation and disability insurance in NY?",
+    answer:
+      "Workers compensation covers employees who are injured or become ill because of their job — on-the-job incidents. New York State Disability Benefits Law (DBL) is a separate requirement that covers employees who cannot work due to off-the-job injuries or illnesses, including pregnancy-related conditions. Both are required by state law for businesses with employees, and both need to be in place separately.",
+  },
+  {
+    question: "Do I need general liability insurance if I already have workers comp?",
+    answer:
+      "Yes. Workers compensation only covers your employees. General liability insurance protects your business against third-party claims — bodily injury to a customer or visitor, property damage you cause, and advertising injury. Most commercial leases, contracts, and licensing agencies require proof of general liability coverage. The two policies serve completely different purposes.",
+  },
+  {
+    question: "How much does business insurance typically cost for a small business in NYC?",
+    answer:
+      "Rates vary significantly by industry, employee count, annual payroll, and claims history. A general liability policy for a low-risk retail business may be relatively affordable annually, while contractors or restaurants with higher exposure will pay more. Workers comp rates are calculated per $100 of payroll and vary by employee classification code. We shop multiple carriers to find competitive rates for your specific industry and profile.",
+  },
+  {
+    question: "What makes Advantage different from buying insurance online?",
+    answer:
+      "When you buy insurance online, you are on your own when audit time comes. We provide your coverage and defend you when the workers comp carrier audits your payroll classifications. Because we also handle your payroll, tax records, and business filings, we already have the documentation needed to challenge overcharges. That combination of coverage plus audit defense is something direct insurers and online brokers do not offer.",
+  },
+];
+
 export default async function InsurancePage() {
-  const faqs = await getServiceFAQs("insurance");
+  const dbFaqs = await getServiceFAQs("insurance");
+  const faqs = dbFaqs.length > 0 ? dbFaqs : PAGE_FAQS;
   return (
     <>
       <JsonLd
@@ -305,7 +334,7 @@ export default async function InsurancePage() {
               </Button>
             </div>
           </div>
-          {faqs.length > 0 && <FAQSection faqs={faqs} />}
+          <FAQSection faqs={faqs} title="Frequently asked questions" />
         </Container>
       </section>
     </>

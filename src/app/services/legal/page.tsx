@@ -78,8 +78,37 @@ const legalServices = [
   },
 ];
 
+const PAGE_FAQS = [
+  {
+    question: "What is an ITIN and why do I need one?",
+    answer:
+      "An Individual Taxpayer Identification Number (ITIN) is a tax processing number issued by the IRS for individuals who are not eligible for a Social Security Number. If you earn income in the United States as an immigrant, contractor, or self-employed worker without an SSN, you need an ITIN to file your federal tax return. As an IRS Certified Acceptance Agent, we verify your identity documents in person — so you do not need to mail your original passport to the IRS.",
+  },
+  {
+    question: "What is the difference between an immigration petition and a citizenship application?",
+    answer:
+      "An immigration petition (Form I-130) is filed by a US citizen or permanent resident to sponsor a qualifying relative for lawful permanent residence — a green card. A citizenship application (Form N-400) is filed by someone who already holds a green card and meets the residency and eligibility requirements to become a US citizen. They are separate processes with different eligibility criteria. We assist with both.",
+  },
+  {
+    question: "Can Advantage handle my divorce filing in New York?",
+    answer:
+      "We assist with the preparation and filing of divorce paperwork in New York State. Our team helps you gather required documents, understand your options, and navigate the filing process. For matters involving contested assets, custody disputes, or complex legal issues, we refer you to licensed attorneys. We work with bilingual clients and provide guidance in your preferred language.",
+  },
+  {
+    question: "How long does an ITIN application take?",
+    answer:
+      "ITIN processing times at the IRS vary, but applications submitted through a Certified Acceptance Agent are generally processed faster than applications mailed directly by individuals. The IRS typically issues ITINs within several weeks of receiving a complete application. We track your application status and follow up with the IRS if there are delays.",
+  },
+  {
+    question: "Do you offer services in languages other than English?",
+    answer:
+      "Yes. Our team includes bilingual staff and we regularly assist clients in Spanish, Bengali, Hindi, Urdu, and other languages spoken in the Queens community. Immigration, legal, and tax matters are stressful enough without a language barrier — we make sure you fully understand every step of the process.",
+  },
+];
+
 export default async function LegalServicesPage() {
-  const faqs = await getServiceFAQs("legal");
+  const dbFaqs = await getServiceFAQs("legal");
+  const faqs = dbFaqs.length > 0 ? dbFaqs : PAGE_FAQS;
   return (
     <>
       <JsonLd
@@ -284,7 +313,7 @@ export default async function LegalServicesPage() {
               </Button>
             </div>
           </div>
-          {faqs.length > 0 && <FAQSection faqs={faqs} />}
+          <FAQSection faqs={faqs} title="Frequently asked questions" />
         </Container>
       </section>
     </>
