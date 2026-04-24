@@ -16,7 +16,13 @@ import { Card } from "@/components/ui/Card";
  *   "redirect" — CTA button → window.location redirect to AOS booking page
  *   "iframe"   — CTA button → modal with AOS iframe; postMessage closes on success
  */
-export function BookAppointmentTrigger({ selectedService }: { selectedService?: string }) {
+export function BookAppointmentTrigger({
+  selectedService,
+  onServiceChange,
+}: {
+  selectedService?: string;
+  onServiceChange?: (service: string) => void;
+}) {
   const shouldReduceMotion = useReducedMotion();
   const [iframeOpen, setIframeOpen] = useState(false);
   const [iframeConfirmed, setIframeConfirmed] = useState<{ bookingId: string } | null>(null);
@@ -60,7 +66,7 @@ export function BookAppointmentTrigger({ selectedService }: { selectedService?: 
 
   // ---- form mode (Phase 0) ----
   if (BOOKING_MODE === "form") {
-    return <BookingForm defaultService={selectedService} />;
+    return <BookingForm defaultService={selectedService} onServiceChange={onServiceChange} />;
   }
 
   // ---- redirect mode ----

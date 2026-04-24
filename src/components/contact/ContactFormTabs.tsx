@@ -147,7 +147,14 @@ export function ContactFormTabs() {
                     })}
                   </div>
                 </div>
-                <BookAppointmentTrigger selectedService={selectedService} />
+                <BookAppointmentTrigger
+                  selectedService={selectedService}
+                  onServiceChange={(s) =>
+                    setSelectedService(
+                      SERVICE_PILLS.includes(s as ServicePill) ? (s as ServicePill) : undefined,
+                    )
+                  }
+                />
               </div>
             </motion.div>
           )}

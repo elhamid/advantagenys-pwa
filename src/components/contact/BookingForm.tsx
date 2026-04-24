@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Turnstile } from "@marsidev/react-turnstile";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -29,7 +29,13 @@ interface BookingFormData {
 
 const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 
-export function BookingForm({ defaultService }: { defaultService?: string } = {}) {
+export function BookingForm({
+  defaultService,
+  onServiceChange,
+}: {
+  defaultService?: string;
+  onServiceChange?: (service: string) => void;
+} = {}) {
   const [formData, setFormData] = useState<BookingFormData>({
     fullName: "",
     phone: "",
@@ -42,6 +48,16 @@ export function BookingForm({ defaultService }: { defaultService?: string } = {}
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [turnstileToken, setTurnstileToken] = useState<string>("");
+
+  // Sync incoming `defaultService` changes (e.g., parent pill picker) into the
+  // dropdown after mount. Without this, clicks on the parent picker drift away
+  // from the visible/submitted value.
+  useEffect(() => {
+    if (defaultService === undefined) return;
+    setFormData((prev) =>
+      prev.serviceType === defaultService ? prev : { ...prev, serviceType: defaultService },
+    );
+  }, [defaultService]);
 
   // Fail-closed: block submit if the Turnstile key is missing in a non-localhost origin
   const missingTurnstileInProd =
@@ -182,7 +198,11 @@ export function BookingForm({ defaultService }: { defaultService?: string } = {}
             id="serviceType"
             required
             value={formData.serviceType}
-            onChange={(e) => setFormData((prev) => ({ ...prev, serviceType: e.target.value }))}
+            onChange={(e) => {
+              const next = e.target.value;
+              setFormData((prev) => ({ ...prev, serviceType: next }));
+              onServiceChange?.(next);
+            }}
             className={inputClasses}
           >
             <option value="">Select a service</option>
