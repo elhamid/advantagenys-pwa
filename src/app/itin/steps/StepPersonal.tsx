@@ -11,7 +11,7 @@ function formatPhoneDisplay(raw: string): string {
   return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6, 10)}`;
 }
 
-export function StepPersonal({ data, errors, update, companyLocked = false }: StepProps) {
+export function StepPersonal({ data, errors, update, companyLocked = false, priorityCountry }: StepProps) {
   return (
     <div className="space-y-3">
       <div>
@@ -106,6 +106,7 @@ export function StepPersonal({ data, errors, update, companyLocked = false }: St
             onChange={(v) => update("countryOfBirth", v)}
             required
             error={errors.countryOfBirth}
+            priorityCountry={priorityCountry}
           />
         </div>
         <div>
@@ -116,6 +117,7 @@ export function StepPersonal({ data, errors, update, companyLocked = false }: St
             onChange={(v) => update("countryOfCitizenship", v)}
             required
             error={errors.countryOfCitizenship}
+            priorityCountry={priorityCountry}
           />
         </div>
       </div>

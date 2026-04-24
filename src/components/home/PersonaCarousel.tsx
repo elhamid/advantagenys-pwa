@@ -210,6 +210,7 @@ const PERSONAS: Persona[] = [
 function PersonaPanel({ persona, index }: { persona: Persona; index: number }) {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
+  const reduceMotion = useReducedMotion();
 
   return (
     <div
@@ -234,8 +235,8 @@ function PersonaPanel({ persona, index }: { persona: Persona; index: number }) {
         style={{ backgroundColor: "#0A0F1A" }}
       >
         <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
+          initial={reduceMotion ? false : { opacity: 0, y: 24 }}
+          animate={reduceMotion ? {} : isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
           transition={{ type: "spring", stiffness: 260, damping: 25, delay: 0.1 }}
         >
           <span
@@ -247,8 +248,8 @@ function PersonaPanel({ persona, index }: { persona: Persona; index: number }) {
         </motion.div>
 
         <motion.blockquote
-          initial={{ opacity: 0, y: 24 }}
-          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
+          initial={reduceMotion ? false : { opacity: 0, y: 24 }}
+          animate={reduceMotion ? {} : isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
           transition={{ type: "spring", stiffness: 260, damping: 25, delay: 0.25 }}
           className="text-2xl lg:text-3xl font-light italic text-white mb-8 leading-relaxed"
         >
@@ -256,16 +257,16 @@ function PersonaPanel({ persona, index }: { persona: Persona; index: number }) {
         </motion.blockquote>
 
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={isInView ? { opacity: 1 } : { opacity: 0 }}
+          initial={reduceMotion ? false : { opacity: 0 }}
+          animate={reduceMotion ? {} : isInView ? { opacity: 1 } : { opacity: 0 }}
           transition={{ duration: 0.5, delay: 0.4, ease: EASE }}
           className="w-10 h-px mb-8"
           style={{ backgroundColor: "#D4970A" }}
         />
 
         <motion.p
-          initial={{ opacity: 0, y: 24 }}
-          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
+          initial={reduceMotion ? false : { opacity: 0, y: 24 }}
+          animate={reduceMotion ? {} : isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
           transition={{ type: "spring", stiffness: 260, damping: 25, delay: 0.45 }}
           className="text-white/80 text-base lg:text-lg leading-relaxed mb-8"
         >
@@ -273,8 +274,8 @@ function PersonaPanel({ persona, index }: { persona: Persona; index: number }) {
         </motion.p>
 
         <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
+          initial={reduceMotion ? false : { opacity: 0, y: 16 }}
+          animate={reduceMotion ? {} : isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
           transition={{ type: "spring", stiffness: 260, damping: 25, delay: 0.55 }}
           className="flex flex-wrap gap-2 mb-10"
         >
@@ -290,8 +291,8 @@ function PersonaPanel({ persona, index }: { persona: Persona; index: number }) {
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
+          initial={reduceMotion ? false : { opacity: 0, y: 16 }}
+          animate={reduceMotion ? {} : isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
           transition={{ type: "spring", stiffness: 260, damping: 25, delay: 0.65 }}
         >
           <a

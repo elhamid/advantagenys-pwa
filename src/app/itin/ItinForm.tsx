@@ -105,7 +105,12 @@ interface Props {
   companyName?: string;
 }
 
+const COMPANY_PRIORITY_COUNTRIES: Record<string, string> = {
+  "Tropical Stars Inc.": "Jamaica",
+};
+
 export function ItinForm({ onSuccess, testMode = false, companyName }: Props) {
+  const priorityCountry = companyName ? (COMPANY_PRIORITY_COUNTRIES[companyName] ?? undefined) : undefined;
   const [step, setStep] = useState(0);
   const [data, setData] = useState<ItinData>(() => ({
     ...INITIAL,
@@ -553,6 +558,7 @@ export function ItinForm({ onSuccess, testMode = false, companyName }: Props) {
               errors={errors}
               update={update}
               companyLocked={!!companyName}
+              priorityCountry={priorityCountry}
             />
           )}
           {displayStep === 2 && (
@@ -561,6 +567,7 @@ export function ItinForm({ onSuccess, testMode = false, companyName }: Props) {
               errors={errors}
               update={update}
               onShowI94={() => setShowI94Lookup(true)}
+              priorityCountry={priorityCountry}
             />
           )}
           {displayStep === 3 && (

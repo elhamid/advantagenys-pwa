@@ -8,7 +8,7 @@ const TEAM_PHOTOS: Record<string, string> = {
   Zia: "/images/team/zia.jpg",
   Akram: "/images/team/akram.jpg",
   Riaz: "/images/team/riaz-v7.jpg",
-  Hamid: "/images/team/hamid-v11.jpg",
+  Hamid: "/images/team/hamid-v11.png",
 };
 
 export default function TeamSlide({ cycleCount }: { cycleCount: number }) {

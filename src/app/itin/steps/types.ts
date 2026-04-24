@@ -95,4 +95,5 @@ export interface StepProps {
   errors: Partial<Record<keyof ItinData, string>>;
   update: <K extends keyof ItinData>(field: K, value: ItinData[K]) => void;
   companyLocked?: boolean;
+  priorityCountry?: string;
 }

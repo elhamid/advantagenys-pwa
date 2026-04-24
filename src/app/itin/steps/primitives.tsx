@@ -124,8 +124,6 @@ export function ReviewField({
    Country Select
    ───────────────────────────────────────────── */
 
-const FIRST_COUNTRY = "Jamaica";
-
 const ALL_COUNTRIES = [
   "Afghanistan", "Albania", "Algeria", "Andorra", "Angola",
   "Antigua and Barbuda", "Argentina", "Armenia", "Australia", "Austria",
@@ -168,24 +166,26 @@ const ALL_COUNTRIES = [
   "Vatican City", "Venezuela", "Vietnam", "Yemen", "Zambia", "Zimbabwe",
 ];
 
-const COUNTRY_OPTIONS = (() => {
-  const rest = ALL_COUNTRIES.filter((c) => c !== FIRST_COUNTRY);
-  return { first: FIRST_COUNTRY, rest };
-})();
-
 export function CountrySelect({
   value,
   onChange,
   id,
   required,
   error,
+  priorityCountry,
 }: {
   value: string;
   onChange: (v: string) => void;
   id?: string;
   required?: boolean;
   error?: string;
+  priorityCountry?: string;
 }) {
+  const hasPriority = !!(priorityCountry && ALL_COUNTRIES.includes(priorityCountry));
+  const rest = hasPriority
+    ? ALL_COUNTRIES.filter((c) => c !== priorityCountry)
+    : ALL_COUNTRIES;
+
   return (
     <>
       <select
@@ -218,11 +218,15 @@ export function CountrySelect({
         <option value="" disabled className="bg-[#0F1B2D] text-white/40">
           Select country...
         </option>
-        <option value={COUNTRY_OPTIONS.first} className="bg-[#0F1B2D] text-white font-semibold">
-          {COUNTRY_OPTIONS.first}
-        </option>
-        <option disabled className="bg-[#0F1B2D] text-white/20">──────────</option>
-        {COUNTRY_OPTIONS.rest.map((c) => (
+        {hasPriority && (
+          <>
+            <option value={priorityCountry} className="bg-[#0F1B2D] text-white font-semibold">
+              {priorityCountry}
+            </option>
+            <option disabled className="bg-[#0F1B2D] text-white/20">──────────</option>
+          </>
+        )}
+        {rest.map((c) => (
           <option key={c} value={c} className="bg-[#0F1B2D] text-white">
             {c}
           </option>

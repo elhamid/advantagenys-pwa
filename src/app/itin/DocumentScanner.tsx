@@ -56,8 +56,8 @@ export default function DocumentScanner({
   // Delayed hint text
   useEffect(() => {
     if (state !== "live") {
-      setHintVisible(false);
-      return;
+      const t = setTimeout(() => setHintVisible(false), 0);
+      return () => clearTimeout(t);
     }
     const t = setTimeout(() => setHintVisible(true), 1000);
     return () => clearTimeout(t);
@@ -133,7 +133,8 @@ export default function DocumentScanner({
 
   // Start camera on mount, cleanup on unmount
   useEffect(() => {
-    startCamera();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void startCamera();
     return () => stopCamera();
   }, [startCamera, stopCamera]);
 

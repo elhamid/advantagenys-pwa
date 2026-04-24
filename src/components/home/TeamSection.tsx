@@ -54,6 +54,7 @@ function ScrollReveal({
 
 function TeamPhotoParallax() {
   const ref = useRef<HTMLDivElement>(null);
+  const reduceMotion = useReducedMotion();
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start end", "end start"],
@@ -62,7 +63,7 @@ function TeamPhotoParallax() {
 
   return (
     <div ref={ref} className="relative rounded-2xl overflow-hidden mb-16" style={{ aspectRatio: "987 / 550" }}>
-      <motion.div className="absolute inset-[-10%]" style={{ y }}>
+      <motion.div className="absolute inset-[-10%]" style={reduceMotion ? undefined : { y }}>
         <Image
           src="/images/team/advantage_team.jpg"
           alt="The Advantage Services team — Jay, Kedar, Zia, Akram, Riaz, and Hamid"
