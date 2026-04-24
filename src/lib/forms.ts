@@ -138,13 +138,14 @@ export const forms: FormConfig[] = [
     slug: toSlug("Citizenship Info Form"),
   },
   {
+    // Retired 2026-04-24 — 21mo cold on JotForm, low-intent. Keep entry for slug history.
     id: "221784773077062",
     title: "Divorce Application",
     description: "Uncontested divorce filing",
     category: "other",
     platform: "jotform",
     embedUrl: "https://form.jotform.com/221784773077062",
-    active: true,
+    active: false,
     priority: 9,
     slug: toSlug("Divorce Application"),
   },
@@ -305,7 +306,7 @@ export const forms: FormConfig[] = [
   {
     id: "link-zelle-info",
     title: "Zelle Payment Info",
-    description: "Payment via Zelle to 229advantage@gmail.com or 929-933-1396",
+    description: "Payment via Zelle to 229advantage@gmail.com (Advantage Business Consulting LLC)",
     category: "other",
     platform: "native",
     type: "link",
