@@ -6,11 +6,14 @@
  * in environments where the analytics script is not loaded.
  */
 
+type Gtag = (...args: unknown[]) => void;
+
 function track(event: string, params?: Record<string, unknown>): void {
   if (typeof window === "undefined") return;
   // Google Analytics 4 via gtag
-  if (typeof (window as Window & { gtag?: (...args: unknown[]) => void }).gtag === "function") {
-    (window as Window & { gtag: (...args: unknown[]) => void }).gtag("event", event, params ?? {});
+  const w = window as unknown as { gtag?: Gtag };
+  if (typeof w.gtag === "function") {
+    w.gtag("event", event, params ?? {});
   }
 }
 
