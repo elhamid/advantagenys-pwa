@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, type FormEvent } from "react";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import Link from "next/link";
 import { useChat } from "@/hooks/useChat";
 import { ChatMessage } from "./ChatMessage";
@@ -34,6 +34,7 @@ export function ChatPanel({ pageContext, onClose }: ChatPanelProps) {
   const [input, setInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const reduceMotion = useReducedMotion();
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
@@ -55,11 +56,11 @@ export function ChatPanel({ pageContext, onClose }: ChatPanelProps) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20, scale: 0.95 }}
+      initial={reduceMotion ? false : { opacity: 0, y: 20, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: 20, scale: 0.95 }}
+      exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 20, scale: 0.95 }}
       transition={{ duration: 0.2, ease: "easeOut" }}
-      className="mb-4 w-[calc(100vw-3rem)] sm:w-[380px] rounded-[var(--radius-lg)] bg-[var(--surface)] shadow-[var(--shadow-lg)] border border-[var(--border)] overflow-hidden flex flex-col"
+      className="mb-4 w-[calc(100vw-2rem)] sm:w-[380px] rounded-[var(--radius-lg)] bg-[var(--surface)] shadow-[var(--shadow-lg)] border border-[var(--border)] overflow-hidden flex flex-col"
       style={{ maxHeight: "500px" }}
     >
       {/* Header */}

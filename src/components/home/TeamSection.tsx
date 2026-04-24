@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, type ReactNode } from "react";
-import { motion, useScroll, useTransform, useInView } from "framer-motion";
+import { motion, useScroll, useTransform, useInView, useReducedMotion } from "framer-motion";
 import Image from "next/image";
 import { TEAM } from "@/lib/constants";
 
@@ -13,7 +13,7 @@ const TEAM_PHOTOS: Record<string, string> = {
   Zia: "/images/team/zia.jpg",
   Akram: "/images/team/akram.jpg",
   Riaz: "/images/team/riaz-v7.jpg",
-  Hamid: "/images/team/hamid-v11.jpg",
+  Hamid: "/images/team/hamid-v11.png",
 };
 
 const PHOTO_POSITIONS: Record<string, string> = {
@@ -36,11 +36,14 @@ function ScrollReveal({
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-60px" });
+  const reduceMotion = useReducedMotion();
+  const initial = reduceMotion ? false : { opacity: 0, y: 32 };
+  const animate = reduceMotion ? {} : isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 32 };
   return (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, y: 32 }}
-      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 32 }}
+      initial={initial}
+      animate={animate}
       transition={{ type: "spring", stiffness: 260, damping: 25, delay }}
       className={className}
     >

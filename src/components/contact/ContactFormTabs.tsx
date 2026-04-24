@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { ContactForm } from "./ContactForm";
 import { BookingForm } from "./BookingForm";
 
@@ -11,8 +12,16 @@ const tabs = [
 
 type TabId = (typeof tabs)[number]["id"];
 
+function resolveInitialTab(param: string | null): TabId {
+  if (param === "booking") return "booking";
+  return "message";
+}
+
 export function ContactFormTabs() {
-  const [activeTab, setActiveTab] = useState<TabId>("message");
+  const searchParams = useSearchParams();
+  const [activeTab, setActiveTab] = useState<TabId>(() =>
+    resolveInitialTab(searchParams.get("tab")),
+  );
 
   return (
     <div>

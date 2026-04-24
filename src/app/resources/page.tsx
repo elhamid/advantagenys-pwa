@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Container } from "@/components/ui/Container";
 import { FormsGrid } from "@/components/resources/FormsGrid";
+import { FeaturedIntakeRail } from "@/components/resources/FeaturedIntakeRail";
 import { makeCanonical } from "@/lib/seo";
 
 export const metadata: Metadata = {
@@ -26,8 +27,15 @@ export default function ResourcesPage() {
         </Container>
       </section>
 
+      {/* Featured intake rail */}
+      <section className="pt-8 pb-2">
+        <Container>
+          <FeaturedIntakeRail />
+        </Container>
+      </section>
+
       {/* Forms */}
-      <section className="py-12 pb-24">
+      <section className="py-8 pb-24">
         <Container>
           <FormsGrid />
         </Container>

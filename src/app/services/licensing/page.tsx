@@ -207,6 +207,28 @@ export default async function LicensingPage() {
         </Container>
       </section>
 
+      {/* Contractor License Qualifier CTA */}
+      <section className="py-16">
+        <Container>
+          <div className="max-w-2xl mx-auto">
+            <div className="rounded-2xl border-2 border-[var(--blue-accent)] bg-[var(--blue-pale)] p-8 text-center">
+              <div className="inline-flex items-center gap-2 bg-[var(--blue-accent)] text-white text-xs font-semibold px-3 py-1.5 rounded-full mb-4">
+                <span>&#9654;</span> 2-Minute Qualifier
+              </div>
+              <h2 className="text-2xl font-bold text-[var(--text)] mb-3">
+                Not Sure If You Qualify for a Contractor License?
+              </h2>
+              <p className="text-[var(--text-secondary)] mb-6 max-w-md mx-auto">
+                Answer 7 quick questions and get an instant eligibility check for the NYC HIC or General Contractor license — plus a personalized action plan.
+              </p>
+              <Button href="/contractor-license" size="lg">
+                Check My Eligibility
+              </Button>
+            </div>
+          </div>
+        </Container>
+      </section>
+
       {/* Industry segments */}
       <section className="py-16">
         <Container>

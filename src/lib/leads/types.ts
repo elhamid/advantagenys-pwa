@@ -23,6 +23,7 @@ export const LEAD_SOURCES = [
   "website-corporate-registration",
   "website-insurance",
   "website-home-improvement",
+  "contractor-qualifier",
   "tool-tax-savings",
   "tool-itin-eligibility",
   "tool-biz-readiness",
@@ -136,6 +137,26 @@ export interface HomeImprovementLead extends LeadSubmissionBase {
   additionalNotes?: string;
 }
 
+export interface ContractorQualifierLead extends LeadSubmissionBase {
+  type: "contractor-qualifier";
+  /** Step 1: NYC 5 boroughs / Nassau / Suffolk / Westchester / NJ / multiple */
+  workLocation?: string;
+  /** Step 2: HIC / GC / both */
+  scopeOfWork?: string;
+  /** Step 3: none / sole-prop / llc / corp */
+  entityStatus?: string;
+  /** Step 4: <1yr / 1-4yr / 5+yr */
+  experience?: string;
+  /** Step 5: multi-select — epa-rrp / epa-lead / insurance / none */
+  certifications?: string[];
+  /** Step 6: waiting / 30days / exploring */
+  timeline?: string;
+  /** Computed verdict: ready / almost / not-yet */
+  verdict?: string;
+  /** Preferred language for outreach */
+  preferredLanguage?: string;
+}
+
 /**
  * Discriminated union — use `lead.type` to narrow.
  */
@@ -145,7 +166,8 @@ export type LeadSubmission =
   | ClientInfoLead
   | CorporateRegistrationLead
   | InsuranceLead
-  | HomeImprovementLead;
+  | HomeImprovementLead
+  | ContractorQualifierLead;
 
 export type LeadType = LeadSubmission["type"];
 
@@ -156,4 +178,5 @@ export const LEAD_TYPES: LeadType[] = [
   "corporate-registration",
   "insurance",
   "home-improvement",
+  "contractor-qualifier",
 ];
