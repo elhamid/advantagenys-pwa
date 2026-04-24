@@ -45,9 +45,13 @@ function ChevronIcon({ open }: { open: boolean }) {
   );
 }
 
+const SERVICE_PILLS = ["Tax", "ITIN", "Formation", "Insurance", "Consulting", "Other"] as const;
+type ServicePill = (typeof SERVICE_PILLS)[number];
+
 export function ContactFormTabs() {
   const shouldReduceMotion = useReducedMotion();
   const [openCard, setOpenCard] = useState<CardId | null>(null);
+  const [selectedService, setSelectedService] = useState<ServicePill | undefined>();
 
   // Deep-link: ?tab=booking or ?tab=message
   useEffect(() => {
@@ -116,7 +120,34 @@ export function ContactFormTabs() {
               style={{ overflow: "hidden" }}
             >
               <div className="p-5 bg-[var(--bg)]">
-                <BookAppointmentTrigger />
+                {/* Service pre-selector — used by redirect/iframe modes to build the right AOS URL;
+                    in form mode it prefills the BookingForm's service dropdown */}
+                <div className="mb-5">
+                  <p className="text-xs text-[var(--text-muted)] mb-2">
+                    What do you need help with?
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {SERVICE_PILLS.map((pill) => {
+                      const active = selectedService === pill;
+                      return (
+                        <button
+                          key={pill}
+                          type="button"
+                          onClick={() => setSelectedService(active ? undefined : pill)}
+                          aria-pressed={active}
+                          className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all cursor-pointer ${
+                            active
+                              ? "border-[var(--blue-accent)] bg-[var(--blue-accent)] text-white"
+                              : "border-[var(--border)] bg-[var(--surface)] text-[var(--text-secondary)] hover:border-[var(--blue-accent)] hover:text-[var(--blue-accent)]"
+                          }`}
+                        >
+                          {pill}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+                <BookAppointmentTrigger selectedService={selectedService} />
               </div>
             </motion.div>
           )}

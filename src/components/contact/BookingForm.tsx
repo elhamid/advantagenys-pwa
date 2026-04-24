@@ -27,18 +27,28 @@ interface BookingFormData {
   description: string;
 }
 
-export function BookingForm() {
+const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+
+export function BookingForm({ defaultService }: { defaultService?: string } = {}) {
   const [formData, setFormData] = useState<BookingFormData>({
     fullName: "",
     phone: "",
     email: "",
-    serviceType: "",
+    serviceType: defaultService ?? "",
     preferredWindow: [],
     description: "",
   });
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [turnstileToken, setTurnstileToken] = useState<string>("");
+
+  // Fail-closed: block submit if the Turnstile key is missing in a non-localhost origin
+  const missingTurnstileInProd =
+    !turnstileSiteKey &&
+    typeof window !== "undefined" &&
+    window.location.hostname !== "localhost" &&
+    window.location.hostname !== "127.0.0.1";
 
   function toggleWindow(chip: WindowChip) {
     setFormData((prev) => ({
@@ -51,9 +61,9 @@ export function BookingForm() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setLoading(true);
-
     try {
+      setLoading(true);
+      setError(null);
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -66,18 +76,20 @@ export function BookingForm() {
         }),
       });
 
-      if (!res.ok) throw new Error("Submission failed");
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Something went wrong. Please try again.");
+      }
+
       bookingSubmit();
       setSubmitted(true);
-    } catch {
-      // Graceful degradation — treat as success so the user is not left hanging
-      console.log("Booking form submission:", {
-        ...formData,
-        type: "booking",
-        source: "advantagenys.com_book_appointment",
-      });
-      bookingSubmit();
-      setSubmitted(true);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Something went wrong. Please try again."
+      );
+      // DO NOT setSubmitted(true) here.
+      // DO NOT fire bookingSubmit() here.
     } finally {
       setLoading(false);
     }
@@ -225,15 +237,39 @@ export function BookingForm() {
           />
         </div>
 
-        {/* Turnstile */}
-        <Turnstile
-          siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "1x00000000000000000000AA"}
-          onSuccess={(token) => setTurnstileToken(token)}
-          options={{ size: "invisible" }}
-        />
+        {/* Turnstile — rendered when a site key is available.
+            In prod without a key, the fail-closed warning below blocks submission instead. */}
+        {turnstileSiteKey && (
+          <Turnstile
+            siteKey={turnstileSiteKey}
+            onSuccess={(token) => setTurnstileToken(token)}
+            options={{ size: "invisible" }}
+          />
+        )}
+
+        {/* Fail-closed warning when Turnstile key is missing in prod */}
+        {missingTurnstileInProd && (
+          <p className="text-sm text-amber-600 text-center">
+            Online booking is temporarily unavailable. Please call us at{" "}
+            <a href="tel:+19299331396" className="font-medium underline">
+              (929) 933-1396
+            </a>
+            .
+          </p>
+        )}
+
+        {/* Error */}
+        {error && (
+          <p className="text-sm text-red-500 text-center">{error}</p>
+        )}
 
         {/* Submit */}
-        <Button type="submit" size="lg" className="w-full" disabled={loading}>
+        <Button
+          type="submit"
+          size="lg"
+          className="w-full"
+          disabled={loading || missingTurnstileInProd}
+        >
           {loading ? "Submitting..." : "Book Appointment"}
         </Button>
 

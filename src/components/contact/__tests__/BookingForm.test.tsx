@@ -2,6 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { vi, describe, it, expect, afterEach } from 'vitest'
 import { BookingForm } from '../BookingForm'
+import * as analyticsEvents from '@/lib/analytics/events'
 
 // Mock @marsidev/react-turnstile — call onSuccess immediately with the test token
 vi.mock('@marsidev/react-turnstile', () => ({
@@ -29,6 +30,7 @@ vi.mock('@/lib/analytics/events', () => ({
 
 afterEach(() => {
   vi.restoreAllMocks()
+  vi.clearAllMocks()
 })
 
 describe('BookingForm', () => {
@@ -157,9 +159,9 @@ describe('BookingForm', () => {
   })
 
   // ---------------------------------------------------------------------------
-  // 6. Network/API error still shows success (graceful degradation)
+  // 6. Network/API error — shows error message, NOT success; bookingSubmit NOT called
   // ---------------------------------------------------------------------------
-  it('shows success state even when fetch rejects (graceful degradation)', async () => {
+  it('shows error message on fetch rejection and does NOT show confirmation or fire bookingSubmit', async () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('Network failure')))
 
     const user = userEvent.setup()
@@ -172,8 +174,16 @@ describe('BookingForm', () => {
     await user.click(screen.getByRole('button', { name: /book appointment/i }))
 
     await waitFor(() => {
-      expect(screen.getByText(/thanks, test user/i)).toBeInTheDocument()
+      // Error must be shown
+      expect(screen.getByText(/network failure/i)).toBeInTheDocument()
     })
+
+    // Confirmation state must NOT be shown
+    expect(screen.queryByText(/thanks, test user/i)).not.toBeInTheDocument()
+    // The form submit button should still be present (not replaced by confirmation)
+    expect(screen.getByRole('button', { name: /book appointment/i })).toBeInTheDocument()
+    // bookingSubmit must NOT have been called
+    expect(vi.mocked(analyticsEvents.bookingSubmit)).not.toHaveBeenCalled()
   })
 
   // ---------------------------------------------------------------------------

@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { vi, describe, it, expect } from "vitest";
 
@@ -84,7 +84,9 @@ describe("ContactFormTabs", () => {
     expect(screen.getByTestId("booking-trigger")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: /book an appointment/i }));
-    expect(screen.queryByTestId("booking-trigger")).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.queryByTestId("booking-trigger")).not.toBeInTheDocument();
+    });
   });
 
   // --- Switching between cards ---
@@ -98,7 +100,9 @@ describe("ContactFormTabs", () => {
 
     await user.click(screen.getByRole("button", { name: /send a message/i }));
     expect(screen.getByTestId("contact-form")).toBeInTheDocument();
-    expect(screen.queryByTestId("booking-trigger")).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.queryByTestId("booking-trigger")).not.toBeInTheDocument();
+    });
   });
 
   // --- aria-expanded ---

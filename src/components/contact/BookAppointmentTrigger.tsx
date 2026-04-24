@@ -60,7 +60,7 @@ export function BookAppointmentTrigger({ selectedService }: { selectedService?: 
 
   // ---- form mode (Phase 0) ----
   if (BOOKING_MODE === "form") {
-    return <BookingForm />;
+    return <BookingForm defaultService={selectedService} />;
   }
 
   // ---- redirect mode ----

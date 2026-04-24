@@ -6,18 +6,27 @@
  * Phase 1: BOOKING_MODE === "iframe" — opens AOS booking page in a modal iframe
  *
  * Switch modes via NEXT_PUBLIC_AOS_BOOKING_MODE env var.
- * Default base URL: https://app.advantagenys.com/book
+ * Set the base URL via NEXT_PUBLIC_AOS_BOOKING_BASE_URL (no default — missing URL
+ * silently degrades redirect/iframe modes back to "form").
  */
 
 export type BookingMode = "form" | "redirect" | "iframe";
 
+const RAW_MODE = process.env.NEXT_PUBLIC_AOS_BOOKING_MODE as BookingMode | undefined;
+const RAW_BASE = process.env.NEXT_PUBLIC_AOS_BOOKING_BASE_URL;
+
+// Silently degrade to "form" if redirect/iframe mode is set but the base URL is missing.
 export const BOOKING_MODE: BookingMode =
-  (process.env.NEXT_PUBLIC_AOS_BOOKING_MODE as BookingMode) || "form";
+  RAW_MODE && (RAW_MODE === "redirect" || RAW_MODE === "iframe")
+    ? RAW_BASE
+      ? RAW_MODE
+      : "form"
+    : "form";
 
-const AOS_BASE =
-  process.env.NEXT_PUBLIC_AOS_BOOKING_BASE_URL || "https://app.advantagenys.com/book";
+// Only used when BOOKING_MODE !== "form"
+const AOS_BASE = RAW_BASE || "";
 
-const SERVICE_TO_SLUG: Record<string, string> = {
+export const SERVICE_TO_SLUG: Record<string, string> = {
   Tax: "tax-consult",
   ITIN: "itin-intake",
   Formation: "formation-consult",
@@ -32,6 +41,13 @@ export function buildBookingUrl(opts: {
   prefillName?: string;
   prefillEmail?: string;
 }): string {
+  if (!AOS_BASE) {
+    // Belt-and-suspenders: should never be called when BOOKING_MODE === "form",
+    // but guard here to surface a clear dev error.
+    throw new Error(
+      "[aos-booking] buildBookingUrl called but NEXT_PUBLIC_AOS_BOOKING_BASE_URL is not set."
+    );
+  }
   const slug = SERVICE_TO_SLUG[opts.service ?? ""] ?? "general-consult";
   const params = new URLSearchParams();
   params.set("utm_source", "advantagenys.com_contact");
@@ -43,9 +59,10 @@ export function buildBookingUrl(opts: {
 }
 
 export const AOS_ORIGIN = (() => {
+  if (!AOS_BASE) return "";
   try {
     return new URL(AOS_BASE).origin;
   } catch {
-    return "https://app.advantagenys.com";
+    return "";
   }
 })();
