@@ -9,7 +9,7 @@ interface StepLocationProps extends StepProps {
   onShowI94?: () => void;
 }
 
-export function StepLocation({ data, errors, update, onShowI94 }: StepLocationProps) {
+export function StepLocation({ data, errors, update, onShowI94, priorityCountry }: StepLocationProps) {
   return (
     <div className="space-y-3">
       <div>
@@ -114,6 +114,7 @@ export function StepLocation({ data, errors, update, onShowI94 }: StepLocationPr
             onChange={(v) => update("homeCountry", v)}
             required
             error={errors.homeCountry}
+            priorityCountry={priorityCountry}
           />
         </div>
         <div>
