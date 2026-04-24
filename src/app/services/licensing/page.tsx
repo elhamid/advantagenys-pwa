@@ -81,8 +81,37 @@ const licenses = [
   },
 ];
 
+const PAGE_FAQS = [
+  {
+    question: "Do I need a Home Improvement Contractor license in New York City?",
+    answer:
+      "Yes. Anyone performing home improvement work valued at more than $200 in New York City must hold a Home Improvement Contractor (HIC) license issued by NYC Department of Consumer and Worker Protection. This applies to renovations, painting, plumbing, electrical, roofing, and general remodeling. Operating without this license can result in fines per violation. We handle the full application including insurance documentation and background check coordination.",
+  },
+  {
+    question: "How long does it take to get a NYC business license?",
+    answer:
+      "Processing times vary by license type. Basic food store and retail licenses from NYC DCA typically take a few weeks once all documents are submitted. Liquor licenses from the NY State Liquor Authority can take several months due to community board notification requirements and the 30-day posting period. We manage the application timeline and alert you to any missing documents to avoid unnecessary delays.",
+  },
+  {
+    question: "Can you help with a New York State Liquor Authority (SLA) license?",
+    answer:
+      "Yes. SLA license applications are among the most involved permits in New York. The process includes community board notification, a 30-day public posting period, compliance with the 500-foot rule near churches and schools, and a detailed review of all principals. We prepare the full application package, coordinate community board steps, and represent you through the review process.",
+  },
+  {
+    question: "What licenses does a deli or bodega in NYC need?",
+    answer:
+      "A typical NYC deli or bodega needs several overlapping licenses: a Food Store License from NYC DCA, a Cigarette Retail Dealer License from NYS, a NYS Lottery Retailer authorization, and SNAP/EBT retailer authorization from the USDA if you accept food stamps. Some stores also apply for WIC vendor status. We handle these as a bundle so nothing slips through.",
+  },
+  {
+    question: "What happens if I operate without the required business licenses?",
+    answer:
+      "Operating without required licenses exposes you to fines, stop-work orders, and in some cases closure. For home improvement contractors in NYC, fines can run into thousands of dollars per violation. For food service establishments, the DOH can shut down the location pending compliance. Getting licensed before you open — or before an inspection — is always less costly than dealing with violations after the fact.",
+  },
+];
+
 export default async function LicensingPage() {
-  const faqs = await getServiceFAQs("licensing");
+  const dbFaqs = await getServiceFAQs("licensing");
+  const faqs = dbFaqs.length > 0 ? dbFaqs : PAGE_FAQS;
   return (
     <>
       <JsonLd
@@ -296,7 +325,7 @@ export default async function LicensingPage() {
               </Button>
             </div>
           </div>
-          {faqs.length > 0 && <FAQSection faqs={faqs} />}
+          <FAQSection faqs={faqs} title="Frequently asked questions" />
         </Container>
       </section>
     </>

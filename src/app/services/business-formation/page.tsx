@@ -124,8 +124,37 @@ const steps = [
   },
 ];
 
+const PAGE_FAQS = [
+  {
+    question: "Should I form an LLC or a Corporation in New York?",
+    answer:
+      "Most small businesses start as an LLC because it offers personal liability protection, flexible tax treatment, and simpler ongoing requirements than a Corporation. If you plan to raise outside investment, issue multiple classes of stock, or go public, a C-Corporation is typically the better fit. We walk you through the tradeoffs during a free consultation so you choose the structure that matches your goals.",
+  },
+  {
+    question: "How long does it take to form a business in New York?",
+    answer:
+      "Standard processing with the NY Department of State typically takes 7–10 business days after documents are submitted. Expedited 24-hour and same-day processing are available for an additional state fee. We submit your filing as soon as documents are signed, so there is no delay on our end.",
+  },
+  {
+    question: "What is the New York LLC publication requirement?",
+    answer:
+      "New York law requires LLCs to publish a notice of formation in two newspapers — one daily and one weekly — in the county where the LLC is located, for six consecutive weeks. This must be completed within 120 days of formation. We guide you through the process and connect you with cost-effective publication options.",
+  },
+  {
+    question: "Do I need a registered agent for my NY business?",
+    answer:
+      "Yes. Every business entity formed in New York must designate a registered agent to receive legal notices, tax documents, and government correspondence. We provide registered agent service as part of our formation package, so you always have a reliable point of contact on file with the state.",
+  },
+  {
+    question: "What is included in your business formation package?",
+    answer:
+      "Our formation packages typically include the state filing (Articles of Organization or Certificate of Incorporation), an Operating Agreement or Corporate Bylaws, an EIN application with the IRS, publication requirement guidance, and registered agent service. We also coordinate licensing, insurance, and tax setup so you are fully operational — not just legally formed.",
+  },
+];
+
 export default async function BusinessFormationPage() {
-  const faqs = await getServiceFAQs("formation");
+  const dbFaqs = await getServiceFAQs("formation");
+  const faqs = dbFaqs.length > 0 ? dbFaqs : PAGE_FAQS;
   return (
     <>
       <JsonLd
@@ -356,7 +385,7 @@ export default async function BusinessFormationPage() {
               </Button>
             </div>
           </div>
-          {faqs.length > 0 && <FAQSection faqs={faqs} />}
+          <FAQSection faqs={faqs} title="Frequently asked questions" />
         </Container>
       </section>
     </>

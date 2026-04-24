@@ -55,8 +55,37 @@ const services = [
   },
 ];
 
+const PAGE_FAQS = [
+  {
+    question: "What is bookkeeping and why does my small business need it?",
+    answer:
+      "Bookkeeping is the systematic recording of all financial transactions — income, expenses, payments, and receipts — in your business. Accurate books are the foundation of everything else: tax preparation, loan applications, financial planning, and understanding whether your business is actually profitable. Without current books, you are flying blind. We handle monthly transaction recording and reconciliation so you always have an accurate picture.",
+  },
+  {
+    question: "What is the difference between bookkeeping and accounting?",
+    answer:
+      "Bookkeeping is the ongoing recording of daily transactions. Accounting involves analyzing, interpreting, and reporting on that data — financial statements, tax returns, audits, and business analysis. Many small businesses need both. We provide bookkeeping and financial statement preparation, and our tax team works with the same records to prepare your business returns, so there is no translation layer between your bookkeeper and your accountant.",
+  },
+  {
+    question: "When do I need a financial statement for my business?",
+    answer:
+      "Financial statements — balance sheets, income statements, and cash flow reports — are required for bank loans and SBA financing, landlord applications for commercial leases, investors and partners who want to understand the business, and year-end tax preparation. We prepare professional statements from your bookkeeping records whenever you need them.",
+  },
+  {
+    question: "How often should a small business reconcile its books?",
+    answer:
+      "Monthly reconciliation is the standard for most small businesses. Letting books go unreconciled for a quarter or longer makes errors harder to catch and creates significant work at tax time. We reconcile your bank and credit card accounts monthly so discrepancies are caught early and your records are always current.",
+  },
+  {
+    question: "Can you help me understand where my business is losing money?",
+    answer:
+      "Yes. Our business analysis service reviews your financials to identify areas of underperformance — expenses running high relative to revenue, margins shrinking in certain product lines, or cash flow timing issues. We provide plain-language recommendations, not just numbers, so you can act on the findings.",
+  },
+];
+
 export default async function FinancialServicesPage() {
-  const faqs = await getServiceFAQs("bookkeeping");
+  const dbFaqs = await getServiceFAQs("bookkeeping");
+  const faqs = dbFaqs.length > 0 ? dbFaqs : PAGE_FAQS;
   return (
     <>
       <JsonLd
@@ -204,7 +233,7 @@ export default async function FinancialServicesPage() {
               </Button>
             </div>
           </div>
-          {faqs.length > 0 && <FAQSection faqs={faqs} />}
+          <FAQSection faqs={faqs} title="Frequently asked questions" />
         </Container>
       </section>
     </>

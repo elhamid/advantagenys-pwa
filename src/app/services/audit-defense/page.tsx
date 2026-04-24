@@ -84,8 +84,37 @@ const urgentSteps = [
   },
 ];
 
+const PAGE_FAQS = [
+  {
+    question: "I received an audit notice — what should I do first?",
+    answer:
+      "Do not ignore it and do not respond without professional help. Audit notices have deadlines, and a missed deadline typically results in a default assessment where the government assumes worst-case numbers. Contact us immediately with the notice in hand. We will review it, explain your exposure, and begin building your defense.",
+  },
+  {
+    question: "How do workers compensation audits work in New York?",
+    answer:
+      "Workers comp carriers conduct annual audits to verify the payroll amounts and employee classifications used to calculate your premium. If they find misclassifications — for example, labeling field workers as office staff, or failing to document subcontractor certificates — they issue additional premium bills. We review the audit findings, challenge incorrect classifications, and negotiate reductions with the carrier.",
+  },
+  {
+    question: "What is a sales tax audit and how far back can the state go?",
+    answer:
+      "A New York State sales tax audit is a review by the Department of Taxation and Finance to verify that you collected and remitted the correct amount of sales tax. Auditors typically look back three years, though they can go further if fraud is suspected. They often use statistical sampling and industry benchmarks rather than reviewing every transaction. We challenge their methodology and provide documentation to reduce the estimated liability.",
+  },
+  {
+    question: "Can you reduce the fines and penalties from an audit?",
+    answer:
+      "In many cases, yes. Penalties can be abated based on reasonable cause, first-time offenses, or procedural errors by the agency. Interest is generally harder to eliminate but can sometimes be reduced through negotiated settlements or installment agreements. The earlier we get involved, the more options we have.",
+  },
+  {
+    question: "What types of businesses are most at risk for audits in NYC?",
+    answer:
+      "Cash-intensive businesses face the highest audit rates in New York. Delis, bodegas, gas stations, restaurants, and cleaning companies are frequent targets for sales tax and workers comp audits. Businesses using independent contractors or 1099 workers are common targets for unemployment insurance audits. We work extensively with all of these industries.",
+  },
+];
+
 export default async function AuditDefensePage() {
-  const faqs = await getServiceFAQs("audit");
+  const dbFaqs = await getServiceFAQs("audit");
+  const faqs = dbFaqs.length > 0 ? dbFaqs : PAGE_FAQS;
   return (
     <>
       <JsonLd
@@ -379,7 +408,7 @@ export default async function AuditDefensePage() {
               </Button>
             </div>
           </div>
-          {faqs.length > 0 && <FAQSection faqs={faqs} />}
+          <FAQSection faqs={faqs} title="Frequently asked questions" />
         </Container>
       </section>
     </>
