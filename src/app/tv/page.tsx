@@ -15,7 +15,7 @@ const PRELOAD_IMAGES = [
   "/images/team/zia.jpg",
   "/images/team/akram.jpg",
   "/images/team/riaz-v7.jpg",
-  "/images/team/hamid-v11.jpg",
+  "/images/team/hamid-v11.png",
   "/images/qr-advantagenys.png",
 ];
 

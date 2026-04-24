@@ -61,7 +61,7 @@ export default function HamidSpotlightSlide({ cycleCount }: { cycleCount: number
             }}
           >
             <img
-              src="/images/team/hamid-v11.jpg"
+              src="/images/team/hamid-v11.png"
               alt="Hamid Elsevar — Growth Operator"
               style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: '50% 10%' }}
             />
