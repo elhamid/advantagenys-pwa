@@ -26,12 +26,18 @@ interface ContactPayload {
   businessType?: string;
   services?: string[];
   message?: string;
+  source?: string;
   // Booking-specific fields (present when type === "booking")
   type?: "booking";
   serviceType?: string;
+  /** @deprecated Use preferredWindow instead */
   preferredDate?: string;
+  /** @deprecated Use preferredWindow instead */
   preferredTime?: string;
   description?: string;
+  // Phase 0+ booking fields
+  wantsAppointment?: boolean;
+  preferredWindow?: string[];
 }
 
 function validatePayload(
@@ -41,6 +47,14 @@ function validatePayload(
     return { valid: false, error: "Request body must be a JSON object." };
   }
 
+  const ALLOWED_SOURCES = [
+    "website-contact-form",
+    "website-booking",
+    "advantagenys.com_book_appointment",
+    "chat-widget",
+    "kiosk",
+  ];
+
   const {
     fullName,
     phone,
@@ -48,11 +62,14 @@ function validatePayload(
     businessType,
     services,
     message,
+    source,
     type,
     serviceType,
     preferredDate,
     preferredTime,
     description,
+    wantsAppointment,
+    preferredWindow,
   } = body as Record<string, unknown>;
 
   if (typeof fullName !== "string" || fullName.trim().length === 0) {
@@ -76,6 +93,16 @@ function validatePayload(
     return { valid: false, error: "Services must be an array." };
   }
 
+  if (preferredWindow !== undefined && !Array.isArray(preferredWindow)) {
+    return { valid: false, error: "preferredWindow must be an array." };
+  }
+
+  // Validate source if provided
+  const resolvedSource =
+    typeof source === "string" && ALLOWED_SOURCES.includes(source)
+      ? source
+      : undefined;
+
   return {
     valid: true,
     data: {
@@ -85,12 +112,18 @@ function validatePayload(
       businessType: typeof businessType === "string" ? businessType.trim() : undefined,
       services: Array.isArray(services) ? services : undefined,
       message: typeof message === "string" ? message.trim() : undefined,
+      source: resolvedSource,
       // Booking-specific fields
       type: type === "booking" ? "booking" : undefined,
       serviceType: typeof serviceType === "string" ? serviceType.trim() : undefined,
       preferredDate: typeof preferredDate === "string" ? preferredDate.trim() : undefined,
       preferredTime: typeof preferredTime === "string" ? preferredTime.trim() : undefined,
       description: typeof description === "string" ? description.trim() : undefined,
+      // Phase 0+ booking fields
+      wantsAppointment: typeof wantsAppointment === "boolean" ? wantsAppointment : undefined,
+      preferredWindow: Array.isArray(preferredWindow)
+        ? (preferredWindow as string[]).map((w) => String(w).trim())
+        : undefined,
     },
   };
 }
@@ -104,7 +137,7 @@ async function storeLeadInSupabase(data: ContactPayload): Promise<void> {
   if (!supabase) return;
 
   const isBooking = data.type === "booking";
-  const source = isBooking ? "booking" : "contact";
+  const rowSource = data.source ?? (isBooking ? "booking" : "contact");
 
   const row = {
     name: data.fullName,
@@ -115,12 +148,16 @@ async function storeLeadInSupabase(data: ContactPayload): Promise<void> {
     booking_date: isBooking ? (data.preferredDate || null) : null,
     booking_time: isBooking ? (data.preferredTime || null) : null,
     booking_type: isBooking ? (data.serviceType || null) : null,
-    source,
+    source: rowSource,
     status: "new",
     metadata: {
       business_type: data.businessType || null,
       services: data.services || null,
       raw_type: data.type || "contact",
+      raw: {
+        wantsAppointment: data.wantsAppointment ?? null,
+        preferredWindow: data.preferredWindow ?? null,
+      },
     },
   };
 
@@ -199,6 +236,13 @@ export async function POST(request: NextRequest) {
         process.env.TASKBOARD_WEBHOOK_URL ||
         "https://app.advantagenys.com/api/webhooks/pwa-lead";
 
+      // Derive source: explicit source from payload wins, otherwise fall back by type
+      const defaultSourceByType: Record<string, string> = {
+        booking: "website-booking",
+      };
+      const webhookSource =
+        data.source ?? defaultSourceByType[data.type ?? ""] ?? "website-contact-form";
+
       // Build webhook payload — booking fields are included when present
       const webhookPayload: Record<string, unknown> = {
         fullName: data.fullName,
@@ -207,7 +251,7 @@ export async function POST(request: NextRequest) {
         businessType: data.businessType,
         services: data.services,
         message: data.message ?? data.description,
-        source: "website-contact-form",
+        source: webhookSource,
       };
 
       if (data.type === "booking") {
@@ -215,6 +259,18 @@ export async function POST(request: NextRequest) {
         if (data.serviceType) webhookPayload.serviceType = data.serviceType;
         if (data.preferredDate) webhookPayload.preferredDate = data.preferredDate;
         if (data.preferredTime) webhookPayload.preferredTime = data.preferredTime;
+      }
+
+      // AOS discriminated keys — added when source is the new book-appointment flow
+      if (
+        data.type === "booking" &&
+        data.source === "advantagenys.com_book_appointment"
+      ) {
+        webhookPayload.name = data.fullName;
+        webhookPayload.service_interest = data.serviceType;
+        webhookPayload.wants_appointment = data.wantsAppointment ?? true;
+        const windowJoined = (data.preferredWindow ?? []).join(", ");
+        if (windowJoined) webhookPayload.preferred_window = windowJoined;
       }
 
       try {

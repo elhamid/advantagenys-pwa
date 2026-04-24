@@ -38,4 +38,5 @@ if (typeof window !== 'undefined') {
 
 // Environment variables for tests
 process.env.TURNSTILE_SECRET_KEY = 'test-secret'
+process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY = '1x00000000000000000000AA'
 process.env.TASKBOARD_WEBHOOK_URL = 'https://test-webhook.example.com'
