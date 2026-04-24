@@ -175,6 +175,9 @@ function validatePayload(body: unknown): ValidationResult {
       };
     }
     case "booking": {
+      const wantsAppointmentRaw = obj.wantsAppointment;
+      const wantsAppointment =
+        typeof wantsAppointmentRaw === "boolean" ? wantsAppointmentRaw : undefined;
       return {
         valid: true,
         data: {
@@ -183,6 +186,8 @@ function validatePayload(body: unknown): ValidationResult {
           serviceType: strOrEmpty(obj.serviceType),
           preferredDate: strOrEmpty(obj.preferredDate),
           preferredTime: strOrEmpty(obj.preferredTime),
+          preferredWindow: strArray(obj.preferredWindow),
+          wantsAppointment,
           description: strOrEmpty(obj.description),
           message: strOrEmpty(obj.message),
         },
@@ -383,6 +388,17 @@ async function forwardToTaskboard(data: LeadSubmission): Promise<boolean> {
   // come from `description`. Keep both.
   if (data.type === "booking" && !data.message && data.description) {
     webhookPayload.message = data.description;
+  }
+
+  // New book-appointment flow: inject discriminated snake_case fields for taskboard.
+  if (data.type === "booking" && data.source === "advantagenys.com_book_appointment") {
+    webhookPayload.name = data.fullName;
+    webhookPayload.service_interest = data.serviceType;
+    webhookPayload.wants_appointment = data.wantsAppointment ?? true;
+    const preferredWindowJoined = (data.preferredWindow ?? []).join(", ") || undefined;
+    if (preferredWindowJoined) {
+      webhookPayload.preferred_window = preferredWindowJoined;
+    }
   }
 
   // `turnstileToken` is server-side only; strip from the outgoing payload.

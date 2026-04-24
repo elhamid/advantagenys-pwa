@@ -19,6 +19,7 @@
 export const LEAD_SOURCES = [
   "website-contact-form",
   "website-booking",
+  "advantagenys.com_book_appointment",
   "website-client-info",
   "website-corporate-registration",
   "website-insurance",
@@ -70,9 +71,19 @@ export interface ContactLead extends LeadSubmissionBase {
 export interface BookingLead extends LeadSubmissionBase {
   type: "booking";
   serviceType?: string;
+  /**
+   * @deprecated Use `preferredWindow` instead. Kept for back-compat with older form submissions.
+   */
   preferredDate?: string;
+  /**
+   * @deprecated Use `preferredWindow` instead. Kept for back-compat with older form submissions.
+   */
   preferredTime?: string;
   description?: string;
+  /** Whether the lead explicitly wants an appointment (used by new book-appointment flow). */
+  wantsAppointment?: boolean;
+  /** Multi-select preferred time windows: e.g. ["Mornings", "Evenings"]. */
+  preferredWindow?: string[];
   /** The `message` field is unused for bookings; keep for webhook parity. */
   message?: string;
 }

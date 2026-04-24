@@ -83,6 +83,37 @@ export function bookingSubmit() {
 }
 
 // ---------------------------------------------------------------------------
+// Book-Appointment card / trigger events
+// ---------------------------------------------------------------------------
+
+/** Fired when the user clicks the primary "Book an appointment" card to expand it. */
+export function bookingTriggerOpen(): void {
+  push("booking_trigger_open");
+  gtag("booking_trigger_open");
+}
+
+/** Fired in redirect mode when the user clicks to go to the AOS booking page. */
+export function bookingRedirectClick(service: string): void {
+  push("booking_redirect_click", { service });
+  gtag("booking_redirect_click", { service });
+}
+
+/** Fired in iframe mode when the AOS booking modal opens. */
+export function bookingIframeOpen(service: string): void {
+  push("booking_iframe_open", { service });
+  gtag("booking_iframe_open", { service });
+}
+
+/**
+ * Fired in iframe mode when the AOS booking iframe posts a confirmation message
+ * and the modal closes with a confirmed booking.
+ */
+export function bookingIframeConfirmed(bookingId: string): void {
+  push("booking_iframe_confirmed", { booking_id: bookingId });
+  gtag("booking_iframe_confirmed", { booking_id: bookingId });
+}
+
+// ---------------------------------------------------------------------------
 // ITIN kiosk
 // ---------------------------------------------------------------------------
 
