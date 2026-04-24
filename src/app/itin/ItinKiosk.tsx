@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { ItinForm } from "./ItinForm";
 import { useInAppBrowser, safeBlankTarget } from "@/hooks/useInAppBrowser";
 
@@ -540,7 +541,7 @@ function SuccessScreen({ onReset, isKiosk }: { onReset: () => void; isKiosk: boo
             We&apos;ll be in touch shortly. Thank you for choosing Advantage Services.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
-            <a
+            <Link
               href="/"
               className="
                 px-8 py-4 rounded-xl text-center
@@ -550,7 +551,7 @@ function SuccessScreen({ onReset, isKiosk }: { onReset: () => void; isKiosk: boo
               "
             >
               Back to Home
-            </a>
+            </Link>
             <a
               href="https://wa.me/19299331396"
               target={safeBlankTarget(inAppBrowser)}

@@ -106,10 +106,11 @@ export default function SelfieCapture({ onCapture, onClose }: SelfieCaptureProps
       !navigator.mediaDevices ||
       !navigator.mediaDevices.getUserMedia
     ) {
-      setState("unavailable");
-      return;
+      const t = setTimeout(() => setState("unavailable"), 0);
+      return () => clearTimeout(t);
     }
-    startCamera();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void startCamera();
     return () => stopCamera();
   }, [startCamera, stopCamera]);
 
