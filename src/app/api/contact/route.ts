@@ -120,6 +120,7 @@ function validatePayload(body: unknown): ValidationResult {
     corporate: "corporate-registration",
     insurance: "insurance",
     "home-improvement": "home-improvement",
+    "contractor-qualifier": "contractor-qualifier",
   };
   const leadType = typeAlias[rawType];
   if (!leadType) {
@@ -134,6 +135,7 @@ function validatePayload(body: unknown): ValidationResult {
     "corporate-registration": "website-corporate-registration",
     insurance: "website-insurance",
     "home-improvement": "website-home-improvement",
+    "contractor-qualifier": "contractor-qualifier",
   };
 
   let source: LeadSource = defaultSourceByType[leadType];
@@ -266,6 +268,23 @@ function validatePayload(body: unknown): ValidationResult {
         },
       };
     }
+    case "contractor-qualifier": {
+      return {
+        valid: true,
+        data: {
+          ...base,
+          type: "contractor-qualifier",
+          workLocation: strOrEmpty(obj.workLocation),
+          scopeOfWork: strOrEmpty(obj.scopeOfWork),
+          entityStatus: strOrEmpty(obj.entityStatus),
+          experience: strOrEmpty(obj.experience),
+          certifications: strArray(obj.certifications),
+          timeline: strOrEmpty(obj.timeline),
+          verdict: strOrEmpty(obj.verdict),
+          preferredLanguage: strOrEmpty(obj.preferredLanguage),
+        },
+      };
+    }
   }
 }
 
@@ -291,6 +310,7 @@ async function storeLeadInSupabase(data: LeadSubmission): Promise<boolean> {
     data.type === "corporate-registration" ? data.additionalNotes :
     data.type === "insurance" ? data.notes :
     data.type === "home-improvement" ? data.additionalNotes :
+    data.type === "contractor-qualifier" ? `Verdict: ${data.verdict ?? "unknown"} | Scope: ${data.scopeOfWork ?? ""} | Location: ${data.workLocation ?? ""}` :
     undefined;
 
   const servicesList =
