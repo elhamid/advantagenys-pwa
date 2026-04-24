@@ -31,7 +31,7 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
         bottom nav bar (~4rem tall + device safe area inset).
         On desktop (md+): no extra padding needed.
       */}
-      <main className="pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0">
+      <main id="main" className="pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0">
         {children}
       </main>
       {!hideChrome && <Footer />}

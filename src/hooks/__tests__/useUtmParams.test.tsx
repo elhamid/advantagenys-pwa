@@ -5,8 +5,9 @@ import { useUtmParams } from "../useUtmParams";
 const STORAGE_KEY = "advantage.utm";
 
 function setUrl(search: string) {
-  // jsdom supports pushState-style URL mutation via history.replaceState
-  const url = `http://localhost/${search ? "?" + search : ""}`;
+  // jsdom rejects replaceState with a different origin; use a relative URL
+  // so the origin stays whatever jsdom initialized it to.
+  const url = search ? `/?${search}` : "/";
   window.history.replaceState({}, "", url);
 }
 

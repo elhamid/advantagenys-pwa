@@ -7,12 +7,15 @@ import { Button } from "@/components/ui/Button";
 import { PHONE } from "@/lib/constants";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { FAQSection } from "@/components/seo/FAQSection";
+import { PerServiceReviews } from "@/components/home/PerServiceReviews";
 import { getServiceFAQs } from "@/lib/chat/get-faqs";
+import { makeCanonical } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Business Licensing in Queens, NYC | Advantage Services",
   description:
     "Business licensing and permit services in Queens, NYC for contractors, restaurants, delis, and retail businesses. HIC, liquor, food, and specialty licenses. Advantage Services.",
+  alternates: { canonical: makeCanonical("/services/licensing") },
 };
 
 const licenses = [
@@ -247,6 +250,8 @@ export default async function LicensingPage() {
           </div>
         </Container>
       </section>
+
+      <PerServiceReviews segment="licensing" />
 
       {/* CTA */}
       <section className="py-16 bg-[var(--blue-bg)]">

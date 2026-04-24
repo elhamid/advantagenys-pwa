@@ -92,7 +92,8 @@ describe("REVIEWS", () => {
     const review = REVIEWS.find((r) => r.name === "SJ Trendz Inc.");
     expect(review).toBeDefined();
     expect(review?.rating).toBe(5);
-    expect(review?.text).toContain("Advantage Services");
+    // Updated 2026-04-22: API rebranded legal name to "Advantage Business Consulting".
+    expect(review?.text).toContain("Advantage Business Consulting");
   });
 
   it("all review texts are at least 50 characters", () => {

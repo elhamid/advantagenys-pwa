@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Turnstile } from "@marsidev/react-turnstile";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { useUtmParams } from "@/hooks/useUtmParams";
 import type { CorporateRegistrationLead } from "@/lib/leads/types";
+import { formStart, formSubmit } from "@/lib/analytics/events";
 
 const businessTypes = [
   "LLC",
@@ -60,6 +61,14 @@ export function CorporateRegistrationForm() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [turnstileToken, setTurnstileToken] = useState<string>("");
+  const startedRef = useRef(false);
+
+  function handleFirstFocus() {
+    if (startedRef.current) return;
+    startedRef.current = true;
+    formStart("corporate-registration");
+  }
+
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -100,6 +109,8 @@ export function CorporateRegistrationForm() {
       if (!res.ok || !data.success) {
         throw new Error(data.error || "Something went wrong. Please try again.");
       }
+
+      formSubmit("corporate-registration");
 
       setSubmitted(true);
     } catch (err) {
@@ -152,7 +163,7 @@ export function CorporateRegistrationForm() {
       <h2 className="text-xl font-bold text-[var(--text)] mb-6">
         Corporate Registration
       </h2>
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleSubmit} onFocus={handleFirstFocus} className="space-y-5">
         {/* Owner Name */}
         <div>
           <label htmlFor="corpFullName" className="block text-sm font-medium text-[var(--text)] mb-1">

@@ -46,7 +46,8 @@ export function ReviewsSection() {
         </ScrollReveal>
 
         <div className="grid gap-5 md:grid-cols-3 md:gap-8">
-          {[REVIEWS[0], REVIEWS[1], REVIEWS[3]].map((review, i) => (
+          {/* Brandon (general), Delacia (tax), Oshane (immigration — named outcome). */}
+          {[REVIEWS[0], REVIEWS[1], REVIEWS[2]].map((review, i) => (
             <ScrollReveal key={review.name} delay={i * 0.12}>
               <div className="flex h-full flex-col rounded-[26px] border border-gray-100 bg-white p-6 shadow-sm md:p-8">
                 <span

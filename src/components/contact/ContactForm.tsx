@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Turnstile } from "@marsidev/react-turnstile";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { useUtmParams } from "@/hooks/useUtmParams";
 import type { ContactLead } from "@/lib/leads/types";
+import { formStart, formSubmit } from "@/lib/analytics/events";
 
 const businessTypes = [
   "Contractor",
@@ -49,6 +50,13 @@ export function ContactForm() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [turnstileToken, setTurnstileToken] = useState<string>("");
+  const startedRef = useRef(false);
+
+  function handleFirstFocus() {
+    if (startedRef.current) return;
+    startedRef.current = true;
+    formStart("contact");
+  }
 
   function handleServiceToggle(service: string) {
     setFormData((prev) => ({
@@ -90,6 +98,7 @@ export function ContactForm() {
         throw new Error(data.error || "Something went wrong. Please try again.");
       }
 
+      formSubmit("contact");
       setSubmitted(true);
     } catch (err) {
       setError(
@@ -130,7 +139,7 @@ export function ContactForm() {
       <h2 className="text-xl font-bold text-[var(--text)] mb-6">
         Request a Free Consultation
       </h2>
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleSubmit} onFocus={handleFirstFocus} className="space-y-5">
         {/* Full Name */}
         <div>
           <label htmlFor="fullName" className="block text-sm font-medium text-[var(--text)] mb-1">

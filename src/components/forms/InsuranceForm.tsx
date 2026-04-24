@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Turnstile } from "@marsidev/react-turnstile";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { useUtmParams } from "@/hooks/useUtmParams";
 import type { InsuranceLead } from "@/lib/leads/types";
+import { formStart, formSubmit } from "@/lib/analytics/events";
 
 const businessTypes = [
   "LLC",
@@ -86,6 +87,14 @@ export function InsuranceForm() {
         : [...prev.insuranceTypesNeeded, type],
     }));
   }
+  const startedRef = useRef(false);
+
+  function handleFirstFocus() {
+    if (startedRef.current) return;
+    startedRef.current = true;
+    formStart("insurance");
+  }
+
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -130,6 +139,8 @@ export function InsuranceForm() {
       if (!res.ok || !data.success) {
         throw new Error(data.error || "Something went wrong. Please try again.");
       }
+
+      formSubmit("insurance");
 
       setSubmitted(true);
     } catch (err) {
@@ -177,7 +188,7 @@ export function InsuranceForm() {
       <h2 className="text-xl font-bold text-[var(--text)] mb-6">
         Insurance Intake Form
       </h2>
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleSubmit} onFocus={handleFirstFocus} className="space-y-5">
         {/* Full Name */}
         <div>
           <label htmlFor="insuranceFullName" className="block text-sm font-medium text-[var(--text)] mb-1">

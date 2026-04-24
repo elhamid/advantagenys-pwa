@@ -4,11 +4,13 @@ import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { JsonLd } from "@/components/seo/JsonLd";
+import { makeCanonical } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Immigrant Entrepreneur Services in Queens, NYC | Advantage Services",
   description:
     "ITIN processing, LLC formation, EIN, licensing, tax, and insurance for immigrant entrepreneurs in Queens, NYC. IRS Certified Acceptance Agent. Advantage Services.",
+  alternates: { canonical: makeCanonical("/industries/immigrant-entrepreneurs") },
 };
 
 const painPoints = [

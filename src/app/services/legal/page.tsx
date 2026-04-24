@@ -7,12 +7,15 @@ import { Button } from "@/components/ui/Button";
 import { PHONE } from "@/lib/constants";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { FAQSection } from "@/components/seo/FAQSection";
+import { PerServiceReviews } from "@/components/home/PerServiceReviews";
 import { getServiceFAQs } from "@/lib/chat/get-faqs";
+import { makeCanonical } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Immigration & Legal Services in Queens, NYC | Advantage Services",
   description:
     "Immigration petitions, citizenship applications, divorce filings, and ITIN registration in Queens, NYC. Bilingual staff, IRS Certified Acceptance Agent. Advantage Services.",
+  alternates: { canonical: makeCanonical("/services/legal") },
 };
 
 const legalServices = [
@@ -256,6 +259,8 @@ export default async function LegalServicesPage() {
           </div>
         </Container>
       </section>
+
+      <PerServiceReviews segment="immigration" />
 
       {/* CTA */}
       <section className="py-16 bg-[var(--blue-bg)]">

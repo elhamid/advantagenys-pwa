@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Container } from "@/components/ui/Container";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
+import { makeCanonical } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Free Business Tools | Advantage Services",
@@ -14,6 +15,7 @@ export const metadata: Metadata = {
       "Free calculators and assessments for entrepreneurs in Queens, NYC.",
     url: "https://advantagenys.com/tools",
   },
+  alternates: { canonical: makeCanonical("/tools") },
 };
 
 const tools = [

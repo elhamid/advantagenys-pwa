@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { ChatPanel } from "./ChatPanel";
+import { chatOpen } from "@/lib/analytics/events";
 
 const NUDGE_MAP: Record<string, string> = {
   "/": "How can we help your business?",
@@ -86,7 +87,9 @@ export function ChatWidget() {
 
       <button
         onClick={() => {
-          setOpen(!open);
+          const next = !open;
+          if (next) chatOpen();
+          setOpen(next);
           setNudge(null);
         }}
         className="w-14 h-14 rounded-full shadow-[var(--shadow-lg)] flex items-center justify-center text-white transition-transform hover:scale-105 active:scale-95"

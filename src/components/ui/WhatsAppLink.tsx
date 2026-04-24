@@ -1,6 +1,7 @@
 "use client";
 
 import { useInAppBrowser, safeBlankTarget } from "@/hooks/useInAppBrowser";
+import { whatsappClick } from "@/lib/analytics/events";
 
 interface WhatsAppLinkProps {
   href: string;
@@ -22,6 +23,7 @@ export function WhatsAppLink({ href, className, children }: WhatsAppLinkProps) {
       target={safeBlankTarget(inAppBrowser)}
       rel="noopener noreferrer"
       className={className}
+      onClick={() => whatsappClick()}
     >
       {children}
     </a>

@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { PHONE } from "@/lib/constants";
 import { useUtmParams } from "@/hooks/useUtmParams";
+import { toolComplete } from "@/lib/analytics/events";
 
 /* ---------- types ---------- */
 type FilingStatus = "individual" | "sole-prop" | "llc" | "s-corp" | "c-corp";
@@ -176,6 +177,7 @@ export default function TaxSavingsEstimator() {
       if (!res.ok || !data.success) {
         throw new Error(data.error || "Something went wrong.");
       }
+      toolComplete("tax-savings-estimator");
       setCaptured(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
