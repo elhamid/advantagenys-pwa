@@ -71,7 +71,7 @@ export function ContactFormTabs() {
 
   const expandTransition = shouldReduceMotion
     ? { duration: 0 }
-    : { type: "tween", ease: "easeInOut", duration: 0.25 };
+    : ({ type: "tween", ease: "easeInOut", duration: 0.25 } as const);
 
   return (
     <div className="space-y-4">
