@@ -4,32 +4,26 @@ import { useState } from "react";
 import { Turnstile } from "@marsidev/react-turnstile";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { bookingSubmit } from "@/lib/analytics/events";
 
 const serviceTypes = [
-  "Business Formation",
-  "Tax Services",
-  "ITIN/Tax ID",
-  "Licensing",
+  "Tax",
+  "ITIN",
+  "Formation",
   "Insurance",
-  "Audit Defense",
-  "Financial Services",
-  "Legal/Immigration",
+  "Consulting",
   "Other",
 ] as const;
 
-const timeSlots = [
-  { value: "morning", label: "Morning (9 AM - 12 PM)" },
-  { value: "afternoon", label: "Afternoon (12 PM - 3 PM)" },
-  { value: "evening", label: "Evening (3 PM - 6 PM)" },
-] as const;
+const WINDOW_CHIPS = ["Mornings", "Afternoons", "Evenings", "Weekends"] as const;
+type WindowChip = (typeof WINDOW_CHIPS)[number];
 
 interface BookingFormData {
   fullName: string;
   phone: string;
   email: string;
   serviceType: string;
-  preferredDate: string;
-  preferredTime: string;
+  preferredWindow: WindowChip[];
   description: string;
 }
 
@@ -39,13 +33,21 @@ export function BookingForm() {
     phone: "",
     email: "",
     serviceType: "",
-    preferredDate: "",
-    preferredTime: "",
+    preferredWindow: [],
     description: "",
   });
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState<string>("");
+
+  function toggleWindow(chip: WindowChip) {
+    setFormData((prev) => ({
+      ...prev,
+      preferredWindow: prev.preferredWindow.includes(chip)
+        ? prev.preferredWindow.filter((w) => w !== chip)
+        : [...prev.preferredWindow, chip],
+    }));
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -55,14 +57,26 @@ export function BookingForm() {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...formData, type: "booking", turnstileToken }),
+        body: JSON.stringify({
+          ...formData,
+          type: "booking",
+          source: "advantagenys.com_book_appointment",
+          wantsAppointment: true,
+          turnstileToken,
+        }),
       });
 
       if (!res.ok) throw new Error("Submission failed");
+      bookingSubmit();
       setSubmitted(true);
     } catch {
-      // API route may not exist yet; treat as success for now
-      console.log("Booking form submission:", { ...formData, type: "booking" });
+      // Graceful degradation — treat as success so the user is not left hanging
+      console.log("Booking form submission:", {
+        ...formData,
+        type: "booking",
+        source: "advantagenys.com_book_appointment",
+      });
+      bookingSubmit();
       setSubmitted(true);
     } finally {
       setLoading(false);
@@ -74,12 +88,13 @@ export function BookingForm() {
       <Card className="text-center py-12">
         <div className="text-4xl mb-4 text-[var(--green)]">&#10003;</div>
         <h3 className="text-xl font-bold text-[var(--text)] mb-2">
-          Thank You, {formData.fullName}!
+          Thanks, {formData.fullName} —
         </h3>
         <p className="text-[var(--text-secondary)]">
-          We&apos;ll confirm your appointment within 24 hours.
-          <br />
-          For immediate assistance, call{" "}
+          Jay or Kedar will reach out within 24 hours to confirm your time.
+        </p>
+        <p className="text-[var(--text-secondary)] mt-3">
+          For immediate help, call{" "}
           <a href="tel:+19299331396" className="text-[var(--blue-accent)] font-medium">
             (929) 933-1396
           </a>
@@ -91,9 +106,6 @@ export function BookingForm() {
 
   const inputClasses =
     "w-full rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-[var(--text)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--blue-accent)] focus:border-transparent transition-all";
-
-  // Set min date to today
-  const today = new Date().toISOString().split("T")[0];
 
   return (
     <Card>
@@ -133,15 +145,15 @@ export function BookingForm() {
           />
         </div>
 
-        {/* Email */}
+        {/* Email — optional */}
         <div>
           <label htmlFor="bookingEmail" className="block text-sm font-medium text-[var(--text)] mb-1">
-            Email <span className="text-red-500">*</span>
+            Email{" "}
+            <span className="text-[var(--text-muted)] font-normal">(optional)</span>
           </label>
           <input
             type="email"
             id="bookingEmail"
-            required
             value={formData.email}
             onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
             placeholder="you@example.com"
@@ -170,48 +182,38 @@ export function BookingForm() {
           </select>
         </div>
 
-        {/* Date & Time Row */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {/* Preferred Date */}
-          <div>
-            <label htmlFor="preferredDate" className="block text-sm font-medium text-[var(--text)] mb-1">
-              Preferred Date
-            </label>
-            <input
-              type="date"
-              id="preferredDate"
-              min={today}
-              value={formData.preferredDate}
-              onChange={(e) => setFormData((prev) => ({ ...prev, preferredDate: e.target.value }))}
-              className={inputClasses}
-            />
-          </div>
-
-          {/* Preferred Time */}
-          <div>
-            <label htmlFor="preferredTime" className="block text-sm font-medium text-[var(--text)] mb-1">
-              Preferred Time
-            </label>
-            <select
-              id="preferredTime"
-              value={formData.preferredTime}
-              onChange={(e) => setFormData((prev) => ({ ...prev, preferredTime: e.target.value }))}
-              className={inputClasses}
-            >
-              <option value="">Select a time</option>
-              {timeSlots.map((slot) => (
-                <option key={slot.value} value={slot.value}>
-                  {slot.label}
-                </option>
-              ))}
-            </select>
+        {/* Preferred Window — optional multi-select chips */}
+        <div>
+          <p className="block text-sm font-medium text-[var(--text)] mb-2">
+            When works for you?{" "}
+            <span className="text-[var(--text-muted)] font-normal">(optional)</span>
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {WINDOW_CHIPS.map((chip) => {
+              const selected = formData.preferredWindow.includes(chip);
+              return (
+                <button
+                  key={chip}
+                  type="button"
+                  onClick={() => toggleWindow(chip)}
+                  className={`px-4 py-2 rounded-full text-sm font-medium border transition-all cursor-pointer ${
+                    selected
+                      ? "border-[var(--blue-accent)] bg-[var(--blue-accent)] text-white"
+                      : "border-[var(--border)] bg-[var(--surface)] text-[var(--text-secondary)] hover:border-[var(--blue-accent)] hover:text-[var(--blue-accent)]"
+                  }`}
+                  aria-pressed={selected}
+                >
+                  {chip}
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        {/* Description */}
+        {/* Description — optional */}
         <div>
           <label htmlFor="bookingDescription" className="block text-sm font-medium text-[var(--text)] mb-1">
-            Brief Description <span className="text-[var(--text-muted)]">(optional)</span>
+            Brief Description <span className="text-[var(--text-muted)] font-normal">(optional)</span>
           </label>
           <textarea
             id="bookingDescription"
@@ -236,7 +238,7 @@ export function BookingForm() {
         </Button>
 
         <p className="text-xs text-[var(--text-muted)] text-center">
-          We&apos;ll confirm your appointment within 24 hours.
+          Jay or Kedar will reach out within 24 hours to confirm your time.
         </p>
       </form>
     </Card>

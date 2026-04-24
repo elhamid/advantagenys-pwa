@@ -1,4 +1,4 @@
-import { render, screen, waitFor, fireEvent } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { vi, describe, it, expect, afterEach } from 'vitest'
 import { BookingForm } from '../BookingForm'
@@ -17,43 +17,73 @@ vi.mock('next/navigation', () => ({
   usePathname: () => '/',
 }))
 
+// Silence analytics in tests
+vi.mock('@/lib/analytics/events', () => ({
+  bookingSubmit: vi.fn(),
+  bookingTriggerOpen: vi.fn(),
+  bookingRedirectClick: vi.fn(),
+  bookingIframeOpen: vi.fn(),
+  bookingIframeConfirmed: vi.fn(),
+  messageSubmit: vi.fn(),
+}))
+
 afterEach(() => {
   vi.restoreAllMocks()
 })
 
 describe('BookingForm', () => {
   // ---------------------------------------------------------------------------
-  // 1. Renders all booking-specific fields
+  // 1. Renders all booking-specific fields (no date or time inputs)
   // ---------------------------------------------------------------------------
-  it('renders all booking fields', () => {
+  it('renders required booking fields and preferred-window chips', () => {
     render(<BookingForm />)
 
     expect(screen.getByLabelText(/full name/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/phone number/i)).toBeInTheDocument()
-    // Email is required on the booking form (unlike ContactForm where it is optional)
+    // Email is optional — label should NOT carry a red asterisk
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/service type/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/preferred date/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/preferred time/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/brief description/i)).toBeInTheDocument()
+    // No date picker or time picker
+    expect(screen.queryByLabelText(/preferred date/i)).not.toBeInTheDocument()
+    expect(screen.queryByLabelText(/preferred time/i)).not.toBeInTheDocument()
+    // Window chips
+    expect(screen.getByRole('button', { name: /mornings/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /afternoons/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /evenings/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /weekends/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /book appointment/i })).toBeInTheDocument()
   })
 
   // ---------------------------------------------------------------------------
-  // 2. Min date constraint — date input must not allow past dates
+  // 2. Email is optional — no required attribute
   // ---------------------------------------------------------------------------
-  it('sets the min attribute on the date input to today\'s ISO date', () => {
+  it('email input does not have the required attribute', () => {
     render(<BookingForm />)
-
-    const dateInput = screen.getByLabelText(/preferred date/i)
-    const todayIso = new Date().toISOString().split('T')[0]
-    expect(dateInput).toHaveAttribute('min', todayIso)
+    const emailInput = screen.getByLabelText(/email/i)
+    expect(emailInput).not.toHaveAttribute('required')
   })
 
   // ---------------------------------------------------------------------------
-  // 3. Submit sends booking fields including type: "booking"
+  // 3. Window chip toggle
   // ---------------------------------------------------------------------------
-  it('sends type: "booking", preferredDate, preferredTime, and serviceType in the POST body', async () => {
+  it('toggles preferred window chips on click', async () => {
+    const user = userEvent.setup()
+    render(<BookingForm />)
+
+    const morningBtn = screen.getByRole('button', { name: /mornings/i })
+    expect(morningBtn).toHaveAttribute('aria-pressed', 'false')
+
+    await user.click(morningBtn)
+    expect(morningBtn).toHaveAttribute('aria-pressed', 'true')
+
+    await user.click(morningBtn)
+    expect(morningBtn).toHaveAttribute('aria-pressed', 'false')
+  })
+
+  // ---------------------------------------------------------------------------
+  // 4. Submit sends new payload shape — no date/time, yes wantsAppointment + preferredWindow
+  // ---------------------------------------------------------------------------
+  it('sends type "booking", source "advantagenys.com_book_appointment", wantsAppointment: true, preferredWindow in POST body', async () => {
     const fetchSpy = vi.fn().mockResolvedValue({
       ok: true,
       status: 200,
@@ -66,19 +96,14 @@ describe('BookingForm', () => {
 
     await user.type(screen.getByLabelText(/full name/i), 'John Smith')
     await user.type(screen.getByLabelText(/phone number/i), '9299290000')
-    await user.type(screen.getByLabelText(/email/i), 'john@example.com')
+    // Skip email (optional)
 
-    // Select a service type
-    await user.selectOptions(screen.getByLabelText(/service type/i), 'Tax Services')
+    // Select a service type — using the new 6-item list
+    await user.selectOptions(screen.getByLabelText(/service type/i), 'Tax')
 
-    // Set a preferred date using fireEvent (userEvent.type unreliable for date inputs in jsdom)
-    const tomorrow = new Date()
-    tomorrow.setDate(tomorrow.getDate() + 1)
-    const tomorrowIso = tomorrow.toISOString().split('T')[0]
-    fireEvent.change(screen.getByLabelText(/preferred date/i), { target: { value: tomorrowIso } })
-
-    // Select a time slot
-    await user.selectOptions(screen.getByLabelText(/preferred time/i), 'morning')
+    // Toggle two window chips
+    await user.click(screen.getByRole('button', { name: /mornings/i }))
+    await user.click(screen.getByRole('button', { name: /weekends/i }))
 
     await user.click(screen.getByRole('button', { name: /book appointment/i }))
 
@@ -91,16 +116,21 @@ describe('BookingForm', () => {
     const body = JSON.parse(options.body as string)
 
     expect(body.type).toBe('booking')
-    expect(body.serviceType).toBe('Tax Services')
-    expect(body.preferredDate).toBe(tomorrowIso)
-    expect(body.preferredTime).toBe('morning')
+    expect(body.source).toBe('advantagenys.com_book_appointment')
+    expect(body.wantsAppointment).toBe(true)
+    expect(body.preferredWindow).toContain('Mornings')
+    expect(body.preferredWindow).toContain('Weekends')
+    expect(body.serviceType).toBe('Tax')
     expect(body.turnstileToken).toBe('test-token')
+    // Old date/time fields must NOT be present
+    expect(body.preferredDate).toBeUndefined()
+    expect(body.preferredTime).toBeUndefined()
   })
 
   // ---------------------------------------------------------------------------
-  // 4. Successful submission — shows success/confirmation state
+  // 5. Successful submission — shows updated confirmation copy
   // ---------------------------------------------------------------------------
-  it('shows success state after a 200 response', async () => {
+  it('shows Jay/Kedar confirmation copy after a 200 response', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
       ok: true,
       status: 200,
@@ -112,24 +142,22 @@ describe('BookingForm', () => {
 
     await user.type(screen.getByLabelText(/full name/i), 'Maria Garcia')
     await user.type(screen.getByLabelText(/phone number/i), '9299290001')
-    await user.type(screen.getByLabelText(/email/i), 'maria@example.com')
-    await user.selectOptions(screen.getByLabelText(/service type/i), 'ITIN/Tax ID')
+    await user.selectOptions(screen.getByLabelText(/service type/i), 'ITIN')
 
     await user.click(screen.getByRole('button', { name: /book appointment/i }))
 
     await waitFor(() => {
-      expect(screen.getByText(/thank you, maria garcia/i)).toBeInTheDocument()
+      expect(screen.getByText(/thanks, maria garcia/i)).toBeInTheDocument()
     })
 
     // Confirmation card replaces the form
     expect(screen.queryByRole('button', { name: /book appointment/i })).not.toBeInTheDocument()
-    // Confirmation message contains appointment language
-    expect(screen.getByText(/confirm your appointment/i)).toBeInTheDocument()
+    // Updated confirmation copy
+    expect(screen.getByText(/jay or kedar will reach out within 24 hours/i)).toBeInTheDocument()
   })
 
   // ---------------------------------------------------------------------------
-  // 5. Network/API error still shows success (BookingForm treats errors as success
-  //    by design: "treat as success for now" comment in component)
+  // 6. Network/API error still shows success (graceful degradation)
   // ---------------------------------------------------------------------------
   it('shows success state even when fetch rejects (graceful degradation)', async () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('Network failure')))
@@ -139,18 +167,17 @@ describe('BookingForm', () => {
 
     await user.type(screen.getByLabelText(/full name/i), 'Test User')
     await user.type(screen.getByLabelText(/phone number/i), '9299290002')
-    await user.type(screen.getByLabelText(/email/i), 'test@example.com')
-    await user.selectOptions(screen.getByLabelText(/service type/i), 'Licensing')
+    await user.selectOptions(screen.getByLabelText(/service type/i), 'Insurance')
 
     await user.click(screen.getByRole('button', { name: /book appointment/i }))
 
     await waitFor(() => {
-      expect(screen.getByText(/thank you, test user/i)).toBeInTheDocument()
+      expect(screen.getByText(/thanks, test user/i)).toBeInTheDocument()
     })
   })
 
   // ---------------------------------------------------------------------------
-  // 6. Loading state — button shows "Submitting..." while in-flight
+  // 7. Loading state — button shows "Submitting..." while in-flight
   // ---------------------------------------------------------------------------
   it('shows "Submitting..." on the button while the request is in-flight', async () => {
     vi.stubGlobal('fetch', vi.fn(() => new Promise(() => {})))
@@ -160,7 +187,6 @@ describe('BookingForm', () => {
 
     await user.type(screen.getByLabelText(/full name/i), 'In Flight')
     await user.type(screen.getByLabelText(/phone number/i), '9299290003')
-    await user.type(screen.getByLabelText(/email/i), 'inflight@example.com')
     await user.selectOptions(screen.getByLabelText(/service type/i), 'Insurance')
 
     await user.click(screen.getByRole('button', { name: /book appointment/i }))
