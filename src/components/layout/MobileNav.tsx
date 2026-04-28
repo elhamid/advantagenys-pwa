@@ -277,11 +277,11 @@ export function MobileNav({ open, onClose, items }: MobileNavProps) {
               {/* Get Started button */}
               <motion.div whileTap={{ scale: 0.97 }}>
                 <Button
-                  href="/contact"
+                  href="/book"
                   className="w-full text-center py-3.5 text-[15px] font-semibold rounded-xl"
                   onClick={onClose}
                 >
-                  Get Started
+                  Book Free Consult
                 </Button>
               </motion.div>
             </motion.div>

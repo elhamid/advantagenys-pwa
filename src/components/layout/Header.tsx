@@ -104,23 +104,23 @@ export function Header({
           </Link>
         </nav>
 
-        {/* Desktop CTA — single "Get Started" button */}
+        {/* Desktop CTA — single "Book Free Consult" button */}
         <div className="hidden md:flex items-center">
           <Link
-            href="/contact"
+            href="/book"
             className="inline-flex items-center rounded-full bg-[var(--blue-accent)] px-5 py-2 text-sm font-semibold text-white hover:opacity-90 transition-opacity"
           >
-            Get Started
+            Book Free Consult
           </Link>
         </div>
 
-        {/* Mobile: compact "Get Started" button (BottomNav handles main navigation) */}
+        {/* Mobile: compact "Book" button (BottomNav handles main navigation) */}
         <div className="flex md:hidden">
           <Link
-            href="/contact"
+            href="/book"
             className="inline-flex items-center rounded-full bg-[var(--blue-accent)] px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90 transition-opacity whitespace-nowrap"
           >
-            Get Started
+            Book
           </Link>
         </div>
       </Container>

@@ -121,7 +121,7 @@ export default function ToolsPage() {
               These tools provide general estimates based on common scenarios.
               For personalized advice tailored to your specific situation,{" "}
               <Link
-                href="/contact"
+                href="/book"
                 className="text-[var(--blue-accent)] font-semibold hover:underline"
               >
                 schedule a free consultation

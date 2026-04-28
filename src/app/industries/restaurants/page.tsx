@@ -90,7 +90,7 @@ export default function RestaurantsPage() {
             Health permits, liquor license, fire department, insurance, and tax compliance --
             we handle the entire paperwork stack so you can focus on your kitchen.
           </p>
-          <Button href="/contact" size="lg">
+          <Button href="/book" size="lg">
             Start Your Restaurant
           </Button>
         </Container>
@@ -193,7 +193,7 @@ export default function RestaurantsPage() {
             Most clients are fully permitted in 60-90 days. Let us handle the
             paperwork while you build your menu.
           </p>
-          <Button href="/contact" size="lg">
+          <Button href="/book" size="lg">
             Start Your Restaurant
           </Button>
         </Container>

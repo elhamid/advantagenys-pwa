@@ -85,7 +85,7 @@ export default function ContractorsPage() {
             From HIC licensing to workers comp and quarterly taxes -- everything a
             contractor needs to stay compliant, in one place.
           </p>
-          <Button href="/contact" size="lg">
+          <Button href="/book" size="lg">
             Get Licensed Today
           </Button>
         </Container>
@@ -193,7 +193,7 @@ export default function ContractorsPage() {
             Stop juggling paperwork. We handle licensing, insurance, and tax so
             you can focus on the job site.
           </p>
-          <Button href="/contact" size="lg">
+          <Button href="/book" size="lg">
             Get Licensed Today
           </Button>
         </Container>

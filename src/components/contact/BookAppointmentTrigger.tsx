@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useReducedMotion } from "framer-motion";
@@ -11,8 +12,12 @@ import { Card } from "@/components/ui/Card";
 /**
  * Top-level component for the "Book Appointment" action.
  *
+ * Default behavior: links to /book (the canonical booking surface).
+ * AOS env-var hooks (BOOKING_MODE) are preserved for a future AOS Phase 1 path,
+ * but the primary CTA now navigates to /book in all non-AOS-configured modes.
+ *
  * Reads BOOKING_MODE from aos-booking.ts:
- *   "form"     — renders inline BookingForm (Phase 0, default)
+ *   "form"     — renders link to /book (default)
  *   "redirect" — CTA button → window.location redirect to AOS booking page
  *   "iframe"   — CTA button → modal with AOS iframe; postMessage closes on success
  */
@@ -64,9 +69,26 @@ export function BookAppointmentTrigger({
     );
   }
 
-  // ---- form mode (Phase 0) ----
+  // ---- form mode (Phase 0 → now routes to /book) ----
   if (BOOKING_MODE === "form") {
-    return <BookingForm defaultService={selectedService} onServiceChange={onServiceChange} />;
+    // Build /book URL with optional service pre-selection
+    const bookHref = selectedService
+      ? `/book?service=${encodeURIComponent(selectedService.toLowerCase())}`
+      : "/book";
+
+    return (
+      <div className="text-center py-4">
+        <Link
+          href={bookHref}
+          className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-[var(--radius-lg)] bg-[var(--blue-accent)] text-white font-semibold text-sm hover:opacity-90 active:scale-95 transition-all"
+        >
+          Book a Free Appointment
+        </Link>
+        <p className="mt-2 text-xs text-[var(--text-muted)]">
+          30-minute consult, free, no obligation.
+        </p>
+      </div>
+    );
   }
 
   // ---- redirect mode ----

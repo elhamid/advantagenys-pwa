@@ -139,7 +139,7 @@ export default async function LegalServicesPage() {
           </p>
           <p className="text-sm text-[var(--text-muted)] mb-3">{PHONE.main} &middot; Call or WhatsApp</p>
           <div className="flex flex-col sm:flex-row gap-4">
-            <Button href="/contact" size="lg">
+            <Button href="/book" size="lg">
               Schedule a Free Consultation
             </Button>
             <Button href={PHONE.whatsappLink} variant="outline" size="lg">
@@ -305,7 +305,7 @@ export default async function LegalServicesPage() {
             </p>
             <p className="text-sm text-[var(--text-muted)] mb-3">{PHONE.main} &middot; Call or WhatsApp</p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button href="/contact" size="lg">
+              <Button href="/book" size="lg">
                 Contact Us
               </Button>
               <Button href={PHONE.whatsappLink} variant="secondary" size="lg">

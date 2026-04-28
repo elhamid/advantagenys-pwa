@@ -25,6 +25,11 @@
   --surface: #FFFFFF;
   --border: #E2E8F0;
 
+  /* Booking / teal accent (matches taskboard booking palette) */
+  --teal: #0D9488;
+  --teal-bg: rgba(13, 148, 136, 0.08);
+  --bg-section: #F1F5F9;
+
   /* Gradient */
   --gradient-primary: linear-gradient(135deg, #4F56E8 0%, #1E293B 100%);
 
@@ -58,4 +63,7 @@
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.3);
   --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.4);
   --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.15);
+  --teal: #0B8275;
+  --teal-bg: rgba(11, 130, 117, 0.1);
+  --bg-section: #1E293B;
 }

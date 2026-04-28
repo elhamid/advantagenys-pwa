@@ -322,7 +322,7 @@ export default function ItinEligibilityChecker() {
                         for your situation.
                       </p>
                       <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                        <Button href="/contact" size="md">
+                        <Button href="/book" size="md">
                           Free Consultation
                         </Button>
                         <Button href={`tel:${PHONE.mainTel}`} variant="outline" size="md">

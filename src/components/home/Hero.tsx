@@ -79,7 +79,7 @@ export function Hero() {
           >
             <Button
               size="lg"
-              href="/contact"
+              href="/book"
               className="!bg-white !text-[#4F56E8] hover:!bg-white/90 font-bold shadow-lg shadow-black/10"
             >
               Talk to a Specialist
