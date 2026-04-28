@@ -1,6 +1,9 @@
 "use client";
 
-import DOMPurify from "isomorphic-dompurify";
+// Use browser-only dompurify (not isomorphic-dompurify) to avoid pulling jsdom
+// into the SSR bundle. ChatMessage is "use client" so this only runs in the browser.
+// The addHook call below is guarded for safety during server-side module evaluation.
+import DOMPurify from "dompurify";
 
 interface ChatMessageProps {
   role: "user" | "assistant";
@@ -30,13 +33,16 @@ function renderMarkdown(text: string): string {
 /**
  * DOMPurify hook: every anchor that survives the allowlist is forced to open
  * in a new tab with safe rel attributes.
+ * Guard against SSR module evaluation (DOMPurify requires a DOM).
  */
-DOMPurify.addHook("afterSanitizeAttributes", (node: Element) => {
-  if (node.tagName === "A") {
-    node.setAttribute("target", "_blank");
-    node.setAttribute("rel", "noopener noreferrer nofollow");
-  }
-});
+if (typeof window !== "undefined") {
+  DOMPurify.addHook("afterSanitizeAttributes", (node: Element) => {
+    if (node.tagName === "A") {
+      node.setAttribute("target", "_blank");
+      node.setAttribute("rel", "noopener noreferrer nofollow");
+    }
+  });
+}
 
 const ALLOWED_TAGS = [
   "p",
@@ -53,6 +59,7 @@ const ALLOWED_TAGS = [
 const ALLOWED_ATTR = ["href", "target", "rel", "class"];
 
 function sanitize(html: string): string {
+  if (typeof window === "undefined") return html;
   return DOMPurify.sanitize(html, {
     ALLOWED_TAGS,
     ALLOWED_ATTR,
