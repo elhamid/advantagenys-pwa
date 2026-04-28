@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { GOOGLE_RATING } from "@/lib/reviews";
 import { BookingFlow } from "./BookingFlow";
 
 export const metadata: Metadata = {
@@ -58,15 +59,12 @@ export default function BookPage() {
           {/* Social proof strip */}
           <div className="mt-6 flex flex-wrap items-center justify-center gap-4 text-xs text-white/70">
             <span className="flex items-center gap-1.5">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-                <path d="M7 1l1.75 3.55 3.92.57-2.84 2.77.67 3.91L7 9.75l-3.5 1.84.67-3.91L1.33 5.12l3.92-.57L7 1z" fill="currentColor" />
-              </svg>
-              500+ 5-star reviews
+              <span className="text-[#F9A825]">★★★★★</span>
+              <span className="font-semibold text-white">{GOOGLE_RATING.rating}</span>
+              <span>· {GOOGLE_RATING.totalReviews} Google reviews</span>
             </span>
             <span className="w-px h-3 bg-white/30" aria-hidden="true" />
             <span>Serving immigrants &amp; small businesses</span>
-            <span className="w-px h-3 bg-white/30" aria-hidden="true" />
-            <span>English · Spanish · Urdu · Hindi</span>
           </div>
         </div>
       </section>
