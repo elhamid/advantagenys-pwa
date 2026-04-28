@@ -72,7 +72,7 @@ describe('JsonLd', () => {
       const hours = data.openingHoursSpecification
       expect(hours['@type']).toBe('OpeningHoursSpecification')
       expect(hours.opens).toBe('10:00')
-      expect(hours.closes).toBe('20:00')
+      expect(hours.closes).toBe('19:00')
       expect(Array.isArray(hours.dayOfWeek)).toBe(true)
       expect(hours.dayOfWeek).toContain('Monday')
       expect(hours.dayOfWeek).toContain('Saturday')

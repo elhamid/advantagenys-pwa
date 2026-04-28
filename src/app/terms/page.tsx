@@ -261,7 +261,7 @@ export default function TermsPage() {
                   (929) 933-1396
                 </a>
               </p>
-              <p>Hours: Monday – Saturday, 10:00 AM – 8:00 PM ET</p>
+              <p>Hours: Monday – Saturday, 10:00 AM – 7:00 PM ET</p>
             </address>
           </div>
         </div>

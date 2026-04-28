@@ -16,7 +16,7 @@ export const ADDRESS = {
 
 export const HOURS = {
   days: "Monday - Saturday",
-  time: "10:00 AM - 8:00 PM",
+  time: "10:00 AM - 7:00 PM",
   timezone: "ET",
 } as const;
 

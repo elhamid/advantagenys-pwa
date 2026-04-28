@@ -29,7 +29,7 @@ export function GET() {
 ## Contact
 - Phone/WhatsApp: (929) 933-1396
 - Address: 229-14 Linden Blvd, Cambria Heights, NY 11411
-- Hours: Monday-Saturday, 10:00 AM - 8:00 PM ET
+- Hours: Monday-Saturday, 10:00 AM - 7:00 PM ET
 - Email: info@advantagenys.com
 - Website: https://advantagenys.com
 `;

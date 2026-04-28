@@ -167,7 +167,7 @@ function buildData(props: JsonLdProps): JsonLdData {
             "Saturday",
           ],
           opens: "10:00",
-          closes: "20:00",
+          closes: "19:00",
         },
         priceRange: "$$",
         areaServed: ["Queens", "New York City", "Long Island", "NYC Metro Area"],

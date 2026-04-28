@@ -62,8 +62,8 @@ describe("HOURS", () => {
     expect(HOURS.days).toContain("Saturday");
   });
 
-  it("time is 10:00 AM - 8:00 PM", () => {
-    expect(HOURS.time).toBe("10:00 AM - 8:00 PM");
+  it("time is 10:00 AM - 7:00 PM", () => {
+    expect(HOURS.time).toBe("10:00 AM - 7:00 PM");
   });
 
   it("time contains AM and PM markers", () => {

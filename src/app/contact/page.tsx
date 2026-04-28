@@ -84,7 +84,7 @@ export default function ContactPage() {
             </a>
           </div>
           <p className="text-xs text-[var(--text-muted)] mt-3">
-            {HOURS.days.replace("Monday - Saturday", "Mon–Sat")}, {HOURS.time.replace("10:00 AM - 8:00 PM", "10 AM – 8 PM")} {HOURS.timezone}
+            {HOURS.days.replace("Monday - Saturday", "Mon–Sat")}, {HOURS.time.replace("10:00 AM - 7:00 PM", "10 AM – 7 PM")} {HOURS.timezone}
           </p>
         </div>
 
