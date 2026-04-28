@@ -151,7 +151,7 @@ export function ChatPanel({ pageContext, onClose }: ChatPanelProps) {
             </p>
             <div className="flex gap-2">
               <Link
-                href="/contact"
+                href="/book"
                 onClick={onClose}
                 className="flex-1 text-center text-xs font-medium py-1.5 rounded-lg text-white transition-all active:scale-95"
                 style={{ background: "var(--blue-accent)" }}

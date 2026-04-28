@@ -105,7 +105,7 @@ export default function ImmigrantEntrepreneursPage() {
             From ITIN application to LLC formation, licensing, insurance, and tax filing --
             we help immigrant entrepreneurs build legitimate businesses in NYC.
           </p>
-          <Button href="/contact" size="lg">
+          <Button href="/book" size="lg">
             Get Your ITIN
           </Button>
         </Container>
@@ -209,7 +209,7 @@ export default function ImmigrantEntrepreneursPage() {
             As an IRS Certified Acceptance Agent, we verify your passport and
             documents on-site. Your originals never leave your hands.
           </p>
-          <Button href="/contact" size="lg">
+          <Button href="/book" size="lg">
             Get Your ITIN
           </Button>
         </Container>

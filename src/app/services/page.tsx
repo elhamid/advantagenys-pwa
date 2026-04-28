@@ -236,7 +236,7 @@ export default function ServicesPage() {
               business needs and build a plan — no obligation.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button href="/contact" size="lg">
+              <Button href="/book" size="lg">
                 Free Consultation
               </Button>
               <Button href={`tel:${PHONE.mainTel}`} variant="outline" size="lg">

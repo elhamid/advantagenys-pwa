@@ -393,7 +393,7 @@ export default function BusinessReadinessChecker() {
                       you are fully set up.
                     </p>
                     <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                      <Button href="/contact" size="md">
+                      <Button href="/book" size="md">
                         Book Free Consultation
                       </Button>
                       <Button href={`tel:${PHONE.mainTel}`} variant="outline" size="md">

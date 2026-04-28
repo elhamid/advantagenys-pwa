@@ -154,7 +154,7 @@ export default async function AuditDefensePage() {
             <Button href={`tel:${PHONE.mainTel}`} size="lg">
               Call Now
             </Button>
-            <Button href="/contact" variant="outline" size="lg">
+            <Button href="/book" variant="outline" size="lg">
               Request Urgent Consultation
             </Button>
           </div>

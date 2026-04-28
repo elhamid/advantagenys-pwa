@@ -20,7 +20,7 @@ export function CTASection() {
             <Button
               variant="secondary"
               size="lg"
-              href="/contact"
+              href="/book"
               className="bg-white text-[#4F56E8] hover:bg-slate-100 font-semibold"
             >
               Schedule a Call
