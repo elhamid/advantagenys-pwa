@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { SERVICES } from "../components/ServicePicker";
+import { ConfirmedClient } from "./ConfirmedClient";
 
 export const metadata: Metadata = {
   title: "Booking Confirmed — Advantage Business Consulting",
@@ -106,6 +107,9 @@ export default async function BookConfirmedPage({ searchParams }: Props) {
             </a>
           </div>
         </div>
+
+        {/* Push opt-in + install prompt (client-side, live mode only) */}
+        <ConfirmedClient appointmentId={confirmationId} isInert={isInert} />
 
         {/* Footer note */}
         <p className="mt-6 text-center text-xs text-[var(--text-muted)]">

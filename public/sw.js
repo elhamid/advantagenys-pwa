@@ -1,7 +1,8 @@
 // Advantage Services PWA — Service Worker
 // Cache-first for static assets, network-first for pages, offline fallback
+// Push notifications: listens for push events and shows notifications
 
-const CACHE_NAME = "advantage-v1";
+const CACHE_NAME = "advantage-v2";
 const OFFLINE_URL = "/offline.html";
 
 // App shell assets to cache on install
@@ -107,6 +108,52 @@ async function networkFirst(request) {
     return cached || new Response("", { status: 503 });
   }
 }
+
+// ── Push notifications ────────────────────────────────────────────────────────
+self.addEventListener("push", (event) => {
+  let data = { title: "Advantage Services", body: "You have a new update.", url: "/", icon: "/icons/icon-192.png" };
+
+  if (event.data) {
+    try {
+      data = { ...data, ...event.data.json() };
+    } catch {
+      data.body = event.data.text();
+    }
+  }
+
+  event.waitUntil(
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: data.icon || "/icons/icon-192.png",
+      badge: "/icons/icon-16.png",
+      data: { url: data.url || "/" },
+      vibrate: [200, 100, 200],
+    })
+  );
+});
+
+// ── Notification click ────────────────────────────────────────────────────────
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const url = (event.notification.data && event.notification.data.url) || "/";
+
+  event.waitUntil(
+    clients
+      .matchAll({ type: "window", includeUncontrolled: true })
+      .then((windowClients) => {
+        // Focus an existing tab if one matches
+        for (const client of windowClients) {
+          if (client.url === url && "focus" in client) {
+            return client.focus();
+          }
+        }
+        // Otherwise open a new tab
+        if (clients.openWindow) {
+          return clients.openWindow(url);
+        }
+      })
+  );
+});
 
 // ── Strategy: network-first with offline HTML fallback ───────────────────────
 async function networkFirstWithOfflineFallback(request) {
