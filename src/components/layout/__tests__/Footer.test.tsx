@@ -85,10 +85,10 @@ describe("Footer", () => {
     expect(screen.getByText(/saturday/i)).toBeInTheDocument();
   });
 
-  it("renders time '10:00 AM - 8:00 PM ET'", () => {
+  it("renders time '10:00 AM - 7:00 PM ET'", () => {
     render(<Footer />);
     expect(screen.getByText(/10:00 AM/i)).toBeInTheDocument();
-    expect(screen.getByText(/8:00 PM/i)).toBeInTheDocument();
+    expect(screen.getByText(/7:00 PM/i)).toBeInTheDocument();
   });
 
   // --- Services section ---

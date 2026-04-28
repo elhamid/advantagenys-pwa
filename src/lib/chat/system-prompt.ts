@@ -28,7 +28,7 @@ You help visitors learn about our services:
 We serve restaurants, contractors, and immigrant entrepreneurs in New York.
 Office: 229 Empire Blvd, Brooklyn, NY 11225
 Phone: (929) 933-1396
-Hours: Mon-Sat 10AM-8PM`;
+Hours: Mon-Sat 10AM-7PM`;
 
 // ============================================================================
 // Fetch from DB

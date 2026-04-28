@@ -88,7 +88,7 @@ Specialties: Technology, AI, Business Development. Hamid leads the firm's digita
 - Phone/WhatsApp: (929) 933-1396
 - Email: info@advantagenys.com
 - Website: https://advantagenys.com
-- Hours: Monday-Saturday, 10:00 AM - 8:00 PM ET
+- Hours: Monday-Saturday, 10:00 AM - 7:00 PM ET
 - Languages: English, Spanish, Hindi, Bengali, Chinese, Arabic
 
 ## Online Resources
