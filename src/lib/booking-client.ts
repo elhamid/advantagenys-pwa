@@ -49,6 +49,17 @@ export interface ConfirmBookingResponse {
   confirmation_id: string;
 }
 
+/**
+ * Alternative slot returned in a 409 conflict response.
+ * Taskboard Wave 2 will populate this array.
+ * Shape mirrors the Slot interface but may arrive directly from the 409 body.
+ */
+export interface AlternativeSlot {
+  start: string; // ISO UTC
+  end: string;   // ISO UTC
+  assignee_user_id?: string;
+}
+
 // ---------------------------------------------------------------------------
 // Typed errors
 // ---------------------------------------------------------------------------
@@ -56,9 +67,13 @@ export interface ConfirmBookingResponse {
 /** Slot was taken between the user loading the grid and submitting. */
 export class SlotConflictError extends Error {
   readonly type = "SlotConflictError" as const;
-  constructor() {
+  /** Nearest alternatives suggested by taskboard (Wave 2). Empty until Wave 2 ships. */
+  readonly alternatives: AlternativeSlot[];
+
+  constructor(alternatives: AlternativeSlot[] = []) {
     super("That time was just booked — pick another below.");
     this.name = "SlotConflictError";
+    this.alternatives = alternatives;
   }
 }
 
@@ -138,7 +153,17 @@ export async function confirmBooking(
   });
 
   if (res.status === 409) {
-    throw new SlotConflictError();
+    let alternatives: AlternativeSlot[] = [];
+    try {
+      const body = (await res.json()) as {
+        error?: string;
+        alternatives?: AlternativeSlot[];
+      };
+      alternatives = Array.isArray(body.alternatives) ? body.alternatives : [];
+    } catch {
+      // ignore parse error — alternatives stays empty
+    }
+    throw new SlotConflictError(alternatives);
   }
 
   if (res.status === 400) {

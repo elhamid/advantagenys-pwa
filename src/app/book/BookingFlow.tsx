@@ -11,6 +11,7 @@ import {
   confirmBooking,
   SlotConflictError,
   type Slot,
+  type AlternativeSlot,
 } from "@/lib/booking-client";
 
 // ---------------------------------------------------------------------------
@@ -136,6 +137,8 @@ export function BookingFlow() {
   const [submitLoading, setSubmitLoading] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  /** Inline 409 alternatives returned by taskboard (Wave 2 onwards). */
+  const [conflictAlternatives, setConflictAlternatives] = useState<AlternativeSlot[]>([]);
 
   const serviceObj = SERVICES.find((s) => s.slug === selectedService);
 
@@ -161,11 +164,15 @@ export function BookingFlow() {
 
   function handleSlotContinue() {
     if (!selectedSlot) return;
+    setConflictAlternatives([]);
     setStep(3);
   }
 
   function handleBack() {
-    if (step === 2) setStep(1);
+    if (step === 2) {
+      setStep(1);
+      setConflictAlternatives([]);
+    }
     if (step === 3) setStep(BOOK_LIVE ? 2 : 1);
     setSubmitError(null);
   }
@@ -227,11 +234,18 @@ export function BookingFlow() {
         }
       } catch (err) {
         if (err instanceof SlotConflictError) {
-          // Show toast, reset to slot grid, refresh slots
-          setToast(err.message);
+          // Return to slot grid, surface alternatives or refresh
           setStep(2);
           setSelectedSlot(null);
-          window.dispatchEvent(new Event("booking:refresh-slots"));
+          if (err.alternatives.length > 0) {
+            // Wave 2: show inline alternatives without a full refresh
+            setConflictAlternatives(err.alternatives);
+          } else {
+            // Pre-Wave 2 or empty alternatives: show toast + refresh grid
+            setToast(err.message);
+            setConflictAlternatives([]);
+            window.dispatchEvent(new Event("booking:refresh-slots"));
+          }
         } else {
           setSubmitError(
             err instanceof Error ? err.message : "Something went wrong. Please try again."
@@ -342,12 +356,66 @@ export function BookingFlow() {
               Choose a 30-minute slot that works for you.
             </p>
 
+            {/* 409 Alternatives banner — shown when taskboard Wave 2 returns alternatives */}
+            <AnimatePresence>
+              {conflictAlternatives.length > 0 && (
+                <motion.div
+                  key="conflict-alternatives"
+                  initial={{ opacity: 0, y: -6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.2 }}
+                  className="rounded-[var(--radius)] bg-amber-50 border border-amber-200 px-4 py-3 mb-4"
+                >
+                  <p className="text-sm font-semibold text-amber-900 mb-2">
+                    Someone else just grabbed that — try one of these instead:
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {conflictAlternatives.map((alt) => (
+                      <button
+                        key={alt.start}
+                        type="button"
+                        onClick={() => {
+                          handleSlotSelect({
+                            start: alt.start,
+                            end: alt.end,
+                            assignee_user_id: alt.assignee_user_id ?? "",
+                          });
+                          setConflictAlternatives([]);
+                        }}
+                        className="rounded-[var(--radius)] border border-amber-300 bg-white px-3.5 py-2 text-sm font-medium text-amber-900 hover:border-amber-500 hover:bg-amber-50 transition-all cursor-pointer"
+                      >
+                        {new Intl.DateTimeFormat("en-US", {
+                          timeZone: "America/New_York",
+                          weekday: "short",
+                          month: "short",
+                          day: "numeric",
+                          hour: "numeric",
+                          minute: "2-digit",
+                          hour12: true,
+                        }).format(new Date(alt.start))}
+                      </button>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             <SlotGrid
               service={selectedService!}
-              onSlotSelect={handleSlotSelect}
+              onSlotSelect={(slot) => {
+                handleSlotSelect(slot);
+                // Clear alternatives when user picks from the full grid
+                setConflictAlternatives([]);
+              }}
               selectedSlot={selectedSlot}
               assigneeInitials={assigneeInitials}
               onAssigneeInitialsChange={setAssigneeInitials}
+              onSelectedSlotTaken={() => {
+                // Realtime: selected slot was sniped — clear it so Continue stays disabled
+                setSelectedSlot(null);
+                setConflictAlternatives([]);
+              }}
             />
 
             <div className="mt-6 flex justify-between">
