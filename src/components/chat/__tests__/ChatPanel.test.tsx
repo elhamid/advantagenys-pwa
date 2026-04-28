@@ -53,6 +53,8 @@ vi.mock("framer-motion", () => ({
     ),
   },
   AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  // ContactChip uses useReducedMotion — return true so no animation styles are injected
+  useReducedMotion: vi.fn(() => true),
 }));
 
 // Mock next/link
@@ -399,6 +401,68 @@ describe("ChatPanel", () => {
       render(<ChatPanel {...defaultProps} onClose={onClose} />);
       await userEvent.click(screen.getByText("Book Consultation"));
       expect(onClose).toHaveBeenCalledOnce();
+    });
+  });
+
+  describe("contact chip (header chrome)", () => {
+    it("renders the contact chip group inside the header chrome", () => {
+      render(<ChatPanel {...defaultProps} />);
+      // ContactChip renders a group with this label — must be present at all times
+      expect(
+        screen.getByRole("group", { name: /direct contact options/i })
+      ).toBeInTheDocument();
+    });
+
+    it("WhatsApp link is present and has correct aria-label", () => {
+      render(<ChatPanel {...defaultProps} />);
+      expect(screen.getByLabelText("Chat on WhatsApp")).toBeInTheDocument();
+    });
+
+    it("Email link is present and has correct aria-label", () => {
+      render(<ChatPanel {...defaultProps} />);
+      expect(screen.getByLabelText("Email us")).toBeInTheDocument();
+    });
+
+    it("Phone link is present and has correct aria-label", () => {
+      render(<ChatPanel {...defaultProps} />);
+      // aria-label includes the display number
+      expect(screen.getByLabelText(/call us at/i)).toBeInTheDocument();
+    });
+
+    it("WhatsApp link href points to wa.me", () => {
+      render(<ChatPanel {...defaultProps} />);
+      const link = screen.getByLabelText("Chat on WhatsApp") as HTMLAnchorElement;
+      expect(link.getAttribute("href")).toMatch(/wa\.me/);
+    });
+
+    it("Email link href is a mailto: link", () => {
+      render(<ChatPanel {...defaultProps} />);
+      const link = screen.getByLabelText("Email us") as HTMLAnchorElement;
+      expect(link.getAttribute("href")).toMatch(/^mailto:/);
+    });
+
+    it("Phone link href is a tel: link", () => {
+      render(<ChatPanel {...defaultProps} />);
+      const link = screen.getByLabelText(/call us at/i) as HTMLAnchorElement;
+      expect(link.getAttribute("href")).toMatch(/^tel:/);
+    });
+
+    it("contact chip is visible regardless of message count (anchored in chrome)", () => {
+      // Empty state
+      setChat({ messages: [] });
+      const { unmount } = render(<ChatPanel {...defaultProps} />);
+      expect(screen.getByRole("group", { name: /direct contact options/i })).toBeInTheDocument();
+      unmount();
+
+      // With messages
+      setChat({
+        messages: [
+          { id: "1", role: "user", content: "Hello" },
+          { id: "2", role: "assistant", content: "Hi!" },
+        ],
+      });
+      render(<ChatPanel {...defaultProps} />);
+      expect(screen.getByRole("group", { name: /direct contact options/i })).toBeInTheDocument();
     });
   });
 
