@@ -53,6 +53,7 @@ export function ChatPanel({ pageContext, onClose }: ChatPanelProps) {
     chatMessageSent();
     sendMessage(input.trim());
     setInput("");
+    inputRef.current?.focus();
   }
 
   return (
