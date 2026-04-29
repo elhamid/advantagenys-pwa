@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import TVSlider from "./TVSlider";
 import { makeCanonical } from "@/lib/seo";
 
@@ -6,6 +6,14 @@ export const metadata: Metadata = {
   title: "Advantage Services",
   robots: { index: false, follow: false },
   alternates: { canonical: makeCanonical("/tv") },
+};
+
+// Lock viewport for kiosk display — block pinch-zoom and user scaling.
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 const PRELOAD_IMAGES = [
@@ -25,7 +33,20 @@ export default function TVPage() {
       {PRELOAD_IMAGES.map((src) => (
         <link key={src} rel="preload" as="image" href={src} />
       ))}
-      <main style={{ height: '100vh', width: '100vw', overflow: 'hidden', backgroundColor: '#0A0F1A' }}>
+      {/* inert blocks all user interaction (pointer, keyboard, touch) on this kiosk surface */}
+      <main
+        inert
+        style={{
+          height: '100vh',
+          width: '100vw',
+          overflow: 'hidden',
+          backgroundColor: '#0A0F1A',
+          pointerEvents: 'none',
+          userSelect: 'none',
+          touchAction: 'none',
+          WebkitUserSelect: 'none',
+        }}
+      >
         <TVSlider />
       </main>
     </>

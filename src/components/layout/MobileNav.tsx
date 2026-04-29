@@ -281,7 +281,7 @@ export function MobileNav({ open, onClose, items }: MobileNavProps) {
                   className="w-full text-center py-3.5 text-[15px] font-semibold rounded-xl"
                   onClick={onClose}
                 >
-                  Book Free Consult
+                  Book a Free Consultation
                 </Button>
               </motion.div>
             </motion.div>

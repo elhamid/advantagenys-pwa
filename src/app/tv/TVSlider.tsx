@@ -94,7 +94,18 @@ export default function TVSlider() {
   const SlideComponent = SLIDES[current];
 
   return (
-    <div style={{ position: 'relative', height: '100%', width: '100%', userSelect: 'none' }}>
+    <div
+      style={{
+        position: 'relative',
+        height: '100%',
+        width: '100%',
+        userSelect: 'none',
+        WebkitUserSelect: 'none',
+        pointerEvents: 'none',
+        touchAction: 'none',
+      }}
+      onContextMenu={(e) => e.preventDefault()}
+    >
       <AnimatePresence mode="wait">
         <motion.div
           key={current}

@@ -102,7 +102,7 @@ export function HeroSection() {
           transition={{ duration: 0.8, delay: 1.2, ease: EASE }}
           className="text-base sm:text-xl text-white/78 font-light mt-3 sm:mt-4 max-w-lg mx-auto"
         >
-          Cambria Heights, Queens · IRS Certified Acceptance Agent · Serving immigrant entrepreneurs &amp; contractors since 2004.
+          Queens-based · Serving NYC &amp; Long Island · IRS Certified Acceptance Agent · Immigrant entrepreneurs &amp; contractors since 2004.
         </motion.p>
 
         <motion.div

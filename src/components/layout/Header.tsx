@@ -104,13 +104,13 @@ export function Header({
           </Link>
         </nav>
 
-        {/* Desktop CTA — single "Book Free Consult" button */}
+        {/* Desktop CTA — single "Book a Free Consultation" button */}
         <div className="hidden md:flex items-center">
           <Link
             href="/book"
             className="inline-flex items-center rounded-full bg-[var(--blue-accent)] px-5 py-2 text-sm font-semibold text-white hover:opacity-90 transition-opacity"
           >
-            Book Free Consult
+            Book a Free Consultation
           </Link>
         </div>
 
