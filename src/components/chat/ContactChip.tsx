@@ -8,15 +8,22 @@
  * Desktop: icon + micro-label. Mobile: icon-only.
  * Fade-in on first mount; snaps to visible if prefers-reduced-motion.
  * Reads all contact constants from contact-info.ts — zero prop dependency.
+ *
+ * Email chip: copies address to clipboard on click (mailto still attempts for
+ * users with a mail client) and shows a brief toast confirmation.
  */
 
-import { useReducedMotion } from "framer-motion";
+import { useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
   CONTACT_PHONE_DISPLAY,
   CONTACT_PHONE_TEL,
   CONTACT_WHATSAPP_URL,
   CONTACT_EMAIL_HREF,
 } from "@/lib/contact-info";
+
+// Derive plain email address from the mailto: href constant (no hardcoding)
+const CONTACT_EMAIL = CONTACT_EMAIL_HREF.replace(/^mailto:/, "");
 
 // Icon components — inline SVG, aria-hidden, consistent 14×14 viewport
 function WhatsAppIcon() {
@@ -88,6 +95,7 @@ interface ChipProps {
   icon: React.ReactNode;
   animationDelay: number;
   animate: boolean;
+  onClick?: (e: React.MouseEvent) => void;
 }
 
 function Chip({
@@ -99,13 +107,13 @@ function Chip({
   icon,
   animationDelay,
   animate,
+  onClick,
 }: ChipProps) {
-  const isExternal = href.startsWith("http") || href.startsWith("mailto:") || href.startsWith("tel:");
-
   return (
     <a
       href={href}
       aria-label={ariaLabel}
+      onClick={onClick}
       {...(href.startsWith("http") ? { target: "_blank", rel: "noopener noreferrer" } : {})}
       className={[
         // Layout
@@ -160,6 +168,18 @@ function Chip({
 export function ContactChip() {
   const reduceMotion = useReducedMotion();
   const animate = !reduceMotion;
+  const [emailCopied, setEmailCopied] = useState(false);
+
+  function handleEmailClick(_e: React.MouseEvent) {
+    // Do NOT preventDefault — let the mailto attempt run for users with a mail client.
+    // Also copy to clipboard as a silent fallback.
+    navigator.clipboard.writeText(CONTACT_EMAIL).then(() => {
+      setEmailCopied(true);
+      setTimeout(() => setEmailCopied(false), 2000);
+    }).catch(() => {
+      // clipboard unavailable (e.g. non-secure context) — silently ignore
+    });
+  }
 
   return (
     <>
@@ -181,7 +201,7 @@ export function ContactChip() {
       <div
         role="group"
         aria-label="Direct contact options"
-        className="flex items-center gap-1.5 sm:gap-2"
+        className="relative flex items-center gap-1.5 sm:gap-2"
       >
         {/* WhatsApp — forest glass */}
         <Chip
@@ -195,7 +215,7 @@ export function ContactChip() {
           animate={animate}
         />
 
-        {/* Email — indigo glass */}
+        {/* Email — indigo glass (clipboard fallback + mailto attempt) */}
         <Chip
           href={CONTACT_EMAIL_HREF}
           ariaLabel="Email us"
@@ -205,6 +225,7 @@ export function ContactChip() {
           icon={<EmailIcon />}
           animationDelay={160}
           animate={animate}
+          onClick={handleEmailClick}
         />
 
         {/* Phone — frost glass */}
@@ -217,6 +238,24 @@ export function ContactChip() {
           animationDelay={240}
           animate={animate}
         />
+
+        {/* Email-copied toast — fades in beneath the chip rail */}
+        <AnimatePresence>
+          {emailCopied && (
+            <motion.div
+              key="email-toast"
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -4 }}
+              transition={{ duration: 0.15, ease: "easeOut" }}
+              className="absolute -bottom-9 right-0 z-10 px-2 py-1 rounded-full text-[10px] bg-black/80 text-white whitespace-nowrap pointer-events-none"
+              role="status"
+              aria-live="polite"
+            >
+              Email copied — {CONTACT_EMAIL}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </>
   );

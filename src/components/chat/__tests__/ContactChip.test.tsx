@@ -1,3 +1,4 @@
+import React from "react";
 /**
  * ContactChip — unit tests
  *
@@ -6,8 +7,8 @@
  * ARIA and that the contact-info constants are used (no hardcoded strings).
  */
 
-import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { render, screen, fireEvent, act } from "@testing-library/react";
 import { ContactChip } from "../ContactChip";
 import {
   CONTACT_PHONE_TEL,
@@ -16,9 +17,15 @@ import {
   CONTACT_PHONE_DISPLAY,
 } from "@/lib/contact-info";
 
-// Mock framer-motion — ContactChip uses useReducedMotion
+// Mock framer-motion — ContactChip uses useReducedMotion, AnimatePresence, and motion
 vi.mock("framer-motion", () => ({
   useReducedMotion: vi.fn(() => true), // snapshot tests: reduced-motion = no animation
+  AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  motion: {
+    div: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
+      <div {...props}>{children}</div>
+    ),
+  },
 }));
 
 describe("ContactChip", () => {
@@ -59,6 +66,28 @@ describe("ContactChip", () => {
       render(<ContactChip />);
       const link = screen.getByLabelText("Email us") as HTMLAnchorElement;
       expect(link.getAttribute("href")).toBe(CONTACT_EMAIL_HREF);
+    });
+
+    it("clicking the email chip writes the address to clipboard and shows toast", async () => {
+      const writeText = vi.fn(() => Promise.resolve());
+      Object.defineProperty(navigator, "clipboard", {
+        value: { writeText },
+        configurable: true,
+        writable: true,
+      });
+
+      render(<ContactChip />);
+      const emailLink = screen.getByLabelText("Email us");
+
+      await act(async () => {
+        fireEvent.click(emailLink);
+        // flush clipboard promise micro-task
+        await Promise.resolve();
+      });
+
+      expect(writeText).toHaveBeenCalledWith("info@advantagenys.com");
+      expect(screen.getByRole("status")).toBeInTheDocument();
+      expect(screen.getByRole("status").textContent).toContain("info@advantagenys.com");
     });
   });
 
