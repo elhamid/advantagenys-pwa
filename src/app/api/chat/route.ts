@@ -179,14 +179,16 @@ export async function POST(request: NextRequest) {
     ? `${systemPrompt}\n\nRelevant knowledge:\n${knowledgeContext}`
     : systemPrompt;
 
-  // 7. Build messages array for OpenRouter (last 15 messages, sanitized latest)
+  // 7. Build messages array for OpenRouter (last 15 messages, all user messages sanitized)
   const apiMessages = [
     { role: "system", content: fullSystemPrompt },
     ...messages.slice(-15).map((m, i) => ({
       role: m.role,
       content:
-        m.role === "user" && i === messages.slice(-15).length - 1
-          ? sanitized
+        m.role === "user"
+          ? (i === messages.slice(-15).length - 1
+              ? sanitized
+              : sanitizeInput(m.content) || "")
           : m.content,
     })),
   ];

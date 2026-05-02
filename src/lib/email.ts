@@ -1,5 +1,9 @@
 import nodemailer from "nodemailer";
 
+function escapeHtml(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
 export interface EmailPayload {
   fullName: string;
   phone: string;
@@ -23,20 +27,20 @@ function buildSubject(payload: EmailPayload): string {
 function buildHtmlBody(payload: EmailPayload): string {
   const isBooking = payload.type === "booking";
   const rows: Array<[string, string | undefined]> = [
-    ["Name", payload.fullName],
-    ["Phone", payload.phone],
-    ["Email", payload.email],
-    ["Business Type", payload.businessType],
-    ["Services", payload.services?.join(", ")],
-    ["Message", payload.message],
+    ["Name", escapeHtml(payload.fullName)],
+    ["Phone", escapeHtml(payload.phone)],
+    ["Email", payload.email ? escapeHtml(payload.email) : undefined],
+    ["Business Type", payload.businessType ? escapeHtml(payload.businessType) : undefined],
+    ["Services", payload.services ? escapeHtml(payload.services.join(", ")) : undefined],
+    ["Message", payload.message ? escapeHtml(payload.message) : undefined],
   ];
 
   if (isBooking) {
     rows.push(
-      ["Service Type", payload.serviceType],
-      ["Preferred Date", payload.preferredDate],
-      ["Preferred Time", payload.preferredTime],
-      ["Description", payload.description]
+      ["Service Type", payload.serviceType ? escapeHtml(payload.serviceType) : undefined],
+      ["Preferred Date", payload.preferredDate ? escapeHtml(payload.preferredDate) : undefined],
+      ["Preferred Time", payload.preferredTime ? escapeHtml(payload.preferredTime) : undefined],
+      ["Description", payload.description ? escapeHtml(payload.description) : undefined]
     );
   }
 

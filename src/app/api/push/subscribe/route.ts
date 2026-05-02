@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createRateLimiter, getClientIp } from "@/lib/rate-limit";
+
+const limiter = createRateLimiter(10, 60_000, { label: "api/push/subscribe" });
 
 /**
  * POST /api/push/subscribe
@@ -9,7 +12,12 @@ import { NextRequest, NextResponse } from "next/server";
  * Body: { subscription: PushSubscription, appointment_id?: string }
  */
 export async function POST(req: NextRequest) {
-  let body: { subscription: unknown; appointment_id?: string };
+  const ip = getClientIp(req.headers);
+  if (limiter.isLimited(ip)) {
+    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+  }
+
+  let body: { subscription: Record<string, unknown>; appointment_id?: string };
 
   try {
     body = await req.json();
@@ -19,6 +27,13 @@ export async function POST(req: NextRequest) {
 
   if (!body?.subscription) {
     return NextResponse.json({ error: "Missing subscription" }, { status: 400 });
+  }
+
+  // Validate Web Push subscription shape
+  const sub = body.subscription as Record<string, unknown>;
+  const keys = sub.keys as Record<string, unknown> | undefined;
+  if (!sub.endpoint || !keys?.p256dh || !keys?.auth) {
+    return NextResponse.json({ error: "Invalid subscription" }, { status: 400 });
   }
 
   // Forward upstream to taskboard best-effort

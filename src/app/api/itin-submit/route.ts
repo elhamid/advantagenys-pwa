@@ -487,6 +487,11 @@ export async function POST(request: NextRequest) {
     }
     recentSubmissions.set(normalizedPhone, now);
 
+    // Evict expired entries to prevent unbounded Map growth
+    for (const [key, timestamp] of recentSubmissions) {
+      if (now - timestamp > 30_000) recentSubmissions.delete(key);
+    }
+
     // Extract new file fields (all optional, all non-fatal on failure)
     const [documentScanFile, selfieFile, signatureFile] = await Promise.all([
       extractValidatedFile(formData, "documentScan", "documentScan"),
@@ -574,11 +579,10 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (err) {
-    const errMsg = err instanceof Error ? err.message : String(err);
-    console.error("[ITIN Kiosk] Unexpected error:", errMsg, err);
+    console.error("[ITIN Kiosk] Unexpected error:", err);
     return NextResponse.json(
-      { success: false, error: `Submission failed: ${errMsg}` },
-      { status: 400 }
+      { success: false, error: "Submission failed. Please try again or call (929) 933-1396." },
+      { status: 500 }
     );
   }
 }

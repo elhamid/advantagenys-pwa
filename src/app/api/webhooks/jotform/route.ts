@@ -56,11 +56,14 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Fail-closed webhook auth — if JOTFORM_WEBHOOK_SECRET is configured, the
-  // incoming request MUST carry a matching x-jotform-webhook-secret header.
-  // Missing header => 401. Mismatched header => 401. Only the absence of the
-  // env var (local dev / early-stage) skips verification.
+  // Fail-closed: in production, require the secret to be configured
   const expectedSecret = process.env.JOTFORM_WEBHOOK_SECRET;
+  if (!expectedSecret && process.env.NODE_ENV === 'production') {
+    return NextResponse.json(
+      { error: "Webhook not configured" },
+      { status: 503 }
+    );
+  }
   if (expectedSecret) {
     const webhookSecret = request.headers.get("x-jotform-webhook-secret");
     if (!webhookSecret || webhookSecret !== expectedSecret) {
@@ -136,10 +139,3 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET() {
-  return NextResponse.json({
-    status: "ok",
-    endpoint: "JotForm Webhook",
-    timestamp: new Date().toISOString(),
-  });
-}
