@@ -294,7 +294,7 @@ export function BookingFlow() {
                 What can we help you with?
               </h2>
               <p className="text-sm text-[var(--text-secondary)] mt-1">
-                30-minute consult, free. No obligation.
+                20-minute consult, free. No obligation.
               </p>
             </div>
 
@@ -353,7 +353,7 @@ export function BookingFlow() {
               Pick a time
             </h2>
             <p className="text-sm text-[var(--text-secondary)] mb-5">
-              Choose a 30-minute slot that works for you.
+              Choose a 20-minute slot that works for you.
             </p>
 
             {/* 409 Alternatives banner — shown when taskboard Wave 2 returns alternatives */}

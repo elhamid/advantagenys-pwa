@@ -85,7 +85,7 @@ export function BookAppointmentTrigger({
           Book a Free Appointment
         </Link>
         <p className="mt-2 text-xs text-[var(--text-muted)]">
-          30-minute consult, free, no obligation.
+          20-minute consult, free, no obligation.
         </p>
       </div>
     );

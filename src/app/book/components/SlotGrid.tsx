@@ -61,7 +61,7 @@ function groupSlotsByDate(slots: Slot[]): Map<string, Slot[]> {
  * overlaps the given slot's [start, end) window.
  *
  * payload.new.scheduled_at — ISO UTC string
- * payload.new.duration_minutes — number (default 30 if absent)
+ * payload.new.duration_minutes — number (default 20 if absent)
  */
 function payloadOverlapsSlot(
   payload: { scheduled_at?: string; duration_minutes?: number },
@@ -69,7 +69,7 @@ function payloadOverlapsSlot(
 ): boolean {
   if (!payload.scheduled_at) return false;
   const bookStart = new Date(payload.scheduled_at).getTime();
-  const duration = payload.duration_minutes ?? 30;
+  const duration = payload.duration_minutes ?? 20;
   const bookEnd = bookStart + duration * 60_000;
 
   const slotStart = new Date(slot.start).getTime();
@@ -309,7 +309,7 @@ export function SlotGrid({
             {assigneeInitials}
           </span>
           <span className="text-xs text-[var(--text-secondary)]">
-            with {assigneeInitials} — 30 min free consult
+            with {assigneeInitials} — 20 min free consult
           </span>
         </div>
       )}

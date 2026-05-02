@@ -188,7 +188,7 @@ export function BookingContactForm({
       </button>
 
       <p className="text-xs text-[var(--text-muted)] text-center">
-        Free 30-minute consult. No obligation. All information is confidential.
+        Free 20-minute consult. No obligation. All information is confidential.
       </p>
     </form>
   );

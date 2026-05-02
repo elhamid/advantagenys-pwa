@@ -5,14 +5,14 @@ import { BookingFlow } from "./BookingFlow";
 export const metadata: Metadata = {
   title: "Book a Free Consult — Advantage Business Consulting",
   description:
-    "Pick a time that works for you. Tax, ITIN, business formation, licensing, insurance, and more — meet with a specialist in 30 minutes, free.",
+    "Pick a time that works for you. Tax, ITIN, business formation, licensing, insurance, and more — meet with a specialist in 20 minutes, free.",
   alternates: {
     canonical: "https://advantagenys.com/book",
   },
   openGraph: {
     title: "Book a Free Consult — Advantage Business Consulting",
     description:
-      "Pick a time that works for you. Tax, ITIN, business formation, licensing, insurance, and more — meet with a specialist in 30 minutes, free.",
+      "Pick a time that works for you. Tax, ITIN, business formation, licensing, insurance, and more — meet with a specialist in 20 minutes, free.",
     url: "https://advantagenys.com/book",
   },
 };
@@ -53,7 +53,7 @@ export default function BookPage() {
             Book a Free Consultation
           </h1>
           <p className="mt-3 text-base text-white/80 max-w-lg mx-auto leading-relaxed">
-            Tax returns, ITIN applications, LLC formation, insurance, audit defense — meet with a specialist in 30 minutes at no cost.
+            Tax returns, ITIN applications, LLC formation, insurance, audit defense — meet with a specialist in 20 minutes at no cost.
           </p>
 
           {/* Social proof strip */}

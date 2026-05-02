@@ -40,7 +40,7 @@ export function ContactFormTabs() {
           Book an Appointment
         </h2>
         <p className="text-sm text-[var(--text-secondary)] mb-4">
-          Pick a time that works for you — 30-minute free consult with a specialist.
+          Pick a time that works for you — 20-minute free consult with a specialist.
         </p>
         <a
           href="/book"
