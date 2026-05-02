@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { fetchSlots, type Slot, type SlotsResponse } from "@/lib/booking-client";
 import { bookingSupabase } from "@/lib/booking-realtime";
@@ -56,6 +56,49 @@ function groupSlotsByDate(slots: Slot[]): Map<string, Slot[]> {
   return map;
 }
 
+/** Get the hour in NY timezone (0-23) for time-of-day grouping */
+function getNYHour(isoUtc: string): number {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/New_York",
+    hour: "numeric",
+    hour12: false,
+  }).formatToParts(toNYDate(isoUtc));
+  const hourPart = parts.find((p) => p.type === "hour");
+  return parseInt(hourPart?.value ?? "0", 10);
+}
+
+type TimeOfDay = "morning" | "afternoon" | "evening";
+
+interface TimeGroup {
+  label: string;
+  key: TimeOfDay;
+  slots: Slot[];
+}
+
+/** Split a day's slots into Morning / Afternoon / Evening */
+function groupByTimeOfDay(daySlots: Slot[]): TimeGroup[] {
+  const morning: Slot[] = [];
+  const afternoon: Slot[] = [];
+  const evening: Slot[] = [];
+
+  for (const slot of daySlots) {
+    const hour = getNYHour(slot.start);
+    if (hour < 12) {
+      morning.push(slot);
+    } else if (hour < 17) {
+      afternoon.push(slot);
+    } else {
+      evening.push(slot);
+    }
+  }
+
+  const groups: TimeGroup[] = [];
+  if (morning.length > 0) groups.push({ label: "Morning", key: "morning", slots: morning });
+  if (afternoon.length > 0) groups.push({ label: "Afternoon", key: "afternoon", slots: afternoon });
+  if (evening.length > 0) groups.push({ label: "Evening", key: "evening", slots: evening });
+  return groups;
+}
+
 /**
  * Returns true if a booking INSERT payload's scheduled_at + duration_minutes
  * overlaps the given slot's [start, end) window.
@@ -80,6 +123,31 @@ function payloadOverlapsSlot(
 }
 
 // ---------------------------------------------------------------------------
+// Sub-components
+// ---------------------------------------------------------------------------
+
+function ChevronIcon({ expanded }: { expanded: boolean }) {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      aria-hidden="true"
+      className={`transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}
+    >
+      <path
+        d="M4 6l4 4 4-4"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
@@ -97,7 +165,6 @@ export function SlotGrid({
   service,
   onSlotSelect,
   selectedSlot,
-  assigneeInitials,
   onAssigneeInitialsChange,
   onSelectedSlotTaken,
 }: SlotGridProps) {
@@ -108,10 +175,16 @@ export function SlotGrid({
   const [takenStarts, setTakenStarts] = useState<Set<string>>(new Set());
   /** Inline message when the user's selected slot was just sniped. */
   const [snipedMessage, setSnipedMessage] = useState<string | null>(null);
+  /** Set of day labels that are expanded in the accordion */
+  const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set());
+  /** Whether "Show more days" has been activated */
+  const [showAllDays, setShowAllDays] = useState(false);
 
   // Mobile = 7-day window; desktop = 14-day
   const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
   const windowDays = isMobile ? 7 : 14;
+  /** How many days to show expanded by default */
+  const defaultExpandedCount = isMobile ? 1 : 3;
 
   // Keep a stable ref to selectedSlot so realtime callback can read it without
   // re-subscribing every time the selection changes.
@@ -252,6 +325,53 @@ export function SlotGrid({
     };
   }, [service, slotsData, loadSlots]);
 
+  // ---- derived data ----
+
+  const slots = slotsData?.slots ?? [];
+  const grouped = groupSlotsByDate(slots);
+  const dayEntries = useMemo(() => Array.from(grouped.entries()), [grouped]);
+
+  // Initialize expanded days when data loads
+  useEffect(() => {
+    if (dayEntries.length === 0) return;
+    const initial = new Set<string>();
+    // Find the first N days that have at least one available slot
+    let expandedCount = 0;
+    for (const [dateLabel, daySlots] of dayEntries) {
+      const hasAvailable = daySlots.some((s) => !takenStarts.has(s.start));
+      if (hasAvailable && expandedCount < defaultExpandedCount) {
+        initial.add(dateLabel);
+        expandedCount++;
+      }
+    }
+    // If we didn't fill the quota (all days fully booked), expand first N anyway
+    if (expandedCount === 0) {
+      for (let i = 0; i < Math.min(defaultExpandedCount, dayEntries.length); i++) {
+        initial.add(dayEntries[i][0]);
+      }
+    }
+    setExpandedDays(initial);
+    setShowAllDays(false);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slotsData]);
+
+  // Split days into initially visible vs overflow
+  const visibleDayCount = isMobile ? 3 : 5;
+  const visibleDays = showAllDays ? dayEntries : dayEntries.slice(0, visibleDayCount);
+  const hasMoreDays = dayEntries.length > visibleDayCount && !showAllDays;
+
+  function toggleDay(dateLabel: string) {
+    setExpandedDays((prev) => {
+      const next = new Set(prev);
+      if (next.has(dateLabel)) {
+        next.delete(dateLabel);
+      } else {
+        next.add(dateLabel);
+      }
+      return next;
+    });
+  }
+
   // ---- render ----
 
   if (loading && !slotsData) {
@@ -280,9 +400,6 @@ export function SlotGrid({
     );
   }
 
-  const slots = slotsData?.slots ?? [];
-  const grouped = groupSlotsByDate(slots);
-
   if (grouped.size === 0) {
     return (
       <div className="py-8 text-center space-y-2">
@@ -301,18 +418,11 @@ export function SlotGrid({
   }
 
   return (
-    <div className="space-y-5">
-      {/* Assignee badge */}
-      {assigneeInitials && (
-        <div className="flex items-center gap-2">
-          <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[var(--blue-accent)] text-white text-xs font-bold">
-            {assigneeInitials}
-          </span>
-          <span className="text-xs text-[var(--text-secondary)]">
-            with {assigneeInitials} — 20 min free consult
-          </span>
-        </div>
-      )}
+    <div className="space-y-4">
+      {/* Consultation info — replaces assignee badge */}
+      <p className="text-sm text-[var(--text-secondary)]">
+        20-minute free consultation — someone from our team will be with you.
+      </p>
 
       {/* Sniped slot message */}
       <AnimatePresence>
@@ -333,59 +443,140 @@ export function SlotGrid({
         )}
       </AnimatePresence>
 
-      {/* Date groups */}
-      <div className="space-y-4">
-        {Array.from(grouped.entries()).map(([dateLabel, daySlots]) => (
-          <div key={dateLabel}>
-            <p className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-2">
-              {dateLabel}
-            </p>
-            <div className="flex flex-wrap gap-2">
-              <AnimatePresence>
-                {daySlots.map((slot) => {
-                  const isSelected =
-                    selectedSlot?.start === slot.start &&
-                    selectedSlot?.end === slot.end;
-                  const isTaken = takenStarts.has(slot.start);
+      {/* Day accordion + slot grid */}
+      <div className="max-h-[60vh] overflow-y-auto md:max-h-none md:overflow-visible space-y-3">
+        {visibleDays.map(([dateLabel, daySlots]) => {
+          const allTaken = daySlots.every((s) => takenStarts.has(s.start));
+          const isExpanded = expandedDays.has(dateLabel);
+          const availableCount = daySlots.filter((s) => !takenStarts.has(s.start)).length;
+          const timeGroups = groupByTimeOfDay(daySlots);
 
-                  return (
-                    <motion.button
-                      key={slot.start}
-                      type="button"
-                      onClick={() => {
-                        if (isTaken) return;
-                        onSlotSelect(slot);
-                      }}
-                      aria-pressed={isSelected}
-                      aria-disabled={isTaken}
-                      disabled={isTaken}
-                      // Entry animation
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{
-                        opacity: isTaken ? 0.3 : 1,
-                        scale: 1,
-                      }}
-                      exit={{ opacity: 0, scale: 0.9 }}
-                      transition={{ duration: 0.25 }}
-                      className={`rounded-[var(--radius)] border px-3.5 py-2 text-sm font-medium transition-all ${
-                        isTaken
-                          ? "border-[var(--border)] bg-[var(--bg-section)] text-[var(--text-muted)] cursor-not-allowed line-through"
-                          : isSelected
-                          ? "border-[var(--blue-accent)] bg-[var(--blue-accent)] text-white shadow-[0_0_0_3px_rgba(79,86,232,0.15)] cursor-pointer"
-                          : "border-[var(--border)] bg-[var(--surface)] text-[var(--text)] hover:border-[var(--blue-accent)] hover:text-[var(--blue-accent)] cursor-pointer"
-                      }`}
-                    >
-                      {formatNYTime(slot.start)}
-                      {isTaken && (
-                        <span className="sr-only"> (taken)</span>
-                      )}
-                    </motion.button>
-                  );
-                })}
+          return (
+            <div
+              key={dateLabel}
+              className="rounded-[var(--radius)] border border-[var(--border)] overflow-hidden"
+            >
+              {/* Sticky day header */}
+              <button
+                type="button"
+                onClick={() => toggleDay(dateLabel)}
+                className="sticky top-0 z-10 flex w-full items-center justify-between gap-2 bg-[var(--bg-section)] px-3 py-2.5 md:px-4 md:py-3 cursor-pointer"
+              >
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="text-xs font-semibold text-[var(--text)] uppercase tracking-wide truncate">
+                    {dateLabel}
+                  </span>
+                  {allTaken ? (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[var(--bg-section)] text-[var(--text-muted)] border border-[var(--border)]">
+                      Fully booked
+                    </span>
+                  ) : (
+                    <span className="text-[10px] text-[var(--text-muted)] font-medium">
+                      {availableCount} slot{availableCount !== 1 ? "s" : ""}
+                    </span>
+                  )}
+                </div>
+                <ChevronIcon expanded={isExpanded} />
+              </button>
+
+              {/* Expandable slot content */}
+              <AnimatePresence initial={false}>
+                {isExpanded && (
+                  <motion.div
+                    key="content"
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.2, ease: "easeInOut" }}
+                    className="overflow-hidden"
+                  >
+                    {allTaken ? (
+                      <div className="px-3 py-4 md:px-4 text-center">
+                        <p className="text-xs text-[var(--text-muted)]">
+                          All slots for this day have been taken.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="px-3 py-3 md:px-4 space-y-3">
+                        {timeGroups.map((group) => {
+                          // Check if all slots in this group are taken
+                          const groupAllTaken = group.slots.every((s) => takenStarts.has(s.start));
+                          if (groupAllTaken) return null;
+
+                          return (
+                            <div key={group.key}>
+                              <p className="text-[10px] font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-1.5">
+                                {group.label}
+                              </p>
+                              <div className="flex flex-wrap gap-2.5">
+                                <AnimatePresence>
+                                  {group.slots.map((slot) => {
+                                    const isSelected =
+                                      selectedSlot?.start === slot.start &&
+                                      selectedSlot?.end === slot.end;
+                                    const isTaken = takenStarts.has(slot.start);
+
+                                    return (
+                                      <motion.button
+                                        key={slot.start}
+                                        type="button"
+                                        onClick={() => {
+                                          if (isTaken) return;
+                                          onSlotSelect(slot);
+                                        }}
+                                        aria-pressed={isSelected}
+                                        aria-disabled={isTaken}
+                                        disabled={isTaken}
+                                        // Entry animation
+                                        initial={{ opacity: 0, scale: 0.95 }}
+                                        animate={{
+                                          opacity: isTaken ? 0.3 : 1,
+                                          scale: 1,
+                                        }}
+                                        exit={{ opacity: 0, scale: 0.9 }}
+                                        transition={{ duration: 0.25 }}
+                                        className={`rounded-[var(--radius)] border px-4 py-3 min-h-[44px] text-sm font-medium transition-all ${
+                                          isTaken
+                                            ? "border-[var(--border)] bg-[var(--bg-section)] text-[var(--text-muted)] cursor-not-allowed line-through"
+                                            : isSelected
+                                            ? "border-[var(--blue-accent)] bg-[var(--blue-accent)] text-white shadow-[0_0_0_3px_rgba(79,86,232,0.15)] cursor-pointer"
+                                            : "border-[var(--border)] bg-[var(--surface)] text-[var(--text)] hover:border-[var(--blue-accent)] hover:text-[var(--blue-accent)] cursor-pointer"
+                                        }`}
+                                      >
+                                        {formatNYTime(slot.start)}
+                                        {isTaken && (
+                                          <span className="sr-only"> (taken)</span>
+                                        )}
+                                      </motion.button>
+                                    );
+                                  })}
+                                </AnimatePresence>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </motion.div>
+                )}
               </AnimatePresence>
             </div>
-          </div>
-        ))}
+          );
+        })}
+
+        {/* Show more days trigger */}
+        {hasMoreDays && (
+          <button
+            type="button"
+            onClick={() => setShowAllDays(true)}
+            className="flex w-full items-center justify-center gap-1.5 rounded-[var(--radius)] border border-dashed border-[var(--border)] bg-[var(--bg-section)] px-4 py-3 text-sm font-medium text-[var(--text-secondary)] hover:border-[var(--blue-accent)] hover:text-[var(--blue-accent)] transition-colors cursor-pointer"
+          >
+            Show {dayEntries.length - visibleDayCount} more day{dayEntries.length - visibleDayCount !== 1 ? "s" : ""}
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+              <path d="M3 5.5l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+        )}
       </div>
 
       {/* Timezone note */}

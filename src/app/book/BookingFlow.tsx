@@ -31,7 +31,7 @@ function StepIndicator({ current }: { current: number }) {
   const displayCurrent = BOOK_LIVE ? current : current === 3 ? 2 : current;
 
   return (
-    <nav aria-label="Booking steps" className="flex items-center gap-0 mb-8">
+    <nav aria-label="Booking steps" className="flex items-center gap-0 mb-6 md:mb-8">
       {(BOOK_LIVE ? STEPS : STEPS.filter((s) => s.id !== 2)).map((step, idx) => {
         const displayId = idx + 1;
         const isActive = displayCurrent === displayId;
@@ -49,18 +49,18 @@ function StepIndicator({ current }: { current: number }) {
             )}
 
             {/* Step dot + label */}
-            <div className="flex flex-col items-center gap-1.5">
+            <div className="flex flex-col items-center gap-1 md:gap-1.5">
               <span
-                className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold transition-all ${
+                className={`flex h-6 w-6 md:h-8 md:w-8 items-center justify-center rounded-full text-[10px] md:text-xs font-bold transition-all ${
                   isDone
                     ? "bg-[var(--blue-accent)] text-white"
                     : isActive
-                    ? "bg-[var(--blue-accent)] text-white shadow-[0_0_0_4px_rgba(79,86,232,0.15)]"
+                    ? "bg-[var(--blue-accent)] text-white shadow-[0_0_0_3px_rgba(79,86,232,0.15)] md:shadow-[0_0_0_4px_rgba(79,86,232,0.15)]"
                     : "bg-[var(--bg-section)] text-[var(--text-muted)] border border-[var(--border)]"
                 }`}
               >
                 {isDone ? (
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                  <svg width="12" height="12" viewBox="0 0 14 14" fill="none" aria-hidden="true" className="md:w-3.5 md:h-3.5">
                     <path d="M2.5 7l3 3L11.5 4" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 ) : (
@@ -68,7 +68,7 @@ function StepIndicator({ current }: { current: number }) {
                 )}
               </span>
               <span
-                className={`text-xs font-medium ${
+                className={`text-[10px] md:text-xs font-medium ${
                   isActive ? "text-[var(--blue-accent)]" : "text-[var(--text-muted)]"
                 }`}
               >
@@ -481,7 +481,6 @@ export function BookingFlow() {
                       minute: "2-digit",
                       hour12: true,
                     }).format(new Date(selectedSlot.start))}
-                    {assigneeInitials ? ` · ${assigneeInitials}` : ""}
                   </span>
                 )}
               </div>
