@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import type { NextRequest } from "next/server";
-import { GET, POST } from "../route";
+import { POST } from "../route";
 
 const originalSecret = process.env.JOTFORM_WEBHOOK_SECRET;
 
@@ -133,12 +133,5 @@ describe("/api/webhooks/jotform", () => {
     });
   });
 
-  it("returns basic status information from GET", async () => {
-    const response = await GET();
-    const body = await response.json();
 
-    expect(response.status).toBe(200);
-    expect(body.status).toBe("ok");
-    expect(body.endpoint).toBe("JotForm Webhook");
-  });
 });

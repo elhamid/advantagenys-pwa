@@ -14,6 +14,7 @@ vi.mock('framer-motion', () => ({
     },
   ),
   useInView: () => true,
+  useReducedMotion: () => false,
 }))
 
 beforeEach(() => {

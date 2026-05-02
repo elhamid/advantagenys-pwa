@@ -16,6 +16,7 @@ vi.mock('framer-motion', () => ({
   useReducedMotion: () => true,
   useScroll: () => ({ scrollYProgress: {} }),
   useTransform: () => undefined,
+  useReducedMotion: () => false,
 }))
 
 describe('HeroSection', () => {
@@ -23,7 +24,7 @@ describe('HeroSection', () => {
     render(<HeroSection />)
 
     expect(screen.getByText(/advantage services/i)).toBeInTheDocument()
-    expect(screen.getByText(/we handle the business/i)).toBeInTheDocument()
+    expect(screen.getByText(/nyc business experts/i)).toBeInTheDocument()
     expect(
       screen.getByRole('img', { name: /advantage services office in cambria heights/i }),
     ).toBeInTheDocument()

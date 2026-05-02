@@ -9,6 +9,10 @@ import TermsPage, { metadata as termsMetadata } from "../terms/page";
 import Loading from "../loading";
 import Template from "../template";
 
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/",
+}));
+
 vi.mock("next/link", () => ({
   default: ({
     href,

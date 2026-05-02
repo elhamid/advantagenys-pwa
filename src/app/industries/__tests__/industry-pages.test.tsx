@@ -35,7 +35,7 @@ describe("Industry pages", () => {
     expect(screen.getByRole("heading", { name: /we handle the licensing maze/i })).toBeInTheDocument();
     expect(screen.getByText(/what keeps contractors up at night/i)).toBeInTheDocument();
     expect(screen.getAllByRole("link", { name: /get licensed today/i })).toHaveLength(2);
-    expect(screen.getAllByRole("link", { name: /get licensed today/i })[0]).toHaveAttribute("href", "/contact");
+    expect(screen.getAllByRole("link", { name: /get licensed today/i })[0]).toHaveAttribute("href", "/book");
   });
 
   it("renders the immigrant entrepreneurs page", () => {
@@ -46,7 +46,7 @@ describe("Industry pages", () => {
     expect(screen.getByRole("heading", { level: 1, name: /^2,250\+ itins processed$/i })).toBeInTheDocument();
     expect(screen.getByText(/We understand your challenges/i)).toBeInTheDocument();
     expect(screen.getAllByRole("link", { name: /get your itin/i })).toHaveLength(2);
-    expect(screen.getAllByRole("link", { name: /get your itin/i })[0]).toHaveAttribute("href", "/contact");
+    expect(screen.getAllByRole("link", { name: /get your itin/i })[0]).toHaveAttribute("href", "/book");
   });
 
   it("renders the restaurants page", () => {
@@ -58,6 +58,6 @@ describe("Industry pages", () => {
     expect(screen.getByText(/what keeps restaurant owners up at night/i)).toBeInTheDocument();
     const restaurantCtas = screen.getAllByRole("link", { name: /start your restaurant/i });
     expect(restaurantCtas).toHaveLength(2);
-    expect(restaurantCtas[0]).toHaveAttribute("href", "/contact");
+    expect(restaurantCtas[0]).toHaveAttribute("href", "/book");
   });
 });

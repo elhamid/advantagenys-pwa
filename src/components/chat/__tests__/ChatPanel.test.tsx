@@ -371,7 +371,7 @@ describe("ChatPanel", () => {
       });
       render(<ChatPanel {...defaultProps} />);
       const link = screen.getByText("Book Consultation").closest("a");
-      expect(link?.getAttribute("href")).toBe("/contact");
+      expect(link?.getAttribute("href")).toBe("/book");
     });
 
     it("CTA card has call phone link", () => {
@@ -383,7 +383,7 @@ describe("ChatPanel", () => {
         },
       });
       render(<ChatPanel {...defaultProps} />);
-      const callLink = screen.getByText(/Call/);
+      const callLink = screen.getByText(/Call \(929\) 933-1396/);
       expect(callLink.closest("a")?.getAttribute("href")).toBe(
         "tel:+19299331396"
       );

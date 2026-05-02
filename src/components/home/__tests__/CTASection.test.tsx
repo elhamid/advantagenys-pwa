@@ -18,7 +18,7 @@ describe('CTASection', () => {
     expect(screen.getByText(/ready to get started/i)).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /schedule a call/i })).toHaveAttribute(
       'href',
-      '/contact',
+      '/book',
     )
     expect(screen.getByRole('link', { name: /whatsapp us/i })).toHaveAttribute(
       'href',

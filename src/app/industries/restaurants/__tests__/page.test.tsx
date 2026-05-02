@@ -30,6 +30,6 @@ describe("RestaurantsPage", () => {
     expect(screen.getByText(/what keeps restaurant owners up at night/i)).toBeInTheDocument();
     const ctas = screen.getAllByRole("link", { name: /start your restaurant/i });
     expect(ctas).toHaveLength(2);
-    expect(ctas[0]).toHaveAttribute("href", "/contact");
+    expect(ctas[0]).toHaveAttribute("href", "/book");
   });
 });

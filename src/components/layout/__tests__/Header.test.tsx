@@ -66,13 +66,13 @@ describe("Header", () => {
     expect(screen.getByRole("link", { name: "Contact" })).toBeInTheDocument();
   });
 
-  it("renders at least one 'Get Started' CTA link", () => {
+  it("renders at least one booking CTA link", () => {
     render(<Header />);
-    const getStartedLinks = screen.getAllByRole("link", { name: "Get Started" });
-    expect(getStartedLinks.length).toBeGreaterThan(0);
-    // All Get Started links point to /contact
-    getStartedLinks.forEach((link) => {
-      expect(link).toHaveAttribute("href", "/contact");
+    const bookLinks = screen.getAllByRole("link", { name: /book/i });
+    expect(bookLinks.length).toBeGreaterThan(0);
+    // All booking links point to /book
+    bookLinks.forEach((link) => {
+      expect(link).toHaveAttribute("href", "/book");
     });
   });
 

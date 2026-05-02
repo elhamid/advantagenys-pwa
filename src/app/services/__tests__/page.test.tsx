@@ -42,10 +42,10 @@ describe("ServicesPage", () => {
   it("renders the services index and CTAs", () => {
     render(<Page />);
 
-    expect(screen.getByRole("heading", { name: /every service your business needs\. one firm\./i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /every service your business needs\..*one firm\./i })).toBeInTheDocument();
     expect(screen.getByText(/business formation/i)).toBeInTheDocument();
     expect(screen.getByText(/licensing & permits/i)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /free consultation/i })).toHaveAttribute("href", "/contact");
+    expect(screen.getByRole("link", { name: /free consultation/i })).toHaveAttribute("href", "/book");
     expect(screen.getByRole("link", { name: new RegExp(`call ${PHONE.main}`, "i") })).toHaveAttribute(
       "href",
       `tel:${PHONE.mainTel}`

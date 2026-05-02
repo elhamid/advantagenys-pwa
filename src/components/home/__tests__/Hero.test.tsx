@@ -34,7 +34,7 @@ describe('Hero', () => {
     expect(container.textContent).toContain('Real Relationships.')
     expect(screen.getByRole('link', { name: /talk to a specialist/i })).toHaveAttribute(
       'href',
-      '/contact',
+      '/book',
     )
     expect(screen.getByRole('link', { name: /browse services/i })).toHaveAttribute(
       'href',

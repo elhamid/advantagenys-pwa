@@ -93,9 +93,9 @@ describe("MobileNav", () => {
     expect(screen.getByText("Advantage")).toBeInTheDocument();
   });
 
-  it("renders Get Started link when open=true", () => {
+  it("renders booking CTA link when open=true", () => {
     render(<MobileNav open={true} onClose={vi.fn()} items={defaultItems} />);
-    expect(screen.getByRole("link", { name: "Get Started" })).toHaveAttribute("href", "/contact");
+    expect(screen.getByRole("link", { name: /book a free consultation/i })).toHaveAttribute("href", "/book");
   });
 
   it("renders Call and WhatsApp contact links when open=true", () => {

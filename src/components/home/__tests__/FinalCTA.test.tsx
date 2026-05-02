@@ -14,6 +14,7 @@ vi.mock('framer-motion', () => ({
     blockquote: ({ children }: { children: React.ReactNode }) => <blockquote>{children}</blockquote>,
   },
   useInView: () => true,
+  useReducedMotion: () => false,
 }))
 
 describe('FinalCTA', () => {

@@ -15,6 +15,7 @@ vi.mock('framer-motion', () => ({
     div: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   },
   AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  useReducedMotion: () => false,
 }))
 
 describe('Testimonials', () => {

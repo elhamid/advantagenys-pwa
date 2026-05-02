@@ -32,17 +32,18 @@ describe("forms data integrity", () => {
     expect(unique.size).toBe(priorities.length);
   });
 
-  it("has 4 retired forms (inactive) — Sales Tax, Bookkeeping, New I-130 pair", () => {
+  it("has 5 retired forms (inactive) — Divorce, Sales Tax, Bookkeeping, New I-130 pair", () => {
     const retired = forms.filter((f) => !f.active).map((f) => f.id);
     expect(retired).toEqual(
       expect.arrayContaining([
+        "221784773077062", // Divorce Application
         "222615377389062", // Sales Tax Return Form
         "260414184804049", // Bookkeeping Form
         "243156342192150", // New I-130 Petitioner
         "243156183104146", // New I-130 Beneficiary
       ])
     );
-    expect(retired).toHaveLength(4);
+    expect(retired).toHaveLength(5);
   });
 
   it("every active form has a boolean true active flag", () => {

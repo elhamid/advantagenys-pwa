@@ -73,13 +73,13 @@ describe("Services pages", () => {
 
     render(<ServicesPage />);
 
-    expect(screen.getByRole("heading", { name: /every service your business needs\. one firm\./i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /every service your business needs\..*one firm\./i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /business formation/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /licensing & permits/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /^tax services$/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /^insurance$/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /audit defense/i })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /free consultation/i })).toHaveAttribute("href", "/contact");
+    expect(screen.getByRole("link", { name: /free consultation/i })).toHaveAttribute("href", "/book");
     expect(screen.getByRole("link", { name: new RegExp(`call ${PHONE.main}`, "i") })).toHaveAttribute(
       "href",
       `tel:${PHONE.mainTel}`

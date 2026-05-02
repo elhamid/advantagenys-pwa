@@ -30,6 +30,6 @@ describe("ContractorsPage", () => {
     expect(screen.getByText(/what keeps contractors up at night/i)).toBeInTheDocument();
     const ctas = screen.getAllByRole("link", { name: /get licensed today/i });
     expect(ctas).toHaveLength(2);
-    expect(ctas[0]).toHaveAttribute("href", "/contact");
+    expect(ctas[0]).toHaveAttribute("href", "/book");
   });
 });

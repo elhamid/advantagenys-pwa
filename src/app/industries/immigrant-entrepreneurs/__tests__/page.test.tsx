@@ -29,6 +29,6 @@ describe("ImmigrantEntrepreneursPage", () => {
     expect(screen.getByRole("heading", { level: 1, name: /2,250\+ itins processed/i })).toBeInTheDocument();
     expect(screen.getByText(/we understand your challenges/i)).toBeInTheDocument();
     expect(screen.getAllByRole("link", { name: /get your itin/i })).toHaveLength(2);
-    expect(screen.getAllByRole("link", { name: /get your itin/i })[0]).toHaveAttribute("href", "/contact");
+    expect(screen.getAllByRole("link", { name: /get your itin/i })[0]).toHaveAttribute("href", "/book");
   });
 });

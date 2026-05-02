@@ -14,6 +14,7 @@ vi.mock('framer-motion', () => ({
   useInView: () => true,
   useScroll: () => ({ scrollYProgress: {} }),
   useTransform: () => undefined,
+  useReducedMotion: () => false,
 }))
 
 describe('TeamSection', () => {

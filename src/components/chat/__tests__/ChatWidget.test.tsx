@@ -23,6 +23,8 @@ vi.mock("framer-motion", () => ({
       <div {...props}>{children}</div>
     ),
   },
+  AnimatePresence: ({ children }: { children: React.ReactNode }) => children,
+  useReducedMotion: () => false,
 }));
 
 // Mock useChat hook so ChatPanel renders without API calls
@@ -255,6 +257,6 @@ describe("ChatWidget", () => {
   it("widget container has fixed positioning class z-40", () => {
     const { container } = render(<ChatWidget />);
     const wrapper = container.firstChild as HTMLElement;
-    expect(wrapper).toHaveClass("fixed", "z-40");
+    expect(wrapper).toHaveClass("fixed", "z-50");
   });
 });

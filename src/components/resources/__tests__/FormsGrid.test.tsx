@@ -1,11 +1,22 @@
+import React from 'react'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
 import { FormsGrid } from '../FormsGrid'
 
 vi.mock('framer-motion', () => ({
-  motion: {
-    div: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  },
+  motion: new Proxy(
+    {},
+    {
+      get: (_target: unknown, tag: string) => {
+        const Component = ({ children, ...props }: React.PropsWithChildren<Record<string, unknown>>) => {
+          const { initial, animate, exit, transition, style, ...rest } = props
+          void initial; void animate; void exit; void transition
+          return React.createElement(tag, { ...rest, style }, children)
+        }
+        return Component
+      },
+    },
+  ),
   AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }))
 
@@ -45,8 +56,8 @@ describe('FormsGrid', () => {
     expect(clearButton).toBeDefined()
     fireEvent.click(clearButton!)
 
-    // 19 active entries (4 retired: Sales Tax, Bookkeeping, New I-130 pair)
-    expect(screen.getByText(/19 items/i)).toBeInTheDocument()
+    // 18 active entries (5 retired: Divorce, Sales Tax, Bookkeeping, New I-130 pair)
+    expect(screen.getByText(/18 items/i)).toBeInTheDocument()
     expect(screen.queryByText(/matching/i)).not.toBeInTheDocument()
     expect(container).toBeTruthy()
   })
