@@ -8,7 +8,7 @@ const CONTENT_SECURITY_POLICY = [
   "img-src 'self' data: https: blob:",
   "font-src 'self' data:",
   // Connect: add GA4 collect, Meta Pixel beacon, Clarity beacon, Vercel Analytics.
-  "connect-src 'self' https://challenges.cloudflare.com https://*.supabase.co https://api.openai.com https://api.groq.com https://api.anthropic.com https://region1.google-analytics.com https://www.google-analytics.com https://api.brevo.com https://api.jotform.com https://www.facebook.com https://*.facebook.com https://*.clarity.ms https://c.bing.com https://vitals.vercel-insights.com https://vitals.vercel-analytics.com wss:",
+  "connect-src 'self' https://app.advantagenys.com https://challenges.cloudflare.com https://*.supabase.co https://api.openai.com https://api.groq.com https://api.anthropic.com https://region1.google-analytics.com https://www.google-analytics.com https://api.brevo.com https://api.jotform.com https://www.facebook.com https://*.facebook.com https://*.clarity.ms https://c.bing.com https://vitals.vercel-insights.com https://vitals.vercel-analytics.com wss:",
   "frame-src 'self' https://challenges.cloudflare.com https://form.jotform.com https://www.jotform.com https://www.googletagmanager.com https://td.doubleclick.net",
   "object-src 'none'",
   "base-uri 'self'",
