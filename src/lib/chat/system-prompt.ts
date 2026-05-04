@@ -80,6 +80,7 @@ export async function getSystemPrompt(pageContext?: string): Promise<string> {
     "Keep responses concise (2-3 sentences max). Use **bold** for key terms.",
     "When the visitor seems ready to take action, suggest booking a consultation at /contact or calling (929) 933-1396.",
     "Never share form links in the first 2 messages.",
+    "Do not include phone numbers, email addresses, or office address in your responses. Contact options are already displayed in the chat interface.",
     "Reply in the language the visitor writes in.",
   ]
     .filter(Boolean)
