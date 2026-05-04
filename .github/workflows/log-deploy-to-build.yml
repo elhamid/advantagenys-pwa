@@ -1,0 +1,165 @@
+name: Log Deploy to Build Page
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  log-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Parse commits and log to Build page
+        env:
+          SUPABASE_URL: ${{ secrets.TASKBOARD_SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.TASKBOARD_SUPABASE_SERVICE_KEY }}
+        run: |
+          set -euo pipefail
+
+          # Get commits in this push
+          BEFORE="${{ github.event.before }}"
+          AFTER="${{ github.event.after }}"
+
+          # If before is all zeros (first push or force push), use last 10 commits
+          if [[ "$BEFORE" == "0000000000000000000000000000000000000000" ]]; then
+            COMMITS=$(git log --oneline -10 "$AFTER")
+          else
+            COMMITS=$(git log --oneline "$BEFORE".."$AFTER")
+          fi
+
+          if [[ -z "$COMMITS" ]]; then
+            echo "No commits to process"
+            exit 0
+          fi
+
+          echo "Processing commits:"
+          echo "$COMMITS"
+
+          # Categorize commits by conventional prefix
+          declare -A GROUPS
+          declare -A PRIORITIES
+
+          while IFS= read -r line; do
+            # Skip merge commits and version bumps
+            if echo "$line" | grep -qiE '^[a-f0-9]+ (Merge |v[0-9]|bump|release)'; then
+              continue
+            fi
+
+            # Extract hash and message
+            HASH=$(echo "$line" | awk '{print $1}')
+            MSG=$(echo "$line" | cut -d' ' -f2-)
+
+            # Parse conventional commit prefix
+            if echo "$MSG" | grep -qE '^feat(\(.+\))?:'; then
+              PREFIX="feat"
+            elif echo "$MSG" | grep -qE '^fix(\(.+\))?:'; then
+              PREFIX="fix"
+            elif echo "$MSG" | grep -qE '^chore(\(.+\))?:'; then
+              PREFIX="chore"
+            elif echo "$MSG" | grep -qE '^refactor(\(.+\))?:'; then
+              PREFIX="refactor"
+            elif echo "$MSG" | grep -qE '^test(\(.+\))?:'; then
+              PREFIX="test"
+            elif echo "$MSG" | grep -qE '^ci(\(.+\))?:'; then
+              PREFIX="ci"
+            elif echo "$MSG" | grep -qE '^docs(\(.+\))?:'; then
+              PREFIX="docs"
+            elif echo "$MSG" | grep -qE '^perf(\(.+\))?:'; then
+              PREFIX="perf"
+            elif echo "$MSG" | grep -qE '^style(\(.+\))?:'; then
+              PREFIX="style"
+            else
+              PREFIX="other"
+            fi
+
+            # Strip prefix from message for summary
+            CLEAN_MSG=$(echo "$MSG" | sed -E 's/^[a-z]+(\([^)]*\))?:\s*//')
+
+            # Accumulate messages per group
+            if [[ -n "${GROUPS[$PREFIX]+x}" ]]; then
+              GROUPS[$PREFIX]="${GROUPS[$PREFIX]}; ${CLEAN_MSG}"
+            else
+              GROUPS[$PREFIX]="$CLEAN_MSG"
+            fi
+          done <<< "$COMMITS"
+
+          # Skip if nothing significant
+          if [[ ${#GROUPS[@]} -eq 0 ]]; then
+            echo "No significant commits found"
+            exit 0
+          fi
+
+          NOW=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          SHORT_SHA=$(echo "$AFTER" | cut -c1-7)
+
+          # Insert one entry per group
+          for PREFIX in "${!GROUPS[@]}"; do
+            SUMMARY="${GROUPS[$PREFIX]}"
+
+            # Determine priority
+            PRIORITY="P2"
+            if [[ "$PREFIX" == "feat" ]]; then
+              PRIORITY="P1"
+            fi
+            if [[ "$PREFIX" == "fix" ]] && echo "$SUMMARY" | grep -qiE '(CRITICAL|security|urgent)'; then
+              PRIORITY="P0"
+            fi
+
+            # Determine scope
+            SCOPE="feature"
+            case "$PREFIX" in
+              fix) SCOPE="bugfix" ;;
+              chore|ci|docs|style) SCOPE="maintenance" ;;
+              refactor) SCOPE="refactor" ;;
+              test) SCOPE="testing" ;;
+              perf) SCOPE="performance" ;;
+            esac
+
+            # Build name (max 200 chars)
+            case "$PREFIX" in
+              feat) LABEL="Features" ;;
+              fix) LABEL="Fixes" ;;
+              chore) LABEL="Chores" ;;
+              refactor) LABEL="Refactors" ;;
+              test) LABEL="Tests" ;;
+              ci) LABEL="CI" ;;
+              docs) LABEL="Docs" ;;
+              perf) LABEL="Performance" ;;
+              style) LABEL="Style" ;;
+              *) LABEL="Updates" ;;
+            esac
+
+            NAME="PWA ${LABEL}: ${SUMMARY}"
+            NAME=$(echo "$NAME" | cut -c1-200)
+
+            # Build product_summary (max 500 chars)
+            PRODUCT_SUMMARY="Deploy ${SHORT_SHA} to advantagenys.com — ${SUMMARY}"
+            PRODUCT_SUMMARY=$(echo "$PRODUCT_SUMMARY" | cut -c1-500)
+
+            # Escape JSON strings
+            NAME_JSON=$(echo "$NAME" | jq -Rs '.' | sed 's/^"//;s/"$//')
+            SUMMARY_JSON=$(echo "$PRODUCT_SUMMARY" | jq -Rs '.' | sed 's/^"//;s/"$//')
+
+            echo "Inserting: $NAME"
+
+            HTTP_CODE=$(curl -s -o /tmp/response.txt -w "%{http_code}" \
+              -X POST "${SUPABASE_URL}/rest/v1/projects" \
+              -H "apikey: ${SUPABASE_KEY}" \
+              -H "Authorization: Bearer ${SUPABASE_KEY}" \
+              -H "Content-Type: application/json" \
+              -H "Prefer: return=minimal" \
+              -d "{\"name\": \"${NAME_JSON}\", \"kind\": \"builder\", \"lifecycle_status\": \"complete\", \"scope\": \"${SCOPE}\", \"product_summary\": \"${SUMMARY_JSON}\", \"priority\": \"${PRIORITY}\", \"completed_at\": \"${NOW}\"}")
+
+            if [[ "$HTTP_CODE" -ge 200 && "$HTTP_CODE" -lt 300 ]]; then
+              echo "  -> Inserted (HTTP ${HTTP_CODE})"
+            else
+              echo "  -> Failed (HTTP ${HTTP_CODE})"
+              cat /tmp/response.txt
+              echo ""
+            fi
+          done
+
+          echo "Done logging deploy to Build page"
