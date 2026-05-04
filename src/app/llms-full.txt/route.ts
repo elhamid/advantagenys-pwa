@@ -81,7 +81,7 @@ Specialties: Technology, AI, Business Development. Hamid leads the firm's digita
 ## Location & Service Area
 - Address: 229-14 Linden Blvd, Cambria Heights, NY 11411
 - Neighborhood: Cambria Heights, Queens, New York City
-- Service Area: All five NYC boroughs, Long Island, and New Jersey
+- Service Area: All five NYC boroughs, Long Island, and Westchester / Rockland / Putnam counties (New York State only)
 - Google Maps: https://maps.google.com/?q=229-14+Linden+Blvd+Cambria+Heights+NY+11411
 
 ## Contact

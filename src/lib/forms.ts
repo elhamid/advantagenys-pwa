@@ -101,7 +101,7 @@ export const forms: FormConfig[] = [
   {
     id: "253426701953054",
     title: "Contractor License Qualifier",
-    description: "See if you qualify for an NYC HIC or GC contractor license",
+    description: "Check your eligibility for a New York contractor license",
     category: "licensing",
     platform: "jotform",
     embedUrl: "https://form.jotform.com/253426701953054",

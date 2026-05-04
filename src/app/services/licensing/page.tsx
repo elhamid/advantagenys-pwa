@@ -24,22 +24,22 @@ const licenses = [
     description:
       "Required by NYC Consumer Affairs for anyone performing home improvement work over $200 in New York City. Includes renovations, painting, plumbing, electrical, roofing, and general remodeling. Failure to obtain this license can result in fines up to $2,500 per violation.",
     requirements: [
-      "Completed application with NYC DCA",
-      "Proof of general liability insurance",
+      "Completed application with NYC DCWP",
       "Workers compensation and disability insurance",
-      "Home improvement salesperson registration",
+      "Sales Tax Registration (Certificate of Authority)",
+      "Surety bond ($20,000) or DCWP Trust Fund",
       "Background check and fingerprinting",
     ],
   },
   {
-    name: "General Contractor License",
+    name: "General Contractor License (NYC Only)",
     description:
-      "For commercial and large-scale construction projects. General contractors coordinate subcontractors, pull building permits, and oversee job sites. Licensing requirements vary by municipality and project scope.",
+      "NYC Department of Buildings (DOB) registration for commercial and large-scale construction projects. General contractors coordinate subcontractors, pull building permits, and oversee job sites. This license applies only within the five boroughs — outside NYC, different rules apply.",
     requirements: [
+      "NYC DOB registration application",
       "Business entity formation",
       "General liability insurance (minimum coverage varies)",
       "Workers compensation insurance",
-      "Bonding (where required)",
       "Safety training certifications (OSHA)",
     ],
   },
@@ -248,7 +248,7 @@ export default async function LicensingPage() {
                 Not Sure If You Qualify for a Contractor License?
               </h2>
               <p className="text-[var(--text-secondary)] mb-6 max-w-md mx-auto">
-                Answer 7 quick questions and get an instant eligibility check for the NYC HIC or General Contractor license — plus a personalized action plan.
+                Answer 7 quick questions and get an instant eligibility check for a New York contractor license — plus a personalized action plan.
               </p>
               <Button href="/contractor-license" size="lg">
                 Check My Eligibility

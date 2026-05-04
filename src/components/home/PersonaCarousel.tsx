@@ -55,7 +55,7 @@ const PERSONAS: Persona[] = [
     imageAlt: "Contractor at a Brooklyn renovation site",
     quote: "I just want to build. Not fight with paperwork.",
     solution:
-      "We get you licensed, insured, and compliant \u2014 so you never have to think about it. HIC license, general contractor permits, workers comp, GL insurance, quarterly tax. One firm handles it all.",
+      "We get you licensed, insured, and compliant \u2014 so you never have to think about it. HIC license, NYC general contractor registration, workers comp, GL insurance, quarterly tax. One firm handles it all.",
     services: [
       "Home Improvement License",
       "Workers Comp",

@@ -140,6 +140,7 @@ export interface HomeImprovementLead extends LeadSubmissionBase {
   businessName?: string;
   businessAddress?: string;
   city?: string;
+  county?: string;
   state?: string;
   zipCode?: string;
   licenseType?: string;
@@ -150,7 +151,7 @@ export interface HomeImprovementLead extends LeadSubmissionBase {
 
 export interface ContractorQualifierLead extends LeadSubmissionBase {
   type: "contractor-qualifier";
-  /** Step 1: NYC 5 boroughs / Nassau / Suffolk / Westchester / NJ / multiple */
+  /** Step 1: NYC 5 boroughs / Nassau / Suffolk / Westchester / Rockland / Putnam / multiple */
   workLocation?: string;
   /** Step 2: HIC / GC / both */
   scopeOfWork?: string;

@@ -37,23 +37,23 @@ const painPoints = [
 ];
 
 const journey = [
-  { step: "1", label: "License", detail: "HIC or General Contractor license filed and tracked" },
-  { step: "2", label: "Insurance", detail: "GL + Workers Comp policies bound and active" },
-  { step: "3", label: "LLC Formation", detail: "Business entity structured for liability protection" },
+  { step: "1", label: "LLC Formation", detail: "Business entity structured for liability protection" },
+  { step: "2", label: "License", detail: "HIC or General Contractor license filed and tracked" },
+  { step: "3", label: "Insurance", detail: "GL + Workers Comp policies bound and active" },
   { step: "4", label: "Quarterly Tax", detail: "Estimated payments calculated and filed on time" },
   { step: "5", label: "Audit Prep", detail: "Workers comp audit documentation ready year-round" },
 ];
 
 const services = [
   "Home Improvement Contractor (HIC) License",
-  "General Contractor License",
+  "General Contractor License (NYC Only)",
   "Workers Compensation Insurance",
   "General Liability Insurance",
   "Disability Insurance",
   "LLC / Corp Formation",
+  "Sales Tax Registration (Certificate of Authority)",
   "Quarterly & Annual Tax Preparation",
   "Workers Comp Audit Defense",
-  "Sales Tax Filing",
   "Bookkeeping",
 ];
 

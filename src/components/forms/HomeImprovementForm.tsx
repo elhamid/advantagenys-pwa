@@ -10,9 +10,23 @@ import { formStart, formSubmit } from "@/lib/analytics/events";
 
 const licenseTypes = [
   "Home Improvement Contractor",
-  "General Contractor",
+  "General Contractor (NYC Only)",
   "Plumber",
   "Electrician",
+  "Other",
+] as const;
+
+const counties = [
+  "NYC — Manhattan",
+  "NYC — Brooklyn",
+  "NYC — Queens",
+  "NYC — Bronx",
+  "NYC — Staten Island",
+  "Nassau",
+  "Suffolk",
+  "Westchester",
+  "Rockland",
+  "Putnam",
   "Other",
 ] as const;
 
@@ -23,6 +37,7 @@ interface HomeImprovementFormData {
   businessName: string;
   businessAddress: string;
   city: string;
+  county: string;
   state: string;
   zipCode: string;
   licenseType: string;
@@ -41,6 +56,7 @@ export function HomeImprovementForm() {
     businessName: "",
     businessAddress: "",
     city: "",
+    county: "",
     state: "NY",
     zipCode: "",
     licenseType: "",
@@ -82,6 +98,7 @@ export function HomeImprovementForm() {
       businessName: formData.businessName || undefined,
       businessAddress: formData.businessAddress || undefined,
       city: formData.city || undefined,
+      county: formData.county || undefined,
       state: formData.state || undefined,
       zipCode: formData.zipCode || undefined,
       licenseType: formData.licenseType || undefined,
@@ -283,6 +300,28 @@ export function HomeImprovementForm() {
               className={inputClasses}
             />
           </div>
+        </div>
+
+        {/* County / Jurisdiction */}
+        <div>
+          <label htmlFor="hiCounty" className="block text-sm font-medium text-[var(--text)] mb-1">
+            County / Jurisdiction <span className="text-red-500">*</span>
+          </label>
+          <select
+            id="hiCounty"
+            name="county"
+            required
+            value={formData.county}
+            onChange={handleChange}
+            className={inputClasses}
+          >
+            <option value="">Select county</option>
+            {counties.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
         </div>
 
         {/* License Type */}

@@ -26,7 +26,7 @@ You help visitors learn about our services:
 - Audit Defense
 
 We serve restaurants, contractors, and immigrant entrepreneurs in New York.
-Office: 229 Empire Blvd, Brooklyn, NY 11225
+Office: 229-14 Linden Blvd, Cambria Heights, NY 11411
 Phone: (929) 933-1396
 Hours: Mon-Sat 10AM-7PM`;
 
