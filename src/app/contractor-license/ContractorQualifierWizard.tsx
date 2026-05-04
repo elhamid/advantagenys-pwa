@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUtmParams } from "@/hooks/useUtmParams";
 import Link from "next/link";
@@ -39,6 +39,131 @@ const INITIAL_ANSWERS: Answers = {
 const STORAGE_KEY = "contractor-qualifier-answers";
 
 /* ──────────────────────────────────────────────────────────────────────────────
+   Jurisdiction data (verified against official NYC/county government sources)
+   ──────────────────────────────────────────────────────────────────────────── */
+
+type JurisdictionKey = "nyc" | "nassau" | "suffolk" | "westchester" | "rockland" | "putnam" | "multiple";
+
+interface JurisdictionInfo {
+  label: string;
+  hicAgency: string;
+  hasGC: boolean;
+  hicExperienceYears: number;
+  hicExperienceProof: string;
+  hicExam: boolean;
+  hicExamDetail: string;
+  /** GL insurance requirement (empty = not required by licensing body) */
+  hicGLInsurance: string;
+  hicFee: string;
+  hicExtras: string[];
+}
+
+const JURISDICTIONS: Record<Exclude<JurisdictionKey, "multiple">, JurisdictionInfo> = {
+  nyc: {
+    label: "NYC (All 5 Boroughs)",
+    hicAgency: "NYC Dept. of Consumer & Worker Protection (DCWP)",
+    hasGC: true,
+    hicExperienceYears: 0,
+    hicExperienceProof: "",
+    hicExam: true,
+    hicExamDetail: "30 questions, 70% to pass, $50 exam fee",
+    hicGLInsurance: "",
+    hicFee: "$100 application fee (2-year license)",
+    hicExtras: [
+      "NYS Sales Tax ID (Certificate of Authority) — mandatory",
+      "Workers’ Compensation insurance (or exemption certificate if no employees) — mandatory",
+      "Surety bond ($20,000 naming DCWP) OR DCWP Trust Fund enrollment ($200) — mandatory",
+      "Fingerprinting via IdentoGO for all owners with 10%+ ownership — mandatory",
+      "EPA RRP certification — required if working on pre-1978 buildings (or signed affirmation it’s not needed)",
+      "Business certificate or entity registration with New York State — required",
+    ],
+  },
+  nassau: {
+    label: "Nassau County",
+    hicAgency: "Nassau County Office of Consumer Affairs",
+    hasGC: false,
+    hicExperienceYears: 5,
+    hicExperienceProof: "W-2s or 1099s from construction work required as proof",
+    hicExam: false,
+    hicExamDetail: "",
+    hicGLInsurance: "$250K/$500K bodily injury, $100K property damage — required",
+    hicFee: "$650/2yr + $50 restitution fund",
+    hicExtras: [
+      "Workers’ Compensation insurance — mandatory",
+    ],
+  },
+  suffolk: {
+    label: "Suffolk County",
+    hicAgency: "Suffolk County Dept. of Consumer Affairs",
+    hasGC: false,
+    hicExperienceYears: 0,
+    hicExperienceProof: "",
+    hicExam: true,
+    hicExamDetail: "25-question written exam",
+    hicGLInsurance: "$500K combined single limit — required",
+    hicFee: "$200 application + $200 trust fund",
+    hicExtras: [
+      "Surety bond up to $100,000",
+      "Workers’ Compensation insurance — mandatory",
+    ],
+  },
+  westchester: {
+    label: "Westchester County",
+    hicAgency: "Westchester County Dept. of Consumer Protection",
+    hasGC: false,
+    hicExperienceYears: 5,
+    hicExperienceProof: "5-year notarized personal work history required",
+    hicExam: false,
+    hicExamDetail: "",
+    hicGLInsurance: "Amount set by Director — contact office for current requirement",
+    hicFee: "$500/2yr",
+    hicExtras: [
+      "Workers’ Compensation insurance — mandatory",
+    ],
+  },
+  rockland: {
+    label: "Rockland County",
+    hicAgency: "Rockland County Dept. of Consumer Protection",
+    hasGC: false,
+    hicExperienceYears: 0,
+    hicExperienceProof: "",
+    hicExam: true,
+    hicExamDetail: "Written exam for A6/B6 General Contractor classification",
+    hicGLInsurance: "Required (contact county for current minimums)",
+    hicFee: "$325",
+    hicExtras: [
+      "A6/B6 GC classification is within the HIC license (not a separate license)",
+    ],
+  },
+  putnam: {
+    label: "Putnam County",
+    hicAgency: "Putnam County Consumer Affairs",
+    hasGC: false,
+    hicExperienceYears: 0,
+    hicExperienceProof: "",
+    hicExam: false,
+    hicExamDetail: "",
+    hicGLInsurance: "$1M/$2M — required (highest among NY counties)",
+    hicFee: "$250",
+    hicExtras: [
+      "$25,000 surety bond — required",
+      "Workers’ Compensation insurance — mandatory",
+    ],
+  },
+};
+
+/** NYC GC (DOB) specific requirements */
+const NYC_GC_REQUIREMENTS = [
+  "General Liability insurance: $1M minimum per occurrence — mandatory",
+  "Workers’ Compensation + Disability insurance — mandatory",
+  "Financial solvency: $25K operating capital (bank statements) — mandatory",
+  "5 years of general contracting experience — mandatory",
+  "Background investigation (3–5 months processing)",
+  "Fee: $300 for 3-year registration",
+  "No exam required",
+];
+
+/* ──────────────────────────────────────────────────────────────────────────────
    Verdict logic
    ──────────────────────────────────────────────────────────────────────────── */
 
@@ -47,15 +172,34 @@ type Verdict = "ready" | "almost" | "not-yet";
 function computeVerdict(a: Answers): Verdict {
   const hasEntity = a.entityStatus !== "" && a.entityStatus !== "none";
   const gcPath = a.scopeOfWork === "gc" || a.scopeOfWork === "both";
-  const hasExperience =
-    gcPath ? a.experience === "5+" : a.experience !== "" && a.experience !== "<1";
-  const hasCerts = a.certifications.includes("insurance");
+  const loc = a.workLocation as JurisdictionKey;
+
+  // Experience check — jurisdiction-aware
+  let hasExperience = true;
+  if (gcPath) {
+    hasExperience = a.experience === "5+";
+  } else if (loc === "nassau" || loc === "westchester") {
+    hasExperience = a.experience === "5+";
+  }
+
+  // GL insurance — only factor for GC path or counties that require it
+  // NYC HIC: GL insurance NOT required by DCWP, so not a verdict factor
+  let hasGLInsurance = true;
+  if (gcPath) {
+    hasGLInsurance = a.certifications.includes("insurance");
+  } else if (loc !== "nyc" && loc !== "multiple") {
+    const jInfo = loc in JURISDICTIONS ? JURISDICTIONS[loc as Exclude<JurisdictionKey, "multiple">] : null;
+    if (jInfo && jInfo.hicGLInsurance) {
+      hasGLInsurance = a.certifications.includes("insurance");
+    }
+  }
+
   const hasTimeline = a.timeline === "waiting" || a.timeline === "30days";
 
   const missingCount = [
     !hasEntity,
     !hasExperience,
-    !hasCerts,
+    !hasGLInsurance,
     !hasTimeline,
   ].filter(Boolean).length;
 
@@ -183,6 +327,41 @@ function InputField({
 }
 
 /* ──────────────────────────────────────────────────────────────────────────────
+   Helpers
+   ──────────────────────────────────────────────────────────────────────────── */
+
+function isNYC(loc: string): boolean {
+  return loc === "nyc";
+}
+
+function getJurisdiction(loc: string): JurisdictionInfo | null {
+  if (loc in JURISDICTIONS) return JURISDICTIONS[loc as Exclude<JurisdictionKey, "multiple">];
+  return null;
+}
+
+function experienceStepTitle(loc: string, scope: string): string {
+  const gcPath = scope === "gc" || scope === "both";
+  if (gcPath) return "NYC GC registration requires 5 years of general contracting experience.";
+  const j = getJurisdiction(loc);
+  if (j && j.hicExperienceYears > 0) {
+    return `${j.label} requires a minimum of ${j.hicExperienceYears} years of experience for HIC licensing.`;
+  }
+  if (loc === "multiple") {
+    return "Some NY counties require minimum experience for HIC licensing. How much experience do you have?";
+  }
+  return "How many years of contracting experience do you have?";
+}
+
+function experienceStepSubtitle(loc: string, scope: string): string | undefined {
+  const gcPath = scope === "gc" || scope === "both";
+  if (gcPath) return "Documented experience in general contracting required.";
+  if (loc === "nassau") return "W-2s or 1099s from construction work required as proof.";
+  if (loc === "westchester") return "5-year notarized personal work history required.";
+  if (isNYC(loc) && !gcPath) return "No minimum experience required by DCWP for HIC licensing.";
+  return undefined;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────────
    Main Wizard
    ──────────────────────────────────────────────────────────────────────────── */
 
@@ -231,6 +410,47 @@ export function ContractorQualifierWizard() {
       return { ...prev, certifications: certs };
     });
   }, []);
+
+  // GC only available in NYC
+  const gcAvailable = isNYC(answers.workLocation);
+
+  const scopeOptions = useMemo(() => {
+    if (gcAvailable) {
+      return [
+        { value: "hic", label: "Residential repair / remodel (HIC license)" },
+        { value: "gc", label: "New construction or structural (GC registration)" },
+        { value: "both", label: "Both HIC + GC" },
+      ];
+    }
+    return [
+      { value: "hic", label: "Home Improvement Contractor (HIC) license" },
+    ];
+  }, [gcAvailable]);
+
+  // Reset scope if user changes location and GC is no longer available
+  useEffect(() => {
+    if (!gcAvailable && (answers.scopeOfWork === "gc" || answers.scopeOfWork === "both")) {
+      setAnswers((prev) => ({ ...prev, scopeOfWork: "hic" }));
+    }
+  }, [gcAvailable, answers.scopeOfWork]);
+
+  const gcPath = answers.scopeOfWork === "gc" || answers.scopeOfWork === "both";
+
+  // Certifications options — vary by path and location
+  const certOptions = useMemo(() => {
+    const glLabel = gcPath
+      ? "General Liability insurance (mandatory for GC)"
+      : answers.workLocation === "nyc"
+        ? "General Liability insurance (not required by DCWP, but recommended)"
+        : "General Liability insurance (required by county)";
+    return [
+      { value: "epa-rrp", label: "EPA RRP Certification (required for pre-1978 buildings)" },
+      { value: "insurance", label: glLabel },
+      { value: "workers-comp", label: "Workers’ Compensation (or exemption certificate)" },
+      { value: "sales-tax", label: "NYS Sales Tax ID (Certificate of Authority)" },
+      { value: "none", label: "None of the above" },
+    ];
+  }, [gcPath, answers.workLocation]);
 
   function goNext() {
     setDirection(1);
@@ -319,7 +539,7 @@ export function ContractorQualifierWizard() {
             Contractor License Qualifier
           </h1>
           <p className="text-[var(--text-secondary)] text-sm max-w-sm mx-auto">
-            Answer 7 quick questions to see if you&apos;re ready for a NYC HIC or GC license.
+            Find out what you need for your HIC or GC license in New York.
           </p>
         </div>
 
@@ -353,16 +573,18 @@ export function ContractorQualifierWizard() {
               exit="exit"
               transition={transition}
             >
+              {/* Step 0 — Location */}
               {step === 0 && (
                 <StepCard title="Where will you work?">
                   <div className="space-y-3">
                     {[
-                      { value: "nyc", label: "NYC 5 Boroughs" },
+                      { value: "nyc", label: "NYC (All 5 Boroughs)" },
                       { value: "nassau", label: "Nassau County" },
                       { value: "suffolk", label: "Suffolk County" },
-                      { value: "westchester", label: "Westchester" },
-                      { value: "nj", label: "New Jersey" },
-                      { value: "multiple", label: "Multiple jurisdictions" },
+                      { value: "westchester", label: "Westchester County" },
+                      { value: "rockland", label: "Rockland County" },
+                      { value: "putnam", label: "Putnam County" },
+                      { value: "multiple", label: "Multiple NY counties" },
                     ].map((opt) => (
                       <OptionButton
                         key={opt.value}
@@ -376,14 +598,19 @@ export function ContractorQualifierWizard() {
                 </StepCard>
               )}
 
+              {/* Step 1 — Scope of work (conditional on location) */}
               {step === 1 && (
-                <StepCard title="What's your scope of work?">
+                <StepCard
+                  title="What's your scope of work?"
+                  subtitle={!gcAvailable && answers.workLocation !== ""
+                    ? answers.workLocation === "multiple"
+                      ? "GC registration is only available in NYC. HIC licensing covers all NY counties."
+                      : "Only HIC licensing is available in this county. GC registration is NYC only."
+                    : undefined
+                  }
+                >
                   <div className="space-y-3">
-                    {[
-                      { value: "hic", label: "Residential repair / remodel (HIC path)" },
-                      { value: "gc", label: "New construction or structural (GC path)" },
-                      { value: "both", label: "Both" },
-                    ].map((opt) => (
+                    {scopeOptions.map((opt) => (
                       <OptionButton
                         key={opt.value}
                         selected={answers.scopeOfWork === opt.value}
@@ -392,40 +619,49 @@ export function ContractorQualifierWizard() {
                         {opt.label}
                       </OptionButton>
                     ))}
+                    {!gcAvailable && scopeOptions.length === 1 && (
+                      <p className="text-xs text-[var(--text-muted)] mt-2">
+                        There is no separate GC license outside NYC. Some counties (like Rockland) include GC classification within their HIC license.
+                      </p>
+                    )}
                   </div>
                 </StepCard>
               )}
 
+              {/* Step 2 — Business registration/certificate */}
               {step === 2 && (
-                <StepCard title="What's your business entity status?">
+                <StepCard title="Do you have a business certificate or entity registered with New York State?">
                   {answers.entityStatus === "none" ? (
                     <div className="space-y-4">
                       <div className="p-4 rounded-[var(--radius-lg)] bg-amber-50 border border-amber-200 text-sm text-amber-800">
-                        <strong>No entity yet?</strong> Most contractor licenses require a registered
-                        business. We can form your LLC or Corporation quickly and bundle it with your
-                        license application.
+                        <strong>Business registration is a prerequisite.</strong> Sole proprietors need a
+                        Business/Assumed Name Certificate filed with the county. LLCs and Corporations
+                        need their formation documents filed with New York State.
                         <div className="mt-3">
                           <Link
                             href="/services/business-formation"
                             className="inline-flex items-center gap-1 text-[var(--blue-accent)] font-semibold hover:underline"
                           >
-                            Learn about business formation &rarr;
+                            Start your business registration &rarr;
                           </Link>
                         </div>
                       </div>
+                      <p className="text-xs text-[var(--text-muted)]">
+                        You can still complete this qualifier to see the full list of requirements.
+                      </p>
                       <button
                         type="button"
                         onClick={goNext}
                         className="w-full px-5 py-3 rounded-[var(--radius-lg)] border-2 border-[var(--blue-accent)] text-[var(--blue-accent)] font-semibold text-sm hover:bg-[var(--blue-pale)] transition-all"
                       >
-                        Continue anyway
+                        See full requirements first
                       </button>
                     </div>
                   ) : (
                     <div className="space-y-3">
                       {[
-                        { value: "none", label: "No entity yet" },
-                        { value: "sole-prop", label: "Sole proprietorship" },
+                        { value: "none", label: "No — not yet registered" },
+                        { value: "sole-prop", label: "Sole proprietorship (DBA/Business Certificate)" },
                         { value: "llc", label: "LLC" },
                         { value: "corp", label: "Corporation" },
                       ].map((opt) => (
@@ -445,40 +681,52 @@ export function ContractorQualifierWizard() {
                 </StepCard>
               )}
 
+              {/* Step 3 — Experience (jurisdiction-aware) */}
               {step === 3 && (
-                <StepCard title="How many years of trade experience do you have?">
+                <StepCard
+                  title={experienceStepTitle(answers.workLocation, answers.scopeOfWork)}
+                  subtitle={experienceStepSubtitle(answers.workLocation, answers.scopeOfWork)}
+                >
                   <div className="space-y-3">
                     {[
                       { value: "<1", label: "Less than 1 year" },
                       { value: "1-4", label: "1–4 years" },
                       { value: "5+", label: "5 or more years" },
-                    ].map((opt) => (
-                      <OptionButton
-                        key={opt.value}
-                        selected={answers.experience === opt.value}
-                        onClick={() => { update("experience", opt.value); goNext(); }}
-                      >
-                        {opt.label}
-                        {(answers.scopeOfWork === "gc" || answers.scopeOfWork === "both") && opt.value !== "5+" && (
-                          <span className="ml-2 text-xs text-[var(--amber)] font-normal">
-                            (GC path requires 5+)
-                          </span>
-                        )}
-                      </OptionButton>
-                    ))}
+                    ].map((opt) => {
+                      const gcReq = (answers.scopeOfWork === "gc" || answers.scopeOfWork === "both") && opt.value !== "5+";
+                      const countyReq = !gcPath
+                        && (answers.workLocation === "nassau" || answers.workLocation === "westchester")
+                        && opt.value !== "5+";
+
+                      return (
+                        <OptionButton
+                          key={opt.value}
+                          selected={answers.experience === opt.value}
+                          onClick={() => { update("experience", opt.value); goNext(); }}
+                        >
+                          {opt.label}
+                          {gcReq && (
+                            <span className="ml-2 text-xs text-[var(--amber)] font-normal">
+                              (GC requires 5+)
+                            </span>
+                          )}
+                          {countyReq && (
+                            <span className="ml-2 text-xs text-[var(--amber)] font-normal">
+                              (county minimum: 5 years)
+                            </span>
+                          )}
+                        </OptionButton>
+                      );
+                    })}
                   </div>
                 </StepCard>
               )}
 
+              {/* Step 4 — Certifications & documents */}
               {step === 4 && (
-                <StepCard title="What certifications do you have?" subtitle="Select all that apply">
+                <StepCard title="Which of these do you already have?" subtitle="Select all that apply">
                   <div className="space-y-3">
-                    {[
-                      { value: "epa-rrp", label: "EPA RRP Certification (lead paint)" },
-                      { value: "epa-lead", label: "EPA Lead Certification" },
-                      { value: "insurance", label: "General liability insurance" },
-                      { value: "none", label: "None of the above" },
-                    ].map((opt) => (
+                    {certOptions.map((opt) => (
                       <MultiOptionButton
                         key={opt.value}
                         selected={answers.certifications.includes(opt.value)}
@@ -497,6 +745,7 @@ export function ContractorQualifierWizard() {
                 </StepCard>
               )}
 
+              {/* Step 5 — Timeline */}
               {step === 5 && (
                 <StepCard title="What's your timeline?">
                   <div className="space-y-3">
@@ -517,6 +766,7 @@ export function ContractorQualifierWizard() {
                 </StepCard>
               )}
 
+              {/* Step 6 — Contact info */}
               {step === 6 && (
                 <StepCard title="Last step — how can we reach you?">
                   <div className="space-y-4">
@@ -664,11 +914,24 @@ function NavButton({
 }
 
 /* ──────────────────────────────────────────────────────────────────────────────
-   Verdict screen
+   Verdict screen — jurisdiction-aware
    ──────────────────────────────────────────────────────────────────────────── */
 
 function VerdictScreen({ verdict, answers }: { verdict: Verdict; answers: Answers }) {
   const gcPath = answers.scopeOfWork === "gc" || answers.scopeOfWork === "both";
+  const hicPath = answers.scopeOfWork === "hic" || answers.scopeOfWork === "both";
+  const loc = answers.workLocation as JurisdictionKey;
+  const j = getJurisdiction(loc);
+
+  const licenseName = gcPath && !hicPath
+    ? "General Contractor registration"
+    : hicPath && !gcPath
+      ? "Home Improvement Contractor license"
+      : "HIC license + GC registration";
+
+  const agencyName = gcPath && !hicPath
+    ? "NYC Dept. of Buildings (DOB)"
+    : j?.hicAgency ?? "the applicable licensing agency";
 
   const configs = {
     ready: {
@@ -677,8 +940,8 @@ function VerdictScreen({ verdict, answers }: { verdict: Verdict; answers: Answer
       border: "#86EFAC",
       icon: "✓",
       label: "Ready to file",
-      headline: "You're eligible. Let's get your license filed.",
-      body: `Based on your answers, you meet the key requirements for a NYC ${gcPath ? "General Contractor" : "Home Improvement Contractor"} license. Our team can start your application right away.`,
+      headline: `You’re eligible. Let’s get your ${licenseName} filed.`,
+      body: `Based on your answers, you meet the key requirements for a ${licenseName} through ${agencyName}. Our team can start your application.`,
       cta: "Book your consultation",
       ctaHref: "/contact",
       secondary: null,
@@ -690,7 +953,7 @@ function VerdictScreen({ verdict, answers }: { verdict: Verdict; answers: Answer
       icon: "~",
       label: "Almost there",
       headline: "A few gaps to close first.",
-      body: "You're close — you have most requirements covered. Here's what to address before filing:",
+      body: `You’re close — you have most requirements covered for a ${licenseName}. Here’s what to address before filing:`,
       cta: "Talk to a licensing specialist",
       ctaHref: "/contact",
       secondary: null,
@@ -702,8 +965,8 @@ function VerdictScreen({ verdict, answers }: { verdict: Verdict; answers: Answer
       icon: "○",
       label: "Not yet eligible",
       headline: "Not quite ready — but we can get you there.",
-      body: "You need a few foundations in place before applying. Save this page and come back once you've addressed the checklist below.",
-      cta: "Start your business entity",
+      body: "You need a few foundations in place before applying. Review the full requirements below and come back once you’ve addressed them.",
+      cta: "Register your business",
       ctaHref: "/services/business-formation",
       secondary: "Learn more about licensing",
     },
@@ -711,23 +974,65 @@ function VerdictScreen({ verdict, answers }: { verdict: Verdict; answers: Answer
 
   const cfg = configs[verdict];
 
-  // Build gap checklist for almost / not-yet
+  // Build gap checklist
   const gaps: string[] = [];
   if (answers.entityStatus === "none" || !answers.entityStatus) {
-    gaps.push("Form a business entity (LLC or Corporation) — required for most licenses");
+    gaps.push("Register a business entity (LLC, Corporation, or DBA) with New York State — required for all contractor licenses");
   }
-  const gcPathCheck = answers.scopeOfWork === "gc" || answers.scopeOfWork === "both";
-  if (gcPathCheck && answers.experience !== "5+") {
-    gaps.push("GC path requires 5+ years of documented experience");
+  if (gcPath && answers.experience !== "5+") {
+    gaps.push("GC registration requires 5+ years of documented general contracting experience");
   }
-  if (!gcPathCheck && answers.experience === "<1") {
-    gaps.push("HIC path requires at least 1 year of trade experience");
+  if (!gcPath && (loc === "nassau" || loc === "westchester") && answers.experience !== "5+") {
+    gaps.push(`${loc === "nassau" ? "Nassau County" : "Westchester County"} requires a minimum of 5 years of experience`);
   }
-  if (!answers.certifications.includes("insurance")) {
-    gaps.push("Obtain general liability insurance — required by NYC DCA");
+  if (gcPath && !answers.certifications.includes("insurance")) {
+    gaps.push("Obtain General Liability insurance ($1M min per occurrence) — mandatory for GC registration");
   }
-  if (answers.certifications.length === 0 || answers.certifications[0] === "none") {
-    gaps.push("Consider EPA RRP certification if working in pre-1978 buildings");
+  if (!gcPath && loc !== "nyc" && loc !== "multiple") {
+    if (j && j.hicGLInsurance && !answers.certifications.includes("insurance")) {
+      gaps.push(`Obtain General Liability insurance (${j.hicGLInsurance.split(" —")[0]}) — required by ${j.label}`);
+    }
+  }
+  if (!answers.certifications.includes("workers-comp")) {
+    gaps.push("Workers’ Compensation insurance (or exemption certificate if no employees) — mandatory");
+  }
+  if (isNYC(loc) && !answers.certifications.includes("sales-tax")) {
+    gaps.push("NYS Sales Tax ID (Certificate of Authority) — mandatory for NYC licensing");
+  }
+
+  // Jurisdiction-specific requirements list
+  const requirements: string[] = [];
+  if (hicPath && j) {
+    requirements.push(`Issuing agency: ${j.hicAgency}`);
+    if (j.hicExperienceYears > 0) {
+      requirements.push(`Experience: ${j.hicExperienceYears} years minimum${j.hicExperienceProof ? ` (${j.hicExperienceProof})` : ""}`);
+    } else if (isNYC(loc)) {
+      requirements.push("Experience: No minimum required by DCWP");
+    }
+    if (j.hicExam) {
+      requirements.push(`Exam: ${j.hicExamDetail}`);
+    }
+    if (j.hicGLInsurance) {
+      requirements.push(`GL Insurance: ${j.hicGLInsurance}`);
+    } else if (isNYC(loc)) {
+      requirements.push("GL Insurance: Not required by DCWP (clients may require contractually)");
+    }
+    requirements.push(`Fee: ${j.hicFee}`);
+    for (const extra of j.hicExtras) {
+      requirements.push(extra);
+    }
+  }
+  if (loc === "multiple") {
+    requirements.push("Requirements vary by county — a specialist will review each jurisdiction with you");
+    requirements.push("No reciprocity between any NY jurisdictions — separate applications required for each");
+  }
+
+  const gcRequirements: string[] = [];
+  if (gcPath) {
+    gcRequirements.push("NYC Dept. of Buildings (DOB) — GC Registration");
+    for (const req of NYC_GC_REQUIREMENTS) {
+      gcRequirements.push(req);
+    }
   }
 
   return (
@@ -774,18 +1079,51 @@ function VerdictScreen({ verdict, answers }: { verdict: Verdict; answers: Answer
             <p className="font-semibold text-[var(--text)] mb-1">What to expect:</p>
             <ul className="space-y-1 text-[var(--text-secondary)]">
               <li className="flex items-center gap-2">
-                <span className="text-green-600">✓</span> Initial consultation to review your documents
+                <span className="text-green-600">{"✓"}</span> Initial consultation to review your documents
               </li>
               <li className="flex items-center gap-2">
-                <span className="text-green-600">✓</span> Application filing with NYC DCA
+                <span className="text-green-600">{"✓"}</span> Application filing with {agencyName}
               </li>
               <li className="flex items-center gap-2">
-                <span className="text-green-600">✓</span> Insurance coordination (if needed)
+                <span className="text-green-600">{"✓"}</span> Insurance and bond coordination as needed
               </li>
             </ul>
           </div>
         )}
       </div>
+
+      {/* Jurisdiction-specific requirements */}
+      {requirements.length > 0 && (
+        <div className="bg-[var(--surface)] rounded-[var(--radius-xl)] shadow-[var(--shadow-md)] p-6 sm:p-8 mb-4">
+          <h3 className="text-base font-bold text-[var(--text)] mb-3">
+            {hicPath ? "HIC License Requirements" : "Requirements"}{j ? ` — ${j.label}` : ""}
+          </h3>
+          <ul className="space-y-2">
+            {requirements.map((req, i) => (
+              <li key={i} className="flex items-start gap-2 text-sm text-[var(--text-secondary)]">
+                <span className="mt-0.5 text-[var(--blue-accent)]">{"•"}</span>
+                {req}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {gcRequirements.length > 0 && (
+        <div className="bg-[var(--surface)] rounded-[var(--radius-xl)] shadow-[var(--shadow-md)] p-6 sm:p-8 mb-4">
+          <h3 className="text-base font-bold text-[var(--text)] mb-3">
+            GC Registration Requirements — NYC DOB
+          </h3>
+          <ul className="space-y-2">
+            {gcRequirements.map((req, i) => (
+              <li key={i} className="flex items-start gap-2 text-sm text-[var(--text-secondary)]">
+                <span className="mt-0.5 text-[var(--blue-accent)]">{"•"}</span>
+                {req}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {/* CTAs */}
       <a
