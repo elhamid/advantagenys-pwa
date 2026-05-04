@@ -72,6 +72,45 @@ function ConsultingIcon() {
   );
 }
 
+function LegalIcon() {
+  return (
+    <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+      <path d="M14 3v20" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+      <path d="M7 7l7-4 7 4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M7 7l-3 9h6L7 7z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
+      <path d="M21 7l-3 9h6L21 7z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
+      <path d="M9 25h10" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+      <path d="M4 16c0-1 1.5-2 3-2s3 1 3 2" stroke="var(--blue-accent)" strokeWidth="1.4" strokeLinecap="round" />
+      <path d="M18 16c0-1 1.5-2 3-2s3 1 3 2" stroke="var(--blue-accent)" strokeWidth="1.4" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function LicensingIcon() {
+  return (
+    <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+      <rect x="4" y="3" width="16" height="22" rx="2" stroke="currentColor" strokeWidth="1.7" />
+      <path d="M8 9h8M8 13h8M8 17h5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      <circle cx="21" cy="19" r="5" stroke="var(--blue-accent)" strokeWidth="1.7" />
+      <path d="M19 19l1.5 1.5L23 17.5" stroke="var(--blue-accent)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function BookkeepingIcon() {
+  return (
+    <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+      <rect x="4" y="4" width="20" height="20" rx="3" stroke="currentColor" strokeWidth="1.7" />
+      <path d="M4 10h20" stroke="currentColor" strokeWidth="1.7" />
+      <path d="M14 10v14" stroke="currentColor" strokeWidth="1.5" />
+      <rect x="7" y="13" width="4" height="3" rx="0.5" fill="var(--blue-accent)" opacity="0.7" />
+      <rect x="7" y="18" width="4" height="3" rx="0.5" fill="var(--blue-accent)" opacity="0.4" />
+      <rect x="17" y="13" width="4" height="3" rx="0.5" fill="var(--blue-accent)" opacity="0.5" />
+      <rect x="17" y="18" width="4" height="3" rx="0.5" fill="var(--blue-accent)" opacity="0.3" />
+    </svg>
+  );
+}
+
 export const SERVICES: ServiceOption[] = [
   {
     slug: "tax",
@@ -108,6 +147,24 @@ export const SERVICES: ServiceOption[] = [
     label: "Business Consulting",
     description: "Licensing, permits, contracts, strategic guidance",
     icon: <ConsultingIcon />,
+  },
+  {
+    slug: "legal",
+    label: "Immigration & Legal",
+    description: "Immigration petitions, citizenship, divorce, legal compliance",
+    icon: <LegalIcon />,
+  },
+  {
+    slug: "licensing",
+    label: "Licensing",
+    description: "Business licenses, permits, renewals, compliance filings",
+    icon: <LicensingIcon />,
+  },
+  {
+    slug: "bookkeeping",
+    label: "Financial Services",
+    description: "Bookkeeping, payroll, financial reporting, QuickBooks setup",
+    icon: <BookkeepingIcon />,
   },
 ];
 
