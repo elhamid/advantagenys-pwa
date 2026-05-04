@@ -214,10 +214,10 @@ export async function POST(request: NextRequest) {
           "X-Title": "Advantage Services",
         },
         body: JSON.stringify({
-          model: "google/gemini-3-flash-preview",
+          model: "anthropic/claude-sonnet-4.5",
           messages: apiMessages,
           stream: true,
-          temperature: 0.3,
+          temperature: 0.7,
           max_tokens: 400,
         }),
       }
