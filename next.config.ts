@@ -55,6 +55,36 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  async redirects() {
+    return [
+      // itintaxid.com legacy WordPress paths
+      { source: "/02-home-and-general-contractor-license-nyc", destination: "/services/licensing", statusCode: 301 as const },
+      { source: "/02-home-and-general-contractor-license-nyc/", destination: "/services/licensing", statusCode: 301 as const },
+      { source: "/itin-tax-id-by-irs-certified-acceptance-agent-80", destination: "/itin", statusCode: 301 as const },
+      { source: "/itin-tax-id-by-irs-certified-acceptance-agent-80/", destination: "/itin", statusCode: 301 as const },
+      { source: "/ai-chat-agent-itin-tax-id-registration", destination: "/resources/forms/itin-registration-form", statusCode: 301 as const },
+      { source: "/ai-chat-agent-itin-tax-id-registration/", destination: "/resources/forms/itin-registration-form", statusCode: 301 as const },
+      { source: "/ai-chat-agent-construction-license-in-nyc-nassau-county", destination: "/contractor-license", statusCode: 301 as const },
+      { source: "/ai-chat-agent-construction-license-in-nyc-nassau-county/", destination: "/contractor-license", statusCode: 301 as const },
+      { source: "/ai-itin-tax-id-by-irs-certified-acceptance-agent", destination: "/itin", statusCode: 301 as const },
+      { source: "/ai-itin-tax-id-by-irs-certified-acceptance-agent/", destination: "/itin", statusCode: 301 as const },
+      { source: "/esign-itin", destination: "/itin", statusCode: 301 as const },
+      { source: "/esign-itin/", destination: "/itin", statusCode: 301 as const },
+
+      // nysconsultants.com legacy WordPress paths
+      { source: "/contractor-license-nyc", destination: "/contractor-license", statusCode: 301 as const },
+      { source: "/contractor-license-nyc/", destination: "/contractor-license", statusCode: 301 as const },
+      { source: "/home-improvement-and-general-contractor-license-nyc", destination: "/contractor-license", statusCode: 301 as const },
+      { source: "/home-improvement-and-general-contractor-license-nyc/", destination: "/contractor-license", statusCode: 301 as const },
+      { source: "/sales-tax-defense-service-by-advantage", destination: "/services/tax-services", statusCode: 301 as const },
+      { source: "/sales-tax-defense-service-by-advantage/", destination: "/services/tax-services", statusCode: 301 as const },
+      { source: "/ai-hil-nyc", destination: "/services/licensing", statusCode: 301 as const },
+      { source: "/ai-hil-nyc/", destination: "/services/licensing", statusCode: 301 as const },
+
+      // Catch-all: WordPress /02-* numbered slug variants
+      { source: "/02-:path*", destination: "/services/licensing", statusCode: 301 as const },
+    ];
+  },
 };
 
 export default nextConfig;
