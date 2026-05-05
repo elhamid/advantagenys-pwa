@@ -9,12 +9,15 @@ import type { BookingLead } from "@/lib/leads/types";
 import { bookingSubmit, formStart } from "@/lib/analytics/events";
 
 const serviceTypes = [
-  "Tax",
-  "ITIN",
-  "Formation",
+  "Tax Services",
+  "ITIN / Tax ID",
+  "Business Formation",
   "Insurance",
-  "Consulting",
-  "Other",
+  "Audit Defense",
+  "Business Consulting",
+  "Immigration & Legal",
+  "Licensing",
+  "Financial Services",
 ] as const;
 
 const PREFERRED_WINDOWS = [

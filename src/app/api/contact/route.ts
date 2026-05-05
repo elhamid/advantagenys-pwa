@@ -391,13 +391,12 @@ async function forwardToTaskboard(data: LeadSubmission): Promise<boolean> {
   }
 
   // New book-appointment flow: inject discriminated snake_case fields for taskboard.
-  if (data.type === "booking" && data.source === "advantagenys.com_book_appointment") {
+  if (data.type === "booking" && (data.source === "advantagenys.com_book_appointment" || data.source === "advantagenys.com_book_page")) {
     webhookPayload.name = data.fullName;
     webhookPayload.service_interest = data.serviceType;
     webhookPayload.wants_appointment = data.wantsAppointment ?? true;
-    const preferredWindowJoined = (data.preferredWindow ?? []).join(", ") || undefined;
-    if (preferredWindowJoined) {
-      webhookPayload.preferred_window = preferredWindowJoined;
+    if (data.preferredWindow && data.preferredWindow.length > 0) {
+      webhookPayload.preferred_window = data.preferredWindow;
     }
   }
 
