@@ -82,7 +82,7 @@ const nextConfig: NextConfig = {
       { source: "/ai-hil-nyc/", destination: "/services/licensing", statusCode: 301 as const },
 
       // Catch-all: WordPress /02-* numbered slug variants
-      { source: "/02-:path*", destination: "/services/licensing", statusCode: 301 as const },
+      { source: "/02-:path(.*)", destination: "/services/licensing", statusCode: 301 as const },
     ];
   },
 };

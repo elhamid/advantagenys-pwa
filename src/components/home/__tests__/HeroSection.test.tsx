@@ -16,7 +16,6 @@ vi.mock('framer-motion', () => ({
   useReducedMotion: () => true,
   useScroll: () => ({ scrollYProgress: {} }),
   useTransform: () => undefined,
-  useReducedMotion: () => false,
 }))
 
 describe('HeroSection', () => {

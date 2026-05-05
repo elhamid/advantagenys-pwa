@@ -258,7 +258,7 @@ export function BookingFlow() {
         setSubmitLoading(false);
       }
     },
-    [router, selectedService, selectedSlot, serviceObj]
+    [router, selectedService, selectedSlot, serviceObj, turnstileToken]
   );
 
   // ---- render ----
