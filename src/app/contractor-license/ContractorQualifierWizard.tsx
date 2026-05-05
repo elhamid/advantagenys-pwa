@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Turnstile } from "@marsidev/react-turnstile";
 import { useUtmParams } from "@/hooks/useUtmParams";
 import Link from "next/link";
 
@@ -382,6 +383,7 @@ export function ContractorQualifierWizard() {
   const [direction, setDirection] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const [verdict, setVerdict] = useState<Verdict | null>(null);
   const [formErrors, setFormErrors] = useState<Partial<Record<keyof Answers, string>>>({});
   const topRef = useRef<HTMLDivElement>(null);
@@ -477,7 +479,6 @@ export function ContractorQualifierWizard() {
     setSubmitError(null);
 
     const v = computeVerdict(answers);
-    setVerdict(v);
 
     const payload = {
       type: "contractor-qualifier",
@@ -494,6 +495,7 @@ export function ContractorQualifierWizard() {
       verdict: v,
       preferredLanguage: answers.preferredLanguage,
       utm,
+      turnstileToken: turnstileToken || undefined,
     };
 
     try {
@@ -503,22 +505,25 @@ export function ContractorQualifierWizard() {
         body: JSON.stringify(payload),
       });
       const json = await res.json();
-      if (!json.success) {
-        console.warn("[ContractorQualifier] API returned error:", json.error);
+      if (res.ok && json.success) {
+        setVerdict(v);
+        // Clear session storage after successful submit
+        if (typeof sessionStorage !== "undefined") {
+          sessionStorage.removeItem(STORAGE_KEY);
+        }
+        setSubmitting(false);
+        setDirection(1);
+        setStep(TOTAL_STEPS); // verdict screen
+        topRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      } else {
+        setSubmitError("Could not submit. Please call (929) 933-1396.");
+        setSubmitting(false);
       }
     } catch (err) {
       console.error("[ContractorQualifier] Submit error:", err);
+      setSubmitError("Could not submit. Please call (929) 933-1396.");
+      setSubmitting(false);
     }
-
-    // Clear session storage after submit
-    if (typeof sessionStorage !== "undefined") {
-      sessionStorage.removeItem(STORAGE_KEY);
-    }
-
-    setSubmitting(false);
-    setDirection(1);
-    setStep(TOTAL_STEPS); // verdict screen
-    topRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   const progress = step < TOTAL_STEPS ? Math.round((step / TOTAL_STEPS) * 100) : 100;
@@ -822,6 +827,11 @@ export function ContractorQualifierWizard() {
                         ))}
                       </div>
                     </div>
+                    <Turnstile
+                      siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
+                      onSuccess={setTurnstileToken}
+                      options={{ size: "invisible" }}
+                    />
                     {submitError && (
                       <p className="text-xs text-[var(--red)]">{submitError}</p>
                     )}

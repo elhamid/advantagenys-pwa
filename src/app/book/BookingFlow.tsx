@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import { Turnstile } from "@marsidev/react-turnstile";
 import { ServicePicker, SERVICES } from "./components/ServicePicker";
 import { SlotGrid } from "./components/SlotGrid";
 import { BookingContactForm } from "./components/BookingContactForm";
@@ -137,6 +138,7 @@ export function BookingFlow() {
   const [submitLoading, setSubmitLoading] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   /** Inline 409 alternatives returned by taskboard (Wave 2 onwards). */
   const [conflictAlternatives, setConflictAlternatives] = useState<AlternativeSlot[]>([]);
 
@@ -216,6 +218,7 @@ export function BookingFlow() {
             serviceType: serviceObj?.label ?? selectedService ?? undefined,
             description: data.notes || undefined,
             wantsAppointment: true,
+            turnstileToken: turnstileToken || undefined,
           };
 
           const res = await fetch("/api/contact", {
@@ -494,6 +497,14 @@ export function BookingFlow() {
                 ? "Almost done — fill in your info to confirm the appointment."
                 : "Tell us how to reach you and we will schedule your consult."}
             </p>
+
+            {!BOOK_LIVE && (
+              <Turnstile
+                siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
+                onSuccess={setTurnstileToken}
+                options={{ size: "invisible" }}
+              />
+            )}
 
             <BookingContactForm
               onSubmit={handleFormSubmit}

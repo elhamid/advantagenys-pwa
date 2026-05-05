@@ -31,6 +31,7 @@ export const LEAD_SOURCES = [
   "pwa-kiosk",
   "chat-widget",
   "itin-kiosk",
+  "advantagenys.com_book_page",
 ] as const;
 
 export type LeadSource = (typeof LEAD_SOURCES)[number];

@@ -563,12 +563,29 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Triple-write: taskboard + JotForm + email notification in parallel (all non-fatal)
-    await Promise.allSettled([
+    // Triple-write: taskboard + JotForm + email notification in parallel
+    // Gate success on at least one durable write (taskboard OR JotForm) succeeding
+    const [taskboardResult, jotformResult, emailResult] = await Promise.allSettled([
       forwardToTaskboard(data, documentUrls),
       submitToJotForm(data, documentUrls, isTest),
       sendNotificationEmail(data),
     ]);
+
+    // emailResult intentionally unused — notification is best-effort
+    void emailResult;
+
+    const taskboardOk = taskboardResult.status === 'fulfilled';
+    const jotformOk = jotformResult.status === 'fulfilled';
+
+    if (!taskboardOk && !jotformOk) {
+      console.error('[ITIN] Both taskboard and JotForm failed',
+        taskboardResult.status === 'rejected' ? taskboardResult.reason : 'n/a',
+        jotformResult.status === 'rejected' ? jotformResult.reason : 'n/a');
+      return NextResponse.json(
+        { success: false, error: "Could not save your application. Please call (929) 933-1396." },
+        { status: 502 }
+      );
+    }
 
     return NextResponse.json({
       success: true,
