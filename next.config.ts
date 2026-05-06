@@ -3,7 +3,7 @@ import type { NextConfig } from "next";
 const CONTENT_SECURITY_POLICY = [
   "default-src 'self'",
   // Script origins: GTM + GA4 + Meta Pixel + Clarity + Vercel Analytics + Turnstile.
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com https://www.googletagmanager.com https://www.google-analytics.com https://connect.facebook.net https://*.facebook.com https://www.clarity.ms https://*.clarity.ms https://va.vercel-scripts.com",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com https://www.googletagmanager.com https://www.google-analytics.com https://connect.facebook.net https://*.facebook.com https://www.clarity.ms https://*.clarity.ms https://va.vercel-scripts.com https://cdn.jotfor.ms",
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: https: blob:",
   "font-src 'self' data:",
