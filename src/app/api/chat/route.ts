@@ -214,7 +214,7 @@ export async function POST(request: NextRequest) {
           "X-Title": "Advantage Services",
         },
         body: JSON.stringify({
-          model: "anthropic/claude-sonnet-4.5",
+          model: "google/gemini-3-flash-preview",
           messages: apiMessages,
           stream: true,
           temperature: 0.7,

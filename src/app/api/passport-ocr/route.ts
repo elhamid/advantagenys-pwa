@@ -165,7 +165,7 @@ export async function POST(request: NextRequest) {
           "X-Title": "ITIN Passport OCR",
         },
         body: JSON.stringify({
-          model: "google/gemini-2.5-flash",
+          model: "google/gemini-3-flash-preview",
           messages: [
             { role: "system", content: PASSPORT_OCR_PROMPT },
             {
