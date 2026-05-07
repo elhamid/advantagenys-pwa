@@ -10,6 +10,7 @@ interface BookingContactFormProps {
     notes: string;
   }) => Promise<void>;
   loading: boolean;
+  disabled?: boolean;
   error: string | null;
   isInertMode: boolean;
   /** Label for the selected service (shown in inert mode copy) */
@@ -22,6 +23,7 @@ const inputClasses =
 export function BookingContactForm({
   onSubmit,
   loading,
+  disabled = false,
   error,
   isInertMode,
   serviceLabel,
@@ -55,7 +57,7 @@ export function BookingContactForm({
     e.preventDefault();
     // Touch all fields to surface errors
     setTouched({ name: true, email: true, phone: true });
-    if (!isValid) return;
+    if (!isValid || disabled) return;
     await onSubmit({ name, email, phone, notes });
   }
 
@@ -172,7 +174,7 @@ export function BookingContactForm({
 
       <button
         type="submit"
-        disabled={loading}
+        disabled={loading || disabled}
         className="w-full inline-flex items-center justify-center gap-2 rounded-[var(--radius-lg)] bg-[var(--blue-accent)] px-6 py-3.5 text-sm font-bold text-white shadow-[var(--shadow-md)] hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
       >
         {loading ? (

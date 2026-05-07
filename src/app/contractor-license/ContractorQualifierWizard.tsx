@@ -368,6 +368,7 @@ function experienceStepSubtitle(loc: string, scope: string): string | undefined 
 
 export function ContractorQualifierWizard() {
   const utm = useUtmParams();
+  const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 
   const [answers, setAnswers] = useState<Answers>(() => {
     if (typeof sessionStorage === "undefined") return INITIAL_ANSWERS;
@@ -387,6 +388,11 @@ export function ContractorQualifierWizard() {
   const [verdict, setVerdict] = useState<Verdict | null>(null);
   const [formErrors, setFormErrors] = useState<Partial<Record<keyof Answers, string>>>({});
   const topRef = useRef<HTMLDivElement>(null);
+  const missingTurnstileInProd =
+    !turnstileSiteKey &&
+    typeof window !== "undefined" &&
+    window.location.hostname !== "localhost" &&
+    window.location.hostname !== "127.0.0.1";
 
   // Persist to sessionStorage on change
   useEffect(() => {
@@ -827,18 +833,29 @@ export function ContractorQualifierWizard() {
                         ))}
                       </div>
                     </div>
-                    <Turnstile
-                      siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
-                      onSuccess={setTurnstileToken}
-                      options={{ size: "invisible" }}
-                    />
+                    {turnstileSiteKey && (
+                      <Turnstile
+                        siteKey={turnstileSiteKey}
+                        onSuccess={setTurnstileToken}
+                        options={{ size: "invisible" }}
+                      />
+                    )}
+                    {missingTurnstileInProd && (
+                      <p className="text-xs text-[var(--red)]">
+                        Verification service is not configured. Please call{" "}
+                        <a href="tel:+19299331396" className="underline font-medium">
+                          (929) 933-1396
+                        </a>{" "}
+                        to speak with a licensing specialist.
+                      </p>
+                    )}
                     {submitError && (
                       <p className="text-xs text-[var(--red)]">{submitError}</p>
                     )}
                     <button
                       type="button"
                       onClick={handleSubmit}
-                      disabled={submitting}
+                      disabled={submitting || missingTurnstileInProd}
                       className="w-full py-4 rounded-[var(--radius-lg)] text-white font-semibold text-base transition-all active:scale-[0.98] disabled:opacity-60"
                       style={{ background: "var(--blue-accent)" }}
                     >

@@ -131,6 +131,7 @@ function Toast({ message, onDismiss }: { message: string; onDismiss: () => void 
 
 export function BookingFlow() {
   const router = useRouter();
+  const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [selectedService, setSelectedService] = useState<string | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
@@ -143,6 +144,12 @@ export function BookingFlow() {
   const [conflictAlternatives, setConflictAlternatives] = useState<AlternativeSlot[]>([]);
 
   const serviceObj = SERVICES.find((s) => s.slug === selectedService);
+  const missingTurnstileInProd =
+    !BOOK_LIVE &&
+    !turnstileSiteKey &&
+    typeof window !== "undefined" &&
+    window.location.hostname !== "localhost" &&
+    window.location.hostname !== "127.0.0.1";
 
   // ---- navigation helpers ----
 
@@ -498,17 +505,28 @@ export function BookingFlow() {
                 : "Tell us how to reach you and we will schedule your consult."}
             </p>
 
-            {!BOOK_LIVE && (
+            {!BOOK_LIVE && turnstileSiteKey && (
               <Turnstile
-                siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
+                siteKey={turnstileSiteKey}
                 onSuccess={setTurnstileToken}
                 options={{ size: "invisible" }}
               />
             )}
 
+            {missingTurnstileInProd && (
+              <p className="mb-4 rounded-[var(--radius)] bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-600">
+                Verification service is not configured. Please call{" "}
+                <a href="tel:+19299331396" className="underline font-medium">
+                  (929) 933-1396
+                </a>{" "}
+                to schedule directly.
+              </p>
+            )}
+
             <BookingContactForm
               onSubmit={handleFormSubmit}
               loading={submitLoading}
+              disabled={missingTurnstileInProd}
               error={submitError}
               isInertMode={!BOOK_LIVE}
               serviceLabel={serviceObj?.label}

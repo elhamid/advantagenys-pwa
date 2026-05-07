@@ -22,8 +22,8 @@ export default function GlobalError({
             >
               Try Again
             </button>
-            <a href="tel:9292929230" style={{ color: "#10B981", fontSize: 16, fontWeight: 600, textDecoration: "none" }}>
-              Call (929) 292-9230
+            <a href="tel:+19299331396" style={{ color: "#10B981", fontSize: 16, fontWeight: 600, textDecoration: "none" }}>
+              Call (929) 933-1396
             </a>
             <a href="/legacy" style={{ color: "#818CF8", fontSize: 13, textDecoration: "none", marginTop: 8 }}>
               Use simplified site instead
