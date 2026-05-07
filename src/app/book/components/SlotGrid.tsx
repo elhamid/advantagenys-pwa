@@ -23,33 +23,34 @@ function formatNYTime(isoUtc: string): string {
   }).format(toNYDate(isoUtc));
 }
 
-/** Format NY calendar date, e.g. "Mon Apr 28" */
-function _formatNYDate(isoUtc: string): string {
-  return new Intl.DateTimeFormat("en-US", {
-    timeZone: "America/New_York",
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-  }).format(toNYDate(isoUtc));
-}
-
 /** Get YYYY-MM-DD in NY timezone for today + offset days */
 function getNYDateOffset(offsetDays: number): string {
   const d = new Date();
   d.setDate(d.getDate() + offsetDays);
-  return d.toLocaleDateString("en-CA", { timeZone: "America/New_York" }); // en-CA gives YYYY-MM-DD
+  return d.toLocaleDateString("en-CA", { timeZone: "America/New_York" });
 }
 
-/** Group slots by their NY calendar date string */
-function groupSlotsByDate(slots: Slot[]): Map<string, Slot[]> {
+/** Get the YYYY-MM-DD key for a slot in NY timezone */
+function getSlotDateKey(isoUtc: string): string {
+  return toNYDate(isoUtc).toLocaleDateString("en-CA", { timeZone: "America/New_York" });
+}
+
+/** Format a date key as a short day pill label, e.g. "Mon, May 12" */
+function formatDayPill(dateKey: string): string {
+  const [year, month, day] = dateKey.split("-").map(Number);
+  const d = new Date(year, month - 1, day, 12); // noon to avoid DST edge
+  return new Intl.DateTimeFormat("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  }).format(d);
+}
+
+/** Group slots by their NY calendar date key (YYYY-MM-DD) */
+function groupSlotsByDateKey(slots: Slot[]): Map<string, Slot[]> {
   const map = new Map<string, Slot[]>();
   for (const slot of slots) {
-    const dateKey = new Intl.DateTimeFormat("en-US", {
-      timeZone: "America/New_York",
-      weekday: "long",
-      month: "long",
-      day: "numeric",
-    }).format(toNYDate(slot.start));
+    const dateKey = getSlotDateKey(slot.start);
     if (!map.has(dateKey)) map.set(dateKey, []);
     map.get(dateKey)!.push(slot);
   }
@@ -71,6 +72,7 @@ type TimeOfDay = "morning" | "afternoon" | "evening";
 
 interface TimeGroup {
   label: string;
+  icon: string;
   key: TimeOfDay;
   slots: Slot[];
 }
@@ -93,18 +95,15 @@ function groupByTimeOfDay(daySlots: Slot[]): TimeGroup[] {
   }
 
   const groups: TimeGroup[] = [];
-  if (morning.length > 0) groups.push({ label: "Morning", key: "morning", slots: morning });
-  if (afternoon.length > 0) groups.push({ label: "Afternoon", key: "afternoon", slots: afternoon });
-  if (evening.length > 0) groups.push({ label: "Evening", key: "evening", slots: evening });
+  if (morning.length > 0) groups.push({ label: "Morning", icon: "sunrise", key: "morning", slots: morning });
+  if (afternoon.length > 0) groups.push({ label: "Afternoon", icon: "sun", key: "afternoon", slots: afternoon });
+  if (evening.length > 0) groups.push({ label: "Evening", icon: "sunset", key: "evening", slots: evening });
   return groups;
 }
 
 /**
  * Returns true if a booking INSERT payload's scheduled_at + duration_minutes
  * overlaps the given slot's [start, end) window.
- *
- * payload.new.scheduled_at — ISO UTC string
- * payload.new.duration_minutes — number (default 20 if absent)
  */
 function payloadOverlapsSlot(
   payload: { scheduled_at?: string; duration_minutes?: number },
@@ -118,7 +117,6 @@ function payloadOverlapsSlot(
   const slotStart = new Date(slot.start).getTime();
   const slotEnd = new Date(slot.end).getTime();
 
-  // Overlap: bookStart < slotEnd && bookEnd > slotStart
   return bookStart < slotEnd && bookEnd > slotStart;
 }
 
@@ -126,23 +124,29 @@ function payloadOverlapsSlot(
 // Sub-components
 // ---------------------------------------------------------------------------
 
-function ChevronIcon({ expanded }: { expanded: boolean }) {
+/** Time-of-day group icon */
+function TimeIcon({ type }: { type: string }) {
+  if (type === "sunrise") {
+    return (
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true" className="flex-shrink-0">
+        <circle cx="8" cy="10" r="3.5" stroke="currentColor" strokeWidth="1.4" />
+        <path d="M8 3v2M3.5 7.5l1.2 1.2M12.5 7.5l-1.2 1.2M1 13h14" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+      </svg>
+    );
+  }
+  if (type === "sun") {
+    return (
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true" className="flex-shrink-0">
+        <circle cx="8" cy="8" r="3" stroke="currentColor" strokeWidth="1.4" />
+        <path d="M8 2v1.5M8 12.5V14M2 8h1.5M12.5 8H14M3.8 3.8l1 1M11.2 3.8l-1 1M3.8 12.2l1-1M11.2 12.2l-1-1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+      </svg>
+    );
+  }
+  // sunset / evening
   return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 16 16"
-      fill="none"
-      aria-hidden="true"
-      className={`transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}
-    >
-      <path
-        d="M4 6l4 4 4-4"
-        stroke="currentColor"
-        strokeWidth="1.7"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true" className="flex-shrink-0">
+      <path d="M1 13h14M4 10a4 4 0 0 1 8 0" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+      <path d="M8 3v2M3.5 7l1 1M12.5 7l-1 1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
     </svg>
   );
 }
@@ -175,19 +179,14 @@ export function SlotGrid({
   const [takenStarts, setTakenStarts] = useState<Set<string>>(new Set());
   /** Inline message when the user's selected slot was just sniped. */
   const [snipedMessage, setSnipedMessage] = useState<string | null>(null);
-  /** Set of day labels that are expanded in the accordion */
-  const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set());
-  /** Whether "Show more days" has been activated */
-  const [showAllDays, setShowAllDays] = useState(false);
+  /** Currently selected day key (YYYY-MM-DD) */
+  const [selectedDay, setSelectedDay] = useState<string | null>(null);
 
   // Mobile = 7-day window; desktop = 14-day
   const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
   const windowDays = isMobile ? 7 : 14;
-  /** How many days to show expanded by default */
-  const defaultExpandedCount = isMobile ? 1 : 3;
 
-  // Keep a stable ref to selectedSlot so realtime callback can read it without
-  // re-subscribing every time the selection changes.
+  // Refs for realtime callback stability
   const selectedSlotRef = useRef(selectedSlot);
   useEffect(() => {
     selectedSlotRef.current = selectedSlot;
@@ -209,7 +208,6 @@ export function SlotGrid({
       const to = getNYDateOffset(windowDays - 1);
       const data = await fetchSlots({ service, from, to });
       setSlotsData(data);
-      // Reset taken set on a fresh load
       setTakenStarts(new Set());
       setSnipedMessage(null);
       onAssigneeInitialsChange(data.assignee_initials);
@@ -242,7 +240,6 @@ export function SlotGrid({
   useEffect(() => {
     if (!service || !slotsData) return;
 
-    // --- Realtime path ---
     if (bookingSupabase) {
       const channel = bookingSupabase
         .channel("public:bookings:grid")
@@ -262,7 +259,6 @@ export function SlotGrid({
               duration_minutes?: number;
             };
 
-            // Mark any slots in the current grid that overlap this booking
             const slots = slotsData.slots;
             const newlyTaken: string[] = [];
             for (const slot of slots) {
@@ -279,7 +275,6 @@ export function SlotGrid({
               return next;
             });
 
-            // If the user had one of those slots selected, notify parent
             const current = selectedSlotRef.current;
             if (current && newlyTaken.includes(current.start)) {
               setSnipedMessage(
@@ -296,8 +291,7 @@ export function SlotGrid({
       };
     }
 
-    // --- Poll fallback (realtime env vars absent) ---
-    // Re-fetch slots every 15s while the page is visible.
+    // Poll fallback (realtime env vars absent)
     const POLL_MS = 15_000;
     let timer: ReturnType<typeof setTimeout> | null = null;
 
@@ -328,49 +322,37 @@ export function SlotGrid({
   // ---- derived data ----
 
   const slots = slotsData?.slots ?? [];
-  const grouped = groupSlotsByDate(slots);
-  const dayEntries = useMemo(() => Array.from(grouped.entries()), [grouped]);
+  const grouped = useMemo(() => groupSlotsByDateKey(slots), [slots]);
 
-  // Initialize expanded days when data loads
-  useEffect(() => {
-    if (dayEntries.length === 0) return;
-    const initial = new Set<string>();
-    // Find the first N days that have at least one available slot
-    let expandedCount = 0;
-    for (const [dateLabel, daySlots] of dayEntries) {
+  /** Sorted list of day keys that have at least 1 available (non-taken) slot */
+  const availableDays = useMemo(() => {
+    const days: string[] = [];
+    for (const [dateKey, daySlots] of grouped.entries()) {
       const hasAvailable = daySlots.some((s) => !takenStarts.has(s.start));
-      if (hasAvailable && expandedCount < defaultExpandedCount) {
-        initial.add(dateLabel);
-        expandedCount++;
-      }
+      if (hasAvailable) days.push(dateKey);
     }
-    // If we didn't fill the quota (all days fully booked), expand first N anyway
-    if (expandedCount === 0) {
-      for (let i = 0; i < Math.min(defaultExpandedCount, dayEntries.length); i++) {
-        initial.add(dayEntries[i][0]);
-      }
+    return days.sort();
+  }, [grouped, takenStarts]);
+
+  // Auto-select first available day when data loads or selectedDay becomes invalid
+  useEffect(() => {
+    if (availableDays.length === 0) {
+      setSelectedDay(null);
+      return;
     }
-    setExpandedDays(initial);
-    setShowAllDays(false);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [slotsData]);
+    if (!selectedDay || !availableDays.includes(selectedDay)) {
+      setSelectedDay(availableDays[0]);
+    }
+  }, [availableDays, selectedDay]);
 
-  // Split days into initially visible vs overflow
-  const visibleDayCount = isMobile ? 3 : 5;
-  const visibleDays = showAllDays ? dayEntries : dayEntries.slice(0, visibleDayCount);
-  const hasMoreDays = dayEntries.length > visibleDayCount && !showAllDays;
+  /** Slots for the currently selected day, filtered to only available */
+  const daySlots = useMemo(() => {
+    if (!selectedDay) return [];
+    return (grouped.get(selectedDay) ?? []).filter((s) => !takenStarts.has(s.start));
+  }, [selectedDay, grouped, takenStarts]);
 
-  function toggleDay(dateLabel: string) {
-    setExpandedDays((prev) => {
-      const next = new Set(prev);
-      if (next.has(dateLabel)) {
-        next.delete(dateLabel);
-      } else {
-        next.add(dateLabel);
-      }
-      return next;
-    });
-  }
+  /** Time-of-day groups for the selected day */
+  const timeGroups = useMemo(() => groupByTimeOfDay(daySlots), [daySlots]);
 
   // ---- render ----
 
@@ -400,7 +382,7 @@ export function SlotGrid({
     );
   }
 
-  if (grouped.size === 0) {
+  if (availableDays.length === 0) {
     return (
       <div className="py-8 text-center space-y-2">
         <p className="text-sm text-[var(--text-secondary)]">
@@ -419,7 +401,7 @@ export function SlotGrid({
 
   return (
     <div className="space-y-4">
-      {/* Consultation info — replaces assignee badge */}
+      {/* Consultation info */}
       <p className="text-sm text-[var(--text-secondary)]">
         20-minute free consultation — someone from our team will be with you.
       </p>
@@ -443,141 +425,106 @@ export function SlotGrid({
         )}
       </AnimatePresence>
 
-      {/* Day accordion + slot grid */}
-      <div className="max-h-[60vh] overflow-y-auto md:max-h-none md:overflow-visible space-y-3">
-        {visibleDays.map(([dateLabel, daySlots]) => {
-          const allTaken = daySlots.every((s) => takenStarts.has(s.start));
-          const isExpanded = expandedDays.has(dateLabel);
-          const availableCount = daySlots.filter((s) => !takenStarts.has(s.start)).length;
-          const timeGroups = groupByTimeOfDay(daySlots);
+      {/* Stage 1: Day picker pills */}
+      <div
+        className="flex gap-2 overflow-x-auto pb-1 scrollbar-none -mx-1 px-1"
+        role="tablist"
+        aria-label="Select a day"
+      >
+        {availableDays.map((dateKey) => {
+          const isActive = dateKey === selectedDay;
+          const slotCount = (grouped.get(dateKey) ?? []).filter(
+            (s) => !takenStarts.has(s.start)
+          ).length;
 
           return (
-            <div
-              key={dateLabel}
-              className="rounded-[var(--radius)] border border-[var(--border)] overflow-hidden"
+            <button
+              key={dateKey}
+              type="button"
+              role="tab"
+              aria-selected={isActive}
+              onClick={() => {
+                setSelectedDay(dateKey);
+                setSnipedMessage(null);
+              }}
+              className={`flex-shrink-0 flex flex-col items-center gap-0.5 rounded-[var(--radius)] border px-3.5 py-2.5 min-w-[80px] text-center transition-all cursor-pointer ${
+                isActive
+                  ? "border-[var(--blue-accent)] bg-[var(--blue-accent)] text-white shadow-[0_0_0_3px_rgba(79,86,232,0.15)]"
+                  : "border-[var(--border)] bg-[var(--surface)] text-[var(--text)] hover:border-[var(--blue-accent)] hover:text-[var(--blue-accent)]"
+              }`}
             >
-              {/* Sticky day header */}
-              <button
-                type="button"
-                onClick={() => toggleDay(dateLabel)}
-                className="sticky top-0 z-10 flex w-full items-center justify-between gap-2 bg-[var(--bg-section)] px-3 py-2.5 md:px-4 md:py-3 cursor-pointer"
+              <span className="text-xs font-bold leading-tight whitespace-nowrap">
+                {formatDayPill(dateKey)}
+              </span>
+              <span
+                className={`text-[10px] font-medium leading-tight ${
+                  isActive ? "text-white/70" : "text-[var(--text-muted)]"
+                }`}
               >
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className="text-xs font-semibold text-[var(--text)] uppercase tracking-wide truncate">
-                    {dateLabel}
-                  </span>
-                  {allTaken ? (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[var(--bg-section)] text-[var(--text-muted)] border border-[var(--border)]">
-                      Fully booked
-                    </span>
-                  ) : (
-                    <span className="text-[10px] text-[var(--text-muted)] font-medium">
-                      {availableCount} slot{availableCount !== 1 ? "s" : ""}
-                    </span>
-                  )}
-                </div>
-                <ChevronIcon expanded={isExpanded} />
-              </button>
-
-              {/* Expandable slot content */}
-              <AnimatePresence initial={false}>
-                {isExpanded && (
-                  <motion.div
-                    key="content"
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.2, ease: "easeInOut" }}
-                    className="overflow-hidden"
-                  >
-                    {allTaken ? (
-                      <div className="px-3 py-4 md:px-4 text-center">
-                        <p className="text-xs text-[var(--text-muted)]">
-                          All slots for this day have been taken.
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="px-3 py-3 md:px-4 space-y-3">
-                        {timeGroups.map((group) => {
-                          // Check if all slots in this group are taken
-                          const groupAllTaken = group.slots.every((s) => takenStarts.has(s.start));
-                          if (groupAllTaken) return null;
-
-                          return (
-                            <div key={group.key}>
-                              <p className="text-[10px] font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-1.5">
-                                {group.label}
-                              </p>
-                              <div className="flex flex-wrap gap-2.5">
-                                <AnimatePresence>
-                                  {group.slots.map((slot) => {
-                                    const isSelected =
-                                      selectedSlot?.start === slot.start &&
-                                      selectedSlot?.end === slot.end;
-                                    const isTaken = takenStarts.has(slot.start);
-
-                                    return (
-                                      <motion.button
-                                        key={slot.start}
-                                        type="button"
-                                        onClick={() => {
-                                          if (isTaken) return;
-                                          onSlotSelect(slot);
-                                        }}
-                                        aria-pressed={isSelected}
-                                        aria-disabled={isTaken}
-                                        disabled={isTaken}
-                                        // Entry animation
-                                        initial={{ opacity: 0, scale: 0.95 }}
-                                        animate={{
-                                          opacity: isTaken ? 0.3 : 1,
-                                          scale: 1,
-                                        }}
-                                        exit={{ opacity: 0, scale: 0.9 }}
-                                        transition={{ duration: 0.25 }}
-                                        className={`rounded-[var(--radius)] border px-4 py-3 min-h-[44px] text-sm font-medium transition-all ${
-                                          isTaken
-                                            ? "border-[var(--border)] bg-[var(--bg-section)] text-[var(--text-muted)] cursor-not-allowed line-through"
-                                            : isSelected
-                                            ? "border-[var(--blue-accent)] bg-[var(--blue-accent)] text-white shadow-[0_0_0_3px_rgba(79,86,232,0.15)] cursor-pointer"
-                                            : "border-[var(--border)] bg-[var(--surface)] text-[var(--text)] hover:border-[var(--blue-accent)] hover:text-[var(--blue-accent)] cursor-pointer"
-                                        }`}
-                                      >
-                                        {formatNYTime(slot.start)}
-                                        {isTaken && (
-                                          <span className="sr-only"> (taken)</span>
-                                        )}
-                                      </motion.button>
-                                    );
-                                  })}
-                                </AnimatePresence>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+                {slotCount} slot{slotCount !== 1 ? "s" : ""}
+              </span>
+            </button>
           );
         })}
-
-        {/* Show more days trigger */}
-        {hasMoreDays && (
-          <button
-            type="button"
-            onClick={() => setShowAllDays(true)}
-            className="flex w-full items-center justify-center gap-1.5 rounded-[var(--radius)] border border-dashed border-[var(--border)] bg-[var(--bg-section)] px-4 py-3 text-sm font-medium text-[var(--text-secondary)] hover:border-[var(--blue-accent)] hover:text-[var(--blue-accent)] transition-colors cursor-pointer"
-          >
-            Show {dayEntries.length - visibleDayCount} more day{dayEntries.length - visibleDayCount !== 1 ? "s" : ""}
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-              <path d="M3 5.5l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </button>
-        )}
       </div>
+
+      {/* Stage 2: Time grid for selected day */}
+      <AnimatePresence mode="wait">
+        {selectedDay && timeGroups.length > 0 && (
+          <motion.div
+            key={selectedDay}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.15 }}
+            className="space-y-4"
+            role="tabpanel"
+            aria-label={`Available times for ${formatDayPill(selectedDay)}`}
+          >
+            {timeGroups.map((group) => (
+              <div key={group.key}>
+                {/* Time-of-day header */}
+                <div className="flex items-center gap-1.5 mb-2">
+                  <span className="text-[var(--text-muted)]">
+                    <TimeIcon type={group.icon} />
+                  </span>
+                  <span className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">
+                    {group.label}
+                  </span>
+                </div>
+
+                {/* Slot pills grid */}
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
+                  {group.slots.map((slot) => {
+                    const isSelected =
+                      selectedSlot?.start === slot.start &&
+                      selectedSlot?.end === slot.end;
+
+                    return (
+                      <motion.button
+                        key={slot.start}
+                        type="button"
+                        onClick={() => onSlotSelect(slot)}
+                        aria-pressed={isSelected}
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.15 }}
+                        className={`rounded-[var(--radius)] border px-2 py-2.5 min-h-[44px] text-sm font-medium transition-all cursor-pointer ${
+                          isSelected
+                            ? "border-[var(--blue-accent)] bg-[var(--blue-accent)] text-white shadow-[0_0_0_3px_rgba(79,86,232,0.15)]"
+                            : "border-[var(--border)] bg-[var(--surface)] text-[var(--text)] hover:border-[var(--blue-accent)] hover:text-[var(--blue-accent)]"
+                        }`}
+                      >
+                        {formatNYTime(slot.start)}
+                      </motion.button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Timezone note */}
       <p className="text-xs text-[var(--text-muted)]">
