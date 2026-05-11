@@ -7,6 +7,7 @@ import { useChat } from "@/hooks/useChat";
 import { ChatMessage } from "./ChatMessage";
 import { chatMessageSent } from "@/lib/analytics/events";
 import { ContactChip } from "./ContactChip";
+import { FeedbackForm } from "./FeedbackForm";
 
 interface ChatPanelProps {
   pageContext: string;
@@ -33,6 +34,7 @@ export function ChatPanel({ pageContext, onClose }: ChatPanelProps) {
   const { messages, isLoading, error, qualification, sendMessage, clearMessages } =
     useChat(pageContext);
   const [input, setInput] = useState("");
+  const [feedbackMode, setFeedbackMode] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const reduceMotion = useReducedMotion();
@@ -79,7 +81,7 @@ export function ChatPanel({ pageContext, onClose }: ChatPanelProps) {
         {/* Right side: contact chip rail + utility controls */}
         <div className="flex items-center gap-2">
           {/* Persistent glass-pill contact actions — anchored in chrome, never in message stream */}
-          <ContactChip />
+          <ContactChip onFeedback={() => setFeedbackMode(true)} />
 
           {/* Divider */}
           <span className="w-px h-5 bg-white/20 shrink-0" aria-hidden="true" />
@@ -122,7 +124,14 @@ export function ChatPanel({ pageContext, onClose }: ChatPanelProps) {
         </div>
       </div>
 
-      {/* Messages */}
+      {/* Messages or FeedbackForm — mutually exclusive */}
+      {feedbackMode ? (
+        <FeedbackForm
+          onBack={() => setFeedbackMode(false)}
+          onDone={() => setFeedbackMode(false)}
+        />
+      ) : (
+      <>
       <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3 min-h-0">
         {messages.length === 0 && (
           <div className="text-center py-6">
@@ -220,6 +229,8 @@ export function ChatPanel({ pageContext, onClose }: ChatPanelProps) {
           </svg>
         </button>
       </form>
+      </>
+      )}
     </motion.div>
   );
 }

@@ -80,9 +80,41 @@ function PhoneIcon() {
   );
 }
 
+function FeedbackIcon() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      className="shrink-0"
+    >
+      <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+    </svg>
+  );
+}
+
 // ---------------------------------------------------------------------------
-// Individual glass-pill chip
+// Individual glass-pill chip — shared visual style
 // ---------------------------------------------------------------------------
+
+const CHIP_CLASSES = [
+  "relative inline-flex items-center gap-1.5",
+  "min-h-[44px] px-2.5 sm:px-3",
+  "rounded-full",
+  "backdrop-blur-sm",
+  "ring-1 ring-inset ring-white/20",
+  "text-white",
+  "transition-all duration-150",
+  "hover:ring-white/40 hover:brightness-110",
+  "active:scale-95",
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-1 focus-visible:ring-offset-transparent",
+];
 
 interface ChipProps {
   href: string;
@@ -116,26 +148,8 @@ function Chip({
       onClick={onClick}
       {...(href.startsWith("http") ? { target: "_blank", rel: "noopener noreferrer" } : {})}
       className={[
-        // Layout
-        "relative inline-flex items-center gap-1.5",
-        // Size — 44px touch target vertically via min-h, horizontal via px
-        "min-h-[44px] px-2.5 sm:px-3",
-        // Shape
-        "rounded-full",
-        // Glass base — semi-transparent white tint over gradient
-        "backdrop-blur-sm",
+        ...CHIP_CLASSES,
         tintClass,
-        // Inner highlight stroke (embossed quality)
-        "ring-1 ring-inset ring-white/20",
-        // Typography
-        "text-white",
-        // Interactions
-        "transition-all duration-150",
-        "hover:ring-white/40 hover:brightness-110",
-        "active:scale-95",
-        // Focus ring — keyboard nav
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-1 focus-visible:ring-offset-transparent",
-        // Fade-in animation class
         animate ? "contact-chip-enter" : "",
       ]
         .filter(Boolean)
@@ -161,11 +175,68 @@ function Chip({
   );
 }
 
+interface ButtonChipProps {
+  ariaLabel: string;
+  label: string;
+  tintClass: string;
+  tintStyle?: React.CSSProperties;
+  icon: React.ReactNode;
+  animationDelay: number;
+  animate: boolean;
+  onClick: () => void;
+}
+
+function ButtonChip({
+  ariaLabel,
+  label,
+  tintClass,
+  tintStyle,
+  icon,
+  animationDelay,
+  animate,
+  onClick,
+}: ButtonChipProps) {
+  return (
+    <button
+      type="button"
+      aria-label={ariaLabel}
+      onClick={onClick}
+      className={[
+        ...CHIP_CLASSES,
+        tintClass,
+        animate ? "contact-chip-enter" : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+      style={{
+        ...tintStyle,
+        ...(animate
+          ? ({
+              "--chip-delay": `${animationDelay}ms`,
+            } as React.CSSProperties)
+          : {}),
+      }}
+    >
+      {icon}
+      <span
+        className="hidden sm:inline-block uppercase text-[9px] font-bold tracking-[0.08em] leading-none whitespace-nowrap"
+        aria-hidden="true"
+      >
+        {label}
+      </span>
+    </button>
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Public component — no props, reads from contact-info constants
 // ---------------------------------------------------------------------------
 
-export function ContactChip() {
+interface ContactChipProps {
+  onFeedback: () => void;
+}
+
+export function ContactChip({ onFeedback }: ContactChipProps) {
   const reduceMotion = useReducedMotion();
   const animate = !reduceMotion;
   const [emailCopied, setEmailCopied] = useState(false);
@@ -237,6 +308,18 @@ export function ContactChip() {
           icon={<PhoneIcon />}
           animationDelay={240}
           animate={animate}
+        />
+
+        {/* Feedback — amber glass */}
+        <ButtonChip
+          ariaLabel="Leave feedback"
+          label="Feedback"
+          tintClass="bg-white/10"
+          tintStyle={{ backgroundColor: "rgba(245, 158, 11, 0.25)" }}
+          icon={<FeedbackIcon />}
+          animationDelay={320}
+          animate={animate}
+          onClick={onFeedback}
         />
 
         {/* Email-copied toast — fades in beneath the chip rail */}

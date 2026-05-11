@@ -30,7 +30,7 @@ vi.mock("framer-motion", () => ({
 
 describe("ContactChip", () => {
   it("renders a group with the accessible label 'Direct contact options'", () => {
-    render(<ContactChip />);
+    render(<ContactChip onFeedback={vi.fn()} />);
     expect(
       screen.getByRole("group", { name: /direct contact options/i })
     ).toBeInTheDocument();
@@ -38,18 +38,18 @@ describe("ContactChip", () => {
 
   describe("WhatsApp link", () => {
     it("renders with aria-label 'Chat on WhatsApp'", () => {
-      render(<ContactChip />);
+      render(<ContactChip onFeedback={vi.fn()} />);
       expect(screen.getByLabelText("Chat on WhatsApp")).toBeInTheDocument();
     });
 
     it("href matches CONTACT_WHATSAPP_URL constant", () => {
-      render(<ContactChip />);
+      render(<ContactChip onFeedback={vi.fn()} />);
       const link = screen.getByLabelText("Chat on WhatsApp") as HTMLAnchorElement;
       expect(link.getAttribute("href")).toBe(CONTACT_WHATSAPP_URL);
     });
 
     it("opens in a new tab", () => {
-      render(<ContactChip />);
+      render(<ContactChip onFeedback={vi.fn()} />);
       const link = screen.getByLabelText("Chat on WhatsApp") as HTMLAnchorElement;
       expect(link.getAttribute("target")).toBe("_blank");
       expect(link.getAttribute("rel")).toContain("noopener");
@@ -58,12 +58,12 @@ describe("ContactChip", () => {
 
   describe("Email link", () => {
     it("renders with aria-label 'Email us'", () => {
-      render(<ContactChip />);
+      render(<ContactChip onFeedback={vi.fn()} />);
       expect(screen.getByLabelText("Email us")).toBeInTheDocument();
     });
 
     it("href matches CONTACT_EMAIL_HREF constant", () => {
-      render(<ContactChip />);
+      render(<ContactChip onFeedback={vi.fn()} />);
       const link = screen.getByLabelText("Email us") as HTMLAnchorElement;
       expect(link.getAttribute("href")).toBe(CONTACT_EMAIL_HREF);
     });
@@ -76,7 +76,7 @@ describe("ContactChip", () => {
         writable: true,
       });
 
-      render(<ContactChip />);
+      render(<ContactChip onFeedback={vi.fn()} />);
       const emailLink = screen.getByLabelText("Email us");
 
       await act(async () => {
@@ -93,7 +93,7 @@ describe("ContactChip", () => {
 
   describe("Phone link", () => {
     it("renders with aria-label referencing CONTACT_PHONE_DISPLAY", () => {
-      render(<ContactChip />);
+      render(<ContactChip onFeedback={vi.fn()} />);
       // aria-label includes the display number
       expect(
         screen.getByLabelText(`Call us at ${CONTACT_PHONE_DISPLAY}`)
@@ -101,7 +101,7 @@ describe("ContactChip", () => {
     });
 
     it("href is a tel: link using CONTACT_PHONE_TEL", () => {
-      render(<ContactChip />);
+      render(<ContactChip onFeedback={vi.fn()} />);
       const link = screen.getByLabelText(
         `Call us at ${CONTACT_PHONE_DISPLAY}`
       ) as HTMLAnchorElement;
@@ -111,14 +111,14 @@ describe("ContactChip", () => {
 
   describe("accessibility", () => {
     it("all three actions are rendered as <a> elements", () => {
-      const { container } = render(<ContactChip />);
+      const { container } = render(<ContactChip onFeedback={vi.fn()} />);
       const group = container.querySelector('[role="group"]')!;
       const links = group.querySelectorAll("a");
       expect(links).toHaveLength(3);
     });
 
     it("each link has a non-empty aria-label", () => {
-      const { container } = render(<ContactChip />);
+      const { container } = render(<ContactChip onFeedback={vi.fn()} />);
       const group = container.querySelector('[role="group"]')!;
       const links = Array.from(group.querySelectorAll("a"));
       links.forEach((link) => {
@@ -129,9 +129,23 @@ describe("ContactChip", () => {
     });
   });
 
+  describe("Feedback chip", () => {
+    it("renders with aria-label 'Leave feedback'", () => {
+      render(<ContactChip onFeedback={vi.fn()} />);
+      expect(screen.getByLabelText("Leave feedback")).toBeInTheDocument();
+    });
+
+    it("calls onFeedback when clicked", () => {
+      const onFeedback = vi.fn();
+      render(<ContactChip onFeedback={onFeedback} />);
+      fireEvent.click(screen.getByLabelText("Leave feedback"));
+      expect(onFeedback).toHaveBeenCalledTimes(1);
+    });
+  });
+
   describe("chip placement in ChatPanel header (integration smoke)", () => {
     it("ContactChip renders without crashing in isolation", () => {
-      const { container } = render(<ContactChip />);
+      const { container } = render(<ContactChip onFeedback={vi.fn()} />);
       expect(container.firstChild).not.toBeNull();
     });
   });
