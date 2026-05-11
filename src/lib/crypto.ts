@@ -3,7 +3,7 @@
  *
  * Format: `enc:v1:<iv-hex>:<authTag-hex>:<ciphertext-hex>`
  *
- * Key: `FIELD_ENCRYPTION_KEY` env var — hex-encoded 32-byte (64 hex chars).
+ * Key: `PII_ENCRYPTION_KEY` env var — hex-encoded 32-byte (64 hex chars).
  * If the key is missing, functions degrade gracefully (pass-through + warn).
  */
 
@@ -14,17 +14,17 @@ const IV_BYTES = 12; // GCM recommended
 const PREFIX = "enc:v1:";
 
 function getKey(): Buffer | null {
-  const hex = process.env.FIELD_ENCRYPTION_KEY;
+  const hex = process.env.PII_ENCRYPTION_KEY;
   if (!hex) {
     console.warn(
-      "[crypto] FIELD_ENCRYPTION_KEY not set — field encryption disabled (plaintext pass-through)"
+      "[crypto] PII_ENCRYPTION_KEY not set — field encryption disabled (plaintext pass-through)"
     );
     return null;
   }
   const buf = Buffer.from(hex, "hex");
   if (buf.length !== 32) {
     console.error(
-      `[crypto] FIELD_ENCRYPTION_KEY must be 32 bytes (64 hex chars), got ${buf.length} bytes`
+      `[crypto] PII_ENCRYPTION_KEY must be 32 bytes (64 hex chars), got ${buf.length} bytes`
     );
     return null;
   }
@@ -62,7 +62,7 @@ export function decryptField(encrypted: string): string {
 
   const key = getKey();
   if (!key) {
-    console.warn("[crypto] Cannot decrypt — FIELD_ENCRYPTION_KEY not set");
+    console.warn("[crypto] Cannot decrypt — PII_ENCRYPTION_KEY not set");
     return encrypted;
   }
 
