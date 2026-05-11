@@ -244,16 +244,15 @@ export function BookingFlow() {
         }
       } catch (err) {
         if (err instanceof SlotConflictError) {
-          // Return to slot grid, surface alternatives or refresh
-          setStep(2);
           setSelectedSlot(null);
           if (err.alternatives.length > 0) {
-            // Wave 2: show inline alternatives without a full refresh
+            // Stay on step 3 — show inline alternatives, form stays mounted
             setConflictAlternatives(err.alternatives);
           } else {
-            // Pre-Wave 2 or empty alternatives: show toast + refresh grid
-            setToast(err.message);
+            // No alternatives: fall back to slot grid with toast + refresh
+            setStep(2);
             setConflictAlternatives([]);
+            setToast(err.message);
             window.dispatchEvent(new Event("booking:refresh-slots"));
           }
         } else {
@@ -522,6 +521,52 @@ export function BookingFlow() {
                 to schedule directly.
               </p>
             )}
+
+
+            {/* 409 conflict alternatives — shown inline on step 3 so form stays mounted */}
+            <AnimatePresence>
+              {conflictAlternatives.length > 0 && step === 3 && (
+                <motion.div
+                  key="step3-conflict-alternatives"
+                  initial={{ opacity: 0, y: -6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.2 }}
+                  className="rounded-[var(--radius)] bg-amber-50 border border-amber-200 px-4 py-3 mb-4"
+                >
+                  <p className="text-sm font-semibold text-amber-900 mb-2">
+                    That slot was just taken — pick an alternative:
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {conflictAlternatives.map((alt) => (
+                      <button
+                        key={alt.start}
+                        type="button"
+                        onClick={() => {
+                          handleSlotSelect({
+                            start: alt.start,
+                            end: alt.end,
+                            assignee_user_id: alt.assignee_user_id ?? "",
+                          });
+                          setConflictAlternatives([]);
+                        }}
+                        className="rounded-[var(--radius)] border border-amber-300 bg-white px-3.5 py-2 text-sm font-medium text-amber-900 hover:border-amber-500 hover:bg-amber-50 transition-all cursor-pointer"
+                      >
+                        {new Intl.DateTimeFormat("en-US", {
+                          timeZone: "America/New_York",
+                          weekday: "short",
+                          month: "short",
+                          day: "numeric",
+                          hour: "numeric",
+                          minute: "2-digit",
+                          hour12: true,
+                        }).format(new Date(alt.start))}
+                      </button>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             <BookingContactForm
               onSubmit={handleFormSubmit}
