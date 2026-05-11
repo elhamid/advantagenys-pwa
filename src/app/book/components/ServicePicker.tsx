@@ -1,11 +1,13 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { SERVICES as SERVICES_DATA, type ServiceData } from "../data/services";
 
-export interface ServiceOption {
-  slug: string;
-  label: string;
-  description: string;
+// Re-export plain SERVICES for backward compat (BookingFlow.tsx imports from here)
+export { SERVICES_DATA as SERVICES };
+export type { ServiceData };
+
+export interface ServiceOption extends ServiceData {
   icon: React.ReactNode;
 }
 
@@ -111,62 +113,22 @@ function BookkeepingIcon() {
   );
 }
 
-export const SERVICES: ServiceOption[] = [
-  {
-    slug: "tax",
-    label: "Tax Services",
-    description: "Personal & business returns, IRS response, self-employed",
-    icon: <TaxIcon />,
-  },
-  {
-    slug: "itin",
-    label: "ITIN / Tax ID",
-    description: "IRS Certified Agent — W-7 application, renewals, dependents",
-    icon: <ITINIcon />,
-  },
-  {
-    slug: "formation",
-    label: "Business Formation",
-    description: "LLC, Corporation, DBA — filed same week",
-    icon: <FormationIcon />,
-  },
-  {
-    slug: "insurance",
-    label: "Insurance",
-    description: "General liability, workers' comp, commercial auto",
-    icon: <InsuranceIcon />,
-  },
-  {
-    slug: "audit",
-    label: "Audit Defense",
-    description: "IRS & state audit representation, penalty abatement",
-    icon: <AuditIcon />,
-  },
-  {
-    slug: "consulting",
-    label: "Business Consulting",
-    description: "Licensing, permits, contracts, strategic guidance",
-    icon: <ConsultingIcon />,
-  },
-  {
-    slug: "legal",
-    label: "Immigration & Legal",
-    description: "Immigration petitions, citizenship, divorce, legal compliance",
-    icon: <LegalIcon />,
-  },
-  {
-    slug: "licensing",
-    label: "Licensing",
-    description: "Business licenses, permits, renewals, compliance filings",
-    icon: <LicensingIcon />,
-  },
-  {
-    slug: "bookkeeping",
-    label: "Financial Services",
-    description: "Bookkeeping, payroll, financial reporting, QuickBooks setup",
-    icon: <BookkeepingIcon />,
-  },
-];
+const ICON_MAP: Record<string, React.ReactNode> = {
+  tax: <TaxIcon />,
+  itin: <ITINIcon />,
+  formation: <FormationIcon />,
+  insurance: <InsuranceIcon />,
+  audit: <AuditIcon />,
+  consulting: <ConsultingIcon />,
+  legal: <LegalIcon />,
+  licensing: <LicensingIcon />,
+  bookkeeping: <BookkeepingIcon />,
+};
+
+const SERVICES_WITH_ICONS: ServiceOption[] = SERVICES_DATA.map((s) => ({
+  ...s,
+  icon: ICON_MAP[s.slug] ?? null,
+}));
 
 interface ServicePickerProps {
   selected: string | null;
@@ -180,7 +142,7 @@ export function ServicePicker({ selected, onSelect }: ServicePickerProps) {
         Select the service you need — we will match you with the right specialist.
       </p>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        {SERVICES.map((svc, i) => {
+        {SERVICES_WITH_ICONS.map((svc, i) => {
           const active = selected === svc.slug;
           return (
             <motion.button

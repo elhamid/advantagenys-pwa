@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { SERVICES } from "../components/ServicePicker";
+import { getServiceLabel } from "../data/services";
 import { ConfirmedClient } from "./ConfirmedClient";
 
 export const metadata: Metadata = {
@@ -15,12 +15,6 @@ interface Props {
     service?: string;
     mode?: string;
   }>;
-}
-
-function getServiceLabel(slug: string | undefined): string {
-  if (!slug) return "consult";
-  const match = SERVICES.find((s) => s.slug === slug.toLowerCase());
-  return match ? match.label : slug;
 }
 
 export default async function BookConfirmedPage({ searchParams }: Props) {
