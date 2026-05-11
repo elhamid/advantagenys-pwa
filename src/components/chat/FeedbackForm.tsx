@@ -3,48 +3,13 @@
 /**
  * FeedbackForm — inline feedback panel rendered inside ChatPanel.
  *
- * Severity chips: Bug | Idea | Blocker (single select, default Idea).
- * Optional collapsible "Add contact info" section.
+ * Simple form: textarea + optional contact info section.
  * Posts to https://app.advantagenys.com/api/webhooks/pwa-feedback.
  * On success: shows thank-you state, calls onDone() after 2s.
  */
 
 import { useState, useRef, useEffect, type FormEvent } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-
-type Severity = "BUG" | "IDEA" | "BLOCKER";
-
-interface SeverityOption {
-  id: Severity;
-  label: string;
-  borderColor: string;
-  bg: string;
-  text: string;
-}
-
-const SEVERITY_OPTIONS: SeverityOption[] = [
-  {
-    id: "IDEA",
-    label: "Idea",
-    borderColor: "rgba(79, 86, 232, 0.6)",
-    bg: "rgba(79, 86, 232, 0.12)",
-    text: "#6366f1",
-  },
-  {
-    id: "BUG",
-    label: "Bug",
-    borderColor: "rgba(239, 68, 68, 0.55)",
-    bg: "rgba(239, 68, 68, 0.10)",
-    text: "#ef4444",
-  },
-  {
-    id: "BLOCKER",
-    label: "Blocker",
-    borderColor: "rgba(245, 158, 11, 0.60)",
-    bg: "rgba(245, 158, 11, 0.12)",
-    text: "#f59e0b",
-  },
-];
 
 const FEEDBACK_ENDPOINT =
   "https://app.advantagenys.com/api/webhooks/pwa-feedback";
@@ -59,7 +24,6 @@ interface FeedbackFormProps {
 export function FeedbackForm({ onBack, onDone, initialMessage }: FeedbackFormProps) {
   const reduceMotion = useReducedMotion();
 
-  const [severity, setSeverity] = useState<Severity>("IDEA");
   const [message, setMessage] = useState(initialMessage ?? "");
   const [contactExpanded, setContactExpanded] = useState(false);
   const [contactPhone, setContactPhone] = useState("");
@@ -83,7 +47,7 @@ export function FeedbackForm({ onBack, onDone, initialMessage }: FeedbackFormPro
     setSubmitError(null);
 
     const payload: Record<string, string> = {
-      message: `[${severity}] ${message.trim()}`,
+      message: message.trim(),
       pageUrl: typeof window !== "undefined" ? window.location.href : "",
     };
     if (contactPhone.trim()) payload.contactPhone = contactPhone.trim();
@@ -199,43 +163,6 @@ export function FeedbackForm({ onBack, onDone, initialMessage }: FeedbackFormPro
         className="flex flex-col gap-4 px-4 pb-4"
         noValidate
       >
-        {/* Severity chips */}
-        <fieldset className="border-0 p-0 m-0">
-          <legend className="text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)] mb-2">
-            Type
-          </legend>
-          <div className="flex gap-2">
-            {SEVERITY_OPTIONS.map((opt) => {
-              const isSelected = severity === opt.id;
-              return (
-                <button
-                  key={opt.id}
-                  type="button"
-                  role="radio"
-                  aria-checked={isSelected}
-                  onClick={() => setSeverity(opt.id)}
-                  className="flex-1 min-h-[36px] rounded-full text-xs font-semibold transition-all ring-1 ring-inset active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--blue-accent)]"
-                  style={
-                    isSelected
-                      ? {
-                          backgroundColor: opt.bg,
-                          color: opt.text,
-                          boxShadow: `inset 0 0 0 1px ${opt.borderColor}`,
-                        }
-                      : {
-                          backgroundColor: "var(--bg)",
-                          color: "var(--text-muted)",
-                          boxShadow: "inset 0 0 0 1px var(--border)",
-                        }
-                  }
-                >
-                  {opt.label}
-                </button>
-              );
-            })}
-          </div>
-        </fieldset>
-
         {/* Message textarea */}
         <div className="flex flex-col gap-1">
           <label

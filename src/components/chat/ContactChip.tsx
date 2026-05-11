@@ -145,6 +145,7 @@ function Chip({
     <a
       href={href}
       aria-label={ariaLabel}
+      title={label}
       onClick={onClick}
       {...(href.startsWith("http") ? { target: "_blank", rel: "noopener noreferrer" } : {})}
       className={[
@@ -164,13 +165,6 @@ function Chip({
       }}
     >
       {icon}
-      {/* Label: hidden on mobile, visible on sm+ */}
-      <span
-        className="hidden sm:inline-block uppercase text-[9px] font-bold tracking-[0.08em] leading-none whitespace-nowrap"
-        aria-hidden="true"
-      >
-        {label}
-      </span>
     </a>
   );
 }
@@ -200,6 +194,7 @@ function ButtonChip({
     <button
       type="button"
       aria-label={ariaLabel}
+      title={label}
       onClick={onClick}
       className={[
         ...CHIP_CLASSES,
@@ -218,12 +213,6 @@ function ButtonChip({
       }}
     >
       {icon}
-      <span
-        className="hidden sm:inline-block uppercase text-[9px] font-bold tracking-[0.08em] leading-none whitespace-nowrap"
-        aria-hidden="true"
-      >
-        {label}
-      </span>
     </button>
   );
 }
