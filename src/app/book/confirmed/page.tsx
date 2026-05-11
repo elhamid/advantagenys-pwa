@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getServiceLabel } from "../data/services";
+import { getServiceLabel, SERVICE_PREP } from "../data/services";
 import { ConfirmedClient } from "./ConfirmedClient";
 
 export const metadata: Metadata = {
@@ -78,6 +78,40 @@ export default async function BookConfirmedPage({ searchParams }: Props) {
                 .
               </p>
             </>
+          )}
+
+          {/* Prep instructions */}
+          {serviceSlug && SERVICE_PREP[serviceSlug] && (
+            <div className="mt-6 mb-6 rounded-[var(--radius-lg)] bg-[var(--bg-section)] border border-[var(--border)] p-5 text-left">
+              <div className="flex items-center gap-2 mb-3">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true" className="shrink-0">
+                  <path d="M3.75 9.75L7.5 13.5L14.25 4.5" stroke="var(--blue-accent)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                  <rect x="1" y="1" width="16" height="16" rx="3" stroke="var(--blue-accent)" strokeWidth="1.2" />
+                </svg>
+                <h2 className="text-sm font-bold text-[var(--text)]">
+                  What to bring to your appointment
+                </h2>
+              </div>
+              <ul className="space-y-1.5 mb-4">
+                {SERVICE_PREP[serviceSlug]!.map((item) => (
+                  <li key={item} className="flex items-start gap-2 text-sm text-[var(--text-secondary)]">
+                    <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-[var(--blue-accent)] shrink-0" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <a
+                href="https://maps.app.goo.gl/BDpkks8vWzYjkuP77"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-[var(--blue-accent)] hover:underline underline-offset-2"
+              >
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true" className="shrink-0">
+                  <path d="M7 1.17C4.78 1.17 2.92 3.03 2.92 5.25 2.92 8.31 7 12.83 7 12.83s4.08-4.52 4.08-7.58C11.08 3.03 9.22 1.17 7 1.17zm0 5.54a1.46 1.46 0 110-2.92 1.46 1.46 0 010 2.92z" fill="var(--blue-accent)" />
+                </svg>
+                Visit us: 37-02 73rd St, Jackson Heights, NY
+              </a>
+            </div>
           )}
 
           {/* Actions */}

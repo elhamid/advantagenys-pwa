@@ -52,6 +52,42 @@ export const SERVICES: ServiceData[] = [
   },
 ];
 
+export const SERVICE_PREP: Record<string, string[]> = {
+  itin: [
+    "Valid passport (or certified copy)",
+    "Completed W-7 form",
+    "Federal tax return",
+  ],
+  tax: [
+    "W-2s, 1099s, and other income documents",
+    "Prior year tax return",
+    "Photo ID",
+    "SSN/ITIN for all filers",
+  ],
+  legal: [
+    "Passport",
+    "I-94 arrival record",
+    "Prior petitions or approvals",
+    "Birth and marriage certificates",
+  ],
+  formation: [
+    "Desired business name",
+    "Member/officer information",
+    "Business address",
+  ],
+  insurance: [
+    "Current insurance policy",
+    "Business financials",
+    "Employee count",
+    "Payroll information",
+  ],
+  licensing: [
+    "Photo ID",
+    "Business address proof",
+    "Insurance certificate",
+  ],
+};
+
 export function getServiceLabel(slug: string | undefined): string {
   if (!slug) return "consult";
   const match = SERVICES.find((s) => s.slug === slug.toLowerCase());
