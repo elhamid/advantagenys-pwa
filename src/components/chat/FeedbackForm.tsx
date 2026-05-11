@@ -52,13 +52,15 @@ const FEEDBACK_ENDPOINT =
 interface FeedbackFormProps {
   onBack: () => void;
   onDone: () => void;
+  /** Pre-fill the textarea — used when launched from the inline feedback nudge */
+  initialMessage?: string;
 }
 
-export function FeedbackForm({ onBack, onDone }: FeedbackFormProps) {
+export function FeedbackForm({ onBack, onDone, initialMessage }: FeedbackFormProps) {
   const reduceMotion = useReducedMotion();
 
   const [severity, setSeverity] = useState<Severity>("IDEA");
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState(initialMessage ?? "");
   const [contactExpanded, setContactExpanded] = useState(false);
   const [contactPhone, setContactPhone] = useState("");
   const [contactEmail, setContactEmail] = useState("");

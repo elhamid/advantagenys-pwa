@@ -30,11 +30,27 @@ function TypingIndicator() {
   );
 }
 
+const FEEDBACK_INTENT_PATTERNS: RegExp[] = [
+  /not working|doesn['']t work|didn['']t work|won['']t work|isn['']t working/i,
+  /broken|error|bug|issue|problem/i,
+  /can['']t submit|can['']t book|can['']t load|won['']t load|doesn['']t load|won['']t submit/i,
+  /form doesn['']t|form isn['']t|form won['']t|page doesn['']t|page won['']t/i,
+  /something wrong|went wrong|goes wrong/i,
+];
+
+function detectFeedbackIntent(text: string): boolean {
+  return FEEDBACK_INTENT_PATTERNS.some((re) => re.test(text));
+}
+
 export function ChatPanel({ pageContext, onClose }: ChatPanelProps) {
   const { messages, isLoading, error, qualification, sendMessage, clearMessages } =
     useChat(pageContext);
   const [input, setInput] = useState("");
   const [feedbackMode, setFeedbackMode] = useState(false);
+  const [feedbackNudgeMessage, setFeedbackNudgeMessage] = useState<string | null>(null);
+  const [feedbackNudgeDismissed, setFeedbackNudgeDismissed] = useState(false);
+  const [feedbackNudgeShownOnce, setFeedbackNudgeShownOnce] = useState(false);
+  const [feedbackInitialMessage, setFeedbackInitialMessage] = useState<string | undefined>(undefined);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const reduceMotion = useReducedMotion();
@@ -52,10 +68,16 @@ export function ChatPanel({ pageContext, onClose }: ChatPanelProps) {
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
+    const trimmedInput = input.trim();
     chatMessageSent();
-    sendMessage(input.trim());
+    sendMessage(trimmedInput);
     setInput("");
     inputRef.current?.focus();
+    // Feedback intent detection — show nudge once per session
+    if (!feedbackNudgeShownOnce && detectFeedbackIntent(trimmedInput)) {
+      setFeedbackNudgeMessage(trimmedInput);
+      setFeedbackNudgeShownOnce(true);
+    }
   }
 
   return (
@@ -128,7 +150,11 @@ export function ChatPanel({ pageContext, onClose }: ChatPanelProps) {
       {feedbackMode ? (
         <FeedbackForm
           onBack={() => setFeedbackMode(false)}
-          onDone={() => setFeedbackMode(false)}
+          onDone={() => {
+            setFeedbackMode(false);
+            setFeedbackInitialMessage(undefined);
+          }}
+          initialMessage={feedbackInitialMessage}
         />
       ) : (
       <>
@@ -153,6 +179,61 @@ export function ChatPanel({ pageContext, onClose }: ChatPanelProps) {
           messages[messages.length - 1]?.content === "" && (
             <TypingIndicator />
           )}
+
+        {/* Feedback intent nudge — shown once per session when user describes a problem */}
+        {feedbackNudgeMessage && !feedbackNudgeDismissed && (
+          <motion.div
+            key="feedback-nudge"
+            initial={reduceMotion ? false : { opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 6 }}
+            transition={{ duration: 0.22, ease: "easeOut" }}
+            className="flex items-start gap-2.5 rounded-xl px-3 py-2.5 text-sm"
+            style={{
+              background: "rgba(245, 158, 11, 0.08)",
+              border: "1px solid rgba(245, 158, 11, 0.25)",
+            }}
+            role="status"
+            aria-live="polite"
+          >
+            {/* Amber dot */}
+            <span
+              className="mt-0.5 w-2 h-2 rounded-full shrink-0"
+              style={{ background: "#f59e0b" }}
+              aria-hidden="true"
+            />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-[var(--text)] leading-snug">
+                Sounds like something isn&apos;t working right.
+              </p>
+              <div className="flex items-center gap-3 mt-1.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFeedbackInitialMessage(feedbackNudgeMessage);
+                    setFeedbackMode(true);
+                  }}
+                  className="text-xs font-semibold rounded-full px-3 py-1 transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--blue-accent)]"
+                  style={{
+                    background: "rgba(245, 158, 11, 0.18)",
+                    color: "#b45309",
+                    border: "1px solid rgba(245, 158, 11, 0.35)",
+                  }}
+                >
+                  Send Feedback
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFeedbackNudgeDismissed(true)}
+                  className="text-xs text-[var(--text-muted)] hover:text-[var(--text)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--blue-accent)] rounded"
+                  aria-label="Dismiss feedback prompt"
+                >
+                  Dismiss
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
 
         <div ref={messagesEndRef} />
       </div>
