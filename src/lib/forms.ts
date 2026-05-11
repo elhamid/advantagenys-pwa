@@ -232,6 +232,7 @@ export const forms: FormConfig[] = [
     active: true,
     priority: 16,
     slug: toSlug("Basic Info Client Intake"),
+    shortLinkSlug: "client-info",
   },
   {
     id: "native-corp",
