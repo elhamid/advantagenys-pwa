@@ -109,7 +109,7 @@ export default async function BookConfirmedPage({ searchParams }: Props) {
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true" className="shrink-0">
                   <path d="M7 1.17C4.78 1.17 2.92 3.03 2.92 5.25 2.92 8.31 7 12.83 7 12.83s4.08-4.52 4.08-7.58C11.08 3.03 9.22 1.17 7 1.17zm0 5.54a1.46 1.46 0 110-2.92 1.46 1.46 0 010 2.92z" fill="var(--blue-accent)" />
                 </svg>
-                Visit us: 37-02 73rd St, Jackson Heights, NY
+                Visit us: 229-14 Linden Blvd, Cambria Heights, NY 11411
               </a>
             </div>
           )}
