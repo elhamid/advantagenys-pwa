@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sendContactEmail } from "@/lib/email";
+import { encryptField } from "@/lib/crypto";
 import {
   LEAD_SOURCES,
   type LeadSource,
@@ -508,6 +509,11 @@ export async function POST(request: NextRequest) {
           { status: 403 }
         );
       }
+    }
+
+    // --- Encrypt sensitive fields before storage/forwarding ----------------
+    if (data.type === "client-info" && data.ssnOrItin) {
+      data.ssnOrItin = encryptField(data.ssnOrItin);
     }
 
     const logLabel =

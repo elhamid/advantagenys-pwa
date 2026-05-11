@@ -306,9 +306,10 @@ export function ClientInfoForm() {
             SSN or ITIN <span className="text-[var(--text-muted)]">(optional)</span>
           </label>
           <input
-            type="text"
+            type="password"
             id="ssnOrItin"
             name="ssnOrItin"
+            autoComplete="off"
             value={formData.ssnOrItin}
             onChange={handleChange}
             placeholder="XXX-XX-XXXX"

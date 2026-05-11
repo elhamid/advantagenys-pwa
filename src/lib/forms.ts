@@ -231,6 +231,7 @@ export const forms: FormConfig[] = [
     nativeComponent: "ClientInfoForm",
     active: true,
     priority: 16,
+    encrypted: true,
     slug: toSlug("Basic Info Client Intake"),
     shortLinkSlug: "client-info",
   },
