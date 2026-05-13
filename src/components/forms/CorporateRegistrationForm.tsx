@@ -1,12 +1,15 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { Turnstile } from "@marsidev/react-turnstile";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { useUtmParams } from "@/hooks/useUtmParams";
-import type { CorporateRegistrationLead } from "@/lib/leads/types";
+import type { AdditionalOwner, CorporateRegistrationLead } from "@/lib/leads/types";
 import { formStart, formSubmit } from "@/lib/analytics/events";
+import { reportFormError, userFacingFormError } from "@/lib/error-reporting";
+import { FormErrorMessage } from "@/components/ui/FormErrorMessage";
 
 const businessTypes = [
   "LLC",
@@ -18,6 +21,8 @@ const businessTypes = [
 ] as const;
 
 const yesNoOptions = ["Yes", "No", "Not Sure"] as const;
+
+const ownerCountOptions = [1, 2, 3] as const;
 
 interface CorporateRegistrationData {
   fullName: string;
@@ -36,6 +41,8 @@ interface CorporateRegistrationData {
   needPayroll: string;
   additionalNotes: string;
 }
+
+const emptyOwner: AdditionalOwner = { name: "", phone: "" };
 
 export function CorporateRegistrationForm() {
   const utm = useUtmParams();
@@ -57,6 +64,11 @@ export function CorporateRegistrationForm() {
     needPayroll: "",
     additionalNotes: "",
   });
+  const [numberOfOwners, setNumberOfOwners] = useState<number>(1);
+  const [additionalOwners, setAdditionalOwners] = useState<AdditionalOwner[]>([
+    { ...emptyOwner },
+    { ...emptyOwner },
+  ]);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -69,11 +81,28 @@ export function CorporateRegistrationForm() {
     formStart("corporate-registration");
   }
 
+  function updateOwner(index: number, field: keyof AdditionalOwner) {
+    return (e: React.ChangeEvent<HTMLInputElement>) => {
+      setAdditionalOwners((prev) => {
+        const updated = [...prev];
+        updated[index] = { ...updated[index], [field]: e.target.value };
+        return updated;
+      });
+    };
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitting(true);
     setError(null);
+
+    // Collect additional owners based on selection (owners beyond Owner 1)
+    const ownersToSubmit: AdditionalOwner[] | undefined =
+      numberOfOwners > 1
+        ? additionalOwners
+            .slice(0, numberOfOwners - 1)
+            .filter((o) => o.name.trim() || o.phone.trim())
+        : undefined;
 
     const payload: CorporateRegistrationLead & { turnstileToken?: string } = {
       type: "corporate-registration",
@@ -89,6 +118,9 @@ export function CorporateRegistrationForm() {
       zipCode: formData.zipCode || undefined,
       natureOfBusiness: formData.natureOfBusiness || undefined,
       numberOfMembers: formData.numberOfMembers || undefined,
+      numberOfOwners,
+      additionalOwners:
+        ownersToSubmit && ownersToSubmit.length > 0 ? ownersToSubmit : undefined,
       needEIN: formData.needEIN || undefined,
       needSalesTax: formData.needSalesTax || undefined,
       needPayroll: formData.needPayroll || undefined,
@@ -114,9 +146,8 @@ export function CorporateRegistrationForm() {
 
       setSubmitted(true);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Something went wrong. Please try again."
-      );
+      reportFormError("corporate-registration", err, formData as unknown as Record<string, unknown>);
+      setError(userFacingFormError(err));
     } finally {
       setSubmitting(false);
     }
@@ -158,13 +189,16 @@ export function CorporateRegistrationForm() {
       setFormData((prev) => ({ ...prev, [field]: e.target.value }));
   }
 
+  /** How many additional-owner sections to show (0, 1, or 2). */
+  const additionalOwnerCount = numberOfOwners - 1;
+
   return (
     <Card>
       <h2 className="text-xl font-bold text-[var(--text)] mb-6">
         Corporate Registration
       </h2>
       <form onSubmit={handleSubmit} onFocus={handleFirstFocus} className="space-y-5">
-        {/* Owner Name */}
+        {/* Owner 1: Name */}
         <div>
           <label htmlFor="corpFullName" className="block text-sm font-medium text-[var(--text)] mb-1">
             Business Owner Full Name <span className="text-red-500">*</span>
@@ -180,7 +214,7 @@ export function CorporateRegistrationForm() {
           />
         </div>
 
-        {/* Phone */}
+        {/* Owner 1: Phone */}
         <div>
           <label htmlFor="corpPhone" className="block text-sm font-medium text-[var(--text)] mb-1">
             Phone Number <span className="text-red-500">*</span>
@@ -211,6 +245,88 @@ export function CorporateRegistrationForm() {
             className={inputClasses}
           />
         </div>
+
+        {/* Number of Owners */}
+        <div>
+          <p className="block text-sm font-medium text-[var(--text)] mb-2">
+            Number of Owners <span className="text-red-500">*</span>
+          </p>
+          <div className="flex gap-6">
+            {ownerCountOptions.map((count) => (
+              <label
+                key={`owners-${count}`}
+                className="flex items-center gap-2 cursor-pointer text-sm text-[var(--text-secondary)]"
+              >
+                <input
+                  type="radio"
+                  name="numberOfOwners"
+                  value={count}
+                  checked={numberOfOwners === count}
+                  onChange={() => setNumberOfOwners(count)}
+                  className="text-[var(--blue-accent)] focus:ring-[var(--blue-accent)]"
+                />
+                {count}
+              </label>
+            ))}
+          </div>
+        </div>
+
+        {/* Additional Owner Sections */}
+        <AnimatePresence mode="sync">
+          {Array.from({ length: additionalOwnerCount }, (_, i) => {
+            const ownerNum = i + 2; // Owner 2 or Owner 3
+            return (
+              <motion.div
+                key={`owner-${ownerNum}`}
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3, ease: "easeInOut" }}
+                className="overflow-hidden"
+              >
+                <div className="rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface-raised,var(--surface))] p-4 space-y-4">
+                  <p className="text-sm font-semibold text-[var(--text)]">
+                    Owner {ownerNum}
+                  </p>
+                  <div>
+                    <label
+                      htmlFor={`owner${ownerNum}Name`}
+                      className="block text-sm font-medium text-[var(--text)] mb-1"
+                    >
+                      Full Name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      id={`owner${ownerNum}Name`}
+                      required
+                      value={additionalOwners[i].name}
+                      onChange={updateOwner(i, "name")}
+                      placeholder={`Owner ${ownerNum} full name`}
+                      className={inputClasses}
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor={`owner${ownerNum}Phone`}
+                      className="block text-sm font-medium text-[var(--text)] mb-1"
+                    >
+                      Phone Number <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="tel"
+                      id={`owner${ownerNum}Phone`}
+                      required
+                      value={additionalOwners[i].phone}
+                      onChange={updateOwner(i, "phone")}
+                      placeholder="(929) 000-0000"
+                      className={inputClasses}
+                    />
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })}
+        </AnimatePresence>
 
         {/* Desired Business Name */}
         <div>
@@ -439,9 +555,7 @@ export function CorporateRegistrationForm() {
         )}
 
         {/* Error */}
-        {error && (
-          <p className="text-sm text-red-500 text-center">{error}</p>
-        )}
+        {error && <FormErrorMessage error={error} />}
 
         {/* Submit */}
         <Button

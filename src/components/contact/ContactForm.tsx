@@ -7,6 +7,8 @@ import { Card } from "@/components/ui/Card";
 import { useUtmParams } from "@/hooks/useUtmParams";
 import type { ContactLead } from "@/lib/leads/types";
 import { formStart, formSubmit } from "@/lib/analytics/events";
+import { reportFormError, userFacingFormError } from "@/lib/error-reporting";
+import { FormErrorMessage } from "@/components/ui/FormErrorMessage";
 
 const businessTypes = [
   "Contractor",
@@ -101,8 +103,8 @@ export function ContactForm() {
       formSubmit("contact");
       setSubmitted(true);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Something went wrong. Please try again."
+      reportFormError("contact", err, formData as unknown as Record<string, unknown>);
+      setError(userFacingFormError(err)
       );
     } finally {
       setSubmitting(false);
@@ -266,9 +268,7 @@ export function ContactForm() {
         )}
 
         {/* Error */}
-        {error && (
-          <p className="text-sm text-red-500 text-center">{error}</p>
-        )}
+        {error && <FormErrorMessage error={error} />}
 
         {/* Submit */}
         <Button

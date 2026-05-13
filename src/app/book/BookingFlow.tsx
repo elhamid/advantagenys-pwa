@@ -14,6 +14,7 @@ import {
   type Slot,
   type AlternativeSlot,
 } from "@/lib/booking-client";
+import { reportFormError, userFacingFormError } from "@/lib/error-reporting";
 
 // ---------------------------------------------------------------------------
 // Step indicator
@@ -256,9 +257,11 @@ export function BookingFlow() {
             window.dispatchEvent(new Event("booking:refresh-slots"));
           }
         } else {
-          setSubmitError(
-            err instanceof Error ? err.message : "Something went wrong. Please try again."
-          );
+          reportFormError("booking-flow", err, {
+            service: selectedService,
+            slot: selectedSlot ? { start: selectedSlot.start, end: selectedSlot.end } : null,
+          });
+          setSubmitError(userFacingFormError(err));
         }
       } finally {
         setSubmitLoading(false);

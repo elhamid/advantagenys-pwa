@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Turnstile } from "@marsidev/react-turnstile";
 import { useUtmParams } from "@/hooks/useUtmParams";
 import Link from "next/link";
+import { reportFormError, FORM_ERROR_FALLBACK } from "@/lib/error-reporting";
+import { FormErrorMessage } from "@/components/ui/FormErrorMessage";
 
 /* ──────────────────────────────────────────────────────────────────────────────
    Types
@@ -522,12 +524,12 @@ export function ContractorQualifierWizard() {
         setStep(TOTAL_STEPS); // verdict screen
         topRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
       } else {
-        setSubmitError("Could not submit. Please call (929) 933-1396.");
+        setSubmitError(`Could not submit. ${FORM_ERROR_FALLBACK}`);
         setSubmitting(false);
       }
     } catch (err) {
-      console.error("[ContractorQualifier] Submit error:", err);
-      setSubmitError("Could not submit. Please call (929) 933-1396.");
+      reportFormError("contractor-qualifier", err, answers as unknown as Record<string, unknown>);
+      setSubmitError(`Could not submit. ${FORM_ERROR_FALLBACK}`);
       setSubmitting(false);
     }
   }
@@ -849,9 +851,7 @@ export function ContractorQualifierWizard() {
                         to speak with a licensing specialist.
                       </p>
                     )}
-                    {submitError && (
-                      <p className="text-xs text-[var(--red)]">{submitError}</p>
-                    )}
+                    {submitError && <FormErrorMessage error={submitError} />}
                     <button
                       type="button"
                       onClick={handleSubmit}

@@ -1,5 +1,7 @@
 "use client";
 
+import { FormErrorMessage } from "@/components/ui/FormErrorMessage";
+
 import { useState } from "react";
 
 interface BookingContactFormProps {
@@ -166,11 +168,7 @@ export function BookingContactForm({
       </div>
 
       {/* API error */}
-      {error && (
-        <p className="rounded-[var(--radius)] bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-600" role="alert">
-          {error}
-        </p>
-      )}
+      {error && <FormErrorMessage error={error} />}
 
       <button
         type="submit"

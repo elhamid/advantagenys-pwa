@@ -7,6 +7,8 @@ import { Card } from "@/components/ui/Card";
 import { useUtmParams } from "@/hooks/useUtmParams";
 import type { BookingLead } from "@/lib/leads/types";
 import { bookingSubmit, formStart } from "@/lib/analytics/events";
+import { reportFormError, userFacingFormError } from "@/lib/error-reporting";
+import { FormErrorMessage } from "@/components/ui/FormErrorMessage";
 
 const serviceTypes = [
   "Tax Services",
@@ -119,11 +121,8 @@ export function BookingForm({
       bookingSubmit();
       setSubmitted(true);
     } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Something went wrong. Please try again."
-      );
+      reportFormError("booking", err, formData as unknown as Record<string, unknown>);
+      setError(userFacingFormError(err));
     } finally {
       setLoading(false);
     }
@@ -299,9 +298,7 @@ export function BookingForm({
         )}
 
         {/* Error */}
-        {error && (
-          <p className="text-sm text-red-500 text-center">{error}</p>
-        )}
+        {error && <FormErrorMessage error={error} />}
 
         {/* Submit */}
         <Button

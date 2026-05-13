@@ -7,6 +7,8 @@ import { Card } from "@/components/ui/Card";
 import { useUtmParams } from "@/hooks/useUtmParams";
 import type { ClientInfoLead } from "@/lib/leads/types";
 import { formStart, formSubmit } from "@/lib/analytics/events";
+import { reportFormError, userFacingFormError } from "@/lib/error-reporting";
+import { FormErrorMessage } from "@/components/ui/FormErrorMessage";
 
 const serviceOptions = [
   "Business Formation",
@@ -125,11 +127,8 @@ export function ClientInfoForm() {
 
       setSubmitted(true);
     } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Something went wrong. Please try again."
-      );
+      reportFormError("client-info", err, formData as unknown as Record<string, unknown>);
+      setError(userFacingFormError(err));
     } finally {
       setLoading(false);
     }
@@ -415,9 +414,7 @@ export function ClientInfoForm() {
         )}
 
         {/* Error */}
-        {error && (
-          <p className="text-sm text-red-500 text-center">{error}</p>
-        )}
+        {error && <FormErrorMessage error={error} />}
 
         {/* Submit */}
         <Button
