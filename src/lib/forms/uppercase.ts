@@ -22,7 +22,7 @@ const EXCLUDED_SUBSTRINGS = [
  * Non-string values (numbers, booleans, arrays, nested objects) are
  * traversed or passed through unchanged.
  */
-export function uppercaseFormData<T extends Record<string, unknown>>(data: T): T {
+export function uppercaseFormData<T extends object>(data: T): T {
   const result: Record<string, unknown> = {};
 
   for (const [key, value] of Object.entries(data)) {

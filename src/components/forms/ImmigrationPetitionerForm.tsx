@@ -407,7 +407,7 @@ export function ImmigrationPetitionerForm() {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <div>
                 <label htmlFor="petHeight" className="block text-sm font-medium text-[var(--text)] mb-1">Height</label>
-                <input translate="no" type="text" id="petHeight" value={formData.height} onChange={update("height")} placeholder="e.g. 5'8\"" className={inputClasses} />
+                <input translate="no" type="text" id="petHeight" value={formData.height} onChange={update("height")} placeholder="e.g. 5 ft 8 in" className={inputClasses} />
               </div>
               <div>
                 <label htmlFor="petWeight" className="block text-sm font-medium text-[var(--text)] mb-1">Weight</label>

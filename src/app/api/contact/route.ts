@@ -350,7 +350,7 @@ export async function POST(request: NextRequest) {
 
     // --- Send notification email ---
     try {
-      await sendContactEmail(data);
+      await sendContactEmail(data as Parameters<typeof sendContactEmail>[0]);
       console.log("[Email] Notification sent to", process.env.EMAIL_TO);
     } catch (emailErr) {
       // Non-fatal: webhook + CRM are primary pipeline; email is supplementary
