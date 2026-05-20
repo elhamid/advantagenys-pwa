@@ -97,7 +97,7 @@ describe('POST /api/contact', () => {
     const res = await POST(makeRequest(validContact))
     expect(res.status).toBe(200)
     const body = await res.json()
-    expect(body).toEqual({ success: true })
+    expect(body.success).toBe(true)
   })
 
   // -----------------------------------------------------------------------
@@ -107,7 +107,7 @@ describe('POST /api/contact', () => {
     const res = await POST(makeRequest(validBooking))
     expect(res.status).toBe(200)
     const body = await res.json()
-    expect(body).toEqual({ success: true })
+    expect(body.success).toBe(true)
   })
 
   // -----------------------------------------------------------------------
@@ -261,36 +261,46 @@ describe('POST /api/contact', () => {
   })
 
   // -----------------------------------------------------------------------
-  // 9. Webhook env var missing → skip webhook silently, still return 200
+  // 9. Webhook env var missing → skip webhook, 502 if Supabase also failed
   // -----------------------------------------------------------------------
-  it('returns 200 and does not call webhook when PWA_WEBHOOK_SECRET is absent', async () => {
+  it('does not call webhook when PWA_WEBHOOK_SECRET is absent', async () => {
     delete process.env.PWA_WEBHOOK_SECRET
     const fetchSpy = makeFetchMock()
     global.fetch = fetchSpy
 
     const res = await POST(makeRequest(validContact))
-    expect(res.status).toBe(200)
 
     // Only the Cloudflare siteverify call should have been made (if at all)
     const webhookCalled = (fetchSpy.mock.calls as unknown as [string][]).some(
       ([url]) => !String(url).includes('cloudflare.com'),
     )
     expect(webhookCalled).toBe(false)
+
+    // With no Supabase mock AND no webhook, both durable writes fail → 502
+    const body = await res.json()
+    expect(body.success).toBe(false)
+    expect(res.status).toBe(502)
   })
 
   // -----------------------------------------------------------------------
-  // 10. Webhook failure → still returns 200 (fire-and-forget)
+  // 10. Webhook failure — returns 502 when both Supabase and webhook fail
   // -----------------------------------------------------------------------
-  it('returns 200 even when the webhook returns a non-OK status', async () => {
+  it('returns 502 when both Supabase and webhook fail (non-OK status)', async () => {
     global.fetch = makeFetchMock({ webhookStatus: 500 })
     const res = await POST(makeRequest(validContact))
-    expect(res.status).toBe(200)
+    // Supabase is not mocked, so it returns false; webhook returned 500 → both fail
+    expect(res.status).toBe(502)
+    const body = await res.json()
+    expect(body.success).toBe(false)
+    expect(body.error).toMatch(/call us/i)
   })
 
-  it('returns 200 even when the webhook fetch throws a network error', async () => {
+  it('returns 502 when both Supabase and webhook fail (network error)', async () => {
     global.fetch = makeFetchMock({ webhookThrows: true })
     const res = await POST(makeRequest(validContact))
-    expect(res.status).toBe(200)
+    expect(res.status).toBe(502)
+    const body = await res.json()
+    expect(body.success).toBe(false)
   })
 
   // -----------------------------------------------------------------------

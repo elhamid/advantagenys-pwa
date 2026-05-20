@@ -183,11 +183,11 @@ function validatePayload(
 
 /**
  * Store lead in Supabase pwa_leads table.
- * Non-blocking — logs errors but never fails the request.
+ * Returns true if the insert succeeded, false otherwise.
  */
-async function storeLeadInSupabase(data: ContactPayload): Promise<void> {
+async function storeLeadInSupabase(data: ContactPayload): Promise<boolean> {
   const supabase = await getSupabase();
-  if (!supabase) return;
+  if (!supabase) return false;
 
   const isBooking = data.type === "booking";
   const rowSource = data.source ?? (isBooking ? "booking" : "contact");
@@ -222,11 +222,13 @@ async function storeLeadInSupabase(data: ContactPayload): Promise<void> {
     const { error } = await supabase.from("pwa_leads").insert(row);
     if (error) {
       console.error("[Supabase] Insert failed:", error.message);
-    } else {
-      console.log("[Supabase] Lead stored successfully");
+      return false;
     }
+    console.log("[Supabase] Lead stored successfully");
+    return true;
   } catch (err) {
     console.error("[Supabase] Unexpected error:", err);
+    return false;
   }
 }
 
@@ -281,12 +283,16 @@ export async function POST(request: NextRequest) {
       ...data,
     });
 
-    // --- Store in Supabase (non-blocking, best-effort) ---
-    storeLeadInSupabase(data).catch((err) =>
-      console.error("[Supabase] Background store failed:", err)
-    );
+    // --- Store in Supabase ---
+    let supabaseOk = false;
+    try {
+      supabaseOk = await storeLeadInSupabase(data);
+    } catch (err) {
+      console.error("[Supabase] Background store failed:", err);
+    }
 
     // --- Forward to taskboard webhook ---
+    let webhookOk = false;
     const webhookSecret = process.env.PWA_WEBHOOK_SECRET;
     if (webhookSecret) {
       const webhookUrl =
@@ -332,7 +338,9 @@ export async function POST(request: NextRequest) {
           body: JSON.stringify(webhookPayload),
         });
 
-        if (!webhookRes.ok) {
+        if (webhookRes.ok) {
+          webhookOk = true;
+        } else {
           console.error(
             "[Taskboard Webhook] Failed with status",
             webhookRes.status,
@@ -357,7 +365,22 @@ export async function POST(request: NextRequest) {
       console.error("[Email] Failed to send notification:", emailErr);
     }
 
-    return NextResponse.json({ success: true });
+    // --- Success gate: at least one durable write must succeed ---
+    if (!supabaseOk && !webhookOk) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "Submission could not be saved. Please try again or call us at (929) 292-9230.",
+        },
+        { status: 502 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      ...(supabaseOk && webhookOk ? {} : { partial: true }),
+    });
   } catch {
     return NextResponse.json(
       { success: false, error: "Invalid request." },

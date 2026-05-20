@@ -134,7 +134,7 @@ export function InsuranceForm() {
     "w-full rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-[var(--text)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--blue-accent)] focus:border-transparent transition-all uppercase";
 
   return (
-    <Card className="notranslate">
+    <Card>
       <h2 className="text-xl font-bold text-[var(--text)] mb-6">
         Insurance Intake Form
       </h2>

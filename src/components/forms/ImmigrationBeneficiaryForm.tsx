@@ -1,9 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { Turnstile } from "@marsidev/react-turnstile";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { uppercaseFormData } from "@/lib/forms/uppercase";
+
+const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 
 const genderOptions = ["Male", "Female"] as const;
 const ethnicityOptions = ["Hispanic or Latino", "Not Hispanic or Latino"] as const;
@@ -158,6 +161,13 @@ export function ImmigrationBeneficiaryForm() {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [turnstileToken, setTurnstileToken] = useState<string>("");
+
+  const missingTurnstileInProd =
+    !turnstileSiteKey &&
+    typeof window !== "undefined" &&
+    window.location.hostname !== "localhost" &&
+    window.location.hostname !== "127.0.0.1";
 
   function update(field: keyof BeneficiaryData) {
     return (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
@@ -253,7 +263,7 @@ export function ImmigrationBeneficiaryForm() {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(uppercaseFormData(payload)),
+        body: JSON.stringify({ ...uppercaseFormData(payload), turnstileToken }),
       });
       const data = await res.json();
       if (!res.ok || !data.success) {
@@ -305,7 +315,7 @@ export function ImmigrationBeneficiaryForm() {
   );
 
   return (
-    <Card className="notranslate">
+    <Card>
       <h2 className="text-xl font-bold text-[var(--text)] mb-1">Immigration Form for Beneficiary</h2>
       <p className="text-sm text-[var(--text-muted)] mb-1">For the person getting the Green Card</p>
       <p className="text-sm text-[var(--text-secondary)] mb-4">Step {step} of {TOTAL_STEPS}</p>
@@ -647,6 +657,21 @@ export function ImmigrationBeneficiaryForm() {
           </>
         )}
 
+        {/* Turnstile */}
+        {turnstileSiteKey && (
+          <Turnstile
+            siteKey={turnstileSiteKey}
+            onSuccess={(token) => setTurnstileToken(token)}
+            options={{ size: "invisible" }}
+          />
+        )}
+        {missingTurnstileInProd && (
+          <p className="text-sm text-amber-600 text-center">
+            Online submission is temporarily unavailable. Please call us at{" "}
+            <a href="tel:+19299331396" className="font-medium underline">(929) 933-1396</a>.
+          </p>
+        )}
+
         {/* Navigation */}
         {error && <p className="text-sm text-red-500 text-center">{error}</p>}
         <div className="flex gap-3">
@@ -656,7 +681,7 @@ export function ImmigrationBeneficiaryForm() {
           {step < TOTAL_STEPS ? (
             <Button type="button" size="lg" className="flex-1" onClick={nextStep}>Next</Button>
           ) : (
-            <Button type="submit" size="lg" className="flex-1" disabled={submitting}>
+            <Button type="submit" size="lg" className="flex-1" disabled={submitting || missingTurnstileInProd}>
               {submitting ? "Submitting..." : "Submit Form"}
             </Button>
           )}

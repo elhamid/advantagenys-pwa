@@ -113,7 +113,7 @@ export function CorporateRegistrationForm() {
   }
 
   return (
-    <Card className="notranslate">
+    <Card>
       <h2 className="text-xl font-bold text-[var(--text)] mb-6">
         Corporate Registration
       </h2>
