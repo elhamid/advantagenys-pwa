@@ -6,6 +6,10 @@ export const LEAD_SOURCES = [
   "website-contact-form",
   "website-booking",
   "advantagenys.com_book_appointment",
+  "website-immigration-petitioner",
+  "website-immigration-beneficiary",
+  "website-tax-return",
+  "website-corporate-registration",
   "chat-widget",
   "kiosk",
 ] as const;
