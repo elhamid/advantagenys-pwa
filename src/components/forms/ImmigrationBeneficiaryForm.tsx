@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { uppercaseFormData } from "@/lib/forms/uppercase";
 
 const genderOptions = ["Male", "Female"] as const;
 const ethnicityOptions = ["Hispanic or Latino", "Not Hispanic or Latino"] as const;
@@ -252,7 +253,7 @@ export function ImmigrationBeneficiaryForm() {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(uppercaseFormData(payload)),
       });
       const data = await res.json();
       if (!res.ok || !data.success) {
@@ -289,7 +290,7 @@ export function ImmigrationBeneficiaryForm() {
   }
 
   const inputClasses =
-    "w-full rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-[var(--text)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--blue-accent)] focus:border-transparent transition-all";
+    "w-full rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-[var(--text)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--blue-accent)] focus:border-transparent transition-all uppercase";
 
   const sectionTitle = (text: string) => (
     <h3 className="text-lg font-semibold text-[var(--text)] pt-2 pb-1 border-b border-[var(--border)]">{text}</h3>
@@ -304,7 +305,7 @@ export function ImmigrationBeneficiaryForm() {
   );
 
   return (
-    <Card>
+    <Card className="notranslate">
       <h2 className="text-xl font-bold text-[var(--text)] mb-1">Immigration Form for Beneficiary</h2>
       <p className="text-sm text-[var(--text-muted)] mb-1">For the person getting the Green Card</p>
       <p className="text-sm text-[var(--text-secondary)] mb-4">Step {step} of {TOTAL_STEPS}</p>
@@ -318,32 +319,32 @@ export function ImmigrationBeneficiaryForm() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <label htmlFor="benFirstName" className="block text-sm font-medium text-[var(--text)] mb-1">First Name <span className="text-red-500">*</span></label>
-                <input type="text" id="benFirstName" required value={formData.firstName} onChange={update("firstName")} placeholder="First name" className={inputClasses} />
+                <input translate="no" type="text" id="benFirstName" required value={formData.firstName} onChange={update("firstName")} placeholder="First name" className={inputClasses} />
               </div>
               <div>
                 <label htmlFor="benMiddleName" className="block text-sm font-medium text-[var(--text)] mb-1">Middle Name</label>
-                <input type="text" id="benMiddleName" value={formData.middleName} onChange={update("middleName")} placeholder="Middle name" className={inputClasses} />
+                <input translate="no" type="text" id="benMiddleName" value={formData.middleName} onChange={update("middleName")} placeholder="Middle name" className={inputClasses} />
               </div>
               <div>
                 <label htmlFor="benLastName" className="block text-sm font-medium text-[var(--text)] mb-1">Last Name <span className="text-red-500">*</span></label>
-                <input type="text" id="benLastName" required value={formData.lastName} onChange={update("lastName")} placeholder="Last name" className={inputClasses} />
+                <input translate="no" type="text" id="benLastName" required value={formData.lastName} onChange={update("lastName")} placeholder="Last name" className={inputClasses} />
               </div>
             </div>
             <div>
               <label htmlFor="benOtherName" className="block text-sm font-medium text-[var(--text)] mb-1">Other Name Used</label>
-              <input type="text" id="benOtherName" value={formData.otherNameUsed} onChange={update("otherNameUsed")} placeholder="Maiden name, aliases, etc." className={inputClasses} />
+              <input translate="no" type="text" id="benOtherName" value={formData.otherNameUsed} onChange={update("otherNameUsed")} placeholder="Maiden name, aliases, etc." className={inputClasses} />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label htmlFor="benBirthdate" className="block text-sm font-medium text-[var(--text)] mb-1">Birthdate</label>
-                <input type="date" id="benBirthdate" value={formData.birthdate} onChange={update("birthdate")} className={inputClasses} />
+                <input translate="no" type="date" id="benBirthdate" value={formData.birthdate} onChange={update("birthdate")} className={inputClasses} />
               </div>
               <div>
                 <label className="block text-sm font-medium text-[var(--text)] mb-1">Gender</label>
                 <div className="flex gap-6 mt-2">
                   {genderOptions.map((opt) => (
                     <label key={opt} className="flex items-center gap-2 cursor-pointer text-sm text-[var(--text-secondary)]">
-                      <input type="radio" name="benGender" value={opt} checked={formData.gender === opt} onChange={update("gender")} className="text-[var(--blue-accent)] focus:ring-[var(--blue-accent)]" />
+                      <input translate="no" type="radio" name="benGender" value={opt} checked={formData.gender === opt} onChange={update("gender")} className="text-[var(--blue-accent)] focus:ring-[var(--blue-accent)]" />
                       {opt}
                     </label>
                   ))}
@@ -353,11 +354,11 @@ export function ImmigrationBeneficiaryForm() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-[var(--text)] mb-1">Country of Birth</label>
-                <input type="text" value={formData.countryOfBirth} onChange={update("countryOfBirth")} placeholder="Country" className={inputClasses} />
+                <input translate="no" type="text" value={formData.countryOfBirth} onChange={update("countryOfBirth")} placeholder="Country" className={inputClasses} />
               </div>
               <div>
                 <label className="block text-sm font-medium text-[var(--text)] mb-1">City of Birth</label>
-                <input type="text" value={formData.cityOfBirth} onChange={update("cityOfBirth")} placeholder="City" className={inputClasses} />
+                <input translate="no" type="text" value={formData.cityOfBirth} onChange={update("cityOfBirth")} placeholder="City" className={inputClasses} />
               </div>
             </div>
             <div>
@@ -365,7 +366,7 @@ export function ImmigrationBeneficiaryForm() {
               <div className="flex flex-wrap gap-4">
                 {ethnicityOptions.map((opt) => (
                   <label key={opt} className="flex items-center gap-2 cursor-pointer text-sm text-[var(--text-secondary)]">
-                    <input type="radio" name="benEthnicity" value={opt} checked={formData.ethnicity === opt} onChange={update("ethnicity")} className="text-[var(--blue-accent)] focus:ring-[var(--blue-accent)]" />
+                    <input translate="no" type="radio" name="benEthnicity" value={opt} checked={formData.ethnicity === opt} onChange={update("ethnicity")} className="text-[var(--blue-accent)] focus:ring-[var(--blue-accent)]" />
                     {opt}
                   </label>
                 ))}
@@ -376,7 +377,7 @@ export function ImmigrationBeneficiaryForm() {
               <div className="flex flex-wrap gap-4">
                 {raceOptions.map((opt) => (
                   <label key={opt} className="flex items-center gap-2 cursor-pointer text-sm text-[var(--text-secondary)]">
-                    <input type="radio" name="benRace" value={opt} checked={formData.race === opt} onChange={update("race")} className="text-[var(--blue-accent)] focus:ring-[var(--blue-accent)]" />
+                    <input translate="no" type="radio" name="benRace" value={opt} checked={formData.race === opt} onChange={update("race")} className="text-[var(--blue-accent)] focus:ring-[var(--blue-accent)]" />
                     {opt}
                   </label>
                 ))}
@@ -385,22 +386,22 @@ export function ImmigrationBeneficiaryForm() {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <div>
                 <label className="block text-sm font-medium text-[var(--text)] mb-1">Height</label>
-                <input type="text" value={formData.height} onChange={update("height")} placeholder="e.g. 5'8\"" className={inputClasses} />
+                <input translate="no" type="text" value={formData.height} onChange={update("height")} placeholder="e.g. 5'8\"" className={inputClasses} />
               </div>
               <div>
                 <label className="block text-sm font-medium text-[var(--text)] mb-1">Weight</label>
-                <input type="text" value={formData.weight} onChange={update("weight")} placeholder="e.g. 160 lbs" className={inputClasses} />
+                <input translate="no" type="text" value={formData.weight} onChange={update("weight")} placeholder="e.g. 160 lbs" className={inputClasses} />
               </div>
               <div>
                 <label className="block text-sm font-medium text-[var(--text)] mb-1">Hair Color</label>
-                <select value={formData.hairColor} onChange={update("hairColor")} className={inputClasses}>
+                <select translate="no" value={formData.hairColor} onChange={update("hairColor")} className={inputClasses}>
                   <option value="">Select</option>
                   {hairColorOptions.map((c) => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-[var(--text)] mb-1">Eye Color</label>
-                <select value={formData.eyeColor} onChange={update("eyeColor")} className={inputClasses}>
+                <select translate="no" value={formData.eyeColor} onChange={update("eyeColor")} className={inputClasses}>
                   <option value="">Select</option>
                   {eyeColorOptions.map((c) => <option key={c} value={c}>{c}</option>)}
                 </select>
@@ -408,34 +409,34 @@ export function ImmigrationBeneficiaryForm() {
             </div>
             <div>
               <label className="block text-sm font-medium text-[var(--text)] mb-1">Social Security Number</label>
-              <input type="text" value={formData.socialSecurity} onChange={update("socialSecurity")} placeholder="###-##-####" maxLength={11} className={inputClasses} />
+              <input translate="no" type="text" value={formData.socialSecurity} onChange={update("socialSecurity")} placeholder="###-##-####" maxLength={11} className={inputClasses} />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label htmlFor="benPhone" className="block text-sm font-medium text-[var(--text)] mb-1">Phone Number <span className="text-red-500">*</span></label>
-                <input type="tel" id="benPhone" required value={formData.phone} onChange={update("phone")} placeholder="(929) 000-0000" className={inputClasses} />
+                <input translate="no" type="tel" id="benPhone" required value={formData.phone} onChange={update("phone")} placeholder="(929) 000-0000" className={inputClasses} />
               </div>
               <div>
                 <label htmlFor="benEmail" className="block text-sm font-medium text-[var(--text)] mb-1">Email <span className="text-red-500">*</span></label>
-                <input type="email" id="benEmail" required value={formData.email} onChange={update("email")} placeholder="you@example.com" className={inputClasses} />
+                <input translate="no" type="email" id="benEmail" required value={formData.email} onChange={update("email")} placeholder="you@example.com" className={inputClasses} />
               </div>
             </div>
 
             {sectionTitle("Home Address")}
-            <input type="text" value={formData.homeStreet} onChange={update("homeStreet")} placeholder="Street address" className={inputClasses} />
-            <input type="text" value={formData.homeStreet2} onChange={update("homeStreet2")} placeholder="Apt, Suite, Unit" className={inputClasses} />
+            <input translate="no" type="text" value={formData.homeStreet} onChange={update("homeStreet")} placeholder="Street address" className={inputClasses} />
+            <input translate="no" type="text" value={formData.homeStreet2} onChange={update("homeStreet2")} placeholder="Apt, Suite, Unit" className={inputClasses} />
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <input type="text" value={formData.homeCity} onChange={update("homeCity")} placeholder="City" className={inputClasses} />
-              <input type="text" value={formData.homeState} onChange={update("homeState")} placeholder="State" className={inputClasses} />
-              <input type="text" value={formData.homeZip} onChange={update("homeZip")} placeholder="ZIP Code" className={inputClasses} />
+              <input translate="no" type="text" value={formData.homeCity} onChange={update("homeCity")} placeholder="City" className={inputClasses} />
+              <input translate="no" type="text" value={formData.homeState} onChange={update("homeState")} placeholder="State" className={inputClasses} />
+              <input translate="no" type="text" value={formData.homeZip} onChange={update("homeZip")} placeholder="ZIP Code" className={inputClasses} />
             </div>
 
             {sectionTitle("Mailing Address (only if different)")}
-            <input type="text" value={formData.mailingStreet} onChange={update("mailingStreet")} placeholder="Street address" className={inputClasses} />
+            <input translate="no" type="text" value={formData.mailingStreet} onChange={update("mailingStreet")} placeholder="Street address" className={inputClasses} />
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <input type="text" value={formData.mailingCity} onChange={update("mailingCity")} placeholder="City" className={inputClasses} />
-              <input type="text" value={formData.mailingState} onChange={update("mailingState")} placeholder="State" className={inputClasses} />
-              <input type="text" value={formData.mailingZip} onChange={update("mailingZip")} placeholder="ZIP" className={inputClasses} />
+              <input translate="no" type="text" value={formData.mailingCity} onChange={update("mailingCity")} placeholder="City" className={inputClasses} />
+              <input translate="no" type="text" value={formData.mailingState} onChange={update("mailingState")} placeholder="State" className={inputClasses} />
+              <input translate="no" type="text" value={formData.mailingZip} onChange={update("mailingZip")} placeholder="ZIP" className={inputClasses} />
             </div>
           </>
         )}
@@ -446,62 +447,62 @@ export function ImmigrationBeneficiaryForm() {
             {sectionTitle("U.S. Arrival Information")}
             <div>
               <label className="block text-sm font-medium text-[var(--text)] mb-1">Place of Last Arrival in the U.S. (City & State)</label>
-              <input type="text" value={formData.placeOfLastArrival} onChange={update("placeOfLastArrival")} placeholder="City & State" className={inputClasses} />
+              <input translate="no" type="text" value={formData.placeOfLastArrival} onChange={update("placeOfLastArrival")} placeholder="City & State" className={inputClasses} />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-[var(--text)] mb-1">Passport/Travel Document Number</label>
-                <input type="text" value={formData.passportOrTravelDocNumber} onChange={update("passportOrTravelDocNumber")} className={inputClasses} />
+                <input translate="no" type="text" value={formData.passportOrTravelDocNumber} onChange={update("passportOrTravelDocNumber")} className={inputClasses} />
               </div>
               <div>
                 <label className="block text-sm font-medium text-[var(--text)] mb-1">Country that Issued Passport</label>
-                <input type="text" value={formData.countryIssuedPassport} onChange={update("countryIssuedPassport")} className={inputClasses} />
+                <input translate="no" type="text" value={formData.countryIssuedPassport} onChange={update("countryIssuedPassport")} className={inputClasses} />
               </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-[var(--text)] mb-1">Nonimmigration Visa #</label>
-                <input type="text" value={formData.nonimmigrationVisaNumber} onChange={update("nonimmigrationVisaNumber")} className={inputClasses} />
+                <input translate="no" type="text" value={formData.nonimmigrationVisaNumber} onChange={update("nonimmigrationVisaNumber")} className={inputClasses} />
               </div>
               <div>
                 <label className="block text-sm font-medium text-[var(--text)] mb-1">Date Visa Issued</label>
-                <input type="date" value={formData.dateVisaIssued} onChange={update("dateVisaIssued")} className={inputClasses} />
+                <input translate="no" type="date" value={formData.dateVisaIssued} onChange={update("dateVisaIssued")} className={inputClasses} />
               </div>
               <div>
                 <label className="block text-sm font-medium text-[var(--text)] mb-1">Country of Visa Issuance</label>
-                <input type="text" value={formData.countryOfVisaIssuance} onChange={update("countryOfVisaIssuance")} className={inputClasses} />
+                <input translate="no" type="text" value={formData.countryOfVisaIssuance} onChange={update("countryOfVisaIssuance")} className={inputClasses} />
               </div>
             </div>
 
             {sectionTitle("Marital Information")}
             <div>
               <label className="block text-sm font-medium text-[var(--text)] mb-1">Current Marital Status</label>
-              <input type="text" value={formData.currentMaritalStatus} onChange={update("currentMaritalStatus")} placeholder="Married, Single, Widower" className={inputClasses} />
+              <input translate="no" type="text" value={formData.currentMaritalStatus} onChange={update("currentMaritalStatus")} placeholder="Married, Single, Widower" className={inputClasses} />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-[var(--text)] mb-1">Date of Marriage</label>
-                <input type="date" value={formData.dateOfMarriage} onChange={update("dateOfMarriage")} className={inputClasses} />
+                <input translate="no" type="date" value={formData.dateOfMarriage} onChange={update("dateOfMarriage")} className={inputClasses} />
               </div>
               <div>
                 <label className="block text-sm font-medium text-[var(--text)] mb-1">Place of Marriage</label>
-                <input type="text" value={formData.placeOfMarriage} onChange={update("placeOfMarriage")} placeholder="City & State" className={inputClasses} />
+                <input translate="no" type="text" value={formData.placeOfMarriage} onChange={update("placeOfMarriage")} placeholder="City & State" className={inputClasses} />
               </div>
             </div>
 
             {sectionTitle("Previous Spouse (if any)")}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <input type="text" value={formData.prevSpouseFirstName} onChange={update("prevSpouseFirstName")} placeholder="First name" className={inputClasses} />
-              <input type="text" value={formData.prevSpouseMiddleName} onChange={update("prevSpouseMiddleName")} placeholder="Middle name" className={inputClasses} />
-              <input type="text" value={formData.prevSpouseLastName} onChange={update("prevSpouseLastName")} placeholder="Last name" className={inputClasses} />
+              <input translate="no" type="text" value={formData.prevSpouseFirstName} onChange={update("prevSpouseFirstName")} placeholder="First name" className={inputClasses} />
+              <input translate="no" type="text" value={formData.prevSpouseMiddleName} onChange={update("prevSpouseMiddleName")} placeholder="Middle name" className={inputClasses} />
+              <input translate="no" type="text" value={formData.prevSpouseLastName} onChange={update("prevSpouseLastName")} placeholder="Last name" className={inputClasses} />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <input type="text" value={formData.prevSpousePlaceOfMarriage} onChange={update("prevSpousePlaceOfMarriage")} placeholder="Place of marriage" className={inputClasses} />
+              <input translate="no" type="text" value={formData.prevSpousePlaceOfMarriage} onChange={update("prevSpousePlaceOfMarriage")} placeholder="Place of marriage" className={inputClasses} />
               <div>
                 <label className="block text-sm font-medium text-[var(--text)] mb-1">Date of Termination</label>
-                <input type="date" value={formData.prevSpouseDateOfTermination} onChange={update("prevSpouseDateOfTermination")} className={inputClasses} />
+                <input translate="no" type="date" value={formData.prevSpouseDateOfTermination} onChange={update("prevSpouseDateOfTermination")} className={inputClasses} />
               </div>
-              <input type="text" value={formData.prevSpousePlaceOfTermination} onChange={update("prevSpousePlaceOfTermination")} placeholder="Place of termination" className={inputClasses} />
+              <input translate="no" type="text" value={formData.prevSpousePlaceOfTermination} onChange={update("prevSpousePlaceOfTermination")} placeholder="Place of termination" className={inputClasses} />
             </div>
           </>
         )}
@@ -511,38 +512,38 @@ export function ImmigrationBeneficiaryForm() {
           <>
             {sectionTitle("Father's Information")}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <input type="text" value={formData.fatherFirstName} onChange={update("fatherFirstName")} placeholder="First name" className={inputClasses} />
-              <input type="text" value={formData.fatherMiddleName} onChange={update("fatherMiddleName")} placeholder="Middle name" className={inputClasses} />
-              <input type="text" value={formData.fatherLastName} onChange={update("fatherLastName")} placeholder="Last name" className={inputClasses} />
+              <input translate="no" type="text" value={formData.fatherFirstName} onChange={update("fatherFirstName")} placeholder="First name" className={inputClasses} />
+              <input translate="no" type="text" value={formData.fatherMiddleName} onChange={update("fatherMiddleName")} placeholder="Middle name" className={inputClasses} />
+              <input translate="no" type="text" value={formData.fatherLastName} onChange={update("fatherLastName")} placeholder="Last name" className={inputClasses} />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-[var(--text)] mb-1">Date of Birth</label>
-                <input type="date" value={formData.fatherDateOfBirth} onChange={update("fatherDateOfBirth")} className={inputClasses} />
+                <input translate="no" type="date" value={formData.fatherDateOfBirth} onChange={update("fatherDateOfBirth")} className={inputClasses} />
               </div>
-              <input type="text" value={formData.fatherCityOfBirth} onChange={update("fatherCityOfBirth")} placeholder="City of birth" className={inputClasses} />
+              <input translate="no" type="text" value={formData.fatherCityOfBirth} onChange={update("fatherCityOfBirth")} placeholder="City of birth" className={inputClasses} />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <input type="text" value={formData.fatherCountryOfBirth} onChange={update("fatherCountryOfBirth")} placeholder="Country of birth" className={inputClasses} />
-              <input type="text" value={formData.fatherCountryOfResidency} onChange={update("fatherCountryOfResidency")} placeholder="Country of residency (if living)" className={inputClasses} />
+              <input translate="no" type="text" value={formData.fatherCountryOfBirth} onChange={update("fatherCountryOfBirth")} placeholder="Country of birth" className={inputClasses} />
+              <input translate="no" type="text" value={formData.fatherCountryOfResidency} onChange={update("fatherCountryOfResidency")} placeholder="Country of residency (if living)" className={inputClasses} />
             </div>
 
             {sectionTitle("Mother's Information")}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <input type="text" value={formData.motherFirstName} onChange={update("motherFirstName")} placeholder="First name" className={inputClasses} />
-              <input type="text" value={formData.motherMiddleName} onChange={update("motherMiddleName")} placeholder="Middle name" className={inputClasses} />
-              <input type="text" value={formData.motherLastName} onChange={update("motherLastName")} placeholder="Last name" className={inputClasses} />
+              <input translate="no" type="text" value={formData.motherFirstName} onChange={update("motherFirstName")} placeholder="First name" className={inputClasses} />
+              <input translate="no" type="text" value={formData.motherMiddleName} onChange={update("motherMiddleName")} placeholder="Middle name" className={inputClasses} />
+              <input translate="no" type="text" value={formData.motherLastName} onChange={update("motherLastName")} placeholder="Last name" className={inputClasses} />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-[var(--text)] mb-1">Date of Birth</label>
-                <input type="date" value={formData.motherDateOfBirth} onChange={update("motherDateOfBirth")} className={inputClasses} />
+                <input translate="no" type="date" value={formData.motherDateOfBirth} onChange={update("motherDateOfBirth")} className={inputClasses} />
               </div>
-              <input type="text" value={formData.motherCityOfBirth} onChange={update("motherCityOfBirth")} placeholder="City of birth" className={inputClasses} />
+              <input translate="no" type="text" value={formData.motherCityOfBirth} onChange={update("motherCityOfBirth")} placeholder="City of birth" className={inputClasses} />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <input type="text" value={formData.motherCountryOfBirth} onChange={update("motherCountryOfBirth")} placeholder="Country of birth" className={inputClasses} />
-              <input type="text" value={formData.motherCountryOfResidency} onChange={update("motherCountryOfResidency")} placeholder="Country of residency (if living)" className={inputClasses} />
+              <input translate="no" type="text" value={formData.motherCountryOfBirth} onChange={update("motherCountryOfBirth")} placeholder="Country of birth" className={inputClasses} />
+              <input translate="no" type="text" value={formData.motherCountryOfResidency} onChange={update("motherCountryOfResidency")} placeholder="Country of residency (if living)" className={inputClasses} />
             </div>
           </>
         )}
@@ -563,7 +564,7 @@ export function ImmigrationBeneficiaryForm() {
                       <div className="flex gap-4">
                         {adoptionOptions.map((opt) => (
                           <label key={opt} className="flex items-center gap-2 cursor-pointer text-sm text-[var(--text-secondary)]">
-                            <input type="radio" name={`${prefix}Type`} value={opt} checked={formData[`${prefix}Type`] === opt} onChange={update(`${prefix}Type`)} className="text-[var(--blue-accent)] focus:ring-[var(--blue-accent)]" />
+                            <input translate="no" type="radio" name={`${prefix}Type`} value={opt} checked={formData[`${prefix}Type`] === opt} onChange={update(`${prefix}Type`)} className="text-[var(--blue-accent)] focus:ring-[var(--blue-accent)]" />
                             {opt}
                           </label>
                         ))}
@@ -574,7 +575,7 @@ export function ImmigrationBeneficiaryForm() {
                       <div className="flex gap-4">
                         {genderOptions.map((opt) => (
                           <label key={opt} className="flex items-center gap-2 cursor-pointer text-sm text-[var(--text-secondary)]">
-                            <input type="radio" name={`${prefix}Gender`} value={opt} checked={formData[`${prefix}Gender`] === opt} onChange={update(`${prefix}Gender`)} className="text-[var(--blue-accent)] focus:ring-[var(--blue-accent)]" />
+                            <input translate="no" type="radio" name={`${prefix}Gender`} value={opt} checked={formData[`${prefix}Gender`] === opt} onChange={update(`${prefix}Gender`)} className="text-[var(--blue-accent)] focus:ring-[var(--blue-accent)]" />
                             {opt}
                           </label>
                         ))}
@@ -582,27 +583,27 @@ export function ImmigrationBeneficiaryForm() {
                     </div>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <input type="text" value={formData[`${prefix}FirstName`]} onChange={update(`${prefix}FirstName`)} placeholder="First name" className={inputClasses} />
-                    <input type="text" value={formData[`${prefix}MiddleName`]} onChange={update(`${prefix}MiddleName`)} placeholder="Middle name" className={inputClasses} />
-                    <input type="text" value={formData[`${prefix}LastName`]} onChange={update(`${prefix}LastName`)} placeholder="Last name" className={inputClasses} />
+                    <input translate="no" type="text" value={formData[`${prefix}FirstName`]} onChange={update(`${prefix}FirstName`)} placeholder="First name" className={inputClasses} />
+                    <input translate="no" type="text" value={formData[`${prefix}MiddleName`]} onChange={update(`${prefix}MiddleName`)} placeholder="Middle name" className={inputClasses} />
+                    <input translate="no" type="text" value={formData[`${prefix}LastName`]} onChange={update(`${prefix}LastName`)} placeholder="Last name" className={inputClasses} />
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
                       <label className="block text-sm font-medium text-[var(--text)] mb-1">Date of Birth</label>
-                      <input type="date" value={formData[`${prefix}DateOfBirth`]} onChange={update(`${prefix}DateOfBirth`)} className={inputClasses} />
+                      <input translate="no" type="date" value={formData[`${prefix}DateOfBirth`]} onChange={update(`${prefix}DateOfBirth`)} className={inputClasses} />
                     </div>
-                    <input type="text" value={formData[`${prefix}CountryOfBirth`]} onChange={update(`${prefix}CountryOfBirth`)} placeholder="Country of birth" className={inputClasses} />
-                    <input type="text" value={formData[`${prefix}CityOfBirth`]} onChange={update(`${prefix}CityOfBirth`)} placeholder="City of birth" className={inputClasses} />
+                    <input translate="no" type="text" value={formData[`${prefix}CountryOfBirth`]} onChange={update(`${prefix}CountryOfBirth`)} placeholder="Country of birth" className={inputClasses} />
+                    <input translate="no" type="text" value={formData[`${prefix}CityOfBirth`]} onChange={update(`${prefix}CityOfBirth`)} placeholder="City of birth" className={inputClasses} />
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <input type="text" value={formData[`${prefix}OtherName`]} onChange={update(`${prefix}OtherName`)} placeholder="Other name used" className={inputClasses} />
-                    <input type="text" value={formData[`${prefix}SSN`]} onChange={update(`${prefix}SSN`)} placeholder="SSN" className={inputClasses} />
+                    <input translate="no" type="text" value={formData[`${prefix}OtherName`]} onChange={update(`${prefix}OtherName`)} placeholder="Other name used" className={inputClasses} />
+                    <input translate="no" type="text" value={formData[`${prefix}SSN`]} onChange={update(`${prefix}SSN`)} placeholder="SSN" className={inputClasses} />
                     <div>
                       <label className="block text-sm font-medium text-[var(--text)] mb-1">U.S. Citizen?</label>
                       <div className="flex gap-4 mt-1">
                         {yesNoOptions.map((opt) => (
                           <label key={opt} className="flex items-center gap-2 cursor-pointer text-sm text-[var(--text-secondary)]">
-                            <input type="radio" name={`${prefix}USCitizen`} value={opt} checked={formData[`${prefix}USCitizen`] === opt} onChange={update(`${prefix}USCitizen`)} className="text-[var(--blue-accent)] focus:ring-[var(--blue-accent)]" />
+                            <input translate="no" type="radio" name={`${prefix}USCitizen`} value={opt} checked={formData[`${prefix}USCitizen`] === opt} onChange={update(`${prefix}USCitizen`)} className="text-[var(--blue-accent)] focus:ring-[var(--blue-accent)]" />
                             {opt}
                           </label>
                         ))}
@@ -619,16 +620,16 @@ export function ImmigrationBeneficiaryForm() {
         {step === 5 && (
           <>
             {sectionTitle("Past 5 Years - Addresses")}
-            <textarea rows={4} value={formData.pastAddresses} onChange={update("pastAddresses")} placeholder="Address 1: Street, City, State, Dates&#10;Address 2: ..." className={inputClasses} />
+            <textarea translate="no" rows={4} value={formData.pastAddresses} onChange={update("pastAddresses")} placeholder="Address 1: Street, City, State, Dates&#10;Address 2: ..." className={inputClasses} />
 
             {sectionTitle("Past 5 Years - Employment/Studies")}
-            <textarea rows={4} value={formData.pastEmployment} onChange={update("pastEmployment")} placeholder="Employer/School 1: Name, Address, Dates&#10;Employer/School 2: ..." className={inputClasses} />
+            <textarea translate="no" rows={4} value={formData.pastEmployment} onChange={update("pastEmployment")} placeholder="Employer/School 1: Name, Address, Dates&#10;Employer/School 2: ..." className={inputClasses} />
 
             {sectionTitle("Last Physical Address Outside the U.S.")}
-            <input type="text" value={formData.lastAddressOutsideUS} onChange={update("lastAddressOutsideUS")} placeholder="Street, City, Country" className={inputClasses} />
+            <input translate="no" type="text" value={formData.lastAddressOutsideUS} onChange={update("lastAddressOutsideUS")} placeholder="Street, City, Country" className={inputClasses} />
 
             {sectionTitle("Additional Notes")}
-            <textarea rows={3} value={formData.additionalNotes} onChange={update("additionalNotes")} placeholder="Any additional information..." className={inputClasses} />
+            <textarea translate="no" rows={3} value={formData.additionalNotes} onChange={update("additionalNotes")} placeholder="Any additional information..." className={inputClasses} />
 
             <div className="rounded-[var(--radius)] bg-blue-50 p-4 text-sm text-blue-800">
               <p className="font-semibold mb-2">Please bring the following documents to your appointment:</p>

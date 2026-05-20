@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { uppercaseFormData } from "@/lib/forms/uppercase";
 
 const businessTypes = [
   "LLC",
@@ -90,7 +91,7 @@ export function InsuranceForm() {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...formData, type: "insurance" }),
+        body: JSON.stringify({ ...uppercaseFormData(formData), type: "insurance" }),
       });
 
       const data = await res.json();
@@ -130,10 +131,10 @@ export function InsuranceForm() {
   }
 
   const inputClasses =
-    "w-full rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-[var(--text)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--blue-accent)] focus:border-transparent transition-all";
+    "w-full rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-[var(--text)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--blue-accent)] focus:border-transparent transition-all uppercase";
 
   return (
-    <Card>
+    <Card className="notranslate">
       <h2 className="text-xl font-bold text-[var(--text)] mb-6">
         Insurance Intake Form
       </h2>
@@ -143,7 +144,7 @@ export function InsuranceForm() {
           <label htmlFor="insuranceFullName" className="block text-sm font-medium text-[var(--text)] mb-1">
             Full Name <span className="text-red-500">*</span>
           </label>
-          <input
+          <input translate="no"
             type="text"
             id="insuranceFullName"
             required
@@ -160,7 +161,7 @@ export function InsuranceForm() {
             <label htmlFor="insurancePhone" className="block text-sm font-medium text-[var(--text)] mb-1">
               Phone Number <span className="text-red-500">*</span>
             </label>
-            <input
+            <input translate="no"
               type="tel"
               id="insurancePhone"
               required
@@ -174,7 +175,7 @@ export function InsuranceForm() {
             <label htmlFor="insuranceEmail" className="block text-sm font-medium text-[var(--text)] mb-1">
               Email <span className="text-red-500">*</span>
             </label>
-            <input
+            <input translate="no"
               type="email"
               id="insuranceEmail"
               required
@@ -192,7 +193,7 @@ export function InsuranceForm() {
             <label htmlFor="insuranceBusinessName" className="block text-sm font-medium text-[var(--text)] mb-1">
               Business Name <span className="text-red-500">*</span>
             </label>
-            <input
+            <input translate="no"
               type="text"
               id="insuranceBusinessName"
               required
@@ -206,7 +207,7 @@ export function InsuranceForm() {
             <label htmlFor="insuranceBusinessType" className="block text-sm font-medium text-[var(--text)] mb-1">
               Business Type
             </label>
-            <select
+            <select translate="no"
               id="insuranceBusinessType"
               value={formData.businessType}
               onChange={(e) => setFormData((prev) => ({ ...prev, businessType: e.target.value }))}
@@ -227,7 +228,7 @@ export function InsuranceForm() {
           <label htmlFor="insuranceAddress" className="block text-sm font-medium text-[var(--text)] mb-1">
             Business Address
           </label>
-          <input
+          <input translate="no"
             type="text"
             id="insuranceAddress"
             value={formData.businessAddress}
@@ -243,7 +244,7 @@ export function InsuranceForm() {
             <label htmlFor="insuranceCity" className="block text-sm font-medium text-[var(--text)] mb-1">
               City
             </label>
-            <input
+            <input translate="no"
               type="text"
               id="insuranceCity"
               value={formData.city}
@@ -256,7 +257,7 @@ export function InsuranceForm() {
             <label htmlFor="insuranceState" className="block text-sm font-medium text-[var(--text)] mb-1">
               State
             </label>
-            <input
+            <input translate="no"
               type="text"
               id="insuranceState"
               value={formData.state}
@@ -269,7 +270,7 @@ export function InsuranceForm() {
             <label htmlFor="insuranceZip" className="block text-sm font-medium text-[var(--text)] mb-1">
               ZIP Code
             </label>
-            <input
+            <input translate="no"
               type="text"
               id="insuranceZip"
               value={formData.zipCode}
@@ -286,7 +287,7 @@ export function InsuranceForm() {
             <label htmlFor="insuranceIndustry" className="block text-sm font-medium text-[var(--text)] mb-1">
               Industry / Trade
             </label>
-            <input
+            <input translate="no"
               type="text"
               id="insuranceIndustry"
               value={formData.industryTrade}
@@ -299,7 +300,7 @@ export function InsuranceForm() {
             <label htmlFor="insuranceEmployees" className="block text-sm font-medium text-[var(--text)] mb-1">
               Number of Employees
             </label>
-            <input
+            <input translate="no"
               type="number"
               id="insuranceEmployees"
               min="0"
@@ -316,7 +317,7 @@ export function InsuranceForm() {
           <label htmlFor="insuranceRevenue" className="block text-sm font-medium text-[var(--text)] mb-1">
             Annual Revenue
           </label>
-          <select
+          <select translate="no"
             id="insuranceRevenue"
             value={formData.annualRevenue}
             onChange={(e) => setFormData((prev) => ({ ...prev, annualRevenue: e.target.value }))}
@@ -342,7 +343,7 @@ export function InsuranceForm() {
                 key={type}
                 className="flex items-center gap-2 cursor-pointer text-sm text-[var(--text-secondary)]"
               >
-                <input
+                <input translate="no"
                   type="checkbox"
                   checked={formData.insuranceTypesNeeded.includes(type)}
                   onChange={() => handleInsuranceTypeToggle(type)}
@@ -360,7 +361,7 @@ export function InsuranceForm() {
             <label htmlFor="insuranceProvider" className="block text-sm font-medium text-[var(--text)] mb-1">
               Current Insurance Provider <span className="text-[var(--text-muted)]">(optional)</span>
             </label>
-            <input
+            <input translate="no"
               type="text"
               id="insuranceProvider"
               value={formData.currentProvider}
@@ -373,7 +374,7 @@ export function InsuranceForm() {
             <label htmlFor="insurancePolicyExpiry" className="block text-sm font-medium text-[var(--text)] mb-1">
               Policy Expiration Date <span className="text-[var(--text-muted)]">(optional)</span>
             </label>
-            <input
+            <input translate="no"
               type="date"
               id="insurancePolicyExpiry"
               value={formData.policyExpiration}
@@ -388,7 +389,7 @@ export function InsuranceForm() {
           <label htmlFor="insuranceNotes" className="block text-sm font-medium text-[var(--text)] mb-1">
             Additional Notes <span className="text-[var(--text-muted)]">(optional)</span>
           </label>
-          <textarea
+          <textarea translate="no"
             id="insuranceNotes"
             rows={3}
             value={formData.notes}

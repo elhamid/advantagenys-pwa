@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { uppercaseFormData } from "@/lib/forms/uppercase";
 
 const businessTypes = [
   "LLC",
@@ -64,7 +65,7 @@ export function CorporateRegistrationForm() {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...formData, type: "corporate-registration" }),
+        body: JSON.stringify({ ...uppercaseFormData(formData), type: "corporate-registration" }),
       });
 
       const data = await res.json();
@@ -104,7 +105,7 @@ export function CorporateRegistrationForm() {
   }
 
   const inputClasses =
-    "w-full rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-[var(--text)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--blue-accent)] focus:border-transparent transition-all";
+    "w-full rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-[var(--text)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--blue-accent)] focus:border-transparent transition-all uppercase";
 
   function update(field: keyof CorporateRegistrationData) {
     return (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
@@ -112,7 +113,7 @@ export function CorporateRegistrationForm() {
   }
 
   return (
-    <Card>
+    <Card className="notranslate">
       <h2 className="text-xl font-bold text-[var(--text)] mb-6">
         Corporate Registration
       </h2>
@@ -122,7 +123,7 @@ export function CorporateRegistrationForm() {
           <label htmlFor="ownerName" className="block text-sm font-medium text-[var(--text)] mb-1">
             Business Owner Full Name <span className="text-red-500">*</span>
           </label>
-          <input
+          <input translate="no"
             type="text"
             id="ownerName"
             required
@@ -138,7 +139,7 @@ export function CorporateRegistrationForm() {
           <label htmlFor="corpPhone" className="block text-sm font-medium text-[var(--text)] mb-1">
             Phone Number <span className="text-red-500">*</span>
           </label>
-          <input
+          <input translate="no"
             type="tel"
             id="corpPhone"
             required
@@ -154,7 +155,7 @@ export function CorporateRegistrationForm() {
           <label htmlFor="corpEmail" className="block text-sm font-medium text-[var(--text)] mb-1">
             Email <span className="text-red-500">*</span>
           </label>
-          <input
+          <input translate="no"
             type="email"
             id="corpEmail"
             required
@@ -170,7 +171,7 @@ export function CorporateRegistrationForm() {
           <label htmlFor="desiredBusinessName" className="block text-sm font-medium text-[var(--text)] mb-1">
             Desired Business Name <span className="text-red-500">*</span>
           </label>
-          <input
+          <input translate="no"
             type="text"
             id="desiredBusinessName"
             required
@@ -186,7 +187,7 @@ export function CorporateRegistrationForm() {
           <label htmlFor="businessType" className="block text-sm font-medium text-[var(--text)] mb-1">
             Business Type
           </label>
-          <select
+          <select translate="no"
             id="businessType"
             value={formData.businessType}
             onChange={update("businessType")}
@@ -206,7 +207,7 @@ export function CorporateRegistrationForm() {
           <label htmlFor="businessAddress" className="block text-sm font-medium text-[var(--text)] mb-1">
             Business Address
           </label>
-          <input
+          <input translate="no"
             type="text"
             id="businessAddress"
             value={formData.businessAddress}
@@ -222,7 +223,7 @@ export function CorporateRegistrationForm() {
             <label htmlFor="city" className="block text-sm font-medium text-[var(--text)] mb-1">
               City
             </label>
-            <input
+            <input translate="no"
               type="text"
               id="city"
               value={formData.city}
@@ -235,7 +236,7 @@ export function CorporateRegistrationForm() {
             <label htmlFor="state" className="block text-sm font-medium text-[var(--text)] mb-1">
               State
             </label>
-            <input
+            <input translate="no"
               type="text"
               id="state"
               value={formData.state}
@@ -248,7 +249,7 @@ export function CorporateRegistrationForm() {
             <label htmlFor="zipCode" className="block text-sm font-medium text-[var(--text)] mb-1">
               ZIP Code
             </label>
-            <input
+            <input translate="no"
               type="text"
               id="zipCode"
               value={formData.zipCode}
@@ -264,7 +265,7 @@ export function CorporateRegistrationForm() {
           <label htmlFor="natureOfBusiness" className="block text-sm font-medium text-[var(--text)] mb-1">
             Nature of Business / Industry
           </label>
-          <input
+          <input translate="no"
             type="text"
             id="natureOfBusiness"
             value={formData.natureOfBusiness}
@@ -279,7 +280,7 @@ export function CorporateRegistrationForm() {
           <label htmlFor="numberOfMembers" className="block text-sm font-medium text-[var(--text)] mb-1">
             Number of Partners/Members
           </label>
-          <input
+          <input translate="no"
             type="number"
             id="numberOfMembers"
             min="1"
@@ -298,7 +299,7 @@ export function CorporateRegistrationForm() {
           <div className="flex gap-6">
             {yesNoOptions.map((option) => (
               <label key={`ein-${option}`} className="flex items-center gap-2 cursor-pointer text-sm text-[var(--text-secondary)]">
-                <input
+                <input translate="no"
                   type="radio"
                   name="needEIN"
                   value={option}
@@ -320,7 +321,7 @@ export function CorporateRegistrationForm() {
           <div className="flex gap-6">
             {yesNoOptions.map((option) => (
               <label key={`sales-${option}`} className="flex items-center gap-2 cursor-pointer text-sm text-[var(--text-secondary)]">
-                <input
+                <input translate="no"
                   type="radio"
                   name="needSalesTax"
                   value={option}
@@ -342,7 +343,7 @@ export function CorporateRegistrationForm() {
           <div className="flex gap-6">
             {yesNoOptions.map((option) => (
               <label key={`payroll-${option}`} className="flex items-center gap-2 cursor-pointer text-sm text-[var(--text-secondary)]">
-                <input
+                <input translate="no"
                   type="radio"
                   name="needPayroll"
                   value={option}
@@ -361,7 +362,7 @@ export function CorporateRegistrationForm() {
           <label htmlFor="additionalNotes" className="block text-sm font-medium text-[var(--text)] mb-1">
             Additional Notes <span className="text-[var(--text-muted)]">(optional)</span>
           </label>
-          <textarea
+          <textarea translate="no"
             id="additionalNotes"
             rows={3}
             value={formData.additionalNotes}

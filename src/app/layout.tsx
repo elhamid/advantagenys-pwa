@@ -57,7 +57,29 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${jakarta.variable} ${jetbrains.variable}`}>
-      <body className="font-[family-name:var(--font-heading)] antialiased">
+      <head>
+        {/* Prevent Chrome/Samsung translate from crashing React forms.
+            translate wraps text nodes in <font> tags, causing removeChild() failures. */}
+        <script dangerouslySetInnerHTML={{ __html: `
+          if (typeof Node !== 'undefined') {
+            var origRemoveChild = Node.prototype.removeChild;
+            Node.prototype.removeChild = function(child) {
+              if (child.parentNode !== this) {
+                return child;
+              }
+              return origRemoveChild.call(this, child);
+            };
+            var origInsertBefore = Node.prototype.insertBefore;
+            Node.prototype.insertBefore = function(newNode, refNode) {
+              if (refNode && refNode.parentNode !== this) {
+                return newNode;
+              }
+              return origInsertBefore.call(this, newNode, refNode);
+            };
+          }
+        `}} />
+      </head>
+      <body suppressHydrationWarning className="font-[family-name:var(--font-heading)] antialiased">
         <ServiceWorkerRegistration />
         <LayoutShell>{children}</LayoutShell>
         <JsonLd type="LocalBusiness" />

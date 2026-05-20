@@ -551,7 +551,7 @@ export function ItinForm({ onSuccess }: Props) {
 
   return (
     <>
-      <div ref={formRef} className="flex-1 flex flex-col px-4 sm:px-6 md:px-12 lg:px-24 max-w-3xl mx-auto w-full relative">
+      <div ref={formRef} className="notranslate flex-1 flex flex-col px-4 sm:px-6 md:px-12 lg:px-24 max-w-3xl mx-auto w-full relative">
         {/* ─── Progress Indicator ─── */}
         <div className="mb-4 sm:mb-6">
           <div className="flex items-center justify-between mb-3">
@@ -862,6 +862,7 @@ function Input({
   return (
     <>
       <input
+        translate="no"
         id={id}
         type={type}
         value={value}
@@ -876,7 +877,7 @@ function Input({
         inputMode={inputMode}
         autoComplete={autoComplete}
         className={`
-          w-full px-4 py-3.5 rounded-xl
+          w-full px-4 py-3.5 rounded-xl uppercase
           ${large ? "text-lg" : "text-base"}
           bg-white/[0.07] border
           text-white placeholder-white/25
@@ -905,6 +906,7 @@ function TextArea({
 }) {
   return (
     <textarea
+      translate="no"
       id={id}
       value={value}
       onChange={(e) => onChange(e.target.value)}
@@ -916,7 +918,7 @@ function TextArea({
       placeholder={placeholder}
       rows={rows}
       className="
-        w-full px-4 py-3.5 rounded-xl text-lg tracking-wide resize-none
+        w-full px-4 py-3.5 rounded-xl text-lg tracking-wide resize-none uppercase
         bg-white/[0.07] border border-white/10
         text-white placeholder-white/25
         focus:outline-none focus:border-[#4F56E8] focus:ring-1 focus:ring-[#4F56E8]/30
@@ -1021,6 +1023,7 @@ function CountrySelect({
   return (
     <>
       <select
+        translate="no"
         id={id}
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -1031,7 +1034,7 @@ function CountrySelect({
         }}
         required={required}
         className={`
-          w-full px-4 py-3.5 rounded-xl text-base appearance-none
+          w-full px-4 py-3.5 rounded-xl text-base appearance-none uppercase
           bg-white/[0.07] border
           text-white
           focus:outline-none focus:border-[#4F56E8] focus:ring-1 focus:ring-[#4F56E8]/30
@@ -1130,6 +1133,7 @@ function EmployerBadge({
           <span className="text-white/80 text-base font-semibold block truncate">{value}</span>
         </div>
         <select
+          translate="no"
           value={COMPANY_OPTIONS.includes(value) ? value : "Other"}
           onChange={(e) => {
             if (e.target.value === "Other") {
@@ -1140,7 +1144,7 @@ function EmployerBadge({
             }
           }}
           className="
-            shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium appearance-none
+            shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium appearance-none uppercase
             bg-white/5 border border-white/10 text-white/60
             hover:bg-white/10 hover:text-white/80
             transition-all duration-200 cursor-pointer

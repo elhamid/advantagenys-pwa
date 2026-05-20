@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { uppercaseFormData } from "@/lib/forms/uppercase";
 
 const genderOptions = ["Male", "Female"] as const;
 const ethnicityOptions = ["Hispanic or Latino", "Not Hispanic or Latino"] as const;
@@ -253,7 +254,7 @@ export function ImmigrationPetitionerForm() {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(uppercaseFormData(payload)),
       });
       const data = await res.json();
       if (!res.ok || !data.success) {
@@ -295,7 +296,7 @@ export function ImmigrationPetitionerForm() {
   }
 
   const inputClasses =
-    "w-full rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-[var(--text)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--blue-accent)] focus:border-transparent transition-all";
+    "w-full rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-[var(--text)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--blue-accent)] focus:border-transparent transition-all uppercase";
 
   const sectionTitle = (text: string) => (
     <h3 className="text-lg font-semibold text-[var(--text)] pt-2 pb-1 border-b border-[var(--border)]">
@@ -317,7 +318,7 @@ export function ImmigrationPetitionerForm() {
   );
 
   return (
-    <Card>
+    <Card className="notranslate">
       <h2 className="text-xl font-bold text-[var(--text)] mb-2">
         Immigration Form for Petitioner
       </h2>
@@ -337,34 +338,34 @@ export function ImmigrationPetitionerForm() {
                 <label htmlFor="petFirstName" className="block text-sm font-medium text-[var(--text)] mb-1">
                   First Name <span className="text-red-500">*</span>
                 </label>
-                <input type="text" id="petFirstName" required value={formData.firstName} onChange={update("firstName")} placeholder="First name" className={inputClasses} />
+                <input translate="no" type="text" id="petFirstName" required value={formData.firstName} onChange={update("firstName")} placeholder="First name" className={inputClasses} />
               </div>
               <div>
                 <label htmlFor="petMiddleName" className="block text-sm font-medium text-[var(--text)] mb-1">Middle Name</label>
-                <input type="text" id="petMiddleName" value={formData.middleName} onChange={update("middleName")} placeholder="Middle name" className={inputClasses} />
+                <input translate="no" type="text" id="petMiddleName" value={formData.middleName} onChange={update("middleName")} placeholder="Middle name" className={inputClasses} />
               </div>
               <div>
                 <label htmlFor="petLastName" className="block text-sm font-medium text-[var(--text)] mb-1">
                   Last Name <span className="text-red-500">*</span>
                 </label>
-                <input type="text" id="petLastName" required value={formData.lastName} onChange={update("lastName")} placeholder="Last name" className={inputClasses} />
+                <input translate="no" type="text" id="petLastName" required value={formData.lastName} onChange={update("lastName")} placeholder="Last name" className={inputClasses} />
               </div>
             </div>
             <div>
               <label htmlFor="petOtherName" className="block text-sm font-medium text-[var(--text)] mb-1">Other Name Used</label>
-              <input type="text" id="petOtherName" value={formData.otherNameUsed} onChange={update("otherNameUsed")} placeholder="Maiden name, aliases, etc." className={inputClasses} />
+              <input translate="no" type="text" id="petOtherName" value={formData.otherNameUsed} onChange={update("otherNameUsed")} placeholder="Maiden name, aliases, etc." className={inputClasses} />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label htmlFor="petBirthdate" className="block text-sm font-medium text-[var(--text)] mb-1">Birthdate</label>
-                <input type="date" id="petBirthdate" value={formData.birthdate} onChange={update("birthdate")} className={inputClasses} />
+                <input translate="no" type="date" id="petBirthdate" value={formData.birthdate} onChange={update("birthdate")} className={inputClasses} />
               </div>
               <div>
                 <label htmlFor="petGender" className="block text-sm font-medium text-[var(--text)] mb-1">Gender</label>
                 <div className="flex gap-6 mt-2">
                   {genderOptions.map((opt) => (
                     <label key={opt} className="flex items-center gap-2 cursor-pointer text-sm text-[var(--text-secondary)]">
-                      <input type="radio" name="petGender" value={opt} checked={formData.gender === opt} onChange={update("gender")} className="text-[var(--blue-accent)] focus:ring-[var(--blue-accent)]" />
+                      <input translate="no" type="radio" name="petGender" value={opt} checked={formData.gender === opt} onChange={update("gender")} className="text-[var(--blue-accent)] focus:ring-[var(--blue-accent)]" />
                       {opt}
                     </label>
                   ))}
@@ -374,11 +375,11 @@ export function ImmigrationPetitionerForm() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label htmlFor="petCountryBirth" className="block text-sm font-medium text-[var(--text)] mb-1">Country of Birth</label>
-                <input type="text" id="petCountryBirth" value={formData.countryOfBirth} onChange={update("countryOfBirth")} placeholder="Country" className={inputClasses} />
+                <input translate="no" type="text" id="petCountryBirth" value={formData.countryOfBirth} onChange={update("countryOfBirth")} placeholder="Country" className={inputClasses} />
               </div>
               <div>
                 <label htmlFor="petCityBirth" className="block text-sm font-medium text-[var(--text)] mb-1">City of Birth</label>
-                <input type="text" id="petCityBirth" value={formData.cityOfBirth} onChange={update("cityOfBirth")} placeholder="City" className={inputClasses} />
+                <input translate="no" type="text" id="petCityBirth" value={formData.cityOfBirth} onChange={update("cityOfBirth")} placeholder="City" className={inputClasses} />
               </div>
             </div>
             <div>
@@ -386,7 +387,7 @@ export function ImmigrationPetitionerForm() {
               <div className="flex flex-wrap gap-4">
                 {ethnicityOptions.map((opt) => (
                   <label key={opt} className="flex items-center gap-2 cursor-pointer text-sm text-[var(--text-secondary)]">
-                    <input type="radio" name="petEthnicity" value={opt} checked={formData.ethnicity === opt} onChange={update("ethnicity")} className="text-[var(--blue-accent)] focus:ring-[var(--blue-accent)]" />
+                    <input translate="no" type="radio" name="petEthnicity" value={opt} checked={formData.ethnicity === opt} onChange={update("ethnicity")} className="text-[var(--blue-accent)] focus:ring-[var(--blue-accent)]" />
                     {opt}
                   </label>
                 ))}
@@ -397,7 +398,7 @@ export function ImmigrationPetitionerForm() {
               <div className="flex flex-wrap gap-4">
                 {raceOptions.map((opt) => (
                   <label key={opt} className="flex items-center gap-2 cursor-pointer text-sm text-[var(--text-secondary)]">
-                    <input type="radio" name="petRace" value={opt} checked={formData.race === opt} onChange={update("race")} className="text-[var(--blue-accent)] focus:ring-[var(--blue-accent)]" />
+                    <input translate="no" type="radio" name="petRace" value={opt} checked={formData.race === opt} onChange={update("race")} className="text-[var(--blue-accent)] focus:ring-[var(--blue-accent)]" />
                     {opt}
                   </label>
                 ))}
@@ -406,22 +407,22 @@ export function ImmigrationPetitionerForm() {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <div>
                 <label htmlFor="petHeight" className="block text-sm font-medium text-[var(--text)] mb-1">Height</label>
-                <input type="text" id="petHeight" value={formData.height} onChange={update("height")} placeholder="e.g. 5'8\"" className={inputClasses} />
+                <input translate="no" type="text" id="petHeight" value={formData.height} onChange={update("height")} placeholder="e.g. 5'8\"" className={inputClasses} />
               </div>
               <div>
                 <label htmlFor="petWeight" className="block text-sm font-medium text-[var(--text)] mb-1">Weight</label>
-                <input type="text" id="petWeight" value={formData.weight} onChange={update("weight")} placeholder="e.g. 160 lbs" className={inputClasses} />
+                <input translate="no" type="text" id="petWeight" value={formData.weight} onChange={update("weight")} placeholder="e.g. 160 lbs" className={inputClasses} />
               </div>
               <div>
                 <label htmlFor="petHairColor" className="block text-sm font-medium text-[var(--text)] mb-1">Hair Color</label>
-                <select id="petHairColor" value={formData.hairColor} onChange={update("hairColor")} className={inputClasses}>
+                <select translate="no" id="petHairColor" value={formData.hairColor} onChange={update("hairColor")} className={inputClasses}>
                   <option value="">Select</option>
                   {hairColorOptions.map((c) => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
               <div>
                 <label htmlFor="petEyeColor" className="block text-sm font-medium text-[var(--text)] mb-1">Eye Color</label>
-                <select id="petEyeColor" value={formData.eyeColor} onChange={update("eyeColor")} className={inputClasses}>
+                <select translate="no" id="petEyeColor" value={formData.eyeColor} onChange={update("eyeColor")} className={inputClasses}>
                   <option value="">Select</option>
                   {eyeColorOptions.map((c) => <option key={c} value={c}>{c}</option>)}
                 </select>
@@ -429,55 +430,55 @@ export function ImmigrationPetitionerForm() {
             </div>
             <div>
               <label htmlFor="petSSN" className="block text-sm font-medium text-[var(--text)] mb-1">Social Security Number</label>
-              <input type="text" id="petSSN" value={formData.socialSecurity} onChange={update("socialSecurity")} placeholder="###-##-####" maxLength={11} className={inputClasses} />
+              <input translate="no" type="text" id="petSSN" value={formData.socialSecurity} onChange={update("socialSecurity")} placeholder="###-##-####" maxLength={11} className={inputClasses} />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label htmlFor="petPhone" className="block text-sm font-medium text-[var(--text)] mb-1">
                   Phone Number <span className="text-red-500">*</span>
                 </label>
-                <input type="tel" id="petPhone" required value={formData.phone} onChange={update("phone")} placeholder="(929) 000-0000" className={inputClasses} />
+                <input translate="no" type="tel" id="petPhone" required value={formData.phone} onChange={update("phone")} placeholder="(929) 000-0000" className={inputClasses} />
               </div>
               <div>
                 <label htmlFor="petEmail" className="block text-sm font-medium text-[var(--text)] mb-1">
                   Email <span className="text-red-500">*</span>
                 </label>
-                <input type="email" id="petEmail" required value={formData.email} onChange={update("email")} placeholder="you@example.com" className={inputClasses} />
+                <input translate="no" type="email" id="petEmail" required value={formData.email} onChange={update("email")} placeholder="you@example.com" className={inputClasses} />
               </div>
             </div>
 
             {sectionTitle("Home Address")}
             <div>
               <label htmlFor="petHomeStreet" className="block text-sm font-medium text-[var(--text)] mb-1">Street Address</label>
-              <input type="text" id="petHomeStreet" value={formData.homeStreet} onChange={update("homeStreet")} placeholder="Street address" className={inputClasses} />
+              <input translate="no" type="text" id="petHomeStreet" value={formData.homeStreet} onChange={update("homeStreet")} placeholder="Street address" className={inputClasses} />
             </div>
             <div>
               <label htmlFor="petHomeStreet2" className="block text-sm font-medium text-[var(--text)] mb-1">Apt / Suite</label>
-              <input type="text" id="petHomeStreet2" value={formData.homeStreet2} onChange={update("homeStreet2")} placeholder="Apt, Suite, Unit" className={inputClasses} />
+              <input translate="no" type="text" id="petHomeStreet2" value={formData.homeStreet2} onChange={update("homeStreet2")} placeholder="Apt, Suite, Unit" className={inputClasses} />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <label htmlFor="petHomeCity" className="block text-sm font-medium text-[var(--text)] mb-1">City</label>
-                <input type="text" id="petHomeCity" value={formData.homeCity} onChange={update("homeCity")} placeholder="City" className={inputClasses} />
+                <input translate="no" type="text" id="petHomeCity" value={formData.homeCity} onChange={update("homeCity")} placeholder="City" className={inputClasses} />
               </div>
               <div>
                 <label htmlFor="petHomeState" className="block text-sm font-medium text-[var(--text)] mb-1">State</label>
-                <input type="text" id="petHomeState" value={formData.homeState} onChange={update("homeState")} placeholder="NY" className={inputClasses} />
+                <input translate="no" type="text" id="petHomeState" value={formData.homeState} onChange={update("homeState")} placeholder="NY" className={inputClasses} />
               </div>
               <div>
                 <label htmlFor="petHomeZip" className="block text-sm font-medium text-[var(--text)] mb-1">ZIP Code</label>
-                <input type="text" id="petHomeZip" value={formData.homeZip} onChange={update("homeZip")} placeholder="10001" className={inputClasses} />
+                <input translate="no" type="text" id="petHomeZip" value={formData.homeZip} onChange={update("homeZip")} placeholder="10001" className={inputClasses} />
               </div>
             </div>
 
             {sectionTitle("Mailing Address (only if different)")}
             <div>
-              <input type="text" value={formData.mailingStreet} onChange={update("mailingStreet")} placeholder="Street address" className={inputClasses} />
+              <input translate="no" type="text" value={formData.mailingStreet} onChange={update("mailingStreet")} placeholder="Street address" className={inputClasses} />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <input type="text" value={formData.mailingCity} onChange={update("mailingCity")} placeholder="City" className={inputClasses} />
-              <input type="text" value={formData.mailingState} onChange={update("mailingState")} placeholder="State" className={inputClasses} />
-              <input type="text" value={formData.mailingZip} onChange={update("mailingZip")} placeholder="ZIP" className={inputClasses} />
+              <input translate="no" type="text" value={formData.mailingCity} onChange={update("mailingCity")} placeholder="City" className={inputClasses} />
+              <input translate="no" type="text" value={formData.mailingState} onChange={update("mailingState")} placeholder="State" className={inputClasses} />
+              <input translate="no" type="text" value={formData.mailingZip} onChange={update("mailingZip")} placeholder="ZIP" className={inputClasses} />
             </div>
           </>
         )}
@@ -491,7 +492,7 @@ export function ImmigrationPetitionerForm() {
               <div className="flex flex-wrap gap-4">
                 {citizenshipOptions.map((opt) => (
                   <label key={opt} className="flex items-center gap-2 cursor-pointer text-sm text-[var(--text-secondary)]">
-                    <input type="radio" name="citizenship" value={opt} checked={formData.citizenshipAcquiredThrough === opt} onChange={update("citizenshipAcquiredThrough")} className="text-[var(--blue-accent)] focus:ring-[var(--blue-accent)]" />
+                    <input translate="no" type="radio" name="citizenship" value={opt} checked={formData.citizenshipAcquiredThrough === opt} onChange={update("citizenshipAcquiredThrough")} className="text-[var(--blue-accent)] focus:ring-[var(--blue-accent)]" />
                     {opt}
                   </label>
                 ))}
@@ -501,15 +502,15 @@ export function ImmigrationPetitionerForm() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-[var(--text)] mb-1">Certificate #</label>
-                  <input type="text" value={formData.naturalizationCertNumber} onChange={update("naturalizationCertNumber")} className={inputClasses} />
+                  <input translate="no" type="text" value={formData.naturalizationCertNumber} onChange={update("naturalizationCertNumber")} className={inputClasses} />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-[var(--text)] mb-1">Date of Issue</label>
-                  <input type="date" value={formData.naturalizationDateOfIssue} onChange={update("naturalizationDateOfIssue")} className={inputClasses} />
+                  <input translate="no" type="date" value={formData.naturalizationDateOfIssue} onChange={update("naturalizationDateOfIssue")} className={inputClasses} />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-[var(--text)] mb-1">Place of Issue</label>
-                  <input type="text" value={formData.naturalizationPlaceOfIssue} onChange={update("naturalizationPlaceOfIssue")} placeholder="City & State" className={inputClasses} />
+                  <input translate="no" type="text" value={formData.naturalizationPlaceOfIssue} onChange={update("naturalizationPlaceOfIssue")} placeholder="City & State" className={inputClasses} />
                 </div>
               </div>
             )}
@@ -517,16 +518,16 @@ export function ImmigrationPetitionerForm() {
             {sectionTitle("Marital Information")}
             <div>
               <label className="block text-sm font-medium text-[var(--text)] mb-1">Current Marital Status</label>
-              <input type="text" value={formData.currentMaritalStatus} onChange={update("currentMaritalStatus")} placeholder="Married, Single, Widower" className={inputClasses} />
+              <input translate="no" type="text" value={formData.currentMaritalStatus} onChange={update("currentMaritalStatus")} placeholder="Married, Single, Widower" className={inputClasses} />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-[var(--text)] mb-1">Date of Marriage</label>
-                <input type="date" value={formData.dateOfMarriage} onChange={update("dateOfMarriage")} className={inputClasses} />
+                <input translate="no" type="date" value={formData.dateOfMarriage} onChange={update("dateOfMarriage")} className={inputClasses} />
               </div>
               <div>
                 <label className="block text-sm font-medium text-[var(--text)] mb-1">Place of Marriage (City & State)</label>
-                <input type="text" value={formData.placeOfMarriage} onChange={update("placeOfMarriage")} placeholder="City & State" className={inputClasses} />
+                <input translate="no" type="text" value={formData.placeOfMarriage} onChange={update("placeOfMarriage")} placeholder="City & State" className={inputClasses} />
               </div>
             </div>
 
@@ -534,29 +535,29 @@ export function ImmigrationPetitionerForm() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-[var(--text)] mb-1">First Name</label>
-                <input type="text" value={formData.prevSpouseFirstName} onChange={update("prevSpouseFirstName")} className={inputClasses} />
+                <input translate="no" type="text" value={formData.prevSpouseFirstName} onChange={update("prevSpouseFirstName")} className={inputClasses} />
               </div>
               <div>
                 <label className="block text-sm font-medium text-[var(--text)] mb-1">Middle Name</label>
-                <input type="text" value={formData.prevSpouseMiddleName} onChange={update("prevSpouseMiddleName")} className={inputClasses} />
+                <input translate="no" type="text" value={formData.prevSpouseMiddleName} onChange={update("prevSpouseMiddleName")} className={inputClasses} />
               </div>
               <div>
                 <label className="block text-sm font-medium text-[var(--text)] mb-1">Last Name</label>
-                <input type="text" value={formData.prevSpouseLastName} onChange={update("prevSpouseLastName")} className={inputClasses} />
+                <input translate="no" type="text" value={formData.prevSpouseLastName} onChange={update("prevSpouseLastName")} className={inputClasses} />
               </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-[var(--text)] mb-1">Place of Marriage</label>
-                <input type="text" value={formData.prevSpousePlaceOfMarriage} onChange={update("prevSpousePlaceOfMarriage")} className={inputClasses} />
+                <input translate="no" type="text" value={formData.prevSpousePlaceOfMarriage} onChange={update("prevSpousePlaceOfMarriage")} className={inputClasses} />
               </div>
               <div>
                 <label className="block text-sm font-medium text-[var(--text)] mb-1">Date of Termination</label>
-                <input type="date" value={formData.prevSpouseDateOfTermination} onChange={update("prevSpouseDateOfTermination")} className={inputClasses} />
+                <input translate="no" type="date" value={formData.prevSpouseDateOfTermination} onChange={update("prevSpouseDateOfTermination")} className={inputClasses} />
               </div>
               <div>
                 <label className="block text-sm font-medium text-[var(--text)] mb-1">Place of Termination</label>
-                <input type="text" value={formData.prevSpousePlaceOfTermination} onChange={update("prevSpousePlaceOfTermination")} className={inputClasses} />
+                <input translate="no" type="text" value={formData.prevSpousePlaceOfTermination} onChange={update("prevSpousePlaceOfTermination")} className={inputClasses} />
               </div>
             </div>
           </>
@@ -569,35 +570,35 @@ export function ImmigrationPetitionerForm() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-[var(--text)] mb-1">First Name</label>
-                <input type="text" value={formData.fatherFirstName} onChange={update("fatherFirstName")} className={inputClasses} />
+                <input translate="no" type="text" value={formData.fatherFirstName} onChange={update("fatherFirstName")} className={inputClasses} />
               </div>
               <div>
                 <label className="block text-sm font-medium text-[var(--text)] mb-1">Middle Name</label>
-                <input type="text" value={formData.fatherMiddleName} onChange={update("fatherMiddleName")} className={inputClasses} />
+                <input translate="no" type="text" value={formData.fatherMiddleName} onChange={update("fatherMiddleName")} className={inputClasses} />
               </div>
               <div>
                 <label className="block text-sm font-medium text-[var(--text)] mb-1">Last Name</label>
-                <input type="text" value={formData.fatherLastName} onChange={update("fatherLastName")} className={inputClasses} />
+                <input translate="no" type="text" value={formData.fatherLastName} onChange={update("fatherLastName")} className={inputClasses} />
               </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-[var(--text)] mb-1">Date of Birth</label>
-                <input type="date" value={formData.fatherDateOfBirth} onChange={update("fatherDateOfBirth")} className={inputClasses} />
+                <input translate="no" type="date" value={formData.fatherDateOfBirth} onChange={update("fatherDateOfBirth")} className={inputClasses} />
               </div>
               <div>
                 <label className="block text-sm font-medium text-[var(--text)] mb-1">City of Birth</label>
-                <input type="text" value={formData.fatherCityOfBirth} onChange={update("fatherCityOfBirth")} className={inputClasses} />
+                <input translate="no" type="text" value={formData.fatherCityOfBirth} onChange={update("fatherCityOfBirth")} className={inputClasses} />
               </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-[var(--text)] mb-1">Country of Birth</label>
-                <input type="text" value={formData.fatherCountryOfBirth} onChange={update("fatherCountryOfBirth")} className={inputClasses} />
+                <input translate="no" type="text" value={formData.fatherCountryOfBirth} onChange={update("fatherCountryOfBirth")} className={inputClasses} />
               </div>
               <div>
                 <label className="block text-sm font-medium text-[var(--text)] mb-1">Country of Residency (if living)</label>
-                <input type="text" value={formData.fatherCountryOfResidency} onChange={update("fatherCountryOfResidency")} className={inputClasses} />
+                <input translate="no" type="text" value={formData.fatherCountryOfResidency} onChange={update("fatherCountryOfResidency")} className={inputClasses} />
               </div>
             </div>
 
@@ -605,35 +606,35 @@ export function ImmigrationPetitionerForm() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-[var(--text)] mb-1">First Name</label>
-                <input type="text" value={formData.motherFirstName} onChange={update("motherFirstName")} className={inputClasses} />
+                <input translate="no" type="text" value={formData.motherFirstName} onChange={update("motherFirstName")} className={inputClasses} />
               </div>
               <div>
                 <label className="block text-sm font-medium text-[var(--text)] mb-1">Middle Name</label>
-                <input type="text" value={formData.motherMiddleName} onChange={update("motherMiddleName")} className={inputClasses} />
+                <input translate="no" type="text" value={formData.motherMiddleName} onChange={update("motherMiddleName")} className={inputClasses} />
               </div>
               <div>
                 <label className="block text-sm font-medium text-[var(--text)] mb-1">Last Name</label>
-                <input type="text" value={formData.motherLastName} onChange={update("motherLastName")} className={inputClasses} />
+                <input translate="no" type="text" value={formData.motherLastName} onChange={update("motherLastName")} className={inputClasses} />
               </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-[var(--text)] mb-1">Date of Birth</label>
-                <input type="date" value={formData.motherDateOfBirth} onChange={update("motherDateOfBirth")} className={inputClasses} />
+                <input translate="no" type="date" value={formData.motherDateOfBirth} onChange={update("motherDateOfBirth")} className={inputClasses} />
               </div>
               <div>
                 <label className="block text-sm font-medium text-[var(--text)] mb-1">City of Birth</label>
-                <input type="text" value={formData.motherCityOfBirth} onChange={update("motherCityOfBirth")} className={inputClasses} />
+                <input translate="no" type="text" value={formData.motherCityOfBirth} onChange={update("motherCityOfBirth")} className={inputClasses} />
               </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-[var(--text)] mb-1">Country of Birth</label>
-                <input type="text" value={formData.motherCountryOfBirth} onChange={update("motherCountryOfBirth")} className={inputClasses} />
+                <input translate="no" type="text" value={formData.motherCountryOfBirth} onChange={update("motherCountryOfBirth")} className={inputClasses} />
               </div>
               <div>
                 <label className="block text-sm font-medium text-[var(--text)] mb-1">Country of Residency (if living)</label>
-                <input type="text" value={formData.motherCountryOfResidency} onChange={update("motherCountryOfResidency")} className={inputClasses} />
+                <input translate="no" type="text" value={formData.motherCountryOfResidency} onChange={update("motherCountryOfResidency")} className={inputClasses} />
               </div>
             </div>
           </>
@@ -657,7 +658,7 @@ export function ImmigrationPetitionerForm() {
                       <div className="flex gap-4">
                         {adoptionOptions.map((opt) => (
                           <label key={opt} className="flex items-center gap-2 cursor-pointer text-sm text-[var(--text-secondary)]">
-                            <input type="radio" name={`${prefix}Type`} value={opt} checked={formData[`${prefix}Type`] === opt} onChange={update(`${prefix}Type`)} className="text-[var(--blue-accent)] focus:ring-[var(--blue-accent)]" />
+                            <input translate="no" type="radio" name={`${prefix}Type`} value={opt} checked={formData[`${prefix}Type`] === opt} onChange={update(`${prefix}Type`)} className="text-[var(--blue-accent)] focus:ring-[var(--blue-accent)]" />
                             {opt}
                           </label>
                         ))}
@@ -668,7 +669,7 @@ export function ImmigrationPetitionerForm() {
                       <div className="flex gap-4">
                         {genderOptions.map((opt) => (
                           <label key={opt} className="flex items-center gap-2 cursor-pointer text-sm text-[var(--text-secondary)]">
-                            <input type="radio" name={`${prefix}Gender`} value={opt} checked={formData[`${prefix}Gender`] === opt} onChange={update(`${prefix}Gender`)} className="text-[var(--blue-accent)] focus:ring-[var(--blue-accent)]" />
+                            <input translate="no" type="radio" name={`${prefix}Gender`} value={opt} checked={formData[`${prefix}Gender`] === opt} onChange={update(`${prefix}Gender`)} className="text-[var(--blue-accent)] focus:ring-[var(--blue-accent)]" />
                             {opt}
                           </label>
                         ))}
@@ -676,33 +677,33 @@ export function ImmigrationPetitionerForm() {
                     </div>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <input type="text" value={formData[`${prefix}FirstName`]} onChange={update(`${prefix}FirstName`)} placeholder="First name" className={inputClasses} />
-                    <input type="text" value={formData[`${prefix}MiddleName`]} onChange={update(`${prefix}MiddleName`)} placeholder="Middle name" className={inputClasses} />
-                    <input type="text" value={formData[`${prefix}LastName`]} onChange={update(`${prefix}LastName`)} placeholder="Last name" className={inputClasses} />
+                    <input translate="no" type="text" value={formData[`${prefix}FirstName`]} onChange={update(`${prefix}FirstName`)} placeholder="First name" className={inputClasses} />
+                    <input translate="no" type="text" value={formData[`${prefix}MiddleName`]} onChange={update(`${prefix}MiddleName`)} placeholder="Middle name" className={inputClasses} />
+                    <input translate="no" type="text" value={formData[`${prefix}LastName`]} onChange={update(`${prefix}LastName`)} placeholder="Last name" className={inputClasses} />
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
                       <label className="block text-sm font-medium text-[var(--text)] mb-1">Date of Birth</label>
-                      <input type="date" value={formData[`${prefix}DateOfBirth`]} onChange={update(`${prefix}DateOfBirth`)} className={inputClasses} />
+                      <input translate="no" type="date" value={formData[`${prefix}DateOfBirth`]} onChange={update(`${prefix}DateOfBirth`)} className={inputClasses} />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-[var(--text)] mb-1">Country of Birth</label>
-                      <input type="text" value={formData[`${prefix}CountryOfBirth`]} onChange={update(`${prefix}CountryOfBirth`)} className={inputClasses} />
+                      <input translate="no" type="text" value={formData[`${prefix}CountryOfBirth`]} onChange={update(`${prefix}CountryOfBirth`)} className={inputClasses} />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-[var(--text)] mb-1">City of Birth</label>
-                      <input type="text" value={formData[`${prefix}CityOfBirth`]} onChange={update(`${prefix}CityOfBirth`)} className={inputClasses} />
+                      <input translate="no" type="text" value={formData[`${prefix}CityOfBirth`]} onChange={update(`${prefix}CityOfBirth`)} className={inputClasses} />
                     </div>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <input type="text" value={formData[`${prefix}OtherName`]} onChange={update(`${prefix}OtherName`)} placeholder="Other name used" className={inputClasses} />
-                    <input type="text" value={formData[`${prefix}SSN`]} onChange={update(`${prefix}SSN`)} placeholder="SSN" className={inputClasses} />
+                    <input translate="no" type="text" value={formData[`${prefix}OtherName`]} onChange={update(`${prefix}OtherName`)} placeholder="Other name used" className={inputClasses} />
+                    <input translate="no" type="text" value={formData[`${prefix}SSN`]} onChange={update(`${prefix}SSN`)} placeholder="SSN" className={inputClasses} />
                     <div>
                       <label className="block text-sm font-medium text-[var(--text)] mb-1">U.S. Citizen?</label>
                       <div className="flex gap-4 mt-1">
                         {yesNoOptions.map((opt) => (
                           <label key={opt} className="flex items-center gap-2 cursor-pointer text-sm text-[var(--text-secondary)]">
-                            <input type="radio" name={`${prefix}USCitizen`} value={opt} checked={formData[`${prefix}USCitizen`] === opt} onChange={update(`${prefix}USCitizen`)} className="text-[var(--blue-accent)] focus:ring-[var(--blue-accent)]" />
+                            <input translate="no" type="radio" name={`${prefix}USCitizen`} value={opt} checked={formData[`${prefix}USCitizen`] === opt} onChange={update(`${prefix}USCitizen`)} className="text-[var(--blue-accent)] focus:ring-[var(--blue-accent)]" />
                             {opt}
                           </label>
                         ))}
@@ -723,7 +724,7 @@ export function ImmigrationPetitionerForm() {
               <label className="block text-sm font-medium text-[var(--text)] mb-1">
                 List addresses where you lived in the past 5 years
               </label>
-              <textarea rows={4} value={formData.pastAddresses} onChange={update("pastAddresses")} placeholder="Address 1: Street, City, State, Dates&#10;Address 2: ..." className={inputClasses} />
+              <textarea translate="no" rows={4} value={formData.pastAddresses} onChange={update("pastAddresses")} placeholder="Address 1: Street, City, State, Dates&#10;Address 2: ..." className={inputClasses} />
             </div>
 
             {sectionTitle("Past 5 Years - Employment/Studies")}
@@ -731,12 +732,12 @@ export function ImmigrationPetitionerForm() {
               <label className="block text-sm font-medium text-[var(--text)] mb-1">
                 List places where you worked or studied in the past 5 years
               </label>
-              <textarea rows={4} value={formData.pastEmployment} onChange={update("pastEmployment")} placeholder="Employer/School 1: Name, Address, Dates&#10;Employer/School 2: ..." className={inputClasses} />
+              <textarea translate="no" rows={4} value={formData.pastEmployment} onChange={update("pastEmployment")} placeholder="Employer/School 1: Name, Address, Dates&#10;Employer/School 2: ..." className={inputClasses} />
             </div>
 
             {sectionTitle("Additional Notes")}
             <div>
-              <textarea rows={3} value={formData.additionalNotes} onChange={update("additionalNotes")} placeholder="Any additional information..." className={inputClasses} />
+              <textarea translate="no" rows={3} value={formData.additionalNotes} onChange={update("additionalNotes")} placeholder="Any additional information..." className={inputClasses} />
             </div>
 
             <div className="rounded-[var(--radius)] bg-blue-50 p-4 text-sm text-blue-800">

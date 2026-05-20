@@ -196,6 +196,7 @@ export default function AddressAutocomplete({
   return (
     <div ref={containerRef} className="relative">
       <input
+        translate="no"
         ref={inputRef}
         id={id}
         type="text"
@@ -217,7 +218,7 @@ export default function AddressAutocomplete({
             : undefined
         }
         className={`
-          w-full px-4 py-3.5 rounded-xl text-lg
+          w-full px-4 py-3.5 rounded-xl text-lg uppercase
           bg-white/[0.07] border border-white/10
           text-white placeholder-white/25
           focus:outline-none focus:border-[#4F56E8] focus:ring-1 focus:ring-[#4F56E8]/30

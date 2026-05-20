@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { uppercaseFormData } from "@/lib/forms/uppercase";
 
 const serviceOptions = [
   "Business Formation",
@@ -77,7 +78,7 @@ export function ClientInfoForm() {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...formData, type: "client-info" }),
+        body: JSON.stringify({ ...uppercaseFormData(formData), type: "client-info" }),
       });
 
       const data = await res.json();
@@ -92,7 +93,7 @@ export function ClientInfoForm() {
         setError(err.message);
       } else {
         // API route may not exist yet; treat as success for now
-        console.log("Client info submission:", { ...formData, type: "client-info" });
+        console.log("Client info submission:", { ...uppercaseFormData(formData), type: "client-info" });
         setSubmitted(true);
       }
     } finally {
@@ -121,10 +122,10 @@ export function ClientInfoForm() {
   }
 
   const inputClasses =
-    "w-full rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-[var(--text)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--blue-accent)] focus:border-transparent transition-all";
+    "w-full rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-[var(--text)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--blue-accent)] focus:border-transparent transition-all uppercase";
 
   return (
-    <Card>
+    <Card className="notranslate">
       <h2 className="text-xl font-bold text-[var(--text)] mb-6">
         Client Information
       </h2>
@@ -134,7 +135,7 @@ export function ClientInfoForm() {
           <label htmlFor="fullLegalName" className="block text-sm font-medium text-[var(--text)] mb-1">
             Full Legal Name <span className="text-red-500">*</span>
           </label>
-          <input
+          <input translate="no"
             type="text"
             id="fullLegalName"
             name="fullLegalName"
@@ -151,7 +152,7 @@ export function ClientInfoForm() {
           <label htmlFor="dateOfBirth" className="block text-sm font-medium text-[var(--text)] mb-1">
             Date of Birth
           </label>
-          <input
+          <input translate="no"
             type="date"
             id="dateOfBirth"
             name="dateOfBirth"
@@ -167,7 +168,7 @@ export function ClientInfoForm() {
             <label htmlFor="ciPhone" className="block text-sm font-medium text-[var(--text)] mb-1">
               Phone Number <span className="text-red-500">*</span>
             </label>
-            <input
+            <input translate="no"
               type="tel"
               id="ciPhone"
               name="phone"
@@ -182,7 +183,7 @@ export function ClientInfoForm() {
             <label htmlFor="ciEmail" className="block text-sm font-medium text-[var(--text)] mb-1">
               Email <span className="text-red-500">*</span>
             </label>
-            <input
+            <input translate="no"
               type="email"
               id="ciEmail"
               name="email"
@@ -200,7 +201,7 @@ export function ClientInfoForm() {
           <label htmlFor="address" className="block text-sm font-medium text-[var(--text)] mb-1">
             Address
           </label>
-          <input
+          <input translate="no"
             type="text"
             id="address"
             name="address"
@@ -217,7 +218,7 @@ export function ClientInfoForm() {
             <label htmlFor="city" className="block text-sm font-medium text-[var(--text)] mb-1">
               City
             </label>
-            <input
+            <input translate="no"
               type="text"
               id="city"
               name="city"
@@ -231,7 +232,7 @@ export function ClientInfoForm() {
             <label htmlFor="state" className="block text-sm font-medium text-[var(--text)] mb-1">
               State
             </label>
-            <input
+            <input translate="no"
               type="text"
               id="state"
               name="state"
@@ -245,7 +246,7 @@ export function ClientInfoForm() {
             <label htmlFor="zipCode" className="block text-sm font-medium text-[var(--text)] mb-1">
               ZIP Code
             </label>
-            <input
+            <input translate="no"
               type="text"
               id="zipCode"
               name="zipCode"
@@ -262,7 +263,7 @@ export function ClientInfoForm() {
           <label htmlFor="ssnOrItin" className="block text-sm font-medium text-[var(--text)] mb-1">
             SSN or ITIN <span className="text-[var(--text-muted)]">(optional)</span>
           </label>
-          <input
+          <input translate="no"
             type="text"
             id="ssnOrItin"
             name="ssnOrItin"
@@ -281,7 +282,7 @@ export function ClientInfoForm() {
           <label htmlFor="businessName" className="block text-sm font-medium text-[var(--text)] mb-1">
             Business Name <span className="text-[var(--text-muted)]">(if applicable)</span>
           </label>
-          <input
+          <input translate="no"
             type="text"
             id="businessName"
             name="businessName"
@@ -297,7 +298,7 @@ export function ClientInfoForm() {
           <label htmlFor="serviceInterested" className="block text-sm font-medium text-[var(--text)] mb-1">
             Service Interested In
           </label>
-          <select
+          <select translate="no"
             id="serviceInterested"
             name="serviceInterested"
             value={formData.serviceInterested}
@@ -318,7 +319,7 @@ export function ClientInfoForm() {
           <label htmlFor="referralSource" className="block text-sm font-medium text-[var(--text)] mb-1">
             How did you hear about us?
           </label>
-          <select
+          <select translate="no"
             id="referralSource"
             name="referralSource"
             value={formData.referralSource}
@@ -339,7 +340,7 @@ export function ClientInfoForm() {
           <label htmlFor="additionalNotes" className="block text-sm font-medium text-[var(--text)] mb-1">
             Additional Notes <span className="text-[var(--text-muted)]">(optional)</span>
           </label>
-          <textarea
+          <textarea translate="no"
             id="additionalNotes"
             name="additionalNotes"
             rows={3}

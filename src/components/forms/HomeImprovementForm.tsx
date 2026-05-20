@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { uppercaseFormData } from "@/lib/forms/uppercase";
 
 const licenseTypes = [
   "Home Improvement Contractor",
@@ -62,7 +63,7 @@ export function HomeImprovementForm() {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...formData, type: "home-improvement" }),
+        body: JSON.stringify({ ...uppercaseFormData(formData), type: "home-improvement" }),
       });
 
       const data = await res.json();
@@ -77,7 +78,7 @@ export function HomeImprovementForm() {
         setError(err.message);
       } else {
         // API route may not exist yet; treat as success for now
-        console.log("Home improvement submission:", { ...formData, type: "home-improvement" });
+        console.log("Home improvement submission:", { ...uppercaseFormData(formData), type: "home-improvement" });
         setSubmitted(true);
       }
     } finally {
@@ -106,10 +107,10 @@ export function HomeImprovementForm() {
   }
 
   const inputClasses =
-    "w-full rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-[var(--text)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--blue-accent)] focus:border-transparent transition-all";
+    "w-full rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-[var(--text)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--blue-accent)] focus:border-transparent transition-all uppercase";
 
   return (
-    <Card>
+    <Card className="notranslate">
       <h2 className="text-xl font-bold text-[var(--text)] mb-6">
         Home Improvement Licensing Application
       </h2>
@@ -119,7 +120,7 @@ export function HomeImprovementForm() {
           <label htmlFor="hiFullName" className="block text-sm font-medium text-[var(--text)] mb-1">
             Full Name <span className="text-red-500">*</span>
           </label>
-          <input
+          <input translate="no"
             type="text"
             id="hiFullName"
             name="fullName"
@@ -137,7 +138,7 @@ export function HomeImprovementForm() {
             <label htmlFor="hiPhone" className="block text-sm font-medium text-[var(--text)] mb-1">
               Phone Number <span className="text-red-500">*</span>
             </label>
-            <input
+            <input translate="no"
               type="tel"
               id="hiPhone"
               name="phone"
@@ -152,7 +153,7 @@ export function HomeImprovementForm() {
             <label htmlFor="hiEmail" className="block text-sm font-medium text-[var(--text)] mb-1">
               Email <span className="text-red-500">*</span>
             </label>
-            <input
+            <input translate="no"
               type="email"
               id="hiEmail"
               name="email"
@@ -170,7 +171,7 @@ export function HomeImprovementForm() {
           <label htmlFor="hiBusinessName" className="block text-sm font-medium text-[var(--text)] mb-1">
             Business Name <span className="text-[var(--text-muted)]">(if applicable)</span>
           </label>
-          <input
+          <input translate="no"
             type="text"
             id="hiBusinessName"
             name="businessName"
@@ -186,7 +187,7 @@ export function HomeImprovementForm() {
           <label htmlFor="hiBusinessAddress" className="block text-sm font-medium text-[var(--text)] mb-1">
             Business Address
           </label>
-          <input
+          <input translate="no"
             type="text"
             id="hiBusinessAddress"
             name="businessAddress"
@@ -203,7 +204,7 @@ export function HomeImprovementForm() {
             <label htmlFor="hiCity" className="block text-sm font-medium text-[var(--text)] mb-1">
               City
             </label>
-            <input
+            <input translate="no"
               type="text"
               id="hiCity"
               name="city"
@@ -217,7 +218,7 @@ export function HomeImprovementForm() {
             <label htmlFor="hiState" className="block text-sm font-medium text-[var(--text)] mb-1">
               State
             </label>
-            <input
+            <input translate="no"
               type="text"
               id="hiState"
               name="state"
@@ -231,7 +232,7 @@ export function HomeImprovementForm() {
             <label htmlFor="hiZipCode" className="block text-sm font-medium text-[var(--text)] mb-1">
               ZIP Code
             </label>
-            <input
+            <input translate="no"
               type="text"
               id="hiZipCode"
               name="zipCode"
@@ -248,7 +249,7 @@ export function HomeImprovementForm() {
           <label htmlFor="hiLicenseType" className="block text-sm font-medium text-[var(--text)] mb-1">
             License Type <span className="text-red-500">*</span>
           </label>
-          <select
+          <select translate="no"
             id="hiLicenseType"
             name="licenseType"
             required
@@ -272,7 +273,7 @@ export function HomeImprovementForm() {
           </label>
           <div className="flex gap-6">
             <label className="flex items-center gap-2 cursor-pointer">
-              <input
+              <input translate="no"
                 type="radio"
                 name="hasExistingLicense"
                 value="yes"
@@ -283,7 +284,7 @@ export function HomeImprovementForm() {
               <span className="text-sm text-[var(--text)]">Yes</span>
             </label>
             <label className="flex items-center gap-2 cursor-pointer">
-              <input
+              <input translate="no"
                 type="radio"
                 name="hasExistingLicense"
                 value="no"
@@ -302,7 +303,7 @@ export function HomeImprovementForm() {
             <label htmlFor="hiLicenseNumber" className="block text-sm font-medium text-[var(--text)] mb-1">
               License Number
             </label>
-            <input
+            <input translate="no"
               type="text"
               id="hiLicenseNumber"
               name="licenseNumber"
@@ -319,7 +320,7 @@ export function HomeImprovementForm() {
           <label htmlFor="hiAdditionalNotes" className="block text-sm font-medium text-[var(--text)] mb-1">
             Additional Notes <span className="text-[var(--text-muted)]">(optional)</span>
           </label>
-          <textarea
+          <textarea translate="no"
             id="hiAdditionalNotes"
             name="additionalNotes"
             rows={3}
