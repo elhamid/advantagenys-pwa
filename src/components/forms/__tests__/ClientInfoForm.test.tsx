@@ -67,12 +67,16 @@ describe("ClientInfoForm", () => {
     const [url, options] = fetchSpy.mock.calls[0] as [string, RequestInit];
     expect(url).toBe("/api/contact");
     expect(JSON.parse(options.body as string)).toMatchObject({
-      fullLegalName: "Jane Client",
+      fullLegalName: "JANE CLIENT",
+      fullName: "JANE CLIENT",
       phone: "9295550101",
       email: "jane@example.com",
       serviceInterested: "Tax Services",
-      referralSource: "Google",
+      referralSource: "GOOGLE",
       type: "client-info",
+      source: "website-client-info",
+      services: ["Tax Services"],
+      serviceType: "Tax Services",
     });
 
     expect(await screen.findByText(/thank you, jane client/i)).toBeInTheDocument();

@@ -75,10 +75,21 @@ export function ClientInfoForm() {
     setError(null);
 
     try {
+      const normalizedFormData = uppercaseFormData(formData);
+      const service = formData.serviceInterested || "Other";
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...uppercaseFormData(formData), type: "client-info" }),
+        body: JSON.stringify({
+          ...normalizedFormData,
+          type: "client-info",
+          source: "website-client-info",
+          fullName: normalizedFormData.fullLegalName,
+          businessName: normalizedFormData.businessName,
+          services: [service],
+          serviceType: service,
+          message: normalizedFormData.additionalNotes,
+        }),
       });
 
       const data = await res.json();
@@ -89,13 +100,9 @@ export function ClientInfoForm() {
 
       setSubmitted(true);
     } catch (err) {
-      if (err instanceof Error && err.message !== "Something went wrong. Please try again.") {
-        setError(err.message);
-      } else {
-        // API route may not exist yet; treat as success for now
-        console.log("Client info submission:", { ...uppercaseFormData(formData), type: "client-info" });
-        setSubmitted(true);
-      }
+      setError(
+        err instanceof Error ? err.message : "Something went wrong. Please try again."
+      );
     } finally {
       setLoading(false);
     }

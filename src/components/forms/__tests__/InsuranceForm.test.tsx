@@ -68,13 +68,16 @@ describe("InsuranceForm", () => {
     const [url, options] = fetchSpy.mock.calls[0] as [string, RequestInit];
     expect(url).toBe("/api/contact");
     expect(JSON.parse(options.body as string)).toMatchObject({
-      fullName: "Morgan Policy",
+      fullName: "MORGAN POLICY",
       phone: "9295550104",
       email: "morgan@example.com",
       businessName: "Morgan LLC",
       businessType: "LLC",
-      insuranceTypesNeeded: ["General Liability", "Workers' Compensation"],
+      insuranceTypesNeeded: ["GENERAL LIABILITY", "WORKERS' COMPENSATION"],
       type: "insurance",
+      source: "website-insurance",
+      services: ["Insurance"],
+      serviceType: "Insurance",
     });
 
     expect(await screen.findByText(/thank you, morgan policy/i)).toBeInTheDocument();

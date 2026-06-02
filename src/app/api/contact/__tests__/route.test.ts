@@ -206,6 +206,42 @@ describe('POST /api/contact', () => {
     expect(body.error).toMatch(/human verification/i)
   })
 
+  it('allows known native service forms without a Turnstile token and forwards their source', async () => {
+    const fetchSpy = makeFetchMock()
+    global.fetch = fetchSpy
+    const payload = {
+      type: 'client-info',
+      source: 'website-client-info',
+      fullName: 'Jane Client',
+      phone: '9295550101',
+      email: 'jane@example.com',
+      services: ['Tax Services'],
+      serviceType: 'Tax Services',
+      fullLegalName: 'Jane Client',
+    }
+
+    const res = await POST(makeRequest(payload))
+    expect(res.status).toBe(200)
+
+    const cloudflareCalled = (fetchSpy.mock.calls as [string][]).some(([url]) =>
+      String(url).includes('cloudflare.com/turnstile'),
+    )
+    expect(cloudflareCalled).toBe(false)
+
+    const webhookCall = (fetchSpy.mock.calls as unknown as [string, RequestInit][]).find(
+      ([url]) => !String(url).includes('cloudflare.com'),
+    )
+    expect(webhookCall).toBeDefined()
+    const sentBody = JSON.parse(webhookCall![1].body as string)
+    expect(sentBody).toMatchObject({
+      type: 'client-info',
+      source: 'website-client-info',
+      fullName: 'Jane Client',
+      services: ['Tax Services'],
+      serviceType: 'Tax Services',
+    })
+  })
+
   it('skips Turnstile check when TURNSTILE_SECRET_KEY is not set', async () => {
     delete process.env.TURNSTILE_SECRET_KEY
     const fetchSpy = makeFetchMock()

@@ -22,6 +22,9 @@ async function getSupabase() {
 type LeadType =
   | "booking"
   | "corporate-registration"
+  | "client-info"
+  | "home-improvement"
+  | "insurance"
   | "immigration-petitioner"
   | "immigration-beneficiary"
   | "tax-return";
@@ -64,6 +67,9 @@ function validatePayload(
     "website-immigration-beneficiary",
     "website-tax-return",
     "website-corporate-registration",
+    "website-client-info",
+    "website-home-improvement",
+    "website-insurance",
     "chat-widget",
     "kiosk",
   ];
@@ -121,6 +127,9 @@ function validatePayload(
   const ACCEPTED_TYPES: LeadType[] = [
     "booking",
     "corporate-registration",
+    "client-info",
+    "home-improvement",
+    "insurance",
     "immigration-petitioner",
     "immigration-beneficiary",
     "tax-return",
@@ -136,6 +145,9 @@ function validatePayload(
     "immigration-beneficiary": "website-immigration-beneficiary",
     "tax-return": "website-tax-return",
     "corporate-registration": "website-corporate-registration",
+    "client-info": "website-client-info",
+    "home-improvement": "website-home-improvement",
+    insurance: "website-insurance",
     booking: "website-booking",
   };
 
@@ -248,7 +260,12 @@ export async function POST(request: NextRequest) {
 
     // --- Turnstile verification ---
     const turnstileToken = (body as Record<string, unknown>).turnstileToken;
-    if (process.env.TURNSTILE_SECRET_KEY) {
+    const nativeFormWithoutWidget =
+      data.type === "corporate-registration" ||
+      data.type === "client-info" ||
+      data.type === "home-improvement" ||
+      data.type === "insurance";
+    if (process.env.TURNSTILE_SECRET_KEY && !nativeFormWithoutWidget) {
       if (!turnstileToken || typeof turnstileToken !== "string") {
         return NextResponse.json(
           { success: false, error: "Human verification failed" },

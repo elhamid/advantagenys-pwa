@@ -88,10 +88,18 @@ export function InsuranceForm() {
     setError(null);
 
     try {
+      const normalizedFormData = uppercaseFormData(formData);
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...uppercaseFormData(formData), type: "insurance" }),
+        body: JSON.stringify({
+          ...normalizedFormData,
+          type: "insurance",
+          source: "website-insurance",
+          services: ["Insurance"],
+          serviceType: "Insurance",
+          message: normalizedFormData.notes,
+        }),
       });
 
       const data = await res.json();

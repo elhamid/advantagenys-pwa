@@ -60,10 +60,18 @@ export function HomeImprovementForm() {
     setError(null);
 
     try {
+      const normalizedFormData = uppercaseFormData(formData);
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...uppercaseFormData(formData), type: "home-improvement" }),
+        body: JSON.stringify({
+          ...normalizedFormData,
+          type: "home-improvement",
+          source: "website-home-improvement",
+          services: ["Licensing"],
+          serviceType: "Licensing",
+          message: normalizedFormData.additionalNotes,
+        }),
       });
 
       const data = await res.json();
@@ -74,13 +82,9 @@ export function HomeImprovementForm() {
 
       setSubmitted(true);
     } catch (err) {
-      if (err instanceof Error && err.message !== "Something went wrong. Please try again.") {
-        setError(err.message);
-      } else {
-        // API route may not exist yet; treat as success for now
-        console.log("Home improvement submission:", { ...uppercaseFormData(formData), type: "home-improvement" });
-        setSubmitted(true);
-      }
+      setError(
+        err instanceof Error ? err.message : "Something went wrong. Please try again."
+      );
     } finally {
       setLoading(false);
     }
