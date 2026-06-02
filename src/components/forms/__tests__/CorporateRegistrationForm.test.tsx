@@ -67,13 +67,18 @@ describe("CorporateRegistrationForm", () => {
     const [url, options] = fetchSpy.mock.calls[0] as [string, RequestInit];
     expect(url).toBe("/api/contact");
     expect(JSON.parse(options.body as string)).toMatchObject({
-      ownerName: "Alex Owner",
+      fullName: "ALEX OWNER",
+      ownerName: "ALEX OWNER",
       phone: "9295550102",
       email: "alex@example.com",
+      businessName: "Alex LLC",
       desiredBusinessName: "Alex LLC",
       businessType: "LLC",
+      services: ["Business Formation"],
+      serviceType: "Business Formation",
       needEIN: "Yes",
       type: "corporate-registration",
+      source: "website-corporate-registration",
     });
 
     expect(await screen.findByText(/thank you, alex owner/i)).toBeInTheDocument();

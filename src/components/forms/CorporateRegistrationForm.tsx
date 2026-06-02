@@ -62,10 +62,20 @@ export function CorporateRegistrationForm() {
     setError(null);
 
     try {
+      const normalizedFormData = uppercaseFormData(formData);
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...uppercaseFormData(formData), type: "corporate-registration" }),
+        body: JSON.stringify({
+          ...normalizedFormData,
+          fullName: normalizedFormData.ownerName,
+          businessName: normalizedFormData.desiredBusinessName,
+          services: ["Business Formation"],
+          serviceType: "Business Formation",
+          message: normalizedFormData.additionalNotes,
+          type: "corporate-registration",
+          source: "website-corporate-registration",
+        }),
       });
 
       const data = await res.json();
