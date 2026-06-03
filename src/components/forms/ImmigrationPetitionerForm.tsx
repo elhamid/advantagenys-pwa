@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Turnstile } from "@marsidev/react-turnstile";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { getShareAttributionFromLocation } from "@/lib/forms/share-attribution";
 import { uppercaseFormData } from "@/lib/forms/uppercase";
 
 const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
@@ -264,7 +265,11 @@ export function ImmigrationPetitionerForm() {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...uppercaseFormData(payload), turnstileToken }),
+        body: JSON.stringify({
+          ...uppercaseFormData(payload),
+          ...getShareAttributionFromLocation(),
+          turnstileToken,
+        }),
       });
       const data = await res.json();
       if (!res.ok || !data.success) {

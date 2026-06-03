@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { getShareAttributionFromLocation } from "@/lib/forms/share-attribution";
 import { uppercaseFormData } from "@/lib/forms/uppercase";
 
 const businessTypes = [
@@ -99,6 +100,7 @@ export function InsuranceForm() {
           services: ["Insurance"],
           serviceType: "Insurance",
           message: normalizedFormData.notes,
+          ...getShareAttributionFromLocation(),
         }),
       });
 

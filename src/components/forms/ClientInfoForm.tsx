@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { getShareAttributionFromLocation } from "@/lib/forms/share-attribution";
 import { uppercaseFormData } from "@/lib/forms/uppercase";
 
 const serviceOptions = [
@@ -89,6 +90,7 @@ export function ClientInfoForm() {
           services: [service],
           serviceType: service,
           message: normalizedFormData.additionalNotes,
+          ...getShareAttributionFromLocation(),
         }),
       });
 

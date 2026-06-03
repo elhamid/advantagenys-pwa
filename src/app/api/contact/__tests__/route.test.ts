@@ -41,10 +41,12 @@ function makeFetchMock({
   turnstileSuccess = true,
   webhookStatus = 200,
   webhookThrows = false,
+  jotformStatus = 200,
 }: {
   turnstileSuccess?: boolean
   webhookStatus?: number
   webhookThrows?: boolean
+  jotformStatus?: number
 } = {}) {
   return vi.fn(async (url: string | URL | Request) => {
     const urlStr = typeof url === 'string' ? url : url instanceof URL ? url.href : url.url
@@ -53,6 +55,15 @@ function makeFetchMock({
       return {
         json: async () => ({ success: turnstileSuccess }),
         ok: true,
+      } as unknown as Response
+    }
+
+    if (urlStr.includes('api.jotform.com')) {
+      return {
+        ok: jotformStatus >= 200 && jotformStatus < 300,
+        status: jotformStatus,
+        text: async () => 'jotform error body',
+        json: async () => ({ content: { submissionID: 'jf-submission-1' } }),
       } as unknown as Response
     }
 
@@ -75,6 +86,7 @@ describe('POST /api/contact', () => {
   const originalTurnstileKey = process.env.TURNSTILE_SECRET_KEY
   const originalWebhookUrl = process.env.TASKBOARD_WEBHOOK_URL
   const originalWebhookSecret = process.env.PWA_WEBHOOK_SECRET
+  const originalJotformApiKey = process.env.JOTFORM_API_KEY
 
   beforeEach(() => {
     // Restore baseline env before every test
@@ -82,12 +94,14 @@ describe('POST /api/contact', () => {
     process.env.TASKBOARD_WEBHOOK_URL = originalWebhookUrl
     // Ensure webhook secret is present for webhook-related tests by default
     process.env.PWA_WEBHOOK_SECRET = 'test-pwa-secret'
+    process.env.JOTFORM_API_KEY = 'test-jotform-key'
     global.fetch = makeFetchMock()
   })
 
   afterEach(() => {
     vi.restoreAllMocks()
     process.env.PWA_WEBHOOK_SECRET = originalWebhookSecret
+    process.env.JOTFORM_API_KEY = originalJotformApiKey
   })
 
   // -----------------------------------------------------------------------
@@ -240,6 +254,49 @@ describe('POST /api/contact', () => {
       services: ['Tax Services'],
       serviceType: 'Tax Services',
     })
+  })
+
+  it('copies native corporation forms to the matching Jotform backup form without blocking taskboard', async () => {
+    const fetchSpy = makeFetchMock()
+    global.fetch = fetchSpy
+    const payload = {
+      type: 'corporate-registration',
+      source: 'website-corporate-registration',
+      fullName: 'Alex Owner',
+      ownerName: 'Alex Owner',
+      phone: '9295550102',
+      email: 'alex@example.com',
+      desiredBusinessName: 'Alex LLC',
+      businessName: 'Alex LLC',
+      businessType: 'LLC',
+      services: ['Business Formation'],
+      serviceType: 'Business Formation',
+      sharedBy: 'staff-user-123',
+      sharedByName: 'Kedar',
+      utmSource: 'advantageos',
+      utmMedium: 'staff_share',
+      utmCampaign: 'form_share',
+    }
+
+    const res = await POST(makeRequest(payload))
+    expect(res.status).toBe(200)
+    const responseBody = await res.json()
+    expect(responseBody.backup).toMatchObject({
+      jotform: true,
+      formId: '220796553658166',
+      submissionId: 'jf-submission-1',
+    })
+
+    const jotformCall = (fetchSpy.mock.calls as unknown as [string, RequestInit][]).find(
+      ([url]) => String(url).includes('api.jotform.com/form/220796553658166/submissions'),
+    )
+    expect(jotformCall).toBeDefined()
+    const body = jotformCall![1].body as string
+    expect(body).toContain('submission%5B94%5D=Alex+LLC')
+    expect(body).toContain('submission%5B74%5D=')
+    const traceNote = new URLSearchParams(body).get('submission[74]')
+    expect(traceNote).toContain('Shared-by id: staff-user-123')
+    expect(traceNote).not.toContain('Kedar')
   })
 
   it('skips Turnstile check when TURNSTILE_SECRET_KEY is not set', async () => {

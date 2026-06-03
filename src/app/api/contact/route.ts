@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sendContactEmail } from "@/lib/email";
+import { submitLeadToJotformBackup } from "@/lib/jotform-backup";
 
 // Lazy-init Supabase client to avoid crashing if env vars aren't set yet
 let supabaseClient: Awaited<typeof import("@/lib/supabase")>["supabase"] | null =
@@ -373,6 +374,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // --- Copy service forms to Jotform backup ---
+    const jotformBackup = await submitLeadToJotformBackup(data);
+
     // --- Send notification email ---
     try {
       await sendContactEmail(data as Parameters<typeof sendContactEmail>[0]);
@@ -397,6 +401,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       ...(supabaseOk && webhookOk ? {} : { partial: true }),
+      ...(jotformBackup.attempted
+        ? {
+            backup: {
+              jotform: jotformBackup.ok,
+              formId: jotformBackup.formId,
+              submissionId: jotformBackup.submissionId,
+            },
+          }
+        : {}),
     });
   } catch {
     return NextResponse.json(

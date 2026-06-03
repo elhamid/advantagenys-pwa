@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { getShareAttributionFromLocation } from "@/lib/forms/share-attribution";
 import { uppercaseFormData } from "@/lib/forms/uppercase";
 
 const businessTypes = [
@@ -75,6 +76,7 @@ export function CorporateRegistrationForm() {
           message: normalizedFormData.additionalNotes,
           type: "corporate-registration",
           source: "website-corporate-registration",
+          ...getShareAttributionFromLocation(),
         }),
       });
 
