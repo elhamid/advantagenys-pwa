@@ -12,6 +12,8 @@ const EXCLUDED_SUBSTRINGS = [
   "routing",   // bank routing numbers
   "account",   // bank account numbers
   "ein",       // employer identification numbers
+  "type",      // discriminator fields (type, businessType, serviceType) — must NOT be uppercased or the server rejects the lead type
+  "source",    // lead source discriminator — must stay literal
 ];
 
 /**
