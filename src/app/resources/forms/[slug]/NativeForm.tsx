@@ -20,6 +20,10 @@ const nativeFormComponents: Record<string, ComponentType> = {
     () => import("@/components/forms/HomeImprovementForm").then((mod) => mod.HomeImprovementForm),
     { loading: () => <div className="py-12 text-center text-[var(--text-muted)]">Loading form...</div> }
   ),
+  TaxReturnForm: dynamic(
+    () => import("@/components/forms/TaxReturnForm").then((mod) => mod.TaxReturnForm),
+    { loading: () => <div className="py-12 text-center text-[var(--text-muted)]">Loading form...</div> }
+  ),
   ImmigrationPetitionerForm: dynamic(
     () => import("@/components/forms/ImmigrationPetitionerForm").then((mod) => mod.ImmigrationPetitionerForm),
     { loading: () => <div className="py-12 text-center text-[var(--text-muted)]">Loading form...</div> }

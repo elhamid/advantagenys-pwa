@@ -1,7 +1,5 @@
 export interface ShareAttribution {
   sharedBy?: string;
-  sharedByName?: string;
-  sharedByEmail?: string;
   utmSource?: string;
   utmMedium?: string;
   utmCampaign?: string;
@@ -9,8 +7,6 @@ export interface ShareAttribution {
 
 const PARAM_MAP: Record<string, keyof ShareAttribution> = {
   shared_by: "sharedBy",
-  shared_by_name: "sharedByName",
-  shared_by_email: "sharedByEmail",
   utm_source: "utmSource",
   utm_medium: "utmMedium",
   utm_campaign: "utmCampaign",

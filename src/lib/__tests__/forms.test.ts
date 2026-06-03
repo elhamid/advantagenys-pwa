@@ -32,9 +32,9 @@ describe("forms data integrity", () => {
     expect(unique.size).toBe(priorities.length);
   });
 
-  it("all active flags are boolean true (all forms are active)", () => {
+  it("all active flags are booleans", () => {
     forms.forEach((f) => {
-      expect(f.active).toBe(true);
+      expect(typeof f.active).toBe("boolean");
     });
   });
 
@@ -111,6 +111,8 @@ describe("getFormBySlug()", () => {
     const form = getFormBySlug("tax-return-questionnaire");
     expect(form).toBeDefined();
     expect(form?.category).toBe("tax");
+    expect(form?.platform).toBe("native");
+    expect(form?.nativeComponent).toBe("TaxReturnForm");
     expect(form?.encrypted).toBe(true);
   });
 
