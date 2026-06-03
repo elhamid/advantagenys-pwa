@@ -33,6 +33,10 @@ interface NormalizedLead {
   serviceType: string;
   source: string;
   type: string;
+  sharedBy?: string;
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
   metadata: {
     lead_type: string;
     raw: Record<string, unknown>;
@@ -103,6 +107,16 @@ function findValue(
     if (value) return value;
   }
   return undefined;
+}
+
+function findTraceValue(
+  answers: Record<string, JotFormAnswer>,
+  aliases: string[]
+): string | undefined {
+  const normalizedAliases = aliases.map((alias) => alias.toLowerCase());
+  return findValue(answers, (label) =>
+    normalizedAliases.some((alias) => label === alias || label.includes(alias))
+  );
 }
 
 function serviceForForm(form: FormConfig | undefined, title: string): string {
@@ -187,6 +201,23 @@ function normalizeSubmission(submission: JotFormSubmission): NormalizedLead {
     label.includes("comment") ||
     label.includes("description")
   );
+  const sharedBy = findTraceValue(submission.answers, [
+    "shared_by",
+    "shared by",
+    "advantageos shared by",
+  ]);
+  const utmSource = findTraceValue(submission.answers, [
+    "utm_source",
+    "utm source",
+  ]);
+  const utmMedium = findTraceValue(submission.answers, [
+    "utm_medium",
+    "utm medium",
+  ]);
+  const utmCampaign = findTraceValue(submission.answers, [
+    "utm_campaign",
+    "utm campaign",
+  ]);
 
   return {
     fullName,
@@ -198,6 +229,10 @@ function normalizeSubmission(submission: JotFormSubmission): NormalizedLead {
     serviceType,
     source: "jotform-webhook",
     type: leadType,
+    ...(sharedBy ? { sharedBy } : {}),
+    ...(utmSource ? { utmSource } : {}),
+    ...(utmMedium ? { utmMedium } : {}),
+    ...(utmCampaign ? { utmCampaign } : {}),
     metadata: {
       lead_type: leadType,
       raw: {

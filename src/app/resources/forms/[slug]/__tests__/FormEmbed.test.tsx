@@ -1,8 +1,12 @@
 import { render, screen, waitFor } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { FormEmbed } from "../FormEmbed";
 
 describe("FormEmbed", () => {
+  afterEach(() => {
+    window.history.replaceState({}, "", "/");
+  });
+
   it("renders an iframe for non-JotForm embeds without loading the helper script", () => {
     render(
       <FormEmbed
@@ -50,5 +54,29 @@ describe("FormEmbed", () => {
 
     unmount();
     expect(document.body.querySelector('script[src="https://cdn.jotfor.ms/s/umd/latest/for-form-embed-handler.js"]')).toBeNull();
+  });
+
+  it("passes AdvantageOS share attribution into embedded JotForm URLs", () => {
+    window.history.replaceState(
+      {},
+      "",
+      "/resources/forms/itin-registration-form?shared_by=staff-123&utm_source=advantageos&utm_medium=staff_share&utm_campaign=form_share&ignored=value"
+    );
+
+    render(
+      <FormEmbed
+        form={{
+          id: "210224697492156",
+          title: "ITIN Registration Form",
+          platform: "jotform",
+          embedUrl: "https://form.jotform.com/210224697492156",
+        } as never}
+      />
+    );
+
+    expect(screen.getByTitle("ITIN Registration Form")).toHaveAttribute(
+      "src",
+      "https://form.jotform.com/210224697492156?shared_by=staff-123&utm_source=advantageos&utm_medium=staff_share&utm_campaign=form_share"
+    );
   });
 });

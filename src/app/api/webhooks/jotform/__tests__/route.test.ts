@@ -59,6 +59,18 @@ describe("/api/webhooks/jotform", () => {
           answer: "Test User",
           type: "control_textbox",
         },
+        "2": {
+          name: "shared_by",
+          text: "AdvantageOS Shared By",
+          answer: "staff-user-123",
+          type: "control_textbox",
+        },
+        "3": {
+          name: "utm_medium",
+          text: "UTM Medium",
+          answer: "staff_share",
+          type: "control_textbox",
+        },
       },
     };
 
@@ -95,6 +107,8 @@ describe("/api/webhooks/jotform", () => {
       phone: "jotform:submission-1",
       source: "jotform-webhook",
       serviceType: "Business Consulting",
+      sharedBy: "staff-user-123",
+      utmMedium: "staff_share",
     });
     expect(forwardedBody.metadata.raw.formID).toBe("form-1");
   });
