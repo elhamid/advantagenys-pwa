@@ -136,6 +136,94 @@ describe("/api/webhooks/jotform", () => {
     expect(body.taskboardForwarded).toBe(true);
   });
 
+  it("ignores PWA backup echoes before forwarding to Taskboard", async () => {
+    const submission = {
+      formID: "220887424251052",
+      submissionID: "backup-echo-001",
+      formTitle: "Immigration Form for Petitioner",
+      answers: {
+        "1": {
+          name: "Full Name",
+          text: "Full Name",
+          answer: "Backup Echo Client",
+          type: "control_textbox",
+        },
+        "2": {
+          name: "Phone",
+          text: "Phone",
+          answer: "+15550001212",
+          type: "control_phone",
+        },
+        "26": {
+          name: "notes",
+          text: "Internal Notes",
+          answer: "Backup copy from advantagenys.com | Shared-by id: staff-user-123",
+          type: "control_textarea",
+        },
+      },
+    };
+
+    const response = await POST(
+      buildRequest(`rawRequest=${encodeURIComponent(JSON.stringify(submission))}`, {
+        "content-type": "application/x-www-form-urlencoded",
+        "x-jotform-webhook-secret": "test-jotform-secret",
+      })
+    );
+
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body).toEqual({
+      success: true,
+      ignored: true,
+      reason: "pwa-backup-echo",
+      formID: "220887424251052",
+      submissionID: "backup-echo-001",
+      taskboardForwarded: false,
+    });
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it("does not ignore public submissions when the backup marker appears outside the backup-note field", async () => {
+    const submission = {
+      formID: "220887424251052",
+      submissionID: "public-marker-001",
+      formTitle: "Immigration Form for Petitioner",
+      answers: {
+        "1": {
+          name: "Full Name",
+          text: "Full Name",
+          answer: "Public mention of Backup copy from advantagenys.com",
+          type: "control_textbox",
+        },
+        "2": {
+          name: "Phone",
+          text: "Phone",
+          answer: "+15550001212",
+          type: "control_phone",
+        },
+      },
+    };
+
+    const response = await POST(
+      buildRequest(`rawRequest=${encodeURIComponent(JSON.stringify(submission))}`, {
+        "content-type": "application/x-www-form-urlencoded",
+        "x-jotform-webhook-secret": "test-jotform-secret",
+      })
+    );
+
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body).toMatchObject({
+      success: true,
+      formID: "220887424251052",
+      submissionID: "public-marker-001",
+      taskboardForwarded: true,
+    });
+    expect(fetch).toHaveBeenCalledOnce();
+  });
+
   it("returns 502 in production when taskboard forwarding fails", async () => {
     process.env.VERCEL_ENV = "production";
     vi.stubGlobal(

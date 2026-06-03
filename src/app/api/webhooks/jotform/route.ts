@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { forms, type FormConfig } from "@/lib/forms";
+import { JOTFORM_BACKUP_MARKER } from "@/lib/jotform-backup";
 
 interface JotFormAnswer {
   name: string;
@@ -117,6 +118,26 @@ function findTraceValue(
   return findValue(answers, (label) =>
     normalizedAliases.some((alias) => label === alias || label.includes(alias))
   );
+}
+
+const PWA_BACKUP_NOTE_FIELD_BY_FORM_ID: Record<string, string> = {
+  "220796553658166": "74",
+  "220805681432149": "96",
+  "220836887470163": "96",
+  "222275688928169": "16",
+  "220887424251052": "26",
+  "220896671023154": "36",
+  "230235945738159": "163",
+};
+
+function isPwaBackupEcho(submission: JotFormSubmission): boolean {
+  const noteField = PWA_BACKUP_NOTE_FIELD_BY_FORM_ID[submission.formID];
+  if (!noteField) return false;
+
+  const answer = submission.answers[noteField];
+  if (!answer) return false;
+
+  return normalizeAnswerValue(answer.prettyFormat || answer.answer).includes(JOTFORM_BACKUP_MARKER);
 }
 
 function serviceForForm(form: FormConfig | undefined, title: string): string {
@@ -313,6 +334,22 @@ export async function POST(request: NextRequest) {
         { error: "Invalid payload: missing required fields (formID, submissionID, answers)" },
         { status: 400 }
       );
+    }
+
+    if (isPwaBackupEcho(submission)) {
+      console.log("[JotForm Webhook] Ignored PWA backup echo", {
+        formID: submission.formID,
+        submissionID: submission.submissionID,
+      });
+
+      return NextResponse.json({
+        success: true,
+        ignored: true,
+        reason: "pwa-backup-echo",
+        formID: submission.formID,
+        submissionID: submission.submissionID,
+        taskboardForwarded: false,
+      });
     }
 
     const leadPayload = normalizeSubmission(submission);
