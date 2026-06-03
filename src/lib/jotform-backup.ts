@@ -76,6 +76,8 @@ const ENV_FORM_ID_KEYS: Record<LeadType, string> = {
   "tax-return": "JOTFORM_TAX_RETURN_FORM_ID",
 };
 
+export const JOTFORM_BACKUP_MARKER = "Backup copy from advantagenys.com";
+
 function asLeadType(type: string | undefined): LeadType | null {
   if (!type) return null;
   return Object.prototype.hasOwnProperty.call(DEFAULT_FORM_IDS, type)
@@ -136,7 +138,7 @@ function appendIsoDate(params: URLSearchParams, qid: string, value: unknown) {
 
 function traceNote(data: BackupPayload): string {
   const parts = [
-    "Backup copy from advantagenys.com",
+    JOTFORM_BACKUP_MARKER,
     data.sharedBy && `Shared-by id: ${data.sharedBy}`,
     data.utmSource && `UTM source: ${data.utmSource}`,
     data.utmMedium && `UTM medium: ${data.utmMedium}`,
