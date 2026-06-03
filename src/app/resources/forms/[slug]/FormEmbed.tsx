@@ -75,7 +75,6 @@ export function FormEmbed({ form }: FormEmbedProps) {
           border: "none",
         }}
         allow="geolocation; microphone; camera; fullscreen; payment"
-        allowFullScreen
       />
     </div>
   );
