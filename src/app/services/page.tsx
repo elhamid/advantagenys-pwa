@@ -65,6 +65,12 @@ function ServiceIcon({ slug }: { slug: string }) {
         <path d="M3 21l5.5-5.5" />
       </svg>
     ),
+    "globe": (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
+        <circle cx="12" cy="12" r="10" />
+        <path d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20" />
+      </svg>
+    ),
   };
   return (
     <>{icons[slug] ?? icons["building"]}</>
@@ -152,6 +158,14 @@ const serviceCards: ServiceCard[] = [
       "Immigration petitions, citizenship applications, ITIN registration, and family law for immigrant entrepreneurs and their families.",
     services: ["I-130 Petition", "Citizenship (N-400)", "ITIN Registration", "Family Law"],
     icon: "gavel",
+  },
+  {
+    name: "Web Presence",
+    href: "/services/web-presence/",
+    badge: "New",
+    description: "A modern website in your language, Google Business Profile setup, reviews, and getting found online. From $49/mo, no contracts.",
+    services: ["Website (PWA)", "Google Business Profile", "Reviews", "Online Payments", "Local SEO"],
+    icon: "globe",
   },
 ];
 
