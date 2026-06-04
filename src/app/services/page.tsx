@@ -84,6 +84,7 @@ interface ServiceCard {
   description: string;
   services: string[];
   icon: string;
+  featured?: boolean;
 }
 
 const serviceCards: ServiceCard[] = [
@@ -104,6 +105,15 @@ const serviceCards: ServiceCard[] = [
       "LLC, C-Corp, S-Corp, and Non-Profit formation. Articles of Organization, EIN, operating agreements, and registered agent — done right the first time.",
     services: ["LLC Formation", "C-Corp / S-Corp", "Non-Profit 501(c)(3)", "EIN & Sales Tax Reg."],
     icon: "building",
+  },
+  {
+    name: "Web Presence",
+    href: "/services/web-presence/",
+    badge: "Featured",
+    featured: true,
+    description: "A modern website in your language, Google Business Profile setup, reviews, and getting found online. From $49/mo, no contracts.",
+    services: ["Website (PWA)", "Google Business Profile", "Reviews", "Online Payments", "Local SEO"],
+    icon: "globe",
   },
   {
     name: "Licensing & Permits",
@@ -159,18 +169,10 @@ const serviceCards: ServiceCard[] = [
     services: ["I-130 Petition", "Citizenship (N-400)", "ITIN Registration", "Family Law"],
     icon: "gavel",
   },
-  {
-    name: "Web Presence",
-    href: "/services/web-presence/",
-    badge: "New",
-    description: "A modern website in your language, Google Business Profile setup, reviews, and getting found online. From $49/mo, no contracts.",
-    services: ["Website (PWA)", "Google Business Profile", "Reviews", "Online Payments", "Local SEO"],
-    icon: "globe",
-  },
 ];
 
 const badgeVariant = (badge: string | null): "default" | "warning" =>
-  badge === "High Value" ? "warning" : "default";
+  badge === "High Value" || badge === "Featured" ? "warning" : "default";
 
 export default function ServicesPage() {
   return (
@@ -200,13 +202,23 @@ export default function ServicesPage() {
             {serviceCards.map((card) => (
               <div
                 key={card.name}
-                className="group flex flex-col rounded-[var(--radius-lg)] bg-[var(--surface)] border border-[var(--border)] shadow-[var(--shadow-card)] transition-all duration-[var(--transition)] hover:shadow-[var(--shadow-md)] hover:-translate-y-1"
+                className={
+                  card.featured
+                    ? "group flex flex-col rounded-[var(--radius-lg)] bg-[var(--surface)] border border-[var(--gold)] shadow-[0_0_0_3px_rgba(212,151,10,0.15),var(--shadow-card)] transition-all duration-[var(--transition)] hover:shadow-[0_0_0_3px_rgba(212,151,10,0.25),var(--shadow-md)] hover:-translate-y-1"
+                    : "group flex flex-col rounded-[var(--radius-lg)] bg-[var(--surface)] border border-[var(--border)] shadow-[var(--shadow-card)] transition-all duration-[var(--transition)] hover:shadow-[var(--shadow-md)] hover:-translate-y-1"
+                }
               >
                 {/* Card header */}
                 <div className="p-5 pb-4 flex-1">
                   <div className="flex items-start gap-3 mb-3">
                     {/* Icon */}
-                    <div className="flex-shrink-0 w-10 h-10 rounded-[var(--radius-sm)] bg-[var(--blue-bg)] text-[var(--blue-accent)] flex items-center justify-center">
+                    <div
+                      className={
+                        card.featured
+                          ? "flex-shrink-0 w-10 h-10 rounded-[var(--radius-sm)] bg-amber-50 text-[var(--gold)] flex items-center justify-center"
+                          : "flex-shrink-0 w-10 h-10 rounded-[var(--radius-sm)] bg-[var(--blue-bg)] text-[var(--blue-accent)] flex items-center justify-center"
+                      }
+                    >
                       <ServiceIcon slug={card.icon} />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -241,10 +253,20 @@ export default function ServicesPage() {
                 </div>
 
                 {/* Dual CTA footer */}
-                <div className="px-5 pb-5 pt-3 border-t border-[var(--border)] flex items-center gap-2 mt-auto">
+                <div
+                  className={
+                    card.featured
+                      ? "px-5 pb-5 pt-3 border-t border-[var(--gold)]/30 flex items-center gap-2 mt-auto"
+                      : "px-5 pb-5 pt-3 border-t border-[var(--border)] flex items-center gap-2 mt-auto"
+                  }
+                >
                   <Link
                     href={card.href}
-                    className="flex-1 text-center text-sm font-semibold text-[var(--blue-accent)] hover:text-[var(--blue-vibrant)] transition-colors duration-150 py-2 active:scale-[0.97]"
+                    className={
+                      card.featured
+                        ? "flex-1 text-center text-sm font-semibold text-[var(--gold)] hover:text-[var(--gold-bright)] transition-colors duration-150 py-2 active:scale-[0.97]"
+                        : "flex-1 text-center text-sm font-semibold text-[var(--blue-accent)] hover:text-[var(--blue-vibrant)] transition-colors duration-150 py-2 active:scale-[0.97]"
+                    }
                   >
                     Learn more →
                   </Link>

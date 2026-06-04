@@ -7,6 +7,7 @@ import { ReviewsSection } from "@/components/home/ReviewsSection";
 import { TeamSection } from "@/components/home/TeamSection";
 import { JourneyTimeline } from "@/components/home/JourneyTimeline";
 import { FinalCTA } from "@/components/home/FinalCTA";
+import { WebPresenceBand } from "@/components/home/WebPresenceBand";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { GOOGLE_RATING } from "@/lib/reviews";
 import { makeCanonical } from "@/lib/seo";
@@ -30,6 +31,7 @@ export default function HomePage() {
       <HeroSection />
       <QuickPathsSection />
       <StatsSection />
+      <WebPresenceBand />
       <ReviewsSection />
       <PersonaCarousel />
       <TeamSection />
