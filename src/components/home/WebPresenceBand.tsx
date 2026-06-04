@@ -62,6 +62,14 @@ const PROOF_POINTS = [
     ),
     text: "You own everything — your Google, your payments straight to your Stripe, your data. No contracts.",
   },
+  {
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+      </svg>
+    ),
+    text: "Optional: an AI assistant that greets customers in their language — set up by us, with a human always in the loop.",
+  },
 ];
 
 export function WebPresenceBand() {

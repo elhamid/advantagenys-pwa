@@ -19,7 +19,7 @@ const tiers = [
     tagline: "Get Found",
     price: "$49",
     period: "/mo",
-    setup: "$149 one-time setup",
+    setup: "$199 one-time setup",
     blurb: "Everything you need to exist online and show up when people search for you.",
     featured: false,
     cta: "Start here",
@@ -39,7 +39,7 @@ const tiers = [
     tagline: "Get Found + Get Trusted",
     price: "$99",
     period: "/mo",
-    setup: "$249 one-time setup",
+    setup: "$349 one-time setup",
     blurb: "Turn the people who find you into customers, with reviews and a steady presence.",
     featured: true,
     cta: "Grow my business",
@@ -58,7 +58,7 @@ const tiers = [
     tagline: "Get Paid",
     price: "$149",
     period: "/mo",
-    setup: "$399 one-time setup",
+    setup: "$499 one-time setup",
     blurb: "Take bookings and payments right on your own site.",
     featured: false,
     cta: "Sell online",
@@ -303,6 +303,19 @@ export default function WebPresencePage() {
           <p className="text-center text-sm text-[var(--text-muted)] mt-8">
             Month to month. No contracts. Cancel anytime. Prices in USD.
           </p>
+
+          {/* Bundle discount callout */}
+          <div className="mt-8 max-w-2xl mx-auto rounded-[var(--radius-lg)] border border-[var(--gold)]/40 bg-amber-50/50 px-6 py-4 flex items-start gap-3">
+            <span className="flex-shrink-0 text-[var(--gold)] mt-0.5" aria-hidden>
+              <svg viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
+              </svg>
+            </span>
+            <p className="text-sm text-[var(--text-secondary)]">
+              <span className="font-semibold text-[var(--text)]">Bundle &amp; save —</span>{" "}
+              Save $50 on setup when you bundle Web Presence with any other Advantage service — formation, tax, licensing, or insurance.
+            </p>
+          </div>
         </Container>
       </section>
 
@@ -392,6 +405,48 @@ export default function WebPresencePage() {
                 <p className="text-sm text-[var(--text-secondary)]">{a.desc}</p>
               </Card>
             ))}
+          </div>
+        </Container>
+      </section>
+
+      {/* AI Add-on */}
+      <section className="py-16 bg-[var(--blue-bg)]">
+        <Container>
+          <div className="max-w-3xl mx-auto">
+            <div className="rounded-[var(--radius-xl)] border border-[var(--gold)]/30 bg-[var(--surface)] shadow-[var(--shadow-md)] overflow-hidden">
+              <div className="h-1 w-full" style={{ background: "linear-gradient(90deg, var(--gold) 0%, var(--gold-bright) 100%)" }} />
+              <div className="p-8 sm:p-10">
+                <p className="flex items-center gap-3 text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold)] mb-4">
+                  <span className="inline-block h-px w-7 bg-[var(--gold)]" aria-hidden />
+                  Optional add-on
+                </p>
+                <h2 className="text-2xl sm:text-3xl font-bold text-[var(--text)] mb-4 leading-tight">
+                  AI Assistant — done for you
+                </h2>
+                <p className="text-[var(--text-secondary)] leading-relaxed mb-6 max-w-xl">
+                  An AI-assisted chat for your website that greets customers in their own language and captures leads around the clock — set up and managed by us, with a real person always in the loop. It removes the language and after-hours barriers without replacing the personal touch your customers trust.
+                </p>
+                <ul className="space-y-3 mb-8">
+                  {[
+                    "Greets and answers in your customer’s language",
+                    "Captures and routes leads 24/7",
+                    "A real person stays in the loop — AI amplifies, never replaces",
+                  ].map((item) => (
+                    <li key={item} className="flex items-start gap-3">
+                      <span className="flex-shrink-0 text-[var(--gold)] mt-0.5" aria-hidden>
+                        <svg viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
+                        </svg>
+                      </span>
+                      <span className="text-sm text-[var(--text-secondary)] leading-relaxed pt-0.5">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+                <Button href="/contact" variant="outline">
+                  Talk to us about AI
+                </Button>
+              </div>
+            </div>
           </div>
         </Container>
       </section>
