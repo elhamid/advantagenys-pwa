@@ -4,11 +4,11 @@ export function GET() {
   const content = `# Advantage Services — Full Reference
 > Professional business consulting for entrepreneurs in Queens, NYC.
 > Tax preparation, business formation, licensing, insurance, legal services, audit defense, and financial services.
-> Serving immigrant entrepreneurs, restaurant owners, contractors, and small businesses since 2004.
+> Serving immigrant entrepreneurs, restaurant owners, contractors, and small businesses since 2005.
 > Located at 229-14 Linden Blvd, Cambria Heights, NY 11411. Serving all of Queens, Brooklyn, and the NYC metro area.
 
 ## About
-Advantage Services has been helping small business owners and entrepreneurs navigate the complexities of starting and running a business in New York since 2004. With over 1,700 businesses formed, 5,700+ tax clients served, and 2,500+ licenses obtained, we are a trusted partner for the immigrant and small business community in NYC. Our multilingual team speaks English, Spanish, Hindi, Bengali, Chinese, and Arabic.
+Advantage Services has been helping small business owners and entrepreneurs navigate the complexities of starting and running a business in New York since 2005. With over 1,700 businesses formed, 5,700+ tax clients served, and 2,500+ licenses obtained, we are a trusted partner for the immigrant and small business community in NYC. Our multilingual team speaks English, Spanish, Hindi, Bengali, Chinese, and Arabic.
 
 ## Statistics
 - 1,700+ Business Set-ups completed

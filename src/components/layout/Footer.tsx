@@ -25,7 +25,7 @@ export function Footer() {
             <li className="hidden sm:inline-block text-slate-600">·</li>
             <li>IRS Certified Acceptance Agent</li>
             <li className="hidden sm:inline-block text-slate-600">·</li>
-            <li>Since 2004</li>
+            <li>Since 2005</li>
             <li className="hidden sm:inline-block text-slate-600">·</li>
             <li>6 languages spoken</li>
           </ul>

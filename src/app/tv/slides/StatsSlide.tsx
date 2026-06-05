@@ -84,7 +84,7 @@ export default function StatsSlide({ cycleCount }: { cycleCount: number }) {
         ))}
       </div>
       <div style={{ marginTop: 64, width: 80, height: 3, backgroundColor: '#F9A825', borderRadius: 9999 }} />
-      <p style={{ marginTop: 24, fontSize: 20, color: 'rgba(255,255,255,0.5)' }}>Since 2004</p>
+      <p style={{ marginTop: 24, fontSize: 20, color: 'rgba(255,255,255,0.5)' }}>Since 2005</p>
     </div>
   );
 }

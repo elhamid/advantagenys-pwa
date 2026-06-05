@@ -40,7 +40,7 @@ export default function JaySpotlightSlide({ cycleCount }: { cycleCount: number }
               "Immigration application assistance",
               "Citizenship & naturalization support",
               "ITIN registration & filing",
-              "Serving immigrant entrepreneurs since 2004",
+              "Serving immigrant entrepreneurs since 2005",
             ].map((item) => (
               <li
                 key={item}
