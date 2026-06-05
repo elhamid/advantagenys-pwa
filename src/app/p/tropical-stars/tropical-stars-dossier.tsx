@@ -32,9 +32,32 @@ const ACCESS_CODES = new Set([
 
 const metrics = [
   { value: "789", label: "contractor records already touched through ITIN work" },
-  { value: "2-3x", label: "growth target to stage around systems, not hope" },
+  { value: "2-3x", label: "growth target that needs a firmer operating foundation" },
   { value: "4", label: "growth lanes: finance, crew, demand, delivery" },
   { value: "1", label: "owner focus: higher-value accounts and partnerships" },
+];
+
+const journey = [
+  {
+    step: "01",
+    title: "Reground",
+    text: "Clean up the base: books, tax posture, insurance exposure, contractor records, cash flow, and the weekly truth of the business.",
+  },
+  {
+    step: "02",
+    title: "Organize",
+    text: "Give the existing crew clearer lanes, visible follow-up, better intake, and fewer dropped handoffs so the company gets more from the team it already has.",
+  },
+  {
+    step: "03",
+    title: "Empower",
+    text: "Move the owner from constantly finding and fixing leaks into focused growth work: accounts, partnerships, contracts, and strategic relationships.",
+  },
+  {
+    step: "04",
+    title: "Scale",
+    text: "Build the structure needed for a larger company: stronger reporting, repeatable delivery, client profitability, and segment-specific growth plays.",
+  },
 ];
 
 const phases = [
@@ -239,10 +262,10 @@ export function TropicalStarsDossier() {
             <span className="block text-[#9f7a45]">Growth Operating System</span>
           </h1>
           <p className="mt-6 max-w-2xl text-[1.05rem] leading-8 text-[#4f463b]">
-            The next stage is not only bookkeeping cleanup. It is moving the
-            owner out of leak-finding mode and into growth mode, while the
-            existing crew gets clearer systems, tighter accountability, and a
-            measurable path to higher-value hospitality accounts.
+            Tropical already knows how to grow. Advantage Services is here to
+            help her grow on a different scale: firm the foundation, organize
+            the crew around the right signals, and free the owner to pursue
+            larger accounts, partnerships, and contracts.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             {["Stabilize", "Productivity", "Owner focus", "2-3x growth path"].map((item) => (
@@ -292,9 +315,20 @@ export function TropicalStarsDossier() {
       <section className="relative z-10 mx-auto max-w-7xl px-5 py-16 sm:px-8 lg:py-20">
         <SectionHeader
           eyebrow="The trajectory"
-          title="Foundation first. Then productivity. Then growth."
-          text="The diagnostic work is not the destination. It is the base layer that lets Tropical scale without dragging the same leaks into a larger operation."
+          title="A larger company needs a firmer foundation."
+          text="The diagnostic work is not the destination. It is the grounding work that lets Tropical grow without carrying the same leaks, handoff gaps, and hidden risks into a bigger operation."
         />
+        <div className="mt-8 grid gap-4 md:grid-cols-4">
+          {journey.map((item) => (
+            <article key={item.step} className="rounded-[18px] border border-[#d8cbb8] bg-[#fffdf8] p-5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-extrabold uppercase tracking-[0.18em] text-[#98743f]">{item.title}</span>
+                <span className="font-[family-name:var(--font-dossier-serif)] text-2xl font-semibold text-[#c1ad8d]">{item.step}</span>
+              </div>
+              <p className="mt-4 text-sm leading-6 text-[#5f564b]">{item.text}</p>
+            </article>
+          ))}
+        </div>
         <div className="mt-9 grid gap-5 lg:grid-cols-4">
           {phases.map((phase, index) => (
             <article key={phase.title} className="group rounded-[18px] border border-[#d8cbb8] bg-[#fffdf8] p-6 transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_60px_-42px_rgba(39,29,16,0.55)]">
@@ -355,7 +389,7 @@ export function TropicalStarsDossier() {
         <SectionHeader
           eyebrow="Advantage operating stack"
           title="What we install around the owner."
-          text="The work combines Kedar's financial/tax foundation with Advantage's CRM, web, automation, BD, insurance, audit-defense, and operating cadence capabilities."
+          text="Advantage Services brings the grounding layer and the growth layer together: financial clarity, tax and compliance posture, insurance and audit readiness, client acquisition, intake discipline, reporting, and weekly operating cadence."
         />
         <div className="mt-9 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {operatingStack.map((item) => (
@@ -403,16 +437,17 @@ export function TropicalStarsDossier() {
         <div className="rounded-[20px] border border-[#0f5a43]/25 bg-[#dfece3] p-7 sm:p-9 lg:flex lg:items-center lg:justify-between lg:gap-12">
           <div>
             <div className="text-xs font-extrabold uppercase tracking-[0.22em] text-[#0f5a43]">
-              Recommended decision
+              Recommended direction
             </div>
             <h2 className="mt-4 font-[family-name:var(--font-dossier-serif)] text-3xl font-semibold leading-tight sm:text-5xl">
-              Keep Kedar's agreement as the foundation. Add a Growth Operations lane.
+              Ground the company first, then help Tropical grow at a larger scale.
             </h2>
             <p className="mt-5 max-w-3xl text-base leading-7 text-[#3f5147]">
-              The accounting scope cleans up the base. The growth lane gives the
-              owner leverage: better crew productivity, a stronger pipeline,
-              clearer reporting, and a system that lets Tropical scale without
-              the owner personally chasing every leak.
+              Advantage Services represents the full foundation: books, tax,
+              insurance, compliance, reporting, operating rhythm, and growth
+              discipline. The goal is to make the existing crew more productive,
+              reduce leak-finding noise, and give the owner the visibility and
+              focus to pursue larger accounts.
             </p>
           </div>
           <div className="mt-7 shrink-0 rounded-2xl border border-[#b7d0bd] bg-[#fffdf8] p-5 lg:mt-0 lg:w-80">
