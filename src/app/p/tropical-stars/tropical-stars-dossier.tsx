@@ -37,7 +37,7 @@ const metrics = [
   { value: "500+", label: "rolling people on payroll and active workforce" },
   { value: "3x", label: "target trajectory once the foundation can carry it" },
   { value: "NY + TN + GA", label: "operating footprint plus Georgia flagship: Merge Caribbean Cuisine" },
-  { value: "1", label: "owner focus: higher-value accounts and partnerships" },
+  { value: "1", label: "owner attention layer: visibility, structure, and growth choices" },
 ];
 
 const founderPriorities = [
@@ -62,7 +62,7 @@ const journey = [
   {
     step: "01",
     title: "Reground",
-    text: "Clean up the base: books, tax posture, insurance exposure, contractor records, cash flow, and the weekly truth of the business.",
+    text: "Clean up the base: books, tax posture, entity structure, insurance exposure, contractor records, cash flow, and the weekly truth of the business.",
   },
   {
     step: "02",
@@ -85,8 +85,8 @@ const phases = [
   {
     title: "See the Business Clearly",
     eyebrow: "Foundation",
-    text: "Clean books, entity/tax review, cash-flow reporting, job profitability, payroll and insurance exposure. The goal is to stop running the company from fragments.",
-    items: ["Monthly reconciliations", "P&L and cash-flow pack", "Client/job profitability", "Compliance exposure map"],
+    text: "Clean books, entity/tax review, cash-flow reporting, job profitability, payroll and insurance exposure. The goal is to stop running the company from fragments and feelings.",
+    items: ["Monthly reconciliations", "P&L and cash-flow pack", "Client/job profitability", "Entity and state-presence map"],
   },
   {
     title: "Make the Existing Crew Produce More",
@@ -121,6 +121,39 @@ const growthAssets = [
   { title: "Merge halo", text: "Merge is one important asset in the portfolio: a proud showcase for premium hospitality that may create new service formats after the foundation is firm." },
 ];
 
+const structureInsights = [
+  {
+    icon: BriefcaseBusiness,
+    title: "Entity architecture",
+    text: "Review whether the three operating lanes belong under a cleaner holding-company structure, adjusted S-corp posture, or another arrangement that makes ownership, reporting, and responsibility easier to see.",
+  },
+  {
+    icon: MapPinned,
+    title: "State presence",
+    text: "Clarify where Tropical is truly operating, earning, employing, and creating taxable presence across New York, Tennessee, and Georgia so future growth does not inherit old ambiguity.",
+  },
+  {
+    icon: WalletCards,
+    title: "Profit and loss visibility",
+    text: "Show where one lane is carrying another, where losses may matter, and where profit is real enough to fund the next move instead of disappearing into the noise.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Coverage by geography",
+    text: "Keep insurance and compliance coverage aligned with the current footprint and the next footprint, without overpaying, under-covering, or leaving claim exposure hidden.",
+  },
+  {
+    icon: BarChart3,
+    title: "Valuation readiness",
+    text: "Prepare the company for valuation conversations by separating assets, obligations, recurring revenue, workforce strength, client concentration, and margin by line of business.",
+  },
+  {
+    icon: Target,
+    title: "Trust and continuity",
+    text: "If ownership wants trust formation and legacy planning, the operating picture should be clean enough that the structure carries a real business, not a stack of unresolved questions.",
+  },
+];
+
 const mergeSignals = [
   { label: "Positioning", text: "Caribbean cuisine with modern dining elegance in Duluth, Georgia." },
   { label: "Demand capture", text: "The public site is already collecting a mailing list before doors open." },
@@ -153,8 +186,8 @@ const valueAdded = [
 ];
 
 const operatingStack = [
-  { icon: WalletCards, title: "Bookkeeping + Tax", text: "Monthly books, statements, tax planning, corp filings, cash-flow review." },
-  { icon: ShieldCheck, title: "Risk + Compliance", text: "Workers comp, payroll classification, audit readiness, insurance gaps." },
+  { icon: WalletCards, title: "Bookkeeping + Tax", text: "Monthly books, statements, tax planning, entity review, corp filings, cash-flow review." },
+  { icon: ShieldCheck, title: "Risk + Compliance", text: "Workers comp, payroll classification, audit readiness, insurance gaps, state-by-state exposure." },
   { icon: UsersRound, title: "Crew Productivity", text: "Clear owners, open loops, applicant readiness, follow-up accountability." },
   { icon: Target, title: "Client Acquisition", text: "Hotels, F&B, events, stadiums, cleaning, and property operators." },
   { icon: MessagesSquare, title: "Intake + CRM", text: "Every employer lead, talent lead, and service issue captured in one pipe." },
@@ -173,10 +206,11 @@ const hospitalityLanes = [
 const ownerFocus = [
   "Which accounts should I personally pursue?",
   "Where is money leaking this week?",
+  "Which entity or market is carrying the weight?",
   "Which crew member or manager owns the fix?",
   "Which clients are profitable enough to expand?",
   "Which leads or applicants are stuck?",
-  "What can wait because it is not growth-critical?",
+  "What can wait because it is not owner-critical?",
 ];
 
 function accessFromLocation() {
@@ -482,6 +516,66 @@ export function TropicalStarsDossier() {
         </div>
       </section>
 
+      <section className="relative z-10 mx-auto max-w-7xl px-5 pb-16 sm:px-8 lg:pb-20">
+        <div className="grid gap-8 lg:grid-cols-[0.82fr_1.18fr]">
+          <div className="cinema-panel float-panel relative overflow-hidden rounded-[22px] border border-[#3d3021] bg-[#211b14] p-7 text-[#f6f0e6] shadow-[0_34px_110px_-54px_rgba(20,14,8,0.82)]">
+            <div className="glass-line pointer-events-none absolute left-8 right-8 top-20 h-px bg-gradient-to-r from-transparent via-[#b99a66] to-transparent" />
+            <div className="text-xs font-extrabold uppercase tracking-[0.24em] text-[#d7bd89]">
+              Visibility and structure
+            </div>
+            <h2 className="mt-5 font-[family-name:var(--font-dossier-serif)] text-[clamp(2.2rem,4.8vw,4.5rem)] font-semibold leading-[0.96]">
+              The money may be there. The picture is not clear enough yet.
+            </h2>
+            <p className="mt-6 text-sm leading-7 text-[#efe4d3]">
+              When the founder feels there should be more money, the answer is
+              not only a bank balance. It is entity clarity, state clarity,
+              coverage clarity, and a clean view of which business line is
+              funding which ambition. The goal is to turn confusion into
+              usable fuel.
+            </p>
+            <div className="mt-7 grid grid-cols-3 gap-2">
+              {["Structure", "Presence", "Attention"].map((label) => (
+                <div key={label} className="rounded-2xl border border-[#5d4c34] bg-[#18130e] p-3 text-center">
+                  <div className="font-[family-name:var(--font-dossier-serif)] text-2xl font-semibold text-[#d7bd89]">
+                    {label}
+                  </div>
+                  <div className="mt-1 text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#bfa673]">
+                    growth carrier
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            {structureInsights.map((item) => (
+              <article key={item.title} className="lift-card reveal-card rounded-[18px] border border-[#d8cbb8] bg-[#fffdf8] p-5">
+                <div className="flex items-start gap-4">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#e4efe6] text-[#0f5a43]">
+                    <item.icon className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <div className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#98743f]">
+                      Preparedness lane
+                    </div>
+                    <h3 className="mt-2 font-[family-name:var(--font-dossier-serif)] text-2xl font-semibold leading-tight">
+                      {item.title}
+                    </h3>
+                    <p className="mt-3 text-sm leading-6 text-[#6f6557]">{item.text}</p>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+        <div className="mt-6 rounded-[18px] border border-[#d8cbb8] bg-[#f8f3ea] p-5 text-sm font-semibold leading-7 text-[#4f463b]">
+          Advantage does not need to overpromise a tax answer in the room. The
+          stronger promise is process: reconcile the books, map the entities,
+          clarify the states, align insurance coverage, and prepare the company
+          so valuation and trust planning can rest on clean facts.
+        </div>
+      </section>
+
       <section className="relative z-10 border-y border-[#e1d4c0] bg-[#211b14] py-16 text-[#f6f0e6] lg:py-20">
         <div className="mx-auto grid max-w-7xl gap-10 px-5 sm:px-8 lg:grid-cols-[0.9fr_1.1fr]">
           <div>
@@ -645,18 +739,20 @@ export function TropicalStarsDossier() {
             </h2>
             <p className="mt-5 max-w-3xl text-base leading-7 text-[#3f5147]">
               Advantage Services represents the full foundation: books, tax,
-              insurance, compliance, reporting, operating rhythm, and growth
-              discipline. The first agreement should tighten the house and make
-              the truth visible. From there, Tropical and Advantage can decide
-              which growth possibilities deserve investment.
+              insurance, compliance, entity posture, reporting, operating
+              rhythm, and growth discipline. The first agreement should tighten
+              the house and make the truth visible. From there, Tropical and
+              Advantage can decide which growth possibilities, valuation moves,
+              and trust-planning steps deserve investment.
             </p>
           </div>
           <div className="mt-7 shrink-0 rounded-2xl border border-[#b7d0bd] bg-[#fffdf8] p-5 lg:mt-0 lg:w-80">
             <div className="text-sm font-extrabold text-[#0f5a43]">Next working session</div>
             <p className="mt-2 text-sm leading-6 text-[#4f463b]">
               Confirm the foundation agreement, name the first diagnostics,
-              identify the first leakage targets, and use the findings to choose
-              the growth lanes that are real enough to pursue.
+              identify the first leakage targets, map the entity and state
+              questions, and use the findings to choose the growth lanes that
+              are real enough to pursue.
             </p>
           </div>
         </div>
