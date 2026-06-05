@@ -376,6 +376,16 @@ export function TropicalStarsDossier() {
     setError("Access code not recognized.");
   }
 
+  function handleNavClick(event: React.MouseEvent<HTMLAnchorElement>, href: string) {
+    event.preventDefault();
+    const target = document.querySelector(href);
+    if (!target) return;
+    const offset = 150;
+    const top = target.getBoundingClientRect().top + window.scrollY - offset;
+    window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+    window.history.replaceState(null, "", href);
+  }
+
   if (!unlocked) {
     return (
       <main className="min-h-screen overflow-hidden bg-[#f5efe4] text-[#211b14]">
@@ -537,6 +547,7 @@ export function TropicalStarsDossier() {
               <a
                 key={item.href}
                 href={item.href}
+                onClick={(event) => handleNavClick(event, item.href)}
                 className="shrink-0 rounded-full border border-[#d8cbb8] bg-[#fffdf8] px-3.5 py-2 text-xs font-extrabold uppercase tracking-[0.12em] text-[#5f564b] shadow-sm transition hover:border-[#a77d42] hover:text-[#211b14]"
               >
                 {item.label}
