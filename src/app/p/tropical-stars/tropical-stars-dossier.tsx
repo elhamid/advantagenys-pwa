@@ -167,7 +167,49 @@ const flagshipMoves = [
   "Show the owner where the business is healthier than it felt after the books are properly reconciled.",
   "Map the coming-soon mailing list and opening-event interest into possible booking, private-event, and follow-up lanes.",
   "Evaluate Merge as a premium proof of taste, service, and experience, not as a template to copy blindly.",
-  "Model possible profit-making formats around the halo: catered activations, private dining, satellite experiences, and client-space takeovers where the Merge style could travel.",
+  "Model possible profit-making formats around the halo: catered activations, private dining, satellite experiences, consulting, and client-space takeovers where the Merge standard could travel.",
+];
+
+const marketBackedLanes = [
+  {
+    icon: UtensilsCrossed,
+    title: "Merge as operating proof",
+    thesis: "Showroom",
+    score: "High control",
+    text: "Use Merge as a live showroom for taste, training, service standards, booking discipline, and hospitality consulting. The value is not more restaurants by default; it is a proof point that Tropical can operate a premium guest experience.",
+    pilot: "Opening-event playbook, private-event workflow, service-standard packet.",
+  },
+  {
+    icon: BriefcaseBusiness,
+    title: "Turnkey space operations",
+    thesis: "Asset-light scale",
+    score: "Best strategic fit",
+    text: "Evaluate taking over defined hospitality spaces for existing clients: private dining rooms, event service, lobby food service, catered activations, restaurant support, or premium cleaning/service bundles with one accountable operator.",
+    pilot: "One client space, one scoped service package, one margin report.",
+  },
+  {
+    icon: CalendarCheck,
+    title: "Theater and venue concessions",
+    thesis: "Venue wedge",
+    score: "Selective pilot",
+    text: "Movie theaters and venues depend on food, beverage, staffing speed, and guest experience. Tropical could test a narrow offer first: staffed concession support, private-event packages, after-screening hospitality, or cleaning plus service coverage.",
+    pilot: "Concession support or premium event staffing before broader operations.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Government contract readiness",
+    thesis: "Institutional growth",
+    score: "Stage-gated",
+    text: "Government and institutional work should be staged: SAM/UEI readiness, NAICS/insurance/compliance fit, subcontracting or small pilots first, then bids where Tropical already has proof of delivery.",
+    pilot: "SAM/UEI, capability statement, insurance map, subcontracting target list.",
+  },
+];
+
+const marketSignals = [
+  { value: "75%", label: "restaurant traffic off-premises", source: "NRA 2025" },
+  { value: "15.7M", label: "restaurant and foodservice workforce", source: "NRA" },
+  { value: "SAM", label: "gateway for federal opportunities", source: "SBA" },
+  { value: "F&B", label: "core cinema margin lever", source: "public filings" },
 ];
 
 const valueAdded = [
@@ -194,13 +236,30 @@ const operatingStack = [
   { icon: BarChart3, title: "Growth Analytics", text: "Pipeline, close rate, revenue by source, revenue at risk, margin by segment." },
 ];
 
+const ownerCockpit = [
+  "One view across staffing, Merge, consulting, bids, leads, payroll, and cash.",
+  "Use restaurant POS/CRM data as inputs, not as another system for the owner to babysit.",
+  "Surface exceptions: margin drop, missed follow-up, exposed contract, stuck applicant, unpaid invoice.",
+  "Let Heather point attention where the next decision matters, not where the loudest fire is.",
+];
+
+const decisionGates = [
+  "Can the line stand on clean books and its own margin?",
+  "Does it deepen Tropical's existing client relationships?",
+  "Can the current crew deliver it without breaking the base?",
+  "Does it create recurring revenue or strategic proof?",
+  "Does it free Heather's attention instead of consuming it?",
+];
+
 const hospitalityLanes = [
   "Hotels and accommodation staffing",
   "Restaurant, food and beverage teams",
   "Stadium and event staffing",
+  "Theater and venue concession support",
+  "Government and institutional hospitality contracts",
   "Crisis housekeeping and deep cleaning",
   "Business staffing and admin support",
-  "Merge showroom: private events, catering, activations, and satellite hospitality concepts",
+  "Merge showroom: private events, consulting, catering, activations, and client-space operations",
 ];
 
 const ownerFocus = [
@@ -261,14 +320,16 @@ export function TropicalStarsDossier() {
             onSubmit={submitAccess}
             className="w-full max-w-[440px] rounded-[18px] border border-[#d8cbb8] bg-[#fffdf8] p-7 shadow-[0_28px_70px_-36px_rgba(59,45,25,0.55)] sm:p-9"
           >
-            <Image
-              src="/images/tropical-stars-logo.png"
-              alt="Tropical Stars Talent Solutions"
-              width={192}
-              height={90}
-              priority
-              className="mb-8 h-auto w-44"
-            />
+            <div className="mb-8 inline-flex rounded-2xl border border-[#3d3021] bg-[#211b14] px-5 py-4 shadow-[0_18px_42px_-28px_rgba(20,14,8,0.65)]">
+              <Image
+                src="/images/tropical-stars-logo.png"
+                alt="Tropical Stars Talent Solutions"
+                width={192}
+                height={90}
+                priority
+                className="h-auto w-44 drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]"
+              />
+            </div>
             <div className="mb-3 flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.22em] text-[#98743f]">
               <LockKeyhole className="h-4 w-4" />
               Private Growth Dossier
@@ -342,14 +403,16 @@ export function TropicalStarsDossier() {
       <div className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(circle_at_82%_6%,rgba(171,135,78,0.18),transparent_31%),radial-gradient(circle_at_8%_45%,rgba(22,90,65,0.10),transparent_34%),linear-gradient(180deg,rgba(255,255,255,0.52),rgba(255,255,255,0))]" />
       <header className="sticky top-0 z-40 border-b border-[#e1d4c0] bg-[#f6f0e6]/86 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-5 sm:px-8">
-          <Image
-            src="/images/tropical-stars-logo.png"
-            alt="Tropical Stars Talent Solutions"
-            width={192}
-            height={90}
-            priority
-            className="h-auto w-28"
-          />
+          <div className="rounded-xl border border-[#3d3021] bg-[#211b14] px-3 py-2 shadow-sm">
+            <Image
+              src="/images/tropical-stars-logo.png"
+              alt="Tropical Stars Talent Solutions"
+              width={192}
+              height={90}
+              priority
+              className="h-auto w-24 drop-shadow-[0_1px_2px_rgba(0,0,0,0.45)] sm:w-28"
+            />
+          </div>
           <div className="hidden h-7 w-px bg-[#d8cbb8] sm:block" />
           <div className="min-w-0">
             <div className="truncate text-xs font-extrabold uppercase tracking-[0.18em] text-[#907141]">
@@ -680,6 +743,74 @@ export function TropicalStarsDossier() {
         </div>
       </section>
 
+      <section className="relative z-10 mx-auto max-w-7xl px-5 pb-16 sm:px-8 lg:pb-20">
+        <div className="grid gap-8 lg:grid-cols-[0.86fr_1.14fr]">
+          <div className="cinema-panel float-panel relative overflow-hidden rounded-[24px] border border-[#3d3021] bg-[#211b14] p-7 text-[#f6f0e6] shadow-[0_34px_110px_-58px_rgba(20,14,8,0.82)] sm:p-9">
+            <div className="glass-line pointer-events-none absolute left-8 right-8 top-24 h-px bg-gradient-to-r from-transparent via-[#b99a66] to-transparent" />
+            <div className="text-xs font-extrabold uppercase tracking-[0.24em] text-[#d7bd89]">
+              Market-backed growth thesis
+            </div>
+            <h2 className="mt-5 font-[family-name:var(--font-dossier-serif)] text-[clamp(2.25rem,5vw,4.65rem)] font-semibold leading-[0.94]">
+              Merge can become proof for work beyond the restaurant.
+            </h2>
+            <p className="mt-6 text-sm leading-7 text-[#efe4d3]">
+              The attractive move is not to chase every idea. It is to use Merge
+              as proof, then choose expansion lanes with evidence: margin,
+              repeatability, insurance fit, crew capacity, and owner attention.
+            </p>
+            <div className="mt-7 grid grid-cols-2 gap-3">
+              {marketSignals.map((signal) => (
+                <div key={signal.label} className="rounded-2xl border border-[#5d4c34] bg-[#18130e] p-4">
+                  <div className="font-[family-name:var(--font-dossier-serif)] text-3xl font-semibold text-[#d7bd89]">
+                    {signal.value}
+                  </div>
+                  <div className="mt-2 text-xs font-bold leading-5 text-[#efe4d3]">{signal.label}</div>
+                  <div className="mt-2 text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#bfa673]">{signal.source}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-[24px] border border-[#d8cbb8] bg-[#fffdf8] p-4 shadow-[0_24px_80px_-56px_rgba(39,29,16,0.65)] sm:p-5">
+            <div className="grid gap-4 md:grid-cols-2">
+              {marketBackedLanes.map((lane) => (
+                <article key={lane.title} className="lift-card reveal-card rounded-[18px] border border-[#e6dac7] bg-[#f8f3ea] p-5">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#e4efe6] text-[#0f5a43]">
+                      <lane.icon className="h-5 w-5" />
+                    </div>
+                    <span className="rounded-full border border-[#d9c7a9] bg-[#fffdf8] px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#7d5b28]">
+                      {lane.score}
+                    </span>
+                  </div>
+                  <div className="mt-5 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#98743f]">
+                    {lane.thesis}
+                  </div>
+                  <h3 className="mt-3 font-[family-name:var(--font-dossier-serif)] text-2xl font-semibold leading-tight">
+                    {lane.title}
+                  </h3>
+                  <p className="mt-4 text-sm leading-6 text-[#6f6557]">{lane.text}</p>
+                  <div className="mt-5 rounded-2xl border border-[#e0d2bd] bg-[#fffdf8] p-4">
+                    <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#98743f]">
+                      First proof
+                    </div>
+                    <p className="mt-2 text-xs font-semibold leading-5 text-[#4f463b]">{lane.pilot}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        </div>
+        <div className="mt-6 grid gap-3 rounded-[22px] border border-[#d8cbb8] bg-[#f8f3ea] p-5 md:grid-cols-5">
+          {decisionGates.map((gate, index) => (
+            <div key={gate} className="rounded-2xl border border-[#e3d5c1] bg-[#fffdf8] p-4">
+              <div className="font-[family-name:var(--font-dossier-serif)] text-2xl font-semibold text-[#b49765]">0{index + 1}</div>
+              <p className="mt-2 text-xs font-bold leading-5 text-[#4f463b]">{gate}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
       <section className="relative z-10 mx-auto max-w-7xl px-5 py-16 sm:px-8 lg:py-20">
         <SectionHeader
           eyebrow="Advantage operating stack"
@@ -724,6 +855,41 @@ export function TropicalStarsDossier() {
             <TrajectoryRow icon={ClipboardCheck} label="Standardize delivery" text="Crew and managers get repeatable checklists, visible ownership, and fewer handoff failures." />
             <TrajectoryRow icon={Handshake} label="Win larger accounts" text="Owner attention shifts toward hotels, venues, events, airport-adjacent operators, and strategic partners." />
             <TrajectoryRow icon={CalendarCheck} label="Run the cadence" text="Weekly growth and operations review turns data into decisions, not more cleanup work." />
+          </div>
+        </div>
+      </section>
+
+      <section className="relative z-10 mx-auto max-w-7xl px-5 pb-16 sm:px-8 lg:pb-20">
+        <div className="grid overflow-hidden rounded-[24px] border border-[#3d3021] bg-[#211b14] text-[#f6f0e6] shadow-[0_34px_110px_-58px_rgba(20,14,8,0.8)] lg:grid-cols-[0.82fr_1.18fr]">
+          <div className="cinema-panel relative p-7 sm:p-9">
+            <div className="text-xs font-extrabold uppercase tracking-[0.24em] text-[#d7bd89]">
+              Owner attention cockpit
+            </div>
+            <h2 className="mt-5 font-[family-name:var(--font-dossier-serif)] text-[clamp(2.2rem,4.8vw,4.5rem)] font-semibold leading-[0.96]">
+              Not another CRM. One place to know where attention belongs.
+            </h2>
+            <p className="mt-6 text-sm leading-7 text-[#efe4d3]">
+              Merge may have its own POS and restaurant tools. Tropical may have
+              staffing, payroll, client, and bid tools. The owner layer should
+              sit above them: fewer dashboards, cleaner exceptions, and a weekly
+              decision view across the whole business.
+            </p>
+            <div className="mt-7 rounded-2xl border border-[#5d4c34] bg-[#18130e] p-4">
+              <div className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#bfa673]">
+                Owner promise
+              </div>
+              <p className="mt-2 font-[family-name:var(--font-dossier-serif)] text-2xl font-semibold leading-tight text-[#d7bd89]">
+                See the business in time to choose the next move.
+              </p>
+            </div>
+          </div>
+          <div className="grid gap-3 border-t border-[#4c3d2b] bg-[#2a2319] p-5 sm:p-7 lg:border-l lg:border-t-0">
+            {ownerCockpit.map((item) => (
+              <div key={item} className="flex items-start gap-3 rounded-2xl border border-[#5d4c34] bg-[#18130e] p-4">
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#d7bd89]" />
+                <span className="text-sm font-semibold leading-6 text-[#efe4d3]">{item}</span>
+              </div>
+            ))}
           </div>
         </div>
       </section>
