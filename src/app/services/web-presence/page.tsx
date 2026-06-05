@@ -168,6 +168,11 @@ const faqs = [
       "Yes. Everything is month to month with no contract. If it is not working for you, you can stop, with no penalty.",
   },
   {
+    question: "Are there fees when customers pay online?",
+    answer:
+      "Yes — when a customer pays online, Stripe charges a standard processing fee (about 2.9% + 30¢ per payment). The money lands in your own account. There are no hidden fees from us.",
+  },
+  {
     question: "Whose Stripe and ad account is it?",
     answer:
       "Yours. On the Commerce plan, payments go to your own Stripe account. When we run ads, the ad budget is billed directly to your own card in your own ad account — so it is always clear what you pay the ad platform versus what you pay Advantage.",
@@ -575,6 +580,11 @@ export default function WebPresencePage() {
                     );
                   })}
                 </ul>
+                {t.name === "Commerce" && (
+                  <p className="text-xs text-[var(--text-muted)] mb-5 leading-relaxed">
+                    Online payments run through Stripe to your own account. Standard Stripe fees apply (about 2.9% + 30¢ per transaction).
+                  </p>
+                )}
                 <div className="mt-auto">
                   <Button
                     href="/contact"
