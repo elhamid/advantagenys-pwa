@@ -68,7 +68,7 @@ const PROOF_POINTS = [
         <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
       </svg>
     ),
-    text: "An AI assistant that answers every customer — even at 2am — in their language. Like a receptionist, without the payroll. A real person stays in the loop.",
+    text: "AI assistant (Growth & Commerce) answers every customer — even at 2am — in their language. Like a receptionist, without the payroll. A real person stays in the loop.",
   },
 ];
 

@@ -7,9 +7,9 @@ import { PHONE } from "@/lib/constants";
 import { JsonLd } from "@/components/seo/JsonLd";
 
 export const metadata: Metadata = {
-  title: "Get Found. Get Calls. Get Paid. | Websites + Google + AI — Advantage Services",
+  title: "Get Found. Get Calls. Get Paid. | Websites + Google — Advantage Services",
   description:
-    "A modern website, your Google profile, and an AI that answers customers — set up for you, in your language. Built for small businesses and immigrant entrepreneurs in NYC. From $49/month. No contracts.",
+    "A modern website and verified Google profile, set up for you in your language. Built for small businesses and immigrant entrepreneurs in NYC. Foundation from $49/month. AI assistant available on Growth and Commerce plans. No contracts.",
 };
 
 /* ── Brand logos (inline SVG — no external image domains) ─────────────── */
@@ -79,7 +79,7 @@ const tiers = [
       "Google Business Profile set up and verified",
       "Click-to-call, directions, and hours",
       "Contact form straight to your inbox",
-      "Found by Google and AI assistants",
+      "Found on Google Search and Maps",
       "Hosting, security, and updates included",
       "Light text edits each quarter",
     ],
@@ -182,7 +182,7 @@ export default function WebPresencePage() {
       <JsonLd
         type="Service"
         serviceName="Web Presence and Local SEO"
-        serviceDescription="Modern websites, Google Business Profile setup, an AI assistant that answers customers, reviews, and getting found online for small businesses and immigrant entrepreneurs in NYC. From $49/month, no contracts."
+        serviceDescription="Modern websites and Google Business Profile setup for small businesses and immigrant entrepreneurs in NYC. Foundation from $49/month, no contracts. AI assistant included on Growth and Commerce plans."
         serviceUrl="https://advantagenys.com/services/web-presence"
       />
       <JsonLd
@@ -246,7 +246,7 @@ export default function WebPresencePage() {
 
             {/* Billboard trust row — recognized on sight */}
             <div className="flex flex-col gap-3">
-              <p className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-white/45">
+              <p className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-white/65">
                 Works with the tools your customers already trust
               </p>
               <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
@@ -260,6 +260,7 @@ export default function WebPresencePage() {
                 </span>
                 <span className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 shadow-md">
                   <StripeLogo className="h-4 w-auto" />
+                  <span className="sr-only">Stripe</span>
                 </span>
                 <span className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 shadow-md">
                   <WhatsAppLogo className="w-5 h-5" />
