@@ -616,38 +616,168 @@ export default function WebPresencePage() {
         </Container>
       </section>
 
-      {/* ── Bundle / cross-sell ────────────────────────────────────────── */}
-      <section className="py-16 sm:py-20 bg-[var(--blue-bg)]">
+      {/* ── The bigger picture / cross-sell ───────────────────────────── */}
+      <section
+        className="py-16 sm:py-24 relative overflow-hidden"
+        style={{ background: "linear-gradient(135deg, #1A3A5C 0%, #0F172A 60%, #1E293B 100%)" }}
+      >
+        {/* atmosphere overlay — mirrors hero depth treatment */}
+        <div
+          className="pointer-events-none absolute inset-0 opacity-50"
+          style={{
+            background:
+              "radial-gradient(800px circle at 90% 10%, rgba(79,86,232,0.30), transparent 55%), radial-gradient(600px circle at 5% 90%, rgba(212,151,10,0.15), transparent 55%)",
+          }}
+          aria-hidden
+        />
+
         <Container>
-          <Card className="bg-[var(--gradient-primary)] border-0 text-white">
-            <div className="max-w-3xl">
-              <p className="flex items-center gap-3 text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-bright)] mb-4">
-                <span className="inline-block h-px w-7 bg-[var(--gold-bright)]" aria-hidden />
-                Starting a business?
-              </p>
-              <h2 className="text-2xl sm:text-3xl font-bold mb-4">
-                Form it, build it, and get found — all under one roof.
-              </h2>
-              <p className="text-white/85 mb-6">
-                Most new owners stitch together a filing service, a web
-                freelancer, and a marketing person who never talk to each other.
-                We do all of it together: set up your LLC, build your website,
-                and put you on Google — one team that already knows your
-                business.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Button href="/services/business-formation/" variant="secondary">
-                  Business Formation
-                </Button>
-                <Button
-                  href="/industries/immigrant-entrepreneurs/"
-                  variant="secondary"
-                >
-                  For Immigrant Entrepreneurs
-                </Button>
-              </div>
+          <div className="relative">
+            {/* Eyebrow */}
+            <p className="flex items-center gap-3 text-xs font-bold uppercase tracking-[0.18em] text-[var(--gold-bright)] mb-5">
+              <span className="inline-block h-px w-7 bg-[var(--gold-bright)]" aria-hidden />
+              The bigger picture
+            </p>
+
+            {/* Headline */}
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white mb-3 max-w-2xl leading-tight">
+              Form it, build it, and get found —{" "}
+              <span className="text-[var(--gold-bright)]">all under one roof.</span>
+            </h2>
+
+            {/* Subline */}
+            <p className="text-white/80 text-base sm:text-lg mb-10 max-w-xl leading-relaxed">
+              We don&apos;t just build your website. We set up your whole business —
+              one team that already knows you.
+            </p>
+
+            {/* Service tile grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 mb-8 max-w-2xl">
+              {/* Business Formation */}
+              <a
+                href="/services/business-formation/"
+                className="group flex flex-col items-start gap-3 rounded-[var(--radius-lg)] border border-white/10 bg-white/[0.06] px-4 py-4 hover:bg-white/[0.12] hover:border-[var(--gold-bright)]/50 transition-all duration-200"
+              >
+                <span className="text-[var(--gold-bright)]" aria-hidden>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
+                    <path d="M3 21h18M9 8h1m-1 4h1m4-4h1m-1 4h1M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16" />
+                  </svg>
+                </span>
+                <span className="text-sm font-semibold text-white leading-snug group-hover:text-[var(--gold-bright)] transition-colors">
+                  Business<br />Formation
+                </span>
+              </a>
+
+              {/* Tax Services */}
+              <a
+                href="/services/tax-services/"
+                className="group flex flex-col items-start gap-3 rounded-[var(--radius-lg)] border border-white/10 bg-white/[0.06] px-4 py-4 hover:bg-white/[0.12] hover:border-[var(--gold-bright)]/50 transition-all duration-200"
+              >
+                <span className="text-[var(--gold-bright)]" aria-hidden>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                    <line x1="16" y1="13" x2="8" y2="13" />
+                    <line x1="16" y1="17" x2="8" y2="17" />
+                    <polyline points="10 9 9 9 8 9" />
+                  </svg>
+                </span>
+                <span className="text-sm font-semibold text-white leading-snug group-hover:text-[var(--gold-bright)] transition-colors">
+                  Tax<br />Services
+                </span>
+              </a>
+
+              {/* Licensing */}
+              <a
+                href="/services/licensing/"
+                className="group flex flex-col items-start gap-3 rounded-[var(--radius-lg)] border border-white/10 bg-white/[0.06] px-4 py-4 hover:bg-white/[0.12] hover:border-[var(--gold-bright)]/50 transition-all duration-200"
+              >
+                <span className="text-[var(--gold-bright)]" aria-hidden>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
+                    <circle cx="12" cy="8" r="6" />
+                    <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11" />
+                  </svg>
+                </span>
+                <span className="text-sm font-semibold text-white leading-snug group-hover:text-[var(--gold-bright)] transition-colors">
+                  Licensing
+                </span>
+              </a>
+
+              {/* Insurance */}
+              <a
+                href="/services/insurance/"
+                className="group flex flex-col items-start gap-3 rounded-[var(--radius-lg)] border border-white/10 bg-white/[0.06] px-4 py-4 hover:bg-white/[0.12] hover:border-[var(--gold-bright)]/50 transition-all duration-200"
+              >
+                <span className="text-[var(--gold-bright)]" aria-hidden>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                  </svg>
+                </span>
+                <span className="text-sm font-semibold text-white leading-snug group-hover:text-[var(--gold-bright)] transition-colors">
+                  Insurance
+                </span>
+              </a>
+
+              {/* Audit Defense */}
+              <a
+                href="/services/audit-defense/"
+                className="group flex flex-col items-start gap-3 rounded-[var(--radius-lg)] border border-white/10 bg-white/[0.06] px-4 py-4 hover:bg-white/[0.12] hover:border-[var(--gold-bright)]/50 transition-all duration-200"
+              >
+                <span className="text-[var(--gold-bright)]" aria-hidden>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
+                    <path d="M9 12l2 2 4-4" />
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                  </svg>
+                </span>
+                <span className="text-sm font-semibold text-white leading-snug group-hover:text-[var(--gold-bright)] transition-colors">
+                  Audit<br />Defense
+                </span>
+              </a>
+
+              {/* Financial Services */}
+              <a
+                href="/services/financial-services/"
+                className="group flex flex-col items-start gap-3 rounded-[var(--radius-lg)] border border-white/10 bg-white/[0.06] px-4 py-4 hover:bg-white/[0.12] hover:border-[var(--gold-bright)]/50 transition-all duration-200"
+              >
+                <span className="text-[var(--gold-bright)]" aria-hidden>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
+                    <line x1="12" y1="1" x2="12" y2="23" />
+                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                  </svg>
+                </span>
+                <span className="text-sm font-semibold text-white leading-snug group-hover:text-[var(--gold-bright)] transition-colors">
+                  Financial<br />Services
+                </span>
+              </a>
             </div>
-          </Card>
+
+            {/* Bundle reinforce line */}
+            <p className="text-white/60 text-sm mb-8 flex items-center gap-2">
+              <span className="text-[var(--gold-bright)]" aria-hidden>
+                <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 inline-block">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
+                </svg>
+              </span>
+              Bundle Web Presence with any of these and save $50 on setup.
+            </p>
+
+            {/* CTAs */}
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Button
+                href="/contact"
+                size="lg"
+                className="!bg-[var(--gold)] hover:!opacity-90 !text-white font-bold shadow-lg shadow-[rgba(212,151,10,0.35)]"
+              >
+                Book a free consultation
+              </Button>
+              <Button
+                href="/industries/immigrant-entrepreneurs/"
+                className="!bg-white/10 !border !border-white/25 !text-white hover:!bg-white/20 backdrop-blur-sm"
+              >
+                For Immigrant Entrepreneurs
+              </Button>
+            </div>
+          </div>
         </Container>
       </section>
 
