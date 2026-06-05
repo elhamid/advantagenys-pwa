@@ -27,8 +27,9 @@ import {
 } from "lucide-react";
 
 const ACCESS_CODES = new Set([
-  "TS-GROWTH-2026",
-  "TROPICAL-STARS",
+  "TSGROWTH",
+  "TSGROWTH2026",
+  "TROPICALSTARS",
   "TROPICAL",
   "ADVANTAGE",
 ]);
@@ -62,7 +63,7 @@ const journey = [
   {
     step: "01",
     title: "Reground",
-    text: "Clean up the base: books, tax posture, entity structure, insurance exposure, contractor records, cash flow, and the weekly truth of the business.",
+    text: "Clean up the base: books, tax posture, entity structure, insurance exposure, certification readiness, contractor records, cash flow, and the weekly truth of the business.",
   },
   {
     step: "02",
@@ -85,8 +86,8 @@ const phases = [
   {
     title: "See the Business Clearly",
     eyebrow: "Foundation",
-    text: "Clean books, entity/tax review, cash-flow reporting, job profitability, payroll and insurance exposure. The goal is to stop running the company from fragments and feelings.",
-    items: ["Monthly reconciliations", "P&L and cash-flow pack", "Client/job profitability", "Entity and state-presence map"],
+    text: "Clean books, entity/tax review, cash-flow reporting, job profitability, payroll, certification readiness, and insurance exposure. The goal is to stop running the company from fragments and feelings.",
+    items: ["Monthly reconciliations", "P&L and cash-flow pack", "Client/job profitability", "Entity and certification map"],
   },
   {
     title: "Make the Existing Crew Produce More",
@@ -151,6 +152,11 @@ const structureInsights = [
     icon: Target,
     title: "Trust and continuity",
     text: "If ownership wants trust formation and legacy planning, the operating picture should be clean enough that the structure carries a real business, not a stack of unresolved questions.",
+  },
+  {
+    icon: ClipboardCheck,
+    title: "Minority and woman-owned certification",
+    text: "Prepare the documentation trail for MWBE-style certification work so public-sector, institutional, and larger-account opportunities are not blocked by missing records.",
   },
 ];
 
@@ -230,15 +236,17 @@ const valueAdded = [
 const operatingStack = [
   { icon: WalletCards, title: "Bookkeeping + Tax", text: "Monthly books, statements, tax planning, entity review, corp filings, cash-flow review." },
   { icon: ShieldCheck, title: "Risk + Compliance", text: "Workers comp, payroll classification, audit readiness, insurance gaps, state-by-state exposure." },
+  { icon: ClipboardCheck, title: "MWBE Readiness", text: "Owner, entity, payroll, tax, and operating records organized for minority and woman-owned business certification paths." },
   { icon: UsersRound, title: "Crew Productivity", text: "Clear owners, open loops, applicant readiness, follow-up accountability." },
   { icon: Target, title: "Client Acquisition", text: "Hotels, F&B, events, stadiums, cleaning, and property operators." },
-  { icon: MessagesSquare, title: "Intake + CRM", text: "Every employer lead, talent lead, and service issue captured in one pipe." },
+  { icon: MessagesSquare, title: "Owner Visibility Room", text: "A friendly CRM view that shows what Advantage is working on without turning the owner into the task manager." },
   { icon: BarChart3, title: "Growth Analytics", text: "Pipeline, close rate, revenue by source, revenue at risk, margin by segment." },
 ];
 
 const ownerCockpit = [
   "One view across staffing, Merge, consulting, bids, leads, payroll, and cash.",
   "Use restaurant POS/CRM data as inputs, not as another system for the owner to babysit.",
+  "Share Advantage's active work lanes in a friendly view: what is being assessed, what is waiting on records, what is ready for decision.",
   "Surface exceptions: margin drop, missed follow-up, exposed contract, stuck applicant, unpaid invoice.",
   "Let Heather point attention where the next decision matters, not where the loudest fire is.",
 ];
@@ -272,15 +280,49 @@ const ownerFocus = [
   "What can wait because it is not owner-critical?",
 ];
 
+const activeFoundation = [
+  {
+    title: "Grounding agreement",
+    status: "Signed",
+    text: "Bookkeeping, assessment, records review, and the first operating visibility layer are now the immediate working lane.",
+  },
+  {
+    title: "Books and cash picture",
+    status: "In motion",
+    text: "Reconcile what is really happening across the core business and Merge so profit, losses, and internal funding flows become visible.",
+  },
+  {
+    title: "Entity, tax, and state presence",
+    status: "Assessment",
+    text: "Clarify where operations, payroll, taxable presence, insurance, and entity structure need to be tightened before larger growth.",
+  },
+  {
+    title: "MWBE certification readiness",
+    status: "Starting",
+    text: "Organize owner, entity, payroll, tax, and operating records for minority and woman-owned business certification work.",
+  },
+  {
+    title: "Growth opportunity map",
+    status: "Discovery",
+    text: "Evaluate contracts, hospitality clients, venue lanes, Merge halo services, and government/institutional pathways without overcommitting too early.",
+  },
+];
+
+function normalizeAccessCode(value: string) {
+  return value.toUpperCase().replace(/[^A-Z0-9]/g, "");
+}
+
 function accessFromLocation() {
   if (typeof window === "undefined") return false;
-  const hash = window.location.hash.replace("#", "").trim().toUpperCase();
-  const query = new URLSearchParams(window.location.search).get("code")?.trim().toUpperCase();
-  return ACCESS_CODES.has(hash) || (query ? ACCESS_CODES.has(query) : false);
+  const hash = normalizeAccessCode(window.location.hash.replace("#", ""));
+  const query = normalizeAccessCode(new URLSearchParams(window.location.search).get("code") ?? "");
+  return ACCESS_CODES.has(hash) || ACCESS_CODES.has(query);
 }
 
 export function TropicalStarsDossier() {
   const [unlocked, setUnlocked] = useState(false);
+  const [recipientName, setRecipientName] = useState("");
+  const [displayName, setDisplayName] = useState("Tropical Stars");
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
   const preparedDate = useMemo(
@@ -294,6 +336,11 @@ export function TropicalStarsDossier() {
   );
 
   useEffect(() => {
+    const savedName = window.localStorage.getItem("ts-dossier-name")?.trim();
+    if (savedName) {
+      setRecipientName(savedName);
+      setDisplayName(savedName);
+    }
     if (accessFromLocation() || window.localStorage.getItem("ts-dossier-access") === "granted") {
       setUnlocked(true);
     }
@@ -301,9 +348,16 @@ export function TropicalStarsDossier() {
 
   function submitAccess(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const normalized = code.trim().toUpperCase();
+    const name = recipientName.trim();
+    if (!name) {
+      setError("Enter your name to continue.");
+      return;
+    }
+    const normalized = normalizeAccessCode(code);
     if (ACCESS_CODES.has(normalized)) {
       window.localStorage.setItem("ts-dossier-access", "granted");
+      window.localStorage.setItem("ts-dossier-name", name);
+      setDisplayName(name);
       setUnlocked(true);
       setError("");
       return;
@@ -338,23 +392,35 @@ export function TropicalStarsDossier() {
               Prepared for Tropical Stars.
             </h1>
             <p className="mt-4 text-sm leading-6 text-[#6f6557]">
-              Confidential Advantage Services operating memo. Confirm access to
-              continue.
+              Confidential Advantage Services operating memo. Enter your name
+              and private code to continue.
             </p>
-            <label htmlFor="access-code" className="mt-7 block text-xs font-bold uppercase tracking-[0.18em] text-[#7a6b57]">
-              Access code
+            <label htmlFor="recipient-name" className="mt-7 block text-xs font-bold uppercase tracking-[0.18em] text-[#7a6b57]">
+              Recipient
+            </label>
+            <input
+              id="recipient-name"
+              value={recipientName}
+              onChange={(event) => setRecipientName(event.target.value)}
+              className="mt-2 w-full rounded-xl border border-[#d8cbb8] bg-[#f7f2e8] px-4 py-3 text-sm font-semibold text-[#211b14] outline-none transition placeholder:text-[#a59a8b] focus:border-[#a77d42] focus:ring-4 focus:ring-[#ead9bb]"
+              placeholder="Heather"
+              autoComplete="name"
+            />
+            <label htmlFor="access-code" className="mt-5 block text-xs font-bold uppercase tracking-[0.18em] text-[#7a6b57]">
+              Private access code
             </label>
             <input
               id="access-code"
+              type="password"
               value={code}
               onChange={(event) => setCode(event.target.value)}
               className="mt-2 w-full rounded-xl border border-[#d8cbb8] bg-[#f7f2e8] px-4 py-3 font-mono text-sm tracking-[0.12em] text-[#211b14] outline-none transition focus:border-[#a77d42] focus:ring-4 focus:ring-[#ead9bb]"
-              placeholder="TS-GROWTH-2026"
+              placeholder="TS-growth"
               autoComplete="off"
               spellCheck={false}
             />
             <button className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-[#9f7a45] px-4 py-3 text-sm font-extrabold text-white transition hover:bg-[#866435]">
-              Enter dossier
+              Enter private dossier
               <ArrowRight className="h-4 w-4" />
             </button>
             <p className="mt-3 min-h-5 text-sm font-semibold text-[#8a342f]">{error}</p>
@@ -423,7 +489,7 @@ export function TropicalStarsDossier() {
             </div>
           </div>
           <div className="ml-auto hidden rounded-full border border-[#d8cbb8] bg-[#fffdf8] px-4 py-2 text-xs font-bold text-[#6f6557] md:block">
-            Prepared {preparedDate}
+            Prepared for {displayName} / {preparedDate}
           </div>
         </div>
       </header>
@@ -446,7 +512,7 @@ export function TropicalStarsDossier() {
             that can carry a 3x company.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
-            {["Protect the people", "Tighten the house", "Merge flagship", "3x growth path"].map((item) => (
+            {["Grounding phase signed", "Protect the people", "Tighten the house", "3x growth path"].map((item) => (
               <span key={item} className="rounded-full border border-[#d8cbb8] bg-[#fffdf8] px-4 py-2 text-sm font-bold text-[#4f463b] shadow-sm">
                 {item}
               </span>
@@ -462,7 +528,7 @@ export function TropicalStarsDossier() {
                 Owner leverage
               </div>
               <h2 className="mt-3 font-[family-name:var(--font-dossier-serif)] text-3xl font-semibold leading-tight">
-                Stop making the owner the operating system.
+                Give ownership a calm room to see what matters.
               </h2>
             </div>
             <Gauge className="h-9 w-9 shrink-0 text-[#0f5a43]" />
@@ -512,9 +578,9 @@ export function TropicalStarsDossier() {
             <p className="mt-5 text-base leading-7 text-[#6f6557]">
               The strategy should meet Tropical where the pressure is real:
               people depend on the business, and Merge carries real founder
-              energy. The first win is not more noise. It is making the house
-              firm enough that the people, the assets, and the growth plan can
-              move together.
+              energy. The preliminary grounding phase is the first step: make
+              the house firm enough that the people, the assets, and the growth
+              plan can move together.
             </p>
           </div>
           <div className="story-rail relative grid gap-4 rounded-[22px] border border-[#d8cbb8] bg-[#fffdf8] p-5 shadow-[0_28px_90px_-58px_rgba(39,29,16,0.65)] md:grid-cols-3 md:p-7">
@@ -593,8 +659,8 @@ export function TropicalStarsDossier() {
               When the founder feels there should be more money, the answer is
               not only a bank balance. It is entity clarity, state clarity,
               coverage clarity, and a clean view of which business line is
-              funding which ambition. The goal is to turn confusion into
-              usable fuel.
+              funding which ambition. The signed grounding phase turns that
+              confusion into usable fuel.
             </p>
             <div className="mt-7 grid grid-cols-3 gap-2">
               {["Structure", "Presence", "Attention"].map((label) => (
@@ -636,6 +702,54 @@ export function TropicalStarsDossier() {
           stronger promise is process: reconcile the books, map the entities,
           clarify the states, align insurance coverage, and prepare the company
           so valuation and trust planning can rest on clean facts.
+        </div>
+      </section>
+
+      <section className="relative z-10 mx-auto max-w-7xl px-5 pb-16 sm:px-8 lg:pb-20">
+        <div className="grid gap-8 rounded-[24px] border border-[#d8cbb8] bg-[#fffdf8] p-5 shadow-[0_28px_90px_-58px_rgba(39,29,16,0.65)] sm:p-7 lg:grid-cols-[0.78fr_1.22fr]">
+          <div className="cinema-panel float-panel relative overflow-hidden rounded-[20px] border border-[#3d3021] bg-[#211b14] p-7 text-[#f6f0e6]">
+            <div className="glass-line pointer-events-none absolute left-8 right-8 top-20 h-px bg-gradient-to-r from-transparent via-[#b99a66] to-transparent" />
+            <div className="text-xs font-extrabold uppercase tracking-[0.24em] text-[#d7bd89]">
+              Private client room
+            </div>
+            <h2 className="mt-5 font-[family-name:var(--font-dossier-serif)] text-[clamp(2.15rem,4.6vw,4.4rem)] font-semibold leading-[0.95]">
+              A friendly window into the work already moving.
+            </h2>
+            <p className="mt-6 text-sm leading-7 text-[#efe4d3]">
+              The goal is not to hand Heather a taskboard to manage. It is to
+              give her a clear, private view of what Advantage is organizing:
+              what is being grounded, what is waiting on documents, what is
+              ready for decision, and what may become a growth lane.
+            </p>
+            <div className="mt-6 rounded-2xl border border-[#5d4c34] bg-[#18130e] p-4">
+              <div className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#bfa673]">
+                First operating signal
+              </div>
+              <p className="mt-2 font-[family-name:var(--font-dossier-serif)] text-2xl font-semibold leading-tight text-[#d7bd89]">
+                Signed grounding phase: books, assessment, structure, and certification readiness.
+              </p>
+            </div>
+          </div>
+          <div className="grid gap-3">
+            {activeFoundation.map((item, index) => (
+              <article key={item.title} className="lift-card reveal-card rounded-[18px] border border-[#e6dac7] bg-[#f8f3ea] p-5">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <div className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#98743f]">
+                      Work lane 0{index + 1}
+                    </div>
+                    <h3 className="mt-2 font-[family-name:var(--font-dossier-serif)] text-2xl font-semibold leading-tight">
+                      {item.title}
+                    </h3>
+                  </div>
+                  <span className="rounded-full border border-[#d9c7a9] bg-[#fffdf8] px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#7d5b28]">
+                    {item.status}
+                  </span>
+                </div>
+                <p className="mt-3 text-sm leading-6 text-[#6f6557]">{item.text}</p>
+              </article>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -901,24 +1015,25 @@ export function TropicalStarsDossier() {
               Recommended direction
             </div>
             <h2 className="mt-4 font-[family-name:var(--font-dossier-serif)] text-3xl font-semibold leading-tight sm:text-5xl">
-              Secure the foundation first, then choose the growth lanes together.
+              Start the grounding phase, then choose the growth lanes together.
             </h2>
             <p className="mt-5 max-w-3xl text-base leading-7 text-[#3f5147]">
               Advantage Services represents the full foundation: books, tax,
-              insurance, compliance, entity posture, reporting, operating
-              rhythm, and growth discipline. The first agreement should tighten
-              the house and make the truth visible. From there, Tropical and
-              Advantage can decide which growth possibilities, valuation moves,
-              and trust-planning steps deserve investment.
+              insurance, compliance, entity posture, certification readiness,
+              reporting, operating rhythm, and growth discipline. The signed
+              preliminary agreement gives us the first lane: tighten the house
+              and make the truth visible. From there, Tropical and Advantage can
+              decide which growth possibilities, valuation moves, and
+              trust-planning steps deserve investment.
             </p>
           </div>
           <div className="mt-7 shrink-0 rounded-2xl border border-[#b7d0bd] bg-[#fffdf8] p-5 lg:mt-0 lg:w-80">
             <div className="text-sm font-extrabold text-[#0f5a43]">Next working session</div>
             <p className="mt-2 text-sm leading-6 text-[#4f463b]">
-              Confirm the foundation agreement, name the first diagnostics,
-              identify the first leakage targets, map the entity and state
-              questions, and use the findings to choose the growth lanes that
-              are real enough to pursue.
+              Name the first diagnostics, identify the first leakage targets,
+              map the entity, state, insurance, and certification questions,
+              and use the findings to choose the growth lanes that are real
+              enough to pursue.
             </p>
           </div>
         </div>
