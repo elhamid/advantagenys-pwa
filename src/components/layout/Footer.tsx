@@ -64,6 +64,14 @@ export function Footer() {
                   <Link href={service.href} className="text-sm text-slate-300 hover:text-white transition-colors">
                     {service.name}
                   </Link>
+                  {service.name === "Web Presence" && (
+                    <Link
+                      href="/services/web-presence/"
+                      className="mt-1 block text-xs font-semibold text-[var(--gold-bright)] hover:text-white transition-colors"
+                    >
+                      Get found. Get calls. Get paid. →
+                    </Link>
+                  )}
                 </li>
               ))}
             </ul>

@@ -72,6 +72,22 @@ export function HeroSection() {
       {/* Dark gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-black/30" />
 
+      {/* "Get found." sticker — asymmetric, slightly rotated, links to Web Presence */}
+      <motion.a
+        href="/services/web-presence/"
+        initial={{ opacity: 0, scale: 0.7, rotate: -12 }}
+        animate={{ opacity: 1, scale: 1, rotate: -6 }}
+        transition={{ duration: 0.6, delay: 2.1, ease: EASE }}
+        whileHover={{ rotate: 0, scale: 1.05 }}
+        aria-label="Get found online — Web Presence"
+        className="group absolute z-20 right-4 top-20 sm:right-8 sm:top-24 md:right-12 inline-flex items-center gap-1.5 rounded-full bg-[#F9A825] px-3.5 py-2 text-[#1A3A5C] shadow-[0_6px_20px_rgba(249,168,37,0.45)] ring-2 ring-white/70 -rotate-6"
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" className="shrink-0" aria-hidden>
+          <path d="M12 2C8.1 2 5 5.1 5 9c0 4.6 5.5 10.1 6.3 10.9.4.4 1 .4 1.4 0C13.5 19.1 19 13.6 19 9c0-3.9-3.1-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z" />
+        </svg>
+        <span className="text-sm font-extrabold tracking-tight">Get found.</span>
+      </motion.a>
+
       {/* Content — true vertical centering between header and bottom nav */}
       <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
         <motion.p

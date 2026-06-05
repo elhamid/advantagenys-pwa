@@ -68,7 +68,7 @@ const PROOF_POINTS = [
         <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
       </svg>
     ),
-    text: "Optional: an AI assistant that greets customers in their language — set up by us, with a human always in the loop.",
+    text: "An AI assistant that answers every customer — even at 2am — in their language. Like a receptionist, without the payroll. A real person stays in the loop.",
   },
 ];
 
@@ -123,7 +123,7 @@ export function WebPresenceBand() {
                     className="text-lg font-bold mb-1"
                     style={{ color: "var(--gold)" }}
                   >
-                    Get found. Get reviews. Get paid.
+                    Get found. Get calls. Get paid.
                   </p>
                   <p className="text-xs text-[var(--text-muted)] mb-5">From $49/mo · no contracts · in your language</p>
                   <Button
