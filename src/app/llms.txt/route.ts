@@ -4,7 +4,7 @@ export function GET() {
   const content = `# Advantage Services
 > Professional business consulting for entrepreneurs in Queens, NYC.
 > Tax preparation, business formation, licensing, insurance, legal services, audit defense, and financial services.
-> Serving immigrant entrepreneurs, restaurant owners, contractors, and small businesses since 2004.
+> Serving immigrant entrepreneurs, restaurant owners, contractors, and small businesses since 2005.
 
 ## Services
 - [Tax Services](https://advantagenys.com/services/tax-services): IRS-certified tax preparation, individual and business tax returns, payroll tax, sales tax

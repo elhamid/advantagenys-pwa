@@ -3,8 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { STATS } from "@/lib/constants";
 import { GOOGLE_RATING } from "@/lib/reviews";
-
-const FONT = "'Plus Jakarta Sans', system-ui, sans-serif";
+import { SlideShell, Eyebrow, Rule, GOLD } from "./_shared";
 
 const DISPLAY_STATS = [
   { count: STATS.businessSetups.count, label: "Businesses Formed", suffix: "+" },
@@ -43,48 +42,45 @@ function CountUp({ target, duration = 2000, isRating = false }: { target: number
   return <>{value.toLocaleString()}</>;
 }
 
-export default function StatsSlide({ cycleCount }: { cycleCount: number }) {
+export default function StatsSlide({ cycleCount: _c }: { cycleCount: number }) {
   return (
-    <div
-      style={{
-        height: '100%',
-        width: '100%',
-        background: 'linear-gradient(135deg, #4F56E8 0%, #1E293B 100%)',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '0 64px',
-        fontFamily: FONT,
-      }}
-    >
-      <p style={{ fontSize: 18, textTransform: 'uppercase', letterSpacing: 4, color: '#F9A825', marginBottom: 64 }}>
-        Trusted By NYC Small Businesses
-      </p>
+    <SlideShell>
+      <div style={{ marginBottom: 72 }}>
+        <Eyebrow>Trusted By NYC Small Businesses</Eyebrow>
+      </div>
       <div
         style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(4, 1fr)',
-          gap: 48,
-          maxWidth: 1400,
-          width: '100%',
+          display: "grid",
+          gridTemplateColumns: "repeat(4, 1fr)",
+          gap: 56,
+          maxWidth: 1500,
+          width: "100%",
         }}
       >
         {DISPLAY_STATS.map((stat) => (
-          <div key={stat.label} style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: 80, fontWeight: 800, color: '#FFFFFF', lineHeight: 1, marginBottom: 16 }}>
+          <div
+            key={stat.label}
+            style={{
+              textAlign: "center",
+              padding: "36px 16px",
+              borderRadius: 24,
+              background: "rgba(255,255,255,0.04)",
+              border: "1px solid rgba(255,255,255,0.08)",
+            }}
+          >
+            <div style={{ fontSize: 92, fontWeight: 800, color: "#FFFFFF", lineHeight: 1, marginBottom: 16 }}>
               <CountUp target={stat.count} isRating={stat.isRating} />
-              <span style={{ color: '#F9A825' }}>{stat.suffix}</span>
+              <span style={{ color: GOLD }}>{stat.suffix}</span>
             </div>
-            {stat.isRating && (
-              <div style={{ fontSize: 28, color: '#F9A825', marginBottom: 8 }}>{"★".repeat(5)}</div>
-            )}
-            <p style={{ fontSize: 22, color: 'rgba(255,255,255,0.7)' }}>{stat.label}</p>
+            {stat.isRating && <div style={{ fontSize: 32, color: GOLD, marginBottom: 8 }}>{"★".repeat(5)}</div>}
+            <p style={{ fontSize: 26, color: "rgba(255,255,255,0.78)", margin: 0 }}>{stat.label}</p>
           </div>
         ))}
       </div>
-      <div style={{ marginTop: 64, width: 80, height: 3, backgroundColor: '#F9A825', borderRadius: 9999 }} />
-      <p style={{ marginTop: 24, fontSize: 20, color: 'rgba(255,255,255,0.5)' }}>Since 2004</p>
-    </div>
+      <div style={{ marginTop: 72 }}>
+        <Rule />
+      </div>
+      <p style={{ marginTop: 24, fontSize: 24, letterSpacing: 4, textTransform: "uppercase", color: "rgba(255,255,255,0.6)" }}>Since 2005</p>
+    </SlideShell>
   );
 }
