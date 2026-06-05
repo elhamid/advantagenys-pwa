@@ -111,7 +111,7 @@ const serviceCards: ServiceCard[] = [
     href: "/services/web-presence/",
     badge: "Featured",
     featured: true,
-    description: "A modern website in your language, Google Business Profile setup, reviews, and getting found online. From $49/mo, no contracts.",
+    description: "A real website and verified Google profile — get found, get calls, get paid. Done for you, in your language. From $49/mo. AI assistant on Growth & up.",
     services: ["Website (PWA)", "Google Business Profile", "Reviews", "Online Payments", "Local SEO"],
     icon: "globe",
   },

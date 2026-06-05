@@ -29,7 +29,7 @@ export const SERVICES = [
   { name: "Audit Defense", href: "/services/audit-defense/", icon: "scale-balanced", description: "Workers comp, sales tax, UI audit + fine reduction" },
   { name: "Financial Services", href: "/services/financial-services/", icon: "chart-line", description: "Bookkeeping, financial statements, analysis" },
   { name: "Immigration & Legal Services", href: "/services/legal/", icon: "gavel", description: "Immigration, citizenship, divorce, ITIN registration" },
-  { name: "Web Presence", href: "/services/web-presence/", icon: "globe", description: "Websites + Google setup so customers can find you" },
+  { name: "Web Presence", href: "/services/web-presence/", icon: "globe", description: "Get found. Get calls. Get paid. Website + Google, done for you. AI on Growth & Commerce." },
 ] as const;
 
 export const TEAM = [
