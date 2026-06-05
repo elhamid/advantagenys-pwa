@@ -49,7 +49,7 @@ const founderPriorities = [
   {
     title: "Make Merge worth the sacrifice",
     eyebrow: "The passion asset",
-    text: "Merge has absorbed cash, attention, and founder energy. It is her crown jewel and showroom, not another restaurant in a crowded category.",
+    text: "Merge has absorbed cash, attention, and founder energy. It is a crown jewel and showroom for Tropical, not another restaurant in a crowded category.",
   },
   {
     title: "Grow without losing the house",
@@ -343,9 +343,10 @@ export function TropicalStarsDossier() {
           </h1>
           <p className="mt-6 max-w-2xl text-[1.05rem] leading-8 text-[#4f463b]">
             Tropical already knows how to grow. Advantage Services is here to
-            help her grow on a different scale: take care of the people, make
-            Merge financially legible, firm the foundation, and free the owner
-            to pursue the accounts and partnerships that can carry a 3x company.
+            help the company grow on a different scale: protect the people,
+            make Merge financially legible, firm the foundation, and give
+            ownership the visibility to pursue the accounts and partnerships
+            that can carry a 3x company.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             {["Protect the people", "Tighten the house", "Merge flagship", "3x growth path"].map((item) => (
@@ -409,13 +410,14 @@ export function TropicalStarsDossier() {
               Founder priorities
             </div>
             <h2 className="font-[family-name:var(--font-dossier-serif)] text-[clamp(2.35rem,5vw,4.7rem)] font-semibold leading-[0.96] tracking-tight">
-              Protect what she cares about, then scale what works.
+              Protect the people. Strengthen the house. Scale what works.
             </h2>
             <p className="mt-5 text-base leading-7 text-[#6f6557]">
-              The strategy should meet the owner where the pressure is real:
-              people depend on the business, and Merge is personal. The first
-              win is not more noise. It is making the house firm enough that her
-              people, her flagship, and her growth can move together.
+              The strategy should meet Tropical where the pressure is real:
+              people depend on the business, and Merge carries real founder
+              energy. The first win is not more noise. It is making the house
+              firm enough that the people, the assets, and the growth plan can
+              move together.
             </p>
           </div>
           <div className="story-rail relative grid gap-4 rounded-[22px] border border-[#d8cbb8] bg-[#fffdf8] p-5 shadow-[0_28px_90px_-58px_rgba(39,29,16,0.65)] md:grid-cols-3 md:p-7">
@@ -560,7 +562,7 @@ export function TropicalStarsDossier() {
               Merge is not another American restaurant in a crowded category.
               It is a visible stage for premium Caribbean hospitality: taste,
               room, service, invitation, and follow-up. Advantage can help make
-              the economics legible enough that the owner can see what is
+              the economics legible enough that ownership can see what is
               working, what is being funded by the wider business, and where the
               flagship might create growth beyond table service.
             </p>
