@@ -236,11 +236,10 @@ const valueAdded = [
 const operatingStack = [
   { icon: WalletCards, title: "Bookkeeping + Tax", text: "Monthly books, statements, tax planning, entity review, corp filings, cash-flow review." },
   { icon: ShieldCheck, title: "Risk + Compliance", text: "Workers comp, payroll classification, audit readiness, insurance gaps, state-by-state exposure." },
-  { icon: ClipboardCheck, title: "MWBE Readiness", text: "Owner, entity, payroll, tax, and operating records organized for minority and woman-owned business certification paths." },
-  { icon: UsersRound, title: "Crew Productivity", text: "Clear owners, open loops, applicant readiness, follow-up accountability." },
-  { icon: Target, title: "Client Acquisition", text: "Hotels, F&B, events, stadiums, cleaning, and property operators." },
+  { icon: UsersRound, title: "More from the crew you have", text: "Clear ownership on every account, jobs covered before they slip, applicants ready to place, and follow-ups that do not die in an inbox." },
+  { icon: Target, title: "Win and keep accounts", text: "Hotels, F&B, events, stadiums, cleaning, and property operators pursued deliberately and delivered cleanly enough to renew and expand." },
   { icon: MessagesSquare, title: "Owner Visibility Room", text: "A friendly CRM view that shows what Advantage is working on without turning the owner into the task manager." },
-  { icon: BarChart3, title: "Growth Analytics", text: "Pipeline, close rate, revenue by source, revenue at risk, margin by segment." },
+  { icon: BarChart3, title: "The weekly scoreboard", text: "Pipeline, close rate, revenue by source, revenue at risk, and margin by segment, read in minutes instead of rebuilt by hand each month." },
 ];
 
 const ownerCockpit = [
@@ -469,14 +468,14 @@ export function TropicalStarsDossier() {
       <div className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(circle_at_82%_6%,rgba(171,135,78,0.18),transparent_31%),radial-gradient(circle_at_8%_45%,rgba(22,90,65,0.10),transparent_34%),linear-gradient(180deg,rgba(255,255,255,0.52),rgba(255,255,255,0))]" />
       <header className="sticky top-0 z-40 border-b border-[#e1d4c0] bg-[#f6f0e6]/86 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-5 sm:px-8">
-          <div className="rounded-xl border border-[#3d3021] bg-[#211b14] px-3 py-2 shadow-sm">
+          <div className="flex items-center self-center rounded-xl border border-[#3d3021] bg-[#211b14] px-3 py-1.5 shadow-sm">
             <Image
               src="/images/tropical-stars-logo.png"
               alt="Tropical Stars Talent Solutions"
               width={192}
               height={90}
               priority
-              className="h-auto w-24 drop-shadow-[0_1px_2px_rgba(0,0,0,0.45)] sm:w-28"
+              className="h-9 w-auto drop-shadow-[0_1px_2px_rgba(0,0,0,0.45)]"
             />
           </div>
           <div className="hidden h-7 w-px bg-[#d8cbb8] sm:block" />
@@ -928,10 +927,39 @@ export function TropicalStarsDossier() {
       <section className="relative z-10 mx-auto max-w-7xl px-5 py-16 sm:px-8 lg:py-20">
         <SectionHeader
           eyebrow="Advantage operating stack"
-          title="What we install around the owner."
-          text="Advantage Services brings the grounding layer and the growth layer together: financial clarity, tax and compliance posture, insurance and audit readiness, client acquisition, intake discipline, reporting, and weekly operating cadence."
+          title="How Advantage turns foresight into execution."
+          text="This is not a report that gets left behind. It is the operating layer: books, compliance, owner visibility, growth pipeline, and weekly decisions moving in one cadence."
         />
-        <div className="mt-9 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+        <div className="cinema-panel float-panel relative mt-9 overflow-hidden rounded-[22px] border border-[#3d3021] bg-[#211b14] p-6 text-[#f6f0e6] shadow-[0_30px_90px_-58px_rgba(20,14,8,0.82)] sm:p-7 lg:ml-auto lg:max-w-5xl lg:-rotate-1">
+          <div className="glass-line pointer-events-none absolute left-8 right-8 top-16 h-px bg-gradient-to-r from-transparent via-[#b99a66] to-transparent" />
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+            <div className="max-w-3xl">
+              <div className="flex items-center gap-3 text-xs font-extrabold uppercase tracking-[0.24em] text-[#d7bd89]">
+                <ClipboardCheck className="h-4 w-4" />
+                Certification unlock
+              </div>
+              <h3 className="mt-4 font-[family-name:var(--font-dossier-serif)] text-3xl font-semibold leading-tight sm:text-4xl">
+                MWBE certification readiness
+              </h3>
+              <p className="mt-4 text-sm leading-7 text-[#efe4d3]">
+                Minority and woman-owned certification opens bid paths,
+                set-aside contracts, and institutional accounts that stay
+                closed without it. We organize the owner, entity, payroll, tax,
+                and operating records so the certification, and the work behind
+                it, is within reach.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-[#5d4c34] bg-[#18130e] px-5 py-4 lg:w-56">
+              <div className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#bfa673]">
+                Strategic use
+              </div>
+              <p className="mt-2 font-[family-name:var(--font-dossier-serif)] text-2xl font-semibold leading-tight text-[#d7bd89]">
+                Qualify for work that is not available to everyone.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="mt-7 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {operatingStack.map((item) => (
             <article key={item.title} className="rounded-[18px] border border-[#d8cbb8] bg-[#fffdf8] p-6">
               <item.icon className="h-7 w-7 text-[#0f5a43]" />
