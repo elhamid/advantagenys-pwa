@@ -307,6 +307,18 @@ const activeFoundation = [
   },
 ];
 
+const dossierNav = [
+  { href: "#overview", label: "Overview" },
+  { href: "#foundation", label: "Foundation" },
+  { href: "#structure", label: "Structure" },
+  { href: "#client-room", label: "Client room" },
+  { href: "#assets", label: "Assets" },
+  { href: "#market", label: "Market" },
+  { href: "#stack", label: "Stack" },
+  { href: "#cockpit", label: "Cockpit" },
+  { href: "#next", label: "Next" },
+];
+
 function normalizeAccessCode(value: string) {
   return value.toUpperCase().replace(/[^A-Z0-9]/g, "");
 }
@@ -470,6 +482,7 @@ export function TropicalStarsDossier() {
         .dossier-motion .signal-chip:hover{transform:translateY(-3px);border-color:#b99a66;background-color:#33291c}
         .dossier-motion .pulse-node{animation:tsPulse 2.8s ease-in-out infinite}
         .dossier-motion .art-drift{animation:tsArtDrift 13s ease-in-out infinite;transform-origin:center}
+        .dossier-motion .dossier-anchor{scroll-margin-top:11.5rem}
         @media (min-width:768px){
           .dossier-motion .story-rail:before{content:"";position:absolute;left:1.45rem;right:1.45rem;top:2.35rem;height:1px;background:linear-gradient(90deg,rgba(15,90,67,.18),rgba(159,122,69,.82),rgba(15,90,67,.18))}
           .dossier-motion .story-rail:after{content:"";position:absolute;left:1.45rem;top:2.35rem;height:1px;width:32%;background:#0f5a43;box-shadow:0 0 28px rgba(15,90,67,.36);animation:tsRail 6.5s ease-in-out infinite}
@@ -514,7 +527,26 @@ export function TropicalStarsDossier() {
         </div>
       </header>
 
-      <section className="relative z-10 mx-auto grid max-w-7xl gap-8 px-5 pb-12 pt-10 sm:px-8 lg:grid-cols-[1.05fr_0.95fr] lg:pb-16 lg:pt-14">
+      <nav className="sticky top-16 z-30 border-b border-[#e5d8c4] bg-[#f6f0e6]/92 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-7xl items-center gap-3 px-5 py-3 sm:px-8">
+          <div className="hidden shrink-0 text-[10px] font-extrabold uppercase tracking-[0.22em] text-[#98743f] md:block">
+            Dossier map
+          </div>
+          <div className="flex min-w-0 flex-1 gap-2 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {dossierNav.map((item) => (
+              <a
+                key={item.href}
+                href={item.href}
+                className="shrink-0 rounded-full border border-[#d8cbb8] bg-[#fffdf8] px-3.5 py-2 text-xs font-extrabold uppercase tracking-[0.12em] text-[#5f564b] shadow-sm transition hover:border-[#a77d42] hover:text-[#211b14]"
+              >
+                {item.label}
+              </a>
+            ))}
+          </div>
+        </div>
+      </nav>
+
+      <section id="overview" className="dossier-anchor relative z-10 mx-auto grid max-w-7xl gap-8 px-5 pb-12 pt-10 sm:px-8 lg:grid-cols-[1.05fr_0.95fr] lg:pb-16 lg:pt-14">
         <div>
           <div className="mb-5 inline-flex items-center gap-3 text-xs font-extrabold uppercase tracking-[0.24em] text-[#916b32]">
             <span className="h-px w-8 bg-[#a77d42]" />
@@ -595,7 +627,7 @@ export function TropicalStarsDossier() {
         <div className="grid overflow-hidden rounded-[18px] border border-[#d8cbb8] bg-[#fffdf8] shadow-[0_18px_60px_-42px_rgba(39,29,16,0.55)] sm:grid-cols-2 lg:grid-cols-4">
           {metrics.map((metric, index) => (
             <div key={metric.label} className={`p-6 ${index < metrics.length - 1 ? "border-b border-[#e6dac7] sm:border-r lg:border-b-0" : ""}`}>
-              <div className="whitespace-nowrap font-[family-name:var(--font-dossier-serif)] text-[clamp(2rem,3vw,2.55rem)] font-semibold leading-none text-[#211b14]">
+              <div className="font-[family-name:var(--font-dossier-serif)] text-[clamp(1.85rem,8vw,2.55rem)] font-semibold leading-none text-[#211b14] sm:whitespace-nowrap">
                 {metric.value}
               </div>
               <div className="mt-3 text-sm font-semibold leading-5 text-[#6f6557]">{metric.label}</div>
@@ -604,7 +636,7 @@ export function TropicalStarsDossier() {
         </div>
       </section>
 
-      <section className="relative z-10 mx-auto max-w-7xl px-5 py-16 sm:px-8 lg:py-20">
+      <section id="foundation" className="dossier-anchor relative z-10 mx-auto max-w-7xl px-5 py-16 sm:px-8 lg:py-20">
         <div className="grid gap-8 lg:grid-cols-[0.82fr_1.18fr]">
           <div className="max-w-xl">
             <div className="mb-4 flex items-center gap-3 text-xs font-extrabold uppercase tracking-[0.24em] text-[#916b32]">
@@ -697,7 +729,7 @@ export function TropicalStarsDossier() {
         </div>
       </section>
 
-      <section className="relative z-10 mx-auto max-w-7xl px-5 pb-16 sm:px-8 lg:pb-20">
+      <section id="structure" className="dossier-anchor relative z-10 mx-auto max-w-7xl px-5 pb-16 sm:px-8 lg:pb-20">
         <div className="grid gap-8 lg:grid-cols-[0.82fr_1.18fr]">
           <div className="cinema-panel float-panel relative overflow-hidden rounded-[22px] border border-[#3d3021] bg-[#211b14] p-7 text-[#f6f0e6] shadow-[0_34px_110px_-54px_rgba(20,14,8,0.82)]">
             <div className="glass-line pointer-events-none absolute left-8 right-8 top-20 h-px bg-gradient-to-r from-transparent via-[#b99a66] to-transparent" />
@@ -757,7 +789,7 @@ export function TropicalStarsDossier() {
         </div>
       </section>
 
-      <section className="relative z-10 mx-auto max-w-7xl px-5 pb-16 sm:px-8 lg:pb-20">
+      <section id="client-room" className="dossier-anchor relative z-10 mx-auto max-w-7xl px-5 pb-16 sm:px-8 lg:pb-20">
         <div className="grid gap-8 rounded-[24px] border border-[#d8cbb8] bg-[#fffdf8] p-5 shadow-[0_28px_90px_-58px_rgba(39,29,16,0.65)] sm:p-7 lg:grid-cols-[0.78fr_1.22fr]">
           <div className="cinema-panel float-panel relative overflow-hidden rounded-[20px] border border-[#3d3021] bg-[#211b14] p-7 text-[#f6f0e6]">
             <div className="glass-line pointer-events-none absolute left-8 right-8 top-20 h-px bg-gradient-to-r from-transparent via-[#b99a66] to-transparent" />
@@ -833,7 +865,7 @@ export function TropicalStarsDossier() {
         </div>
       </section>
 
-      <section className="relative z-10 mx-auto max-w-7xl px-5 py-16 sm:px-8 lg:py-20">
+      <section id="assets" className="dossier-anchor relative z-10 mx-auto max-w-7xl px-5 py-16 sm:px-8 lg:py-20">
         <SectionHeader
           eyebrow="Footprint and flagship"
           title="Tropical has more than one growth asset. Merge is one important signal."
@@ -909,7 +941,7 @@ export function TropicalStarsDossier() {
         </div>
       </section>
 
-      <section className="relative z-10 mx-auto max-w-7xl px-5 pb-16 sm:px-8 lg:pb-20">
+      <section id="market" className="dossier-anchor relative z-10 mx-auto max-w-7xl px-5 pb-16 sm:px-8 lg:pb-20">
         <div className="grid gap-8 lg:grid-cols-[0.86fr_1.14fr]">
           <div className="cinema-panel float-panel relative overflow-hidden rounded-[24px] border border-[#3d3021] bg-[#211b14] p-7 text-[#f6f0e6] shadow-[0_34px_110px_-58px_rgba(20,14,8,0.82)] sm:p-9">
             <div className="glass-line pointer-events-none absolute left-8 right-8 top-24 h-px bg-gradient-to-r from-transparent via-[#b99a66] to-transparent" />
@@ -926,14 +958,14 @@ export function TropicalStarsDossier() {
               well, priced clearly, insured properly, and run without pulling
               the owner back into every detail.
             </p>
-            <div className="mt-7 grid grid-cols-2 gap-3">
+            <div className="mt-7 grid gap-3 sm:grid-cols-2">
               {marketSignals.map((signal) => (
                 <div key={signal.label} className="rounded-2xl border border-[#5d4c34] bg-[#18130e] p-4">
-                  <div className="font-[family-name:var(--font-dossier-serif)] text-3xl font-semibold text-[#d7bd89]">
+                  <div className="break-words font-[family-name:var(--font-dossier-serif)] text-[clamp(2.25rem,12vw,3rem)] font-semibold leading-[0.95] text-[#d7bd89] sm:text-3xl">
                     {signal.value}
                   </div>
                   <div className="mt-2 text-xs font-bold leading-5 text-[#efe4d3]">{signal.label}</div>
-                  <div className="mt-2 text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#bfa673]">{signal.source}</div>
+                  <div className="mt-2 text-[10px] font-extrabold uppercase leading-5 tracking-[0.1em] text-[#bfa673] sm:tracking-[0.16em]">{signal.source}</div>
                 </div>
               ))}
             </div>
@@ -979,7 +1011,7 @@ export function TropicalStarsDossier() {
         </div>
       </section>
 
-      <section className="relative z-10 mx-auto max-w-7xl px-5 py-16 sm:px-8 lg:py-20">
+      <section id="stack" className="dossier-anchor relative z-10 mx-auto max-w-7xl px-5 py-16 sm:px-8 lg:py-20">
         <SectionHeader
           eyebrow="Advantage operating stack"
           title="How Advantage turns foresight into execution."
@@ -1066,7 +1098,7 @@ export function TropicalStarsDossier() {
         </div>
       </section>
 
-      <section className="relative z-10 mx-auto max-w-7xl px-5 pb-16 sm:px-8 lg:pb-20">
+      <section id="cockpit" className="dossier-anchor relative z-10 mx-auto max-w-7xl px-5 pb-16 sm:px-8 lg:pb-20">
         <div className="grid overflow-hidden rounded-[24px] border border-[#3d3021] bg-[#211b14] text-[#f6f0e6] shadow-[0_34px_110px_-58px_rgba(20,14,8,0.8)] lg:grid-cols-[0.82fr_1.18fr]">
           <div className="cinema-panel relative p-7 sm:p-9">
             <div className="text-xs font-extrabold uppercase tracking-[0.24em] text-[#d7bd89]">
@@ -1101,7 +1133,7 @@ export function TropicalStarsDossier() {
         </div>
       </section>
 
-      <section className="relative z-10 mx-auto max-w-7xl px-5 pb-20 sm:px-8">
+      <section id="next" className="dossier-anchor relative z-10 mx-auto max-w-7xl px-5 pb-20 sm:px-8">
         <div className="rounded-[20px] border border-[#0f5a43]/25 bg-[#dfece3] p-7 sm:p-9 lg:flex lg:items-center lg:justify-between lg:gap-12">
           <div>
             <div className="text-xs font-extrabold uppercase tracking-[0.22em] text-[#0f5a43]">
