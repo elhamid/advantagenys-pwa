@@ -11,6 +11,7 @@ import {
   ClipboardCheck,
   Gauge,
   Handshake,
+  HeartHandshake,
   LockKeyhole,
   MessagesSquare,
   Route,
@@ -34,9 +35,27 @@ const ACCESS_CODES = new Set([
 
 const metrics = [
   { value: "500+", label: "rolling people on payroll and active workforce" },
-  { value: "2-3x", label: "growth target that needs a firmer operating foundation" },
-  { value: "NY + TN + GA", label: "operating footprint: New York, Tennessee, Georgia start-up" },
+  { value: "3x", label: "target trajectory once the foundation can carry it" },
+  { value: "NY + TN + GA", label: "operating footprint plus Georgia flagship: Merge Caribbean Cuisine" },
   { value: "1", label: "owner focus: higher-value accounts and partnerships" },
+];
+
+const founderPriorities = [
+  {
+    title: "Take care of the people",
+    eyebrow: "What matters emotionally",
+    text: "A rolling 500+ workforce is not just a number. Cleaner payroll visibility and fewer internal fires protect the people who make Tropical real.",
+  },
+  {
+    title: "Make Merge worth the sacrifice",
+    eyebrow: "The passion asset",
+    text: "Merge has absorbed cash, attention, and founder energy. It is her crown jewel and showroom, not another restaurant in a crowded category.",
+  },
+  {
+    title: "Grow without losing the house",
+    eyebrow: "The 3x path",
+    text: "Tropical can move toward 3x only after the foundation is firm: reconciled books, visible leakage, tighter cadence, and owner time aimed at growth.",
+  },
 ];
 
 const journey = [
@@ -92,15 +111,30 @@ const phases = [
 const footprint = [
   { market: "New York", status: "Core operating base", note: "Hospitality staffing, account relationships, payroll/workforce activity." },
   { market: "Tennessee", status: "Active operating market", note: "Existing workforce and client operations that need the same financial visibility." },
-  { market: "Georgia", status: "Launching market", note: "New operations and the flagship restaurant venture need tighter reporting before scale." },
+  { market: "Georgia", status: "Flagship hospitality asset", note: "Merge Caribbean Cuisine in Duluth may become a proof point for premium service, events, bookings, and client-space growth once the economics are clear." },
+];
+
+const growthAssets = [
+  { title: "Workforce trust", text: "A large rolling workforce gives Tropical reach, but only if payroll, classification, readiness, and follow-up stay clean." },
+  { title: "Client relationships", text: "Hotels, restaurants, events, cleaning, and business operators can become larger accounts when delivery and reporting feel controlled." },
+  { title: "Market footprint", text: "New York, Tennessee, and Georgia give Tropical more than one lane for expansion, but each market needs visible profitability." },
+  { title: "Merge halo", text: "Merge is one important asset in the portfolio: a proud showcase for premium hospitality that may create new service formats after the foundation is firm." },
+];
+
+const mergeSignals = [
+  { label: "Positioning", text: "Caribbean cuisine with modern dining elegance in Duluth, Georgia." },
+  { label: "Demand capture", text: "The public site is already collecting a mailing list before doors open." },
+  { label: "Opening energy", text: "Exclusive opening-event invites can be tested as the first booking and relationship engine." },
+  { label: "Location", text: "3505 Mall Blvd gives the flagship a concrete Georgia anchor for local partnerships." },
 ];
 
 const flagshipMoves = [
   "Reconcile the flow of proceeds from the core business into the Georgia restaurant venture.",
-  "Separate true restaurant performance from shared overhead, launch costs, and owner-funded buildout.",
-  "Support bookings, opening rhythm, reporting, and hospitality service standards for the summer launch.",
-  "Treat the restaurant as a flagship proof of taste, service, and experience, not just another unit to replicate blindly.",
-  "Explore satellite hospitality experiences, premium cuisine/service partnerships, and client-space takeovers where the flagship style can travel.",
+  "Separate true Merge performance from shared overhead, opening costs, and owner-funded buildout.",
+  "Show the owner where the business is healthier than it felt after the books are properly reconciled.",
+  "Map the coming-soon mailing list and opening-event interest into possible booking, private-event, and follow-up lanes.",
+  "Evaluate Merge as a premium proof of taste, service, and experience, not as a template to copy blindly.",
+  "Model possible profit-making formats around the halo: catered activations, private dining, satellite experiences, and client-space takeovers where the Merge style could travel.",
 ];
 
 const valueAdded = [
@@ -133,7 +167,7 @@ const hospitalityLanes = [
   "Stadium and event staffing",
   "Crisis housekeeping and deep cleaning",
   "Business staffing and admin support",
-  "Georgia flagship restaurant and satellite hospitality concepts",
+  "Merge showroom: private events, catering, activations, and satellite hospitality concepts",
 ];
 
 const ownerFocus = [
@@ -245,12 +279,29 @@ export function TropicalStarsDossier() {
         .dossier-motion .float-panel{animation:tsFloat 9s ease-in-out infinite;transform-style:preserve-3d}
         .dossier-motion .float-panel:nth-child(2){animation-delay:-2s}
         .dossier-motion .glass-line{animation:tsGlide 8s ease-in-out infinite}
+        .dossier-motion .reveal-card{animation:tsReveal .72s cubic-bezier(.2,.7,.2,1) both}
+        .dossier-motion .reveal-card:nth-child(2){animation-delay:.08s}
+        .dossier-motion .reveal-card:nth-child(3){animation-delay:.16s}
+        .dossier-motion .reveal-card:nth-child(4){animation-delay:.24s}
         .dossier-motion .lift-card{transition:transform .28s cubic-bezier(.2,.7,.2,1), box-shadow .28s cubic-bezier(.2,.7,.2,1)}
         .dossier-motion .lift-card:hover{transform:translateY(-6px) rotateX(1.5deg);box-shadow:0 30px 70px -46px rgba(39,29,16,.72)}
+        .dossier-motion .cinema-panel{isolation:isolate}
+        .dossier-motion .cinema-panel:before{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 0%,rgba(216,188,126,.12) 34%,transparent 52%);transform:translateX(-72%);animation:tsSweep 10s ease-in-out infinite;z-index:-1}
+        .dossier-motion .signal-chip{transition:transform .24s cubic-bezier(.2,.7,.2,1),border-color .24s,background-color .24s}
+        .dossier-motion .signal-chip:hover{transform:translateY(-3px);border-color:#b99a66;background-color:#33291c}
+        .dossier-motion .pulse-node{animation:tsPulse 2.8s ease-in-out infinite}
+        @media (min-width:768px){
+          .dossier-motion .story-rail:before{content:"";position:absolute;left:1.45rem;right:1.45rem;top:2.35rem;height:1px;background:linear-gradient(90deg,rgba(15,90,67,.18),rgba(159,122,69,.82),rgba(15,90,67,.18))}
+          .dossier-motion .story-rail:after{content:"";position:absolute;left:1.45rem;top:2.35rem;height:1px;width:32%;background:#0f5a43;box-shadow:0 0 28px rgba(15,90,67,.36);animation:tsRail 6.5s ease-in-out infinite}
+        }
         @keyframes tsFloat{0%,100%{transform:translate3d(0,0,0) rotateX(0deg)}50%{transform:translate3d(0,-8px,0) rotateX(1.2deg)}}
         @keyframes tsGlide{0%,100%{transform:translateX(-12%);opacity:.38}50%{transform:translateX(12%);opacity:.72}}
+        @keyframes tsReveal{from{transform:translateY(18px) scale(.985)}to{transform:translateY(0) scale(1)}}
+        @keyframes tsSweep{0%,35%{transform:translateX(-72%)}60%,100%{transform:translateX(72%)}}
+        @keyframes tsPulse{0%,100%{box-shadow:0 0 0 0 rgba(15,90,67,.22)}50%{box-shadow:0 0 0 10px rgba(15,90,67,0)}}
+        @keyframes tsRail{0%,100%{transform:translateX(0);opacity:.45}50%{transform:translateX(196%);opacity:.9}}
         @media (prefers-reduced-motion: reduce){
-          .dossier-motion .float-panel,.dossier-motion .glass-line{animation:none}
+          .dossier-motion .float-panel,.dossier-motion .glass-line,.dossier-motion .reveal-card,.dossier-motion .cinema-panel:before,.dossier-motion .pulse-node,.dossier-motion .story-rail:after{animation:none}
           .dossier-motion .lift-card,.dossier-motion .lift-card:hover{transition:none;transform:none}
         }
       `}</style>
@@ -292,12 +343,12 @@ export function TropicalStarsDossier() {
           </h1>
           <p className="mt-6 max-w-2xl text-[1.05rem] leading-8 text-[#4f463b]">
             Tropical already knows how to grow. Advantage Services is here to
-            help her grow on a different scale: firm the foundation, organize
-            the crew around the right signals, and free the owner to pursue
-            larger accounts, partnerships, and contracts.
+            help her grow on a different scale: take care of the people, make
+            Merge financially legible, firm the foundation, and free the owner
+            to pursue the accounts and partnerships that can carry a 3x company.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
-            {["Stabilize", "Productivity", "Owner focus", "2-3x growth path"].map((item) => (
+            {["Protect the people", "Tighten the house", "Merge flagship", "3x growth path"].map((item) => (
               <span key={item} className="rounded-full border border-[#d8cbb8] bg-[#fffdf8] px-4 py-2 text-sm font-bold text-[#4f463b] shadow-sm">
                 {item}
               </span>
@@ -351,6 +402,40 @@ export function TropicalStarsDossier() {
       </section>
 
       <section className="relative z-10 mx-auto max-w-7xl px-5 py-16 sm:px-8 lg:py-20">
+        <div className="grid gap-8 lg:grid-cols-[0.82fr_1.18fr]">
+          <div className="max-w-xl">
+            <div className="mb-4 flex items-center gap-3 text-xs font-extrabold uppercase tracking-[0.24em] text-[#916b32]">
+              <HeartHandshake className="h-4 w-4" />
+              Founder priorities
+            </div>
+            <h2 className="font-[family-name:var(--font-dossier-serif)] text-[clamp(2.35rem,5vw,4.7rem)] font-semibold leading-[0.96] tracking-tight">
+              Protect what she cares about, then scale what works.
+            </h2>
+            <p className="mt-5 text-base leading-7 text-[#6f6557]">
+              The strategy should meet the owner where the pressure is real:
+              people depend on the business, and Merge is personal. The first
+              win is not more noise. It is making the house firm enough that her
+              people, her flagship, and her growth can move together.
+            </p>
+          </div>
+          <div className="story-rail relative grid gap-4 rounded-[22px] border border-[#d8cbb8] bg-[#fffdf8] p-5 shadow-[0_28px_90px_-58px_rgba(39,29,16,0.65)] md:grid-cols-3 md:p-7">
+            {founderPriorities.map((priority, index) => (
+              <article key={priority.title} className="reveal-card lift-card relative rounded-[18px] border border-[#e6dac7] bg-[#f8f3ea] p-5">
+                <div className="pulse-node relative z-10 flex h-11 w-11 items-center justify-center rounded-2xl bg-[#e4efe6] text-[#0f5a43]">
+                  <span className="font-[family-name:var(--font-dossier-serif)] text-xl font-semibold">0{index + 1}</span>
+                </div>
+                <div className="mt-5 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#98743f]">{priority.eyebrow}</div>
+                <h3 className="mt-3 font-[family-name:var(--font-dossier-serif)] text-2xl font-semibold leading-tight">
+                  {priority.title}
+                </h3>
+                <p className="mt-4 text-sm leading-6 text-[#5f564b]">{priority.text}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="relative z-10 mx-auto max-w-7xl px-5 py-16 sm:px-8 lg:py-20">
         <SectionHeader
           eyebrow="The trajectory"
           title="A larger company needs a firmer foundation."
@@ -358,7 +443,7 @@ export function TropicalStarsDossier() {
         />
         <div className="mt-8 grid gap-4 md:grid-cols-4">
           {journey.map((item) => (
-            <article key={item.step} className="lift-card rounded-[18px] border border-[#d8cbb8] bg-[#fffdf8] p-5">
+            <article key={item.step} className="lift-card reveal-card rounded-[18px] border border-[#d8cbb8] bg-[#fffdf8] p-5">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-extrabold uppercase tracking-[0.18em] text-[#98743f]">{item.title}</span>
                 <span className="font-[family-name:var(--font-dossier-serif)] text-2xl font-semibold text-[#c1ad8d]">{item.step}</span>
@@ -369,7 +454,7 @@ export function TropicalStarsDossier() {
         </div>
         <div className="mt-9 grid gap-5 lg:grid-cols-4">
           {phases.map((phase, index) => (
-            <article key={phase.title} className="lift-card group rounded-[18px] border border-[#d8cbb8] bg-[#fffdf8] p-6">
+            <article key={phase.title} className="lift-card reveal-card group rounded-[18px] border border-[#d8cbb8] bg-[#fffdf8] p-6">
               <div className="mb-5 flex items-center justify-between">
                 <span className="rounded-full bg-[#e8dbc3] px-3 py-1 text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#7d5b28]">
                   {phase.eyebrow}
@@ -426,13 +511,22 @@ export function TropicalStarsDossier() {
       <section className="relative z-10 mx-auto max-w-7xl px-5 py-16 sm:px-8 lg:py-20">
         <SectionHeader
           eyebrow="Footprint and flagship"
-          title="New York and Tennessee are the base. Georgia is the next proof point."
-          text="Tropical's growth is not only more staffing volume. The Georgia restaurant launch is a crown-jewel asset: a premium hospitality proof point where bookings, finance, operating standards, and experience design all need to reconcile cleanly."
+          title="Tropical has more than one growth asset. Merge is one important signal."
+          text="The meeting should not over-focus on one restaurant. Tropical already has people, client relationships, market reach, and a founder-led flagship asset. Advantage's role is to make the foundation clear enough that each asset can be evaluated, protected, and turned into the right growth lane."
         />
+        <div className="mt-8 grid gap-4 md:grid-cols-4">
+          {growthAssets.map((asset) => (
+            <article key={asset.title} className="lift-card reveal-card rounded-[18px] border border-[#d8cbb8] bg-[#fffdf8] p-5">
+              <div className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#98743f]">Growth asset</div>
+              <h3 className="mt-3 font-[family-name:var(--font-dossier-serif)] text-2xl font-semibold leading-tight">{asset.title}</h3>
+              <p className="mt-4 text-sm leading-6 text-[#6f6557]">{asset.text}</p>
+            </article>
+          ))}
+        </div>
         <div className="mt-9 grid gap-5 lg:grid-cols-[0.9fr_1.1fr]">
           <div className="grid gap-4">
             {footprint.map((item) => (
-              <article key={item.market} className="lift-card rounded-[18px] border border-[#d8cbb8] bg-[#fffdf8] p-5">
+              <article key={item.market} className="lift-card reveal-card rounded-[18px] border border-[#d8cbb8] bg-[#fffdf8] p-5">
                 <div className="flex items-start gap-4">
                   <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#e4efe6] text-[#0f5a43]">
                     <MapPinned className="h-5 w-5" />
@@ -446,30 +540,42 @@ export function TropicalStarsDossier() {
               </article>
             ))}
           </div>
-          <article className="float-panel relative overflow-hidden rounded-[22px] border border-[#d8cbb8] bg-[#fffdf8] p-7 shadow-[0_30px_90px_-54px_rgba(39,29,16,0.72)]">
+          <article className="cinema-panel float-panel relative overflow-hidden rounded-[22px] border border-[#3d3021] bg-[#211b14] p-7 text-[#f6f0e6] shadow-[0_34px_110px_-54px_rgba(20,14,8,0.92)]">
             <div className="glass-line pointer-events-none absolute left-8 right-8 top-20 h-px bg-gradient-to-r from-transparent via-[#b99a66] to-transparent" />
             <div className="flex items-start gap-4">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#efe3cd] text-[#9f7a45]">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#473823] text-[#d7bd89]">
                 <UtensilsCrossed className="h-6 w-6" />
               </div>
               <div>
-                <div className="text-xs font-extrabold uppercase tracking-[0.22em] text-[#98743f]">Georgia flagship</div>
+                <div className="text-xs font-extrabold uppercase tracking-[0.22em] text-[#d7bd89]">Merge flagship</div>
                 <h3 className="mt-3 font-[family-name:var(--font-dossier-serif)] text-3xl font-semibold leading-tight">
-                  A premium restaurant launch can become more than a restaurant.
+                  The flagship can make Tropical feel larger before the org chart gets larger.
                 </h3>
               </div>
             </div>
-            <p className="mt-6 text-sm leading-7 text-[#5f564b]">
-              The restaurant has absorbed real investment from the wider business.
-              Recent reconciliation is already changing the picture: what looked
-              like pressure and loss may contain actual profit once expenses,
-              launch costs, and shared flows are separated. The immediate job is
-              to tighten the ship before opening at higher scale.
+            <div className="mt-6 inline-flex rounded-full border border-[#5d4c34] bg-[#18130e] px-4 py-2 text-xs font-extrabold uppercase tracking-[0.18em] text-[#d7bd89]">
+              Crown jewel to showroom to profitable formats
+            </div>
+            <p className="mt-6 text-sm leading-7 text-[#efe4d3]">
+              Merge is not another American restaurant in a crowded category.
+              It is a visible stage for premium Caribbean hospitality: taste,
+              room, service, invitation, and follow-up. Advantage can help make
+              the economics legible enough that the owner can see what is
+              working, what is being funded by the wider business, and where the
+              flagship might create growth beyond table service.
             </p>
+            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+              {mergeSignals.map((signal) => (
+                <div key={signal.label} className="signal-chip rounded-2xl border border-[#5d4c34] bg-[#2a2319] p-4">
+                  <div className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#d7bd89]">{signal.label}</div>
+                  <p className="mt-2 text-sm leading-6 text-[#efe4d3]">{signal.text}</p>
+                </div>
+              ))}
+            </div>
             <ul className="mt-6 grid gap-3">
               {flagshipMoves.map((move) => (
-                <li key={move} className="flex gap-3 rounded-xl border border-[#e6dac7] bg-[#f8f3ea] p-3 text-sm font-semibold leading-6 text-[#4f463b]">
-                  <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-[#0f5a43]" />
+                <li key={move} className="flex gap-3 rounded-xl border border-[#5d4c34] bg-[#18130e] p-3 text-sm font-semibold leading-6 text-[#f6f0e6]">
+                  <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-[#d7bd89]" />
                   {move}
                 </li>
               ))}
@@ -515,7 +621,7 @@ export function TropicalStarsDossier() {
         <div className="rounded-[18px] border border-[#d8cbb8] bg-[#fffdf8] p-7">
           <div className="flex items-center gap-3 text-xs font-extrabold uppercase tracking-[0.22em] text-[#98743f]">
             <TrendingUp className="h-4 w-4" />
-            The 2-3x path
+            The 3x path
           </div>
           <div className="mt-7 space-y-5">
             <TrajectoryRow icon={SearchCheck} label="Control leakage" text="No growth plan works if profit, follow-up, billing, or compliance leaks stay invisible." />
@@ -533,22 +639,22 @@ export function TropicalStarsDossier() {
               Recommended direction
             </div>
             <h2 className="mt-4 font-[family-name:var(--font-dossier-serif)] text-3xl font-semibold leading-tight sm:text-5xl">
-              Ground the company first, then help Tropical grow at a larger scale.
+              Secure the foundation first, then choose the growth lanes together.
             </h2>
             <p className="mt-5 max-w-3xl text-base leading-7 text-[#3f5147]">
               Advantage Services represents the full foundation: books, tax,
               insurance, compliance, reporting, operating rhythm, and growth
-              discipline. The goal is to make the existing crew more productive,
-              reduce leak-finding noise, and give the owner the visibility and
-              focus to pursue larger accounts.
+              discipline. The first agreement should tighten the house and make
+              the truth visible. From there, Tropical and Advantage can decide
+              which growth possibilities deserve investment.
             </p>
           </div>
           <div className="mt-7 shrink-0 rounded-2xl border border-[#b7d0bd] bg-[#fffdf8] p-5 lg:mt-0 lg:w-80">
             <div className="text-sm font-extrabold text-[#0f5a43]">Next working session</div>
             <p className="mt-2 text-sm leading-6 text-[#4f463b]">
-              Confirm diagnostic package, name the first three leakage targets,
-              define the owner growth targets, and choose the first dashboard
-              views Tropical should see every week.
+              Confirm the foundation agreement, name the first diagnostics,
+              identify the first leakage targets, and use the findings to choose
+              the growth lanes that are real enough to pursue.
             </p>
           </div>
         </div>
