@@ -21,6 +21,8 @@ import {
   TrendingUp,
   UsersRound,
   WalletCards,
+  MapPinned,
+  UtensilsCrossed,
 } from "lucide-react";
 
 const ACCESS_CODES = new Set([
@@ -31,9 +33,9 @@ const ACCESS_CODES = new Set([
 ]);
 
 const metrics = [
-  { value: "789", label: "contractor records already touched through ITIN work" },
+  { value: "500+", label: "rolling people on payroll and active workforce" },
   { value: "2-3x", label: "growth target that needs a firmer operating foundation" },
-  { value: "4", label: "growth lanes: finance, crew, demand, delivery" },
+  { value: "NY + TN + GA", label: "operating footprint: New York, Tennessee, Georgia start-up" },
   { value: "1", label: "owner focus: higher-value accounts and partnerships" },
 ];
 
@@ -87,6 +89,20 @@ const phases = [
   },
 ];
 
+const footprint = [
+  { market: "New York", status: "Core operating base", note: "Hospitality staffing, account relationships, payroll/workforce activity." },
+  { market: "Tennessee", status: "Active operating market", note: "Existing workforce and client operations that need the same financial visibility." },
+  { market: "Georgia", status: "Launching market", note: "New operations and the flagship restaurant venture need tighter reporting before scale." },
+];
+
+const flagshipMoves = [
+  "Reconcile the flow of proceeds from the core business into the Georgia restaurant venture.",
+  "Separate true restaurant performance from shared overhead, launch costs, and owner-funded buildout.",
+  "Support bookings, opening rhythm, reporting, and hospitality service standards for the summer launch.",
+  "Treat the restaurant as a flagship proof of taste, service, and experience, not just another unit to replicate blindly.",
+  "Explore satellite hospitality experiences, premium cuisine/service partnerships, and client-space takeovers where the flagship style can travel.",
+];
+
 const valueAdded = [
   {
     title: "Core Demand Lift",
@@ -117,7 +133,7 @@ const hospitalityLanes = [
   "Stadium and event staffing",
   "Crisis housekeeping and deep cleaning",
   "Business staffing and admin support",
-  "Airport-adjacent and venue contracts",
+  "Georgia flagship restaurant and satellite hospitality concepts",
 ];
 
 const ownerFocus = [
@@ -224,7 +240,20 @@ export function TropicalStarsDossier() {
   }
 
   return (
-    <main className="min-h-screen bg-[#f6f0e6] text-[#211b14]">
+    <main className="dossier-motion min-h-screen bg-[#f6f0e6] text-[#211b14]">
+      <style>{`
+        .dossier-motion .float-panel{animation:tsFloat 9s ease-in-out infinite;transform-style:preserve-3d}
+        .dossier-motion .float-panel:nth-child(2){animation-delay:-2s}
+        .dossier-motion .glass-line{animation:tsGlide 8s ease-in-out infinite}
+        .dossier-motion .lift-card{transition:transform .28s cubic-bezier(.2,.7,.2,1), box-shadow .28s cubic-bezier(.2,.7,.2,1)}
+        .dossier-motion .lift-card:hover{transform:translateY(-6px) rotateX(1.5deg);box-shadow:0 30px 70px -46px rgba(39,29,16,.72)}
+        @keyframes tsFloat{0%,100%{transform:translate3d(0,0,0) rotateX(0deg)}50%{transform:translate3d(0,-8px,0) rotateX(1.2deg)}}
+        @keyframes tsGlide{0%,100%{transform:translateX(-12%);opacity:.38}50%{transform:translateX(12%);opacity:.72}}
+        @media (prefers-reduced-motion: reduce){
+          .dossier-motion .float-panel,.dossier-motion .glass-line{animation:none}
+          .dossier-motion .lift-card,.dossier-motion .lift-card:hover{transition:none;transform:none}
+        }
+      `}</style>
       <div className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(circle_at_82%_6%,rgba(171,135,78,0.18),transparent_31%),radial-gradient(circle_at_8%_45%,rgba(22,90,65,0.10),transparent_34%),linear-gradient(180deg,rgba(255,255,255,0.52),rgba(255,255,255,0))]" />
       <header className="sticky top-0 z-40 border-b border-[#e1d4c0] bg-[#f6f0e6]/86 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-5 sm:px-8">
@@ -276,7 +305,8 @@ export function TropicalStarsDossier() {
           </div>
         </div>
 
-        <aside className="rounded-[18px] border border-[#d8cbb8] bg-[#fffdf8] p-5 shadow-[0_24px_70px_-42px_rgba(39,29,16,0.6)] sm:p-7">
+        <aside className="float-panel relative overflow-hidden rounded-[18px] border border-[#d8cbb8] bg-[#fffdf8] p-5 shadow-[0_30px_90px_-54px_rgba(39,29,16,0.72)] sm:p-7">
+          <div className="glass-line pointer-events-none absolute left-8 right-8 top-16 h-px bg-gradient-to-r from-transparent via-[#b99a66] to-transparent" />
           <div className="flex items-start justify-between gap-4">
             <div>
               <div className="text-xs font-extrabold uppercase tracking-[0.22em] text-[#98743f]">
@@ -296,6 +326,14 @@ export function TropicalStarsDossier() {
               </div>
             ))}
           </div>
+          <div className="mt-5 grid grid-cols-3 gap-2">
+            {["NY", "TN", "GA"].map((state) => (
+              <div key={state} className="rounded-xl border border-[#e5dac9] bg-[#f6f0e6] px-3 py-2 text-center">
+                <div className="font-[family-name:var(--font-dossier-serif)] text-xl font-semibold text-[#9f7a45]">{state}</div>
+                <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#7a6b57]">market</div>
+              </div>
+            ))}
+          </div>
         </aside>
       </section>
 
@@ -303,7 +341,7 @@ export function TropicalStarsDossier() {
         <div className="grid overflow-hidden rounded-[18px] border border-[#d8cbb8] bg-[#fffdf8] shadow-[0_18px_60px_-42px_rgba(39,29,16,0.55)] sm:grid-cols-2 lg:grid-cols-4">
           {metrics.map((metric, index) => (
             <div key={metric.label} className={`p-6 ${index < metrics.length - 1 ? "border-b border-[#e6dac7] sm:border-r lg:border-b-0" : ""}`}>
-              <div className="font-[family-name:var(--font-dossier-serif)] text-5xl font-semibold leading-none text-[#211b14]">
+              <div className="whitespace-nowrap font-[family-name:var(--font-dossier-serif)] text-[clamp(2rem,3vw,2.55rem)] font-semibold leading-none text-[#211b14]">
                 {metric.value}
               </div>
               <div className="mt-3 text-sm font-semibold leading-5 text-[#6f6557]">{metric.label}</div>
@@ -320,7 +358,7 @@ export function TropicalStarsDossier() {
         />
         <div className="mt-8 grid gap-4 md:grid-cols-4">
           {journey.map((item) => (
-            <article key={item.step} className="rounded-[18px] border border-[#d8cbb8] bg-[#fffdf8] p-5">
+            <article key={item.step} className="lift-card rounded-[18px] border border-[#d8cbb8] bg-[#fffdf8] p-5">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-extrabold uppercase tracking-[0.18em] text-[#98743f]">{item.title}</span>
                 <span className="font-[family-name:var(--font-dossier-serif)] text-2xl font-semibold text-[#c1ad8d]">{item.step}</span>
@@ -331,7 +369,7 @@ export function TropicalStarsDossier() {
         </div>
         <div className="mt-9 grid gap-5 lg:grid-cols-4">
           {phases.map((phase, index) => (
-            <article key={phase.title} className="group rounded-[18px] border border-[#d8cbb8] bg-[#fffdf8] p-6 transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_60px_-42px_rgba(39,29,16,0.55)]">
+            <article key={phase.title} className="lift-card group rounded-[18px] border border-[#d8cbb8] bg-[#fffdf8] p-6">
               <div className="mb-5 flex items-center justify-between">
                 <span className="rounded-full bg-[#e8dbc3] px-3 py-1 text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#7d5b28]">
                   {phase.eyebrow}
@@ -382,6 +420,61 @@ export function TropicalStarsDossier() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      <section className="relative z-10 mx-auto max-w-7xl px-5 py-16 sm:px-8 lg:py-20">
+        <SectionHeader
+          eyebrow="Footprint and flagship"
+          title="New York and Tennessee are the base. Georgia is the next proof point."
+          text="Tropical's growth is not only more staffing volume. The Georgia restaurant launch is a crown-jewel asset: a premium hospitality proof point where bookings, finance, operating standards, and experience design all need to reconcile cleanly."
+        />
+        <div className="mt-9 grid gap-5 lg:grid-cols-[0.9fr_1.1fr]">
+          <div className="grid gap-4">
+            {footprint.map((item) => (
+              <article key={item.market} className="lift-card rounded-[18px] border border-[#d8cbb8] bg-[#fffdf8] p-5">
+                <div className="flex items-start gap-4">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#e4efe6] text-[#0f5a43]">
+                    <MapPinned className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <div className="font-[family-name:var(--font-dossier-serif)] text-2xl font-semibold">{item.market}</div>
+                    <div className="mt-1 text-xs font-extrabold uppercase tracking-[0.18em] text-[#98743f]">{item.status}</div>
+                    <p className="mt-3 text-sm leading-6 text-[#6f6557]">{item.note}</p>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+          <article className="float-panel relative overflow-hidden rounded-[22px] border border-[#d8cbb8] bg-[#fffdf8] p-7 shadow-[0_30px_90px_-54px_rgba(39,29,16,0.72)]">
+            <div className="glass-line pointer-events-none absolute left-8 right-8 top-20 h-px bg-gradient-to-r from-transparent via-[#b99a66] to-transparent" />
+            <div className="flex items-start gap-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#efe3cd] text-[#9f7a45]">
+                <UtensilsCrossed className="h-6 w-6" />
+              </div>
+              <div>
+                <div className="text-xs font-extrabold uppercase tracking-[0.22em] text-[#98743f]">Georgia flagship</div>
+                <h3 className="mt-3 font-[family-name:var(--font-dossier-serif)] text-3xl font-semibold leading-tight">
+                  A premium restaurant launch can become more than a restaurant.
+                </h3>
+              </div>
+            </div>
+            <p className="mt-6 text-sm leading-7 text-[#5f564b]">
+              The restaurant has absorbed real investment from the wider business.
+              Recent reconciliation is already changing the picture: what looked
+              like pressure and loss may contain actual profit once expenses,
+              launch costs, and shared flows are separated. The immediate job is
+              to tighten the ship before opening at higher scale.
+            </p>
+            <ul className="mt-6 grid gap-3">
+              {flagshipMoves.map((move) => (
+                <li key={move} className="flex gap-3 rounded-xl border border-[#e6dac7] bg-[#f8f3ea] p-3 text-sm font-semibold leading-6 text-[#4f463b]">
+                  <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-[#0f5a43]" />
+                  {move}
+                </li>
+              ))}
+            </ul>
+          </article>
         </div>
       </section>
 
