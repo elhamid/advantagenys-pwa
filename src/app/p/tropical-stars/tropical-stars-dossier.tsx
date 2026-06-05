@@ -180,42 +180,42 @@ const marketBackedLanes = [
   {
     icon: UtensilsCrossed,
     title: "Merge as operating proof",
-    thesis: "Showroom",
+    thesis: "Hospitality proof",
     score: "High control",
-    text: "Use Merge as a live showroom for taste, training, service standards, booking discipline, and hospitality consulting. The value is not more restaurants by default; it is a proof point that Tropical can operate a premium guest experience.",
-    pilot: "Opening-event playbook, private-event workflow, service-standard packet.",
+    text: "Use Merge to show the standard Tropical can bring into other rooms: taste, welcome, training, service rhythm, booking discipline, and a premium guest experience.",
+    pilot: "Opening-event playbook, private-event flow, service-standard notes.",
   },
   {
     icon: BriefcaseBusiness,
     title: "Turnkey space operations",
-    thesis: "Asset-light scale",
+    thesis: "Service without heavy buildout",
     score: "Best strategic fit",
-    text: "Evaluate taking over defined hospitality spaces for existing clients: private dining rooms, event service, lobby food service, catered activations, restaurant support, or premium cleaning/service bundles with one accountable operator.",
-    pilot: "One client space, one scoped service package, one margin report.",
+    text: "Consider defined spaces where Tropical can bring the service without carrying the whole restaurant burden: private rooms, event service, lobby hospitality, catered activations, or premium support bundles.",
+    pilot: "One client space, one scoped package, one margin readout.",
   },
   {
     icon: CalendarCheck,
     title: "Theater and venue concessions",
-    thesis: "Venue wedge",
+    thesis: "Venue hospitality",
     score: "Selective pilot",
-    text: "Movie theaters and venues depend on food, beverage, staffing speed, and guest experience. Tropical could test a narrow offer first: staffed concession support, private-event packages, after-screening hospitality, or cleaning plus service coverage.",
-    pilot: "Concession support or premium event staffing before broader operations.",
+    text: "Theaters and venues need food, beverage, staffing pace, and a room that feels cared for. Tropical can test a narrow service first before taking on broader operations.",
+    pilot: "Concession support, premium event staffing, or cleaning plus service coverage.",
   },
   {
     icon: ShieldCheck,
     title: "Government contract readiness",
-    thesis: "Institutional growth",
+    thesis: "Bid-ready growth",
     score: "Stage-gated",
-    text: "Government and institutional work should be staged: SAM/UEI readiness, NAICS/insurance/compliance fit, subcontracting or small pilots first, then bids where Tropical already has proof of delivery.",
-    pilot: "SAM/UEI, capability statement, insurance map, subcontracting target list.",
+    text: "Public and institutional work should be staged carefully: records first, insurance and compliance fit, subcontracting or smaller openings, then bids where Tropical has proof it can serve well.",
+    pilot: "SAM/UEI, capability statement, insurance map, subcontracting targets.",
   },
 ];
 
 const marketSignals = [
-  { value: "75%", label: "restaurant traffic off-premises", source: "NRA 2025" },
-  { value: "15.7M", label: "restaurant and foodservice workforce", source: "NRA" },
-  { value: "SAM", label: "gateway for federal opportunities", source: "SBA" },
-  { value: "F&B", label: "core cinema margin lever", source: "public filings" },
+  { value: "75%", label: "restaurant traffic now off-premises", source: "Industry context / NRA 2025" },
+  { value: "15.7M", label: "restaurant and foodservice workers", source: "Labor market context / NRA" },
+  { value: "SAM.gov", label: "entry point for federal bidding", source: "Readiness path / SBA" },
+  { value: "Food + beverage", label: "major venue economics lever", source: "Cinema and venue context" },
 ];
 
 const valueAdded = [
@@ -371,8 +371,27 @@ export function TropicalStarsDossier() {
         <section className="relative z-10 flex min-h-screen items-center justify-center px-5">
           <form
             onSubmit={submitAccess}
-            className="w-full max-w-[440px] rounded-[18px] border border-[#d8cbb8] bg-[#fffdf8] p-7 shadow-[0_28px_70px_-36px_rgba(59,45,25,0.55)] sm:p-9"
+            className="w-full max-w-[480px] rounded-[18px] border border-[#d8cbb8] bg-[#fffdf8] p-5 shadow-[0_28px_70px_-36px_rgba(59,45,25,0.55)] sm:p-7"
           >
+            <div className="relative mb-6 overflow-hidden rounded-[16px] border border-[#d8cbb8] bg-[#211b14]">
+              <Image
+                src="/images/tropical-stars/foundation-growth-art.png"
+                alt="Abstract foundation and hospitality growth visual"
+                width={1672}
+                height={941}
+                priority
+                className="h-40 w-full object-cover object-[62%_50%] sm:h-48"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#211b14]/82 via-transparent to-transparent" />
+              <div className="absolute bottom-3 left-3 right-3 rounded-2xl border border-white/15 bg-[#211b14]/72 px-4 py-3 text-[#f6f0e6] backdrop-blur-md">
+                <div className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#d7bd89]">
+                  Mobile private entry
+                </div>
+                <p className="mt-1 text-xs font-semibold leading-5">
+                  Opens cleanly on phone. Best reviewed on desktop for the full boardroom view.
+                </p>
+              </div>
+            </div>
             <div className="mb-8 inline-flex rounded-2xl border border-[#3d3021] bg-[#211b14] px-5 py-4 shadow-[0_18px_42px_-28px_rgba(20,14,8,0.65)]">
               <Image
                 src="/images/tropical-stars-logo.png"
@@ -450,6 +469,7 @@ export function TropicalStarsDossier() {
         .dossier-motion .signal-chip{transition:transform .24s cubic-bezier(.2,.7,.2,1),border-color .24s,background-color .24s}
         .dossier-motion .signal-chip:hover{transform:translateY(-3px);border-color:#b99a66;background-color:#33291c}
         .dossier-motion .pulse-node{animation:tsPulse 2.8s ease-in-out infinite}
+        .dossier-motion .art-drift{animation:tsArtDrift 13s ease-in-out infinite;transform-origin:center}
         @media (min-width:768px){
           .dossier-motion .story-rail:before{content:"";position:absolute;left:1.45rem;right:1.45rem;top:2.35rem;height:1px;background:linear-gradient(90deg,rgba(15,90,67,.18),rgba(159,122,69,.82),rgba(15,90,67,.18))}
           .dossier-motion .story-rail:after{content:"";position:absolute;left:1.45rem;top:2.35rem;height:1px;width:32%;background:#0f5a43;box-shadow:0 0 28px rgba(15,90,67,.36);animation:tsRail 6.5s ease-in-out infinite}
@@ -460,8 +480,9 @@ export function TropicalStarsDossier() {
         @keyframes tsSweep{0%,35%{transform:translateX(-72%)}60%,100%{transform:translateX(72%)}}
         @keyframes tsPulse{0%,100%{box-shadow:0 0 0 0 rgba(15,90,67,.22)}50%{box-shadow:0 0 0 10px rgba(15,90,67,0)}}
         @keyframes tsRail{0%,100%{transform:translateX(0);opacity:.45}50%{transform:translateX(196%);opacity:.9}}
+        @keyframes tsArtDrift{0%,100%{transform:scale(1.01) translate3d(0,0,0)}50%{transform:scale(1.045) translate3d(-8px,-4px,0)}}
         @media (prefers-reduced-motion: reduce){
-          .dossier-motion .float-panel,.dossier-motion .glass-line,.dossier-motion .reveal-card,.dossier-motion .cinema-panel:before,.dossier-motion .pulse-node,.dossier-motion .story-rail:after{animation:none}
+          .dossier-motion .float-panel,.dossier-motion .glass-line,.dossier-motion .reveal-card,.dossier-motion .cinema-panel:before,.dossier-motion .pulse-node,.dossier-motion .story-rail:after,.dossier-motion .art-drift{animation:none}
           .dossier-motion .lift-card,.dossier-motion .lift-card:hover{transition:none;transform:none}
         }
       `}</style>
@@ -516,6 +537,25 @@ export function TropicalStarsDossier() {
                 {item}
               </span>
             ))}
+          </div>
+          <div className="relative mt-7 overflow-hidden rounded-[20px] border border-[#d8cbb8] bg-[#211b14] shadow-[0_28px_80px_-54px_rgba(39,29,16,0.72)]">
+            <Image
+              src="/images/tropical-stars/foundation-growth-art.png"
+              alt="Abstract foundation and hospitality growth visual"
+              width={1672}
+              height={941}
+              priority
+              className="art-drift h-56 w-full object-cover object-[62%_50%] sm:h-72"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#211b14]/84 via-[#211b14]/18 to-transparent" />
+            <div className="absolute bottom-4 left-4 right-4 max-w-md rounded-2xl border border-white/15 bg-[#211b14]/72 p-4 text-[#f6f0e6] backdrop-blur-md">
+              <div className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-[#d7bd89]">
+                Mobile-ready private room
+              </div>
+              <p className="mt-2 text-sm font-semibold leading-6">
+                Send by WhatsApp. For the full strategy-room experience, open the same link on desktop.
+              </p>
+            </div>
           </div>
         </div>
 
@@ -581,6 +621,19 @@ export function TropicalStarsDossier() {
               the house firm enough that the people, the assets, and the growth
               plan can move together.
             </p>
+            <div className="relative mt-7 overflow-hidden rounded-[18px] border border-[#d8cbb8] bg-[#211b14] shadow-[0_24px_70px_-48px_rgba(39,29,16,0.68)]">
+              <Image
+                src="/images/tropical-stars/crew-care-art.png"
+                alt="Premium hospitality operations station"
+                width={1672}
+                height={941}
+                className="art-drift h-52 w-full object-cover object-[64%_50%]"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#211b14]/78 via-transparent to-transparent" />
+              <div className="absolute bottom-4 left-4 right-4 text-sm font-semibold leading-6 text-[#f6f0e6]">
+                Care becomes scalable when the operating room is calm, clear, and repeatable.
+              </div>
+            </div>
           </div>
           <div className="story-rail relative grid gap-4 rounded-[22px] border border-[#d8cbb8] bg-[#fffdf8] p-5 shadow-[0_28px_90px_-58px_rgba(39,29,16,0.65)] md:grid-cols-3 md:p-7">
             {founderPriorities.map((priority, index) => (
@@ -861,15 +914,17 @@ export function TropicalStarsDossier() {
           <div className="cinema-panel float-panel relative overflow-hidden rounded-[24px] border border-[#3d3021] bg-[#211b14] p-7 text-[#f6f0e6] shadow-[0_34px_110px_-58px_rgba(20,14,8,0.82)] sm:p-9">
             <div className="glass-line pointer-events-none absolute left-8 right-8 top-24 h-px bg-gradient-to-r from-transparent via-[#b99a66] to-transparent" />
             <div className="text-xs font-extrabold uppercase tracking-[0.24em] text-[#d7bd89]">
-              Market-backed growth thesis
+              Market context, not projections
             </div>
             <h2 className="mt-5 font-[family-name:var(--font-dossier-serif)] text-[clamp(2.25rem,5vw,4.65rem)] font-semibold leading-[0.94]">
-              Merge can become proof for work beyond the restaurant.
+              Merge can show the standard Tropical can bring into other rooms.
             </h2>
             <p className="mt-6 text-sm leading-7 text-[#efe4d3]">
-              The attractive move is not to chase every idea. It is to use Merge
-              as proof, then choose expansion lanes with evidence: margin,
-              repeatability, insurance fit, crew capacity, and owner attention.
+              These are outside market signals. They frame where opportunity
+              may exist; they are not Tropical targets or Advantage promises.
+              The right move is to choose only the lanes that can be served
+              well, priced clearly, insured properly, and run without pulling
+              the owner back into every detail.
             </p>
             <div className="mt-7 grid grid-cols-2 gap-3">
               {marketSignals.map((signal) => (
@@ -931,8 +986,18 @@ export function TropicalStarsDossier() {
           text="This is not a report that gets left behind. It is the operating layer: books, compliance, owner visibility, growth pipeline, and weekly decisions moving in one cadence."
         />
         <div className="cinema-panel float-panel relative mt-9 overflow-hidden rounded-[22px] border border-[#3d3021] bg-[#211b14] p-6 text-[#f6f0e6] shadow-[0_30px_90px_-58px_rgba(20,14,8,0.82)] sm:p-7 lg:ml-auto lg:max-w-5xl lg:-rotate-1">
+          <div className="absolute inset-y-0 right-0 hidden w-[38%] opacity-60 lg:block">
+            <Image
+              src="/images/tropical-stars/certification-growth-art.png"
+              alt="Abstract certification readiness visual"
+              width={1672}
+              height={941}
+              className="h-full w-full object-cover object-[62%_50%]"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#211b14] via-[#211b14]/76 to-transparent" />
+          </div>
           <div className="glass-line pointer-events-none absolute left-8 right-8 top-16 h-px bg-gradient-to-r from-transparent via-[#b99a66] to-transparent" />
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+          <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div className="max-w-3xl">
               <div className="flex items-center gap-3 text-xs font-extrabold uppercase tracking-[0.24em] text-[#d7bd89]">
                 <ClipboardCheck className="h-4 w-4" />
