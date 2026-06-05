@@ -1,54 +1,66 @@
 import { ADDRESS } from "@/lib/constants";
+import { FONT, GOLD, Rule } from "./_shared";
 
-const FONT = "'Plus Jakarta Sans', system-ui, sans-serif";
-
-export default function HeroSlide({ cycleCount }: { cycleCount: number }) {
+export default function HeroSlide({ cycleCount: _c }: { cycleCount: number }) {
   return (
-    <div style={{ position: 'relative', height: '100%', width: '100%', fontFamily: FONT }}>
+    <div style={{ position: "relative", height: "100%", width: "100%", fontFamily: FONT, overflow: "hidden" }}>
       <img
         src="/images/office-exterior-hd.jpg"
         alt="Advantage Services Office"
-        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+        style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
       />
+      {/* Navy wash to unify the photo with the rest of the loop */}
       <div
         style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          background: 'linear-gradient(to bottom, rgba(10,15,26,0.8), rgba(10,15,26,0.6), rgba(10,15,26,0.9))',
+          position: "absolute",
+          inset: 0,
+          background:
+            "linear-gradient(135deg, rgba(26,58,92,0.78) 0%, rgba(15,23,42,0.86) 60%, rgba(10,15,26,0.92) 100%)",
         }}
       />
       <div
         style={{
-          position: 'relative',
+          position: "absolute",
+          inset: 0,
+          background:
+            "radial-gradient(900px circle at 80% 8%, rgba(79,86,232,0.30), transparent 56%), radial-gradient(720px circle at 10% 96%, rgba(249,168,37,0.18), transparent 56%)",
+        }}
+      />
+      <div
+        style={{
+          position: "relative",
           zIndex: 10,
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          textAlign: 'center',
-          padding: '0 64px',
+          height: "100%",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          textAlign: "center",
+          padding: "0 80px",
         }}
       >
-        <p style={{ fontSize: 18, textTransform: 'uppercase', letterSpacing: 4, color: '#F9A825', marginBottom: 24 }}>
+        <p style={{ fontSize: 26, textTransform: "uppercase", letterSpacing: 8, color: GOLD, fontWeight: 700, marginBottom: 28 }}>
           Welcome To
         </p>
-        <h1 style={{ fontSize: 72, fontWeight: 800, color: '#FFFFFF', lineHeight: 1.1, marginBottom: 24, margin: '0 0 24px 0' }}>
+        <h1 style={{ fontSize: 96, fontWeight: 800, color: "#FFFFFF", lineHeight: 1.04, margin: "0 0 32px 0" }}>
           Advantage Services
         </h1>
-        <div style={{ width: 80, height: 3, backgroundColor: '#F9A825', borderRadius: 9999, marginBottom: 32 }} />
-        <p style={{ fontSize: 32, color: 'rgba(255,255,255,0.9)', fontWeight: 500, maxWidth: 900, lineHeight: 1.3 }}>
-          One Stop Shop For All Business Solutions
+        <Rule width={110} />
+        <p style={{ fontSize: 38, color: "rgba(255,255,255,0.92)", fontWeight: 600, maxWidth: 1000, lineHeight: 1.3, marginTop: 36 }}>
+          One stop for everything your business needs — start, grow, and get found.
         </p>
-        <div style={{ marginTop: 48, border: '1px solid rgba(249,168,37,0.4)', borderRadius: 16, padding: '16px 40px' }}>
-          <p style={{ fontSize: 22, color: 'rgba(255,255,255,0.8)' }}>20+ Years Serving NYC Small Businesses</p>
+        <div
+          style={{
+            marginTop: 52,
+            border: `1px solid ${GOLD}66`,
+            borderRadius: 18,
+            padding: "18px 46px",
+            background: "rgba(249,168,37,0.06)",
+          }}
+        >
+          <p style={{ fontSize: 26, color: "rgba(255,255,255,0.92)", margin: 0 }}>20+ Years Serving NYC Small Businesses</p>
         </div>
-        <p style={{ position: 'absolute', bottom: 48, fontSize: 18, color: 'rgba(255,255,255,0.5)' }}>
-          {ADDRESS.full}
-        </p>
+        <p style={{ position: "absolute", bottom: 52, fontSize: 24, color: "rgba(255,255,255,0.6)" }}>{ADDRESS.full}</p>
       </div>
     </div>
   );
