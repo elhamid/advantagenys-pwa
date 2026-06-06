@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowRight,
   BarChart3,
@@ -336,6 +336,8 @@ export function TropicalStarsDossier() {
   const [displayName, setDisplayName] = useState("Tropical Stars");
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
+  const [activeSection, setActiveSection] = useState("overview");
+  const navRailRef = useRef<HTMLDivElement>(null);
   const preparedDate = useMemo(
     () =>
       new Intl.DateTimeFormat("en-US", {
@@ -356,6 +358,52 @@ export function TropicalStarsDossier() {
       setUnlocked(true);
     }
   }, []);
+
+  useEffect(() => {
+    if (!unlocked) return;
+
+    const sectionIds = dossierNav.map((item) => item.href.slice(1));
+    let frame = 0;
+
+    function updateActiveSection() {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const viewportAnchor = 190;
+        let current = sectionIds[0];
+
+        for (const id of sectionIds) {
+          const section = document.getElementById(id);
+          if (!section) continue;
+          if (section.getBoundingClientRect().top <= viewportAnchor) {
+            current = id;
+          }
+        }
+
+        if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 8) {
+          current = sectionIds[sectionIds.length - 1];
+        }
+
+        setActiveSection(current);
+      });
+    }
+
+    updateActiveSection();
+    window.addEventListener("scroll", updateActiveSection, { passive: true });
+    window.addEventListener("resize", updateActiveSection);
+
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", updateActiveSection);
+      window.removeEventListener("resize", updateActiveSection);
+    };
+  }, [unlocked]);
+
+  useEffect(() => {
+    if (!unlocked) return;
+    const rail = navRailRef.current;
+    const active = rail?.querySelector<HTMLAnchorElement>(`[data-section="${activeSection}"]`);
+    active?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+  }, [activeSection, unlocked]);
 
   function submitAccess(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -542,13 +590,19 @@ export function TropicalStarsDossier() {
           <div className="hidden shrink-0 text-[10px] font-extrabold uppercase tracking-[0.22em] text-[#98743f] md:block">
             Dossier map
           </div>
-          <div className="flex min-w-0 flex-1 gap-2 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div ref={navRailRef} className="flex min-w-0 flex-1 gap-2 overflow-x-auto scroll-smooth [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {dossierNav.map((item) => (
               <a
                 key={item.href}
                 href={item.href}
+                data-section={item.href.slice(1)}
+                aria-current={activeSection === item.href.slice(1) ? "true" : undefined}
                 onClick={(event) => handleNavClick(event, item.href)}
-                className="shrink-0 rounded-full border border-[#d8cbb8] bg-[#fffdf8] px-3.5 py-2 text-xs font-extrabold uppercase tracking-[0.12em] text-[#5f564b] shadow-sm transition hover:border-[#a77d42] hover:text-[#211b14]"
+                className={`shrink-0 rounded-full border px-3.5 py-2 text-xs font-extrabold uppercase tracking-[0.12em] shadow-sm transition ${
+                  activeSection === item.href.slice(1)
+                    ? "border-[#8f6831] bg-[#211b14] text-[#f6f0e6] shadow-[0_12px_30px_-18px_rgba(39,29,16,0.75)]"
+                    : "border-[#d8cbb8] bg-[#fffdf8] text-[#5f564b] hover:border-[#a77d42] hover:text-[#211b14]"
+                }`}
               >
                 {item.label}
               </a>
