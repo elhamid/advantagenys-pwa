@@ -811,10 +811,10 @@ export function TropicalStarsDossier() {
               funding which ambition. The signed grounding phase turns that
               confusion into usable fuel.
             </p>
-            <div className="mt-7 grid grid-cols-3 gap-2">
+            <div className="mt-7 grid gap-2 sm:grid-cols-3">
               {["Structure", "Presence", "Attention"].map((label) => (
                 <div key={label} className="rounded-2xl border border-[#5d4c34] bg-[#18130e] p-3 text-center">
-                  <div className="font-[family-name:var(--font-dossier-serif)] text-2xl font-semibold text-[#d7bd89]">
+                  <div className="font-[family-name:var(--font-dossier-serif)] text-[1.65rem] font-semibold leading-none text-[#d7bd89] sm:text-2xl">
                     {label}
                   </div>
                   <div className="mt-1 text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#bfa673]">
