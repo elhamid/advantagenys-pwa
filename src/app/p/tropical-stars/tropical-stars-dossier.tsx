@@ -153,11 +153,6 @@ const structureInsights = [
     title: "Trust and continuity",
     text: "If ownership wants trust formation and legacy planning, the operating picture should be clean enough that the structure carries a real business, not a stack of unresolved questions.",
   },
-  {
-    icon: ClipboardCheck,
-    title: "Minority and woman-owned certification",
-    text: "Prepare the documentation trail for MWBE-style certification work so public-sector, institutional, and larger-account opportunities are not blocked by missing records.",
-  },
 ];
 
 const mergeSignals = [
