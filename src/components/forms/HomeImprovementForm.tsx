@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { Turnstile } from "@marsidev/react-turnstile";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { useUtmParams } from "@/hooks/useUtmParams";
+import { useSharedByParam, useUtmParams } from "@/hooks/useUtmParams";
 import type { HomeImprovementLead } from "@/lib/leads/types";
 import { formStart, formSubmit } from "@/lib/analytics/events";
 import { reportFormError, userFacingFormError } from "@/lib/error-reporting";
@@ -50,6 +50,7 @@ interface HomeImprovementFormData {
 
 export function HomeImprovementForm() {
   const utm = useUtmParams();
+  const sharedBy = useSharedByParam();
   const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
   const [formData, setFormData] = useState<HomeImprovementFormData>({
     fullName: "",
@@ -94,6 +95,7 @@ export function HomeImprovementForm() {
     const payload: HomeImprovementLead & { turnstileToken?: string } = {
       type: "home-improvement",
       source: "website-home-improvement",
+      sharedBy: sharedBy || undefined,
       fullName: formData.fullName,
       phone: formData.phone,
       email: formData.email || undefined,

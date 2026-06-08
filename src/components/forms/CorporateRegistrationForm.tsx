@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Turnstile } from "@marsidev/react-turnstile";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { useUtmParams } from "@/hooks/useUtmParams";
+import { useSharedByParam, useUtmParams } from "@/hooks/useUtmParams";
 import type { AdditionalOwner, CorporateRegistrationLead } from "@/lib/leads/types";
 import { formStart, formSubmit } from "@/lib/analytics/events";
 import { reportFormError, userFacingFormError } from "@/lib/error-reporting";
@@ -46,6 +46,7 @@ const emptyOwner: AdditionalOwner = { name: "", phone: "" };
 
 export function CorporateRegistrationForm() {
   const utm = useUtmParams();
+  const sharedBy = useSharedByParam();
   const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
   const [formData, setFormData] = useState<CorporateRegistrationData>({
     fullName: "",
@@ -107,6 +108,7 @@ export function CorporateRegistrationForm() {
     const payload: CorporateRegistrationLead & { turnstileToken?: string } = {
       type: "corporate-registration",
       source: "website-corporate-registration",
+      sharedBy: sharedBy || undefined,
       fullName: formData.fullName,
       phone: formData.phone,
       email: formData.email || undefined,

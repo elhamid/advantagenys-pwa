@@ -56,6 +56,8 @@ export interface LeadSubmissionBase {
   email?: string;
   /** Origin of the submission; forwarded to taskboard as-is. */
   source: LeadSource;
+  /** Staff user id from shared form links; forwarded to taskboard for owner assignment. */
+  sharedBy?: string;
   /** Attribution metadata captured at form mount time. */
   utm?: UtmParams;
   /** Cloudflare Turnstile token, when the form surfaces the widget. */

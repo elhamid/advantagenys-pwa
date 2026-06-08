@@ -6,7 +6,7 @@ import { Container } from "@/components/ui/Container";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { PHONE } from "@/lib/constants";
-import { useUtmParams } from "@/hooks/useUtmParams";
+import { useSharedByParam, useUtmParams } from "@/hooks/useUtmParams";
 import { toolComplete } from "@/lib/analytics/events";
 
 /* ---------- types ---------- */
@@ -143,6 +143,7 @@ const jsonLd = {
 /* ---------- component ---------- */
 export default function TaxSavingsEstimator() {
   const utm = useUtmParams();
+  const sharedBy = useSharedByParam();
   const [step, setStep] = useState(1);
   const [filing, setFiling] = useState<FilingStatus | null>(null);
   const [revenue, setRevenue] = useState<RevenueRange | null>(null);
@@ -166,6 +167,7 @@ export default function TaxSavingsEstimator() {
         body: JSON.stringify({
           type: "contact",
           source: "tool-tax-savings",
+          sharedBy: sharedBy || undefined,
           fullName: leadForm.fullName,
           phone: leadForm.phone,
           email: leadForm.email || undefined,

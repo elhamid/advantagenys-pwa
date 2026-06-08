@@ -437,6 +437,25 @@ describe('POST /api/contact', () => {
     })
   })
 
+  it('preserves staff shared form attribution in the webhook payload', async () => {
+    const fetchSpy = makeFetchMock()
+    global.fetch = fetchSpy
+
+    await POST(
+      makeRequest({
+        ...validContact,
+        sharedBy: 'user-hamid',
+      }),
+    )
+
+    const webhookCall = (fetchSpy.mock.calls as unknown as [string, RequestInit][]).find(
+      ([url]) => !String(url).includes('cloudflare.com'),
+    )
+    expect(webhookCall).toBeDefined()
+    const sentBody = JSON.parse(webhookCall![1].body as string)
+    expect(sentBody.sharedBy).toBe('user-hamid')
+  })
+
   // -----------------------------------------------------------------------
   // 14. Native-form type variants validate + forward
   // -----------------------------------------------------------------------
