@@ -149,6 +149,7 @@ function validatePayload(body: unknown): ValidationResult {
   }
 
   const utm = validateUtm(obj.utm);
+  const sharedBy = str(obj.sharedBy) ?? str(obj.shared_by);
   const turnstileToken = str(obj.turnstileToken);
 
   // --- Build variant --------------------------------------------------------
@@ -157,6 +158,7 @@ function validatePayload(body: unknown): ValidationResult {
     phone: phoneRaw,
     email,
     source,
+    sharedBy,
     utm,
     turnstileToken,
   };
