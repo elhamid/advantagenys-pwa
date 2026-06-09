@@ -7,7 +7,8 @@ import {
   type LeadSubmission,
   type UtmParams,
 } from "@/lib/leads/types";
-import { createRateLimiter, getClientIp } from "@/lib/rate-limit";
+import { getClientIp } from "@/lib/rate-limit";
+import { contactLimiter } from "./contact-limiter";
 
 // Lazy-init Supabase client to avoid crashing if env vars aren't set yet
 let supabaseClient: Awaited<typeof import("@/lib/supabase")>["supabase"] | null =
@@ -28,11 +29,6 @@ async function getSupabase() {
 // ---------------------------------------------------------------------------
 // Rate limiting — 10 submissions / minute / IP
 // ---------------------------------------------------------------------------
-
-const contactLimiter = createRateLimiter(10, 60_000, { label: "api/contact" });
-
-/** Exposed for tests to reset between assertions. Do not use in production code. */
-export const _testing = { contactLimiter };
 
 // ---------------------------------------------------------------------------
 // Validation
@@ -149,6 +145,7 @@ function validatePayload(body: unknown): ValidationResult {
   }
 
   const utm = validateUtm(obj.utm);
+  const sharedBy = str(obj.sharedBy) ?? str(obj.shared_by);
   const turnstileToken = str(obj.turnstileToken);
 
   // --- Build variant --------------------------------------------------------
@@ -157,6 +154,7 @@ function validatePayload(body: unknown): ValidationResult {
     phone: phoneRaw,
     email,
     source,
+    sharedBy,
     utm,
     turnstileToken,
   };

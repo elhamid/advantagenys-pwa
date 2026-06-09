@@ -1,6 +1,6 @@
 import { renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { useUtmParams } from "../useUtmParams";
+import { useSharedByParam, useUtmParams } from "../useUtmParams";
 
 const STORAGE_KEY = "advantage.utm";
 
@@ -109,5 +109,16 @@ describe("useUtmParams", () => {
     const { result } = renderHook(() => useUtmParams());
 
     expect(result.current.referrer).toBe("nysconsultants.com");
+  });
+
+  it("captures staff sender attribution without storing it as UTM", () => {
+    setUrl("utm_source=advantageos&shared_by=user-123");
+
+    const { result: utmResult } = renderHook(() => useUtmParams());
+    const { result: sharedByResult } = renderHook(() => useSharedByParam());
+
+    expect(utmResult.current).toMatchObject({ utm_source: "advantageos" });
+    expect(utmResult.current).not.toHaveProperty("shared_by");
+    expect(sharedByResult.current).toBe("user-123");
   });
 });

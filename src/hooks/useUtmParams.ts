@@ -53,6 +53,19 @@ function captureFromUrl(): UtmParams {
   }
 }
 
+function captureSharedByFromUrl(): string | undefined {
+  if (typeof window === "undefined") return undefined;
+
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const value = params.get("shared_by") ?? params.get("sharedBy");
+    const trimmed = value?.trim();
+    return trimmed ? trimmed.slice(0, 100) : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 function hasUtmFields(utm: UtmParams): boolean {
   return UTM_KEYS.some((key) => Boolean(utm[key]));
 }
@@ -142,4 +155,19 @@ export function useUtmParams(): UtmParams {
   }, []);
 
   return utm;
+}
+
+export function useSharedByParam(): string | undefined {
+  const [sharedBy, setSharedBy] = useState<string | undefined>(() =>
+    captureSharedByFromUrl()
+  );
+
+  useEffect(() => {
+    const next = captureSharedByFromUrl();
+    if (next !== sharedBy) setSharedBy(next);
+    // Mount-time capture only; deps intentionally empty.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return sharedBy;
 }

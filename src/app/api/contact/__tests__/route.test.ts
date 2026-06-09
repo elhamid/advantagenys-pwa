@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { NextRequest } from 'next/server'
-import { POST, _testing } from '../route'
+import { contactLimiter } from '../contact-limiter'
+import { POST } from '../route'
 
 // Helper to build a NextRequest with a JSON body
 function makeRequest(payload: unknown): NextRequest {
@@ -86,7 +87,7 @@ describe('POST /api/contact', () => {
     vi.stubEnv('NODE_ENV', 'test')
     global.fetch = makeFetchMock()
     // Reset rate limiter between tests (module-level singleton)
-    _testing.contactLimiter.reset()
+    contactLimiter.reset()
   })
 
   afterEach(() => {
@@ -435,6 +436,25 @@ describe('POST /api/contact', () => {
       utm_campaign: 'spring-launch',
       referrer: 'https://google.com',
     })
+  })
+
+  it('preserves staff shared form attribution in the webhook payload', async () => {
+    const fetchSpy = makeFetchMock()
+    global.fetch = fetchSpy
+
+    await POST(
+      makeRequest({
+        ...validContact,
+        sharedBy: 'user-hamid',
+      }),
+    )
+
+    const webhookCall = (fetchSpy.mock.calls as unknown as [string, RequestInit][]).find(
+      ([url]) => !String(url).includes('cloudflare.com'),
+    )
+    expect(webhookCall).toBeDefined()
+    const sentBody = JSON.parse(webhookCall![1].body as string)
+    expect(sentBody.sharedBy).toBe('user-hamid')
   })
 
   // -----------------------------------------------------------------------

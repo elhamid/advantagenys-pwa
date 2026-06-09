@@ -3,7 +3,7 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Turnstile } from "@marsidev/react-turnstile";
-import { useUtmParams } from "@/hooks/useUtmParams";
+import { useSharedByParam, useUtmParams } from "@/hooks/useUtmParams";
 import Link from "next/link";
 import { reportFormError, FORM_ERROR_FALLBACK } from "@/lib/error-reporting";
 import { FormErrorMessage } from "@/components/ui/FormErrorMessage";
@@ -370,6 +370,7 @@ function experienceStepSubtitle(loc: string, scope: string): string | undefined 
 
 export function ContractorQualifierWizard() {
   const utm = useUtmParams();
+  const sharedBy = useSharedByParam();
   const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 
   const [answers, setAnswers] = useState<Answers>(() => {
@@ -491,6 +492,7 @@ export function ContractorQualifierWizard() {
     const payload = {
       type: "contractor-qualifier",
       source: "contractor-qualifier",
+      sharedBy: sharedBy || undefined,
       fullName: answers.fullName,
       phone: answers.phone,
       email: answers.email || undefined,

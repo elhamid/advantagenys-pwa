@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { Turnstile } from "@marsidev/react-turnstile";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { useUtmParams } from "@/hooks/useUtmParams";
+import { useSharedByParam, useUtmParams } from "@/hooks/useUtmParams";
 import type { ContactLead } from "@/lib/leads/types";
 import { formStart, formSubmit } from "@/lib/analytics/events";
 import { reportFormError, userFacingFormError } from "@/lib/error-reporting";
@@ -39,6 +39,7 @@ interface FormData {
 
 export function ContactForm() {
   const utm = useUtmParams();
+  const sharedBy = useSharedByParam();
   const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
   const [formData, setFormData] = useState<FormData>({
     fullName: "",
@@ -77,6 +78,7 @@ export function ContactForm() {
     const payload: ContactLead & { turnstileToken?: string } = {
       type: "contact",
       source: "website-contact-form",
+      sharedBy: sharedBy || undefined,
       fullName: formData.fullName,
       phone: formData.phone,
       email: formData.email || undefined,
