@@ -8,6 +8,27 @@ interface FormEmbedProps {
   form: FormConfig;
 }
 
+const PASSTHROUGH_PARAMS = [
+  "shared_by",
+  "utm_source",
+  "utm_medium",
+  "utm_campaign",
+] as const;
+
+function withPassthroughParams(embedUrl: string | undefined): string | undefined {
+  if (!embedUrl || typeof window === "undefined") return embedUrl;
+
+  const sourceParams = new URLSearchParams(window.location.search);
+  const url = new URL(embedUrl);
+
+  for (const key of PASSTHROUGH_PARAMS) {
+    const value = sourceParams.get(key)?.trim();
+    if (value) url.searchParams.set(key, value);
+  }
+
+  return url.toString();
+}
+
 export function FormEmbed({ form }: FormEmbedProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const inAppBrowser = useInAppBrowser();
@@ -37,7 +58,7 @@ export function FormEmbed({ form }: FormEmbedProps) {
     };
   }, [form.id, form.platform]);
 
-  const rawFormUrl = form.embedUrl;
+  const rawFormUrl = withPassthroughParams(form.embedUrl);
 
   return (
     <>
