@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getFormBySlug } from "@/lib/forms";
-import { toPublicDescriptor } from "../route";
+import { toPublicDescriptor } from "../descriptor";
 
 export const dynamic = "force-static";
 export const revalidate = 3600;

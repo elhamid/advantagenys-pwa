@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { NextRequest } from 'next/server'
-import { POST, _testing } from '../route'
+import { contactLimiter } from '../contact-limiter'
+import { POST } from '../route'
 
 // Helper to build a NextRequest with a JSON body
 function makeRequest(payload: unknown): NextRequest {
@@ -86,7 +87,7 @@ describe('POST /api/contact', () => {
     vi.stubEnv('NODE_ENV', 'test')
     global.fetch = makeFetchMock()
     // Reset rate limiter between tests (module-level singleton)
-    _testing.contactLimiter.reset()
+    contactLimiter.reset()
   })
 
   afterEach(() => {
