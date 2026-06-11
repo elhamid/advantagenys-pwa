@@ -1,0 +1,379 @@
+"use client";
+
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { ArrowRight, CheckCircle2, Loader2, Upload } from "lucide-react";
+import {
+  CAREERS_ROLE_TITLE,
+  WORK_SAMPLE_URL,
+  convertInrToUsd,
+  convertUsdToInr,
+} from "@/lib/careers/product-engineering-associate";
+
+interface ExchangeRateState {
+  rate: number | null;
+  date?: string;
+  source?: string;
+  status: "loading" | "ready" | "error";
+}
+
+const surfaceOptions = [
+  "Client-facing pages",
+  "Forms",
+  "Dashboards",
+  "Internal tools",
+  "Browser console/network checks",
+  "Small frontend/content fixes",
+];
+
+function formatInr(value: number) {
+  return new Intl.NumberFormat("en-IN", {
+    maximumFractionDigits: 0,
+  }).format(value);
+}
+
+function formatUsd(value: number) {
+  return new Intl.NumberFormat("en-US", {
+    maximumFractionDigits: 2,
+    minimumFractionDigits: value % 1 === 0 ? 0 : 2,
+  }).format(value);
+}
+
+function formatRate(value: number) {
+  return new Intl.NumberFormat("en-IN", {
+    maximumFractionDigits: 4,
+    minimumFractionDigits: 2,
+  }).format(value);
+}
+
+export function ProductEngineeringAssociateForm() {
+  const searchParams = useSearchParams();
+  const initialReferral = searchParams.get("ref") ?? searchParams.get("partner") ?? "";
+  const formRef = useRef<HTMLFormElement>(null);
+  const [rateState, setRateState] = useState<ExchangeRateState>({
+    rate: null,
+    status: "loading",
+  });
+  const [enteredCurrency, setEnteredCurrency] = useState<"INR" | "USD">("INR");
+  const [inr, setInr] = useState("");
+  const [usd, setUsd] = useState("");
+  const [resumeName, setResumeName] = useState("");
+  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+  const [error, setError] = useState("");
+  const [applicationId, setApplicationId] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    fetch("/api/careers/product-engineering-associate/exchange-rate")
+      .then((res) => res.json())
+      .then((data) => {
+        if (!active) return;
+        if (data.success && typeof data.rate === "number") {
+          setRateState({
+            rate: data.rate,
+            date: data.date,
+            source: data.source,
+            status: "ready",
+          });
+        } else {
+          setRateState({ rate: null, status: "error" });
+        }
+      })
+      .catch(() => {
+        if (active) setRateState({ rate: null, status: "error" });
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const rateHelp = useMemo(() => {
+    if (rateState.status === "loading") return "Loading USD/INR reference rate...";
+    if (rateState.status === "error" || !rateState.rate) {
+      return "Exchange-rate lookup is unavailable. Enter either value manually.";
+    }
+    return `1 USD = ${formatRate(rateState.rate)} INR, ${rateState.source}, ${rateState.date ?? "latest working day"}.`;
+  }, [rateState]);
+
+  function handleInrChange(value: string) {
+    setEnteredCurrency("INR");
+    setInr(value);
+    const numeric = Number(value.replace(/,/g, ""));
+    if (rateState.rate && Number.isFinite(numeric) && numeric > 0) {
+      setUsd(formatUsd(convertInrToUsd(numeric, rateState.rate)));
+    }
+  }
+
+  function handleUsdChange(value: string) {
+    setEnteredCurrency("USD");
+    setUsd(value);
+    const numeric = Number(value.replace(/,/g, ""));
+    if (rateState.rate && Number.isFinite(numeric) && numeric > 0) {
+      setInr(formatInr(convertUsdToInr(numeric, rateState.rate)));
+    }
+  }
+
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!formRef.current) return;
+
+    setStatus("submitting");
+    setError("");
+
+    const formData = new FormData(formRef.current);
+    formData.set("enteredCurrency", enteredCurrency);
+    if (rateState.rate) formData.set("usdInrRate", String(rateState.rate));
+    if (rateState.date) formData.set("rateDate", rateState.date);
+
+    try {
+      const response = await fetch("/api/careers/product-engineering-associate", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || "Application could not be submitted.");
+      }
+      setApplicationId(data.applicationId);
+      setStatus("success");
+      formRef.current.reset();
+      setResumeName("");
+      setInr("");
+      setUsd("");
+    } catch (submitError) {
+      setError(submitError instanceof Error ? submitError.message : "Application could not be submitted.");
+      setStatus("error");
+    }
+  }
+
+  return (
+    <form
+      ref={formRef}
+      onSubmit={handleSubmit}
+      className="border border-[var(--border)] bg-[var(--surface)] p-4 shadow-[var(--shadow-md)] sm:p-6 lg:p-8"
+    >
+      {status === "success" ? (
+        <div className="flex min-h-[420px] flex-col justify-center">
+          <CheckCircle2 className="h-10 w-10 text-[var(--green)]" aria-hidden="true" />
+          <h2 className="mt-5 text-2xl font-bold text-[var(--text)]">Application received</h2>
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-[var(--text-secondary)]">
+            We recorded your application for {CAREERS_ROLE_TITLE}. Selected candidates may receive
+            a follow-up review or interview request from the Advantage team.
+          </p>
+          <p className="mt-5 text-xs font-medium uppercase tracking-[0.08em] text-[var(--text-muted)]">
+            Application ID: {applicationId}
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-8">
+          <section>
+            <div className="mb-5">
+              <h2 className="text-xl font-bold text-[var(--text)]">Candidate details</h2>
+              <p className="mt-1 text-sm text-[var(--text-secondary)]">
+                Keep this practical. Resume plus proof from the work sample matter more than long cover letters.
+              </p>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="block text-sm font-semibold text-[var(--text)]">
+                Full name
+                <input name="fullName" required className="mt-2 w-full border border-[var(--border)] bg-white px-3 py-3 text-sm outline-none focus:border-[var(--blue-accent)]" />
+              </label>
+              <label className="block text-sm font-semibold text-[var(--text)]">
+                Email
+                <input name="email" type="email" required className="mt-2 w-full border border-[var(--border)] bg-white px-3 py-3 text-sm outline-none focus:border-[var(--blue-accent)]" />
+              </label>
+              <label className="block text-sm font-semibold text-[var(--text)]">
+                WhatsApp or phone
+                <input name="whatsapp" required className="mt-2 w-full border border-[var(--border)] bg-white px-3 py-3 text-sm outline-none focus:border-[var(--blue-accent)]" />
+              </label>
+              <label className="block text-sm font-semibold text-[var(--text)]">
+                City and country
+                <input name="location" required placeholder="Bengaluru, India" className="mt-2 w-full border border-[var(--border)] bg-white px-3 py-3 text-sm outline-none focus:border-[var(--blue-accent)]" />
+              </label>
+              <label className="block text-sm font-semibold text-[var(--text)]">
+                Referral partner code
+                <input name="referralCode" defaultValue={initialReferral} className="mt-2 w-full border border-[var(--border)] bg-white px-3 py-3 text-sm outline-none focus:border-[var(--blue-accent)]" />
+              </label>
+              <label className="block text-sm font-semibold text-[var(--text)]">
+                Availability
+                <input name="availability" required placeholder="Immediate, 2 weeks, after notice period" className="mt-2 w-full border border-[var(--border)] bg-white px-3 py-3 text-sm outline-none focus:border-[var(--blue-accent)]" />
+              </label>
+              <label className="block text-sm font-semibold text-[var(--text)] sm:col-span-2">
+                LinkedIn
+                <input name="linkedin" type="url" placeholder="https://linkedin.com/in/..." className="mt-2 w-full border border-[var(--border)] bg-white px-3 py-3 text-sm outline-none focus:border-[var(--blue-accent)]" />
+              </label>
+              <label className="block text-sm font-semibold text-[var(--text)] sm:col-span-2">
+                GitHub, portfolio, or work link
+                <input name="portfolio" type="url" placeholder="https://..." className="mt-2 w-full border border-[var(--border)] bg-white px-3 py-3 text-sm outline-none focus:border-[var(--blue-accent)]" />
+              </label>
+            </div>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-bold text-[var(--text)]">Resume and compensation</h2>
+            <div className="mt-5 grid gap-4 lg:grid-cols-2">
+              <label className="flex min-h-32 cursor-pointer flex-col justify-center border border-dashed border-[var(--border)] bg-[var(--bg)] px-4 py-5 text-sm font-semibold text-[var(--text)] hover:border-[var(--blue-accent)]">
+                <span className="flex items-center gap-2">
+                  <Upload className="h-4 w-4 text-[var(--blue-accent)]" aria-hidden="true" />
+                  Resume file
+                </span>
+	                <span className="mt-2 text-xs font-normal text-[var(--text-secondary)]">
+	                  Optional, strongly recommended. PDF, DOC, or DOCX. Max 5 MB.
+                </span>
+                <span className="mt-3 text-xs text-[var(--text-muted)]">{resumeName || "No file selected"}</span>
+                <input
+                  name="resume"
+                  type="file"
+                  accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                  className="sr-only"
+                  onChange={(event) => setResumeName(event.currentTarget.files?.[0]?.name ?? "")}
+                />
+              </label>
+              <label className="block text-sm font-semibold text-[var(--text)]">
+                Resume link
+                <input name="resumeUrl" type="url" placeholder="https://drive.google.com/..." className="mt-2 w-full border border-[var(--border)] bg-white px-3 py-3 text-sm outline-none focus:border-[var(--blue-accent)]" />
+                <span className="mt-2 block text-xs font-normal text-[var(--text-secondary)]">
+	                  Optional, strongly recommended if file upload is inconvenient.
+                </span>
+              </label>
+            </div>
+
+            <div className="mt-5 border border-[var(--border)] bg-[var(--bg)] p-4">
+              <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <h3 className="text-sm font-bold uppercase tracking-[0.08em] text-[var(--text-muted)]">
+                    Expected monthly compensation
+                  </h3>
+                  <p className="mt-1 text-sm text-[var(--text-secondary)]">{rateHelp}</p>
+                </div>
+                <span className="text-xs font-medium text-[var(--text-muted)]">Reference conversion only</span>
+              </div>
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                <label className="block text-sm font-semibold text-[var(--text)]">
+                  INR per month
+                  <input
+                    name="compensationInr"
+                    inputMode="decimal"
+                    value={inr}
+                    onChange={(event) => handleInrChange(event.target.value)}
+                    placeholder="90000"
+                    className="mt-2 w-full border border-[var(--border)] bg-white px-3 py-3 text-sm outline-none focus:border-[var(--blue-accent)]"
+                  />
+                </label>
+                <label className="block text-sm font-semibold text-[var(--text)]">
+                  USD per month
+                  <input
+                    name="compensationUsd"
+                    inputMode="decimal"
+                    value={usd}
+                    onChange={(event) => handleUsdChange(event.target.value)}
+                    placeholder="1100"
+                    className="mt-2 w-full border border-[var(--border)] bg-white px-3 py-3 text-sm outline-none focus:border-[var(--blue-accent)]"
+                  />
+                </label>
+              </div>
+            </div>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-bold text-[var(--text)]">Product work sample</h2>
+            <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">
+	              Review the fictional sample at <a href={WORK_SAMPLE_URL} target="_blank" rel="noopener noreferrer" className="font-semibold text-[var(--blue-accent)] underline-offset-4 hover:underline">{WORK_SAMPLE_URL}</a> on mobile and desktop.
+            </p>
+
+            <label className="mt-5 block text-sm font-semibold text-[var(--text)]">
+              Experience summary
+              <textarea name="experienceSummary" required rows={4} className="mt-2 w-full border border-[var(--border)] bg-white px-3 py-3 text-sm outline-none focus:border-[var(--blue-accent)]" />
+            </label>
+
+            <fieldset className="mt-5">
+              <legend className="text-sm font-semibold text-[var(--text)]">Product surfaces you can work with</legend>
+              <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                {surfaceOptions.map((option) => (
+                  <label key={option} className="flex min-h-11 items-center gap-3 border border-[var(--border)] bg-white px-3 text-sm text-[var(--text-secondary)]">
+                    <input name="surfaces" type="checkbox" value={option} className="h-4 w-4 accent-[var(--blue-accent)]" />
+                    {option}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+
+            <div className="mt-5 grid gap-4">
+              <label className="block text-sm font-semibold text-[var(--text)]">
+                Five issues or improvements
+                <textarea name="issueFindings" required rows={6} className="mt-2 w-full border border-[var(--border)] bg-white px-3 py-3 text-sm outline-none focus:border-[var(--blue-accent)]" />
+              </label>
+              <label className="block text-sm font-semibold text-[var(--text)]">
+                Steps to reproduce the most important issue
+                <textarea name="topIssueSteps" required rows={4} className="mt-2 w-full border border-[var(--border)] bg-white px-3 py-3 text-sm outline-none focus:border-[var(--blue-accent)]" />
+              </label>
+              <label className="block text-sm font-semibold text-[var(--text)]">
+                Which issue would you fix first, and why?
+                <textarea name="firstFixReason" required rows={3} className="mt-2 w-full border border-[var(--border)] bg-white px-3 py-3 text-sm outline-none focus:border-[var(--blue-accent)]" />
+              </label>
+              <label className="block text-sm font-semibold text-[var(--text)]">
+                One small improvement you would make
+                <textarea name="smallImprovement" required rows={3} className="mt-2 w-full border border-[var(--border)] bg-white px-3 py-3 text-sm outline-none focus:border-[var(--blue-accent)]" />
+              </label>
+              <label className="block text-sm font-semibold text-[var(--text)]">
+                One question before changing anything risky
+                <textarea name="riskyQuestion" required rows={3} className="mt-2 w-full border border-[var(--border)] bg-white px-3 py-3 text-sm outline-none focus:border-[var(--blue-accent)]" />
+              </label>
+              <label className="block text-sm font-semibold text-[var(--text)]">
+                Browser console or network errors noticed
+                <textarea name="consoleNetworkNotes" required rows={3} className="mt-2 w-full border border-[var(--border)] bg-white px-3 py-3 text-sm outline-none focus:border-[var(--blue-accent)]" />
+              </label>
+              <label className="block text-sm font-semibold text-[var(--text)]">
+                Screenshot proof links
+                <textarea name="proofLinks" rows={3} placeholder="Paste Google Drive, Dropbox, or other proof links." className="mt-2 w-full border border-[var(--border)] bg-white px-3 py-3 text-sm outline-none focus:border-[var(--blue-accent)]" />
+              </label>
+            </div>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-bold text-[var(--text)]">AI/tool usage</h2>
+            <div className="mt-4 grid gap-4 sm:grid-cols-[220px_minmax(0,1fr)]">
+              <label className="block text-sm font-semibold text-[var(--text)]">
+                Did you use AI/tools?
+                <select name="aiUseDisclosure" required className="mt-2 w-full border border-[var(--border)] bg-white px-3 py-3 text-sm outline-none focus:border-[var(--blue-accent)]">
+                  <option value="yes">Yes</option>
+                  <option value="light">Lightly</option>
+                  <option value="no">No</option>
+                </select>
+              </label>
+              <label className="block text-sm font-semibold text-[var(--text)]">
+                What did you use, and what did you verify yourself?
+                <textarea name="aiUseNotes" required rows={4} className="mt-2 w-full border border-[var(--border)] bg-white px-3 py-3 text-sm outline-none focus:border-[var(--blue-accent)]" />
+              </label>
+            </div>
+          </section>
+
+          {status === "error" && (
+            <div className="border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+              {error}
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={status === "submitting"}
+            className="inline-flex min-h-12 w-full items-center justify-center gap-2 bg-[var(--blue-accent)] px-5 py-3 text-sm font-bold text-white transition hover:bg-[var(--blue-vibrant)] disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto"
+          >
+            {status === "submitting" ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                Submitting
+              </>
+            ) : (
+              <>
+                Submit application
+                <ArrowRight className="h-4 w-4" aria-hidden="true" />
+              </>
+            )}
+          </button>
+        </div>
+      )}
+    </form>
+  );
+}
