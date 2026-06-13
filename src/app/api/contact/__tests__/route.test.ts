@@ -456,6 +456,27 @@ describe('POST /api/contact', () => {
     expect(sentBody.sharedBy).toBe('user-hamid')
   })
 
+  it('forwards tracked form send id to taskboard webhook aliases', async () => {
+    const fetchSpy = makeFetchMock()
+    global.fetch = fetchSpy
+
+    await POST(
+      makeRequest({
+        ...validContact,
+        formSendId: '11111111-1111-4111-8111-111111111111',
+      }),
+    )
+
+    const webhookCall = (fetchSpy.mock.calls as unknown as [string, RequestInit][]).find(
+      ([url]) => !String(url).includes('cloudflare.com'),
+    )
+    expect(webhookCall).toBeDefined()
+    const sentBody = JSON.parse(webhookCall![1].body as string)
+    expect(sentBody.formSendId).toBe('11111111-1111-4111-8111-111111111111')
+    expect(sentBody.sendId).toBe('11111111-1111-4111-8111-111111111111')
+    expect(sentBody.form_send_id).toBe('11111111-1111-4111-8111-111111111111')
+  })
+
   // -----------------------------------------------------------------------
   // 14. Native-form type variants validate + forward
   // -----------------------------------------------------------------------

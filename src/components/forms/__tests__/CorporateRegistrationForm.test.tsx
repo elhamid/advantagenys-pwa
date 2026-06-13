@@ -50,7 +50,11 @@ describe("CorporateRegistrationForm", () => {
   it("submits the registration payload and shows the success state", async () => {
     const fetchSpy = mockFetchResponse(true, { success: true });
     vi.stubGlobal("fetch", fetchSpy);
-    window.history.replaceState({}, "", "/resources/forms/corporation-services?shared_by=user-hamid");
+    window.history.replaceState(
+      {},
+      "",
+      "/resources/forms/corporation-services?shared_by=user-hamid&send_id=share-event-123"
+    );
 
     const user = userEvent.setup();
     render(<CorporateRegistrationForm />);
@@ -77,6 +81,7 @@ describe("CorporateRegistrationForm", () => {
       type: "corporate-registration",
       source: "website-corporate-registration",
       sharedBy: "user-hamid",
+      formSendId: "share-event-123",
     });
 
     expect(await screen.findByText(/thank you, alex owner/i)).toBeInTheDocument();

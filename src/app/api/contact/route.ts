@@ -150,6 +150,7 @@ function validatePayload(body: unknown): ValidationResult {
 
   const utm = validateUtm(obj.utm);
   const sharedBy = str(obj.sharedBy) ?? str(obj.shared_by);
+  const formSendId = str(obj.formSendId) ?? str(obj.form_send_id) ?? str(obj.sendId) ?? str(obj.send_id);
   const turnstileToken = str(obj.turnstileToken);
 
   // --- Build variant --------------------------------------------------------
@@ -159,6 +160,7 @@ function validatePayload(body: unknown): ValidationResult {
     email,
     source,
     sharedBy,
+    formSendId,
     utm,
     turnstileToken,
   };
@@ -386,6 +388,11 @@ async function forwardToTaskboard(data: LeadSubmission): Promise<boolean> {
   const webhookPayload: Record<string, unknown> = {
     ...data,
   };
+
+  if (data.formSendId) {
+    webhookPayload.sendId = data.formSendId;
+    webhookPayload.form_send_id = data.formSendId;
+  }
 
   // Legacy-compatible: older taskboard handlers expect `message` on booking to
   // come from `description`. Keep both.

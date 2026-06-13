@@ -6,7 +6,7 @@ import { Container } from "@/components/ui/Container";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { PHONE } from "@/lib/constants";
-import { useSharedByParam, useUtmParams } from "@/hooks/useUtmParams";
+import { useFormSendIdParam, useSharedByParam, useUtmParams } from "@/hooks/useUtmParams";
 import { toolComplete } from "@/lib/analytics/events";
 
 /* ---------- questions ---------- */
@@ -108,6 +108,7 @@ const jsonLd = {
 export default function BusinessReadinessChecker() {
   const utm = useUtmParams();
   const sharedBy = useSharedByParam();
+  const formSendId = useFormSendIdParam();
   const [currentQ, setCurrentQ] = useState(0);
   const [answers, setAnswers] = useState<Record<string, boolean>>({});
   const [showGate, setShowGate] = useState(false);
@@ -145,6 +146,7 @@ export default function BusinessReadinessChecker() {
           type: "contact",
           source: "tool-biz-readiness",
           sharedBy: sharedBy || undefined,
+          formSendId: formSendId || undefined,
           fullName: leadForm.fullName,
           phone: leadForm.phone,
           message: `Business Readiness Score: ${score}/${totalQuestions}. Gaps: ${gaps.join(", ") || "None"}`,
