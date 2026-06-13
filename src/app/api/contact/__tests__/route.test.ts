@@ -128,7 +128,8 @@ describe('POST /api/contact', () => {
   // 3. Missing fullName → 400
   // -----------------------------------------------------------------------
   it('returns 400 when fullName is missing', async () => {
-    const { fullName: _omit, ...payload } = validContact
+    const payload: Partial<typeof validContact> = { ...validContact }
+    delete payload.fullName
     const res = await POST(makeRequest(payload))
     expect(res.status).toBe(400)
     const body = await res.json()
@@ -148,7 +149,8 @@ describe('POST /api/contact', () => {
   // 4. Missing phone → 400
   // -----------------------------------------------------------------------
   it('returns 400 when phone is missing', async () => {
-    const { phone: _omit, ...payload } = validContact
+    const payload: Partial<typeof validContact> = { ...validContact }
+    delete payload.phone
     const res = await POST(makeRequest(payload))
     expect(res.status).toBe(400)
     const body = await res.json()
@@ -184,7 +186,8 @@ describe('POST /api/contact', () => {
   })
 
   it('accepts a request with no email field (email is optional)', async () => {
-    const { email: _omit, ...payload } = validContact
+    const payload: Partial<typeof validContact> = { ...validContact }
+    delete payload.email
     const res = await POST(makeRequest(payload))
     expect(res.status).toBe(200)
   })
@@ -213,7 +216,8 @@ describe('POST /api/contact', () => {
   })
 
   it('returns 403 when turnstileToken is absent but TURNSTILE_SECRET_KEY is set', async () => {
-    const { turnstileToken: _omit, ...payload } = validContact
+    const payload: Partial<typeof validContact> = { ...validContact }
+    delete payload.turnstileToken
     const res = await POST(makeRequest(payload))
     expect(res.status).toBe(403)
     const body = await res.json()
@@ -232,6 +236,7 @@ describe('POST /api/contact', () => {
       services: ['Tax Services'],
       serviceType: 'Tax Services',
       fullLegalName: 'Jane Client',
+      formSendId: 'event-client-info',
     }
 
     const res = await POST(makeRequest(payload))
@@ -253,6 +258,9 @@ describe('POST /api/contact', () => {
       fullName: 'Jane Client',
       services: ['Tax Services'],
       serviceType: 'Tax Services',
+      formSendId: 'event-client-info',
+      sendId: 'event-client-info',
+      form_send_id: 'event-client-info',
     })
   })
 
@@ -304,7 +312,8 @@ describe('POST /api/contact', () => {
     const fetchSpy = makeFetchMock()
     global.fetch = fetchSpy
     // Omit token — should still succeed because the key is absent
-    const { turnstileToken: _omit, ...payload } = validContact
+    const payload: Partial<typeof validContact> = { ...validContact }
+    delete payload.turnstileToken
     const res = await POST(makeRequest(payload))
     expect(res.status).toBe(200)
     // Cloudflare siteverify must NOT have been called
@@ -337,6 +346,34 @@ describe('POST /api/contact', () => {
     expect(sentBody.services).toEqual(validContact.services)
     expect(sentBody.message).toBe(validContact.message)
     expect(sentBody.source).toBe('website-contact-form')
+  })
+
+  it('forwards tracked form send aliases to the webhook', async () => {
+    const fetchSpy = makeFetchMock()
+    global.fetch = fetchSpy
+
+    await POST(makeRequest({
+      ...validContact,
+      sharedBy: 'staff-user-1',
+      utmSource: 'advantageos',
+      utmMedium: 'staff_share',
+      utmCampaign: 'form_share',
+      formSendId: 'event-contact-1',
+    }))
+
+    const webhookCall = (fetchSpy.mock.calls as unknown as [string, RequestInit][]).find(
+      ([url]) => !String(url).includes('cloudflare.com'),
+    )
+    expect(webhookCall).toBeDefined()
+
+    const sentBody = JSON.parse(webhookCall![1].body as string)
+    expect(sentBody.sharedBy).toBe('staff-user-1')
+    expect(sentBody.utmSource).toBe('advantageos')
+    expect(sentBody.utmMedium).toBe('staff_share')
+    expect(sentBody.utmCampaign).toBe('form_share')
+    expect(sentBody.formSendId).toBe('event-contact-1')
+    expect(sentBody.sendId).toBe('event-contact-1')
+    expect(sentBody.form_send_id).toBe('event-contact-1')
   })
 
   it('sends x-pwa-secret header to webhook', async () => {

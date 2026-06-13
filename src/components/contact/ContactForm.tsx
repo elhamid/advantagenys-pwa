@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Turnstile } from "@marsidev/react-turnstile";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { getShareAttributionFromLocation } from "@/lib/forms/share-attribution";
 
 const businessTypes = [
   "Contractor",
@@ -64,7 +65,11 @@ export function ContactForm() {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...formData, turnstileToken }),
+        body: JSON.stringify({
+          ...formData,
+          ...getShareAttributionFromLocation(),
+          turnstileToken,
+        }),
       });
 
       const data = await res.json();

@@ -5,6 +5,7 @@ import { Turnstile } from "@marsidev/react-turnstile";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { bookingSubmit } from "@/lib/analytics/events";
+import { getShareAttributionFromLocation } from "@/lib/forms/share-attribution";
 
 const serviceTypes = [
   "Tax",
@@ -85,6 +86,7 @@ export function BookingForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
+          ...getShareAttributionFromLocation(),
           type: "booking",
           source: "advantagenys.com_book_appointment",
           wantsAppointment: true,

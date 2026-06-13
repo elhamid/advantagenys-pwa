@@ -48,6 +48,14 @@ interface ContactPayload {
   // Phase 0+ booking fields
   wantsAppointment?: boolean;
   preferredWindow?: string[];
+  sharedBy?: string;
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
+  formSendId?: string;
+  sendId?: string;
+  form_send_id?: string;
+  send_id?: string;
   // Generic catch-all for extended form fields (immigration, tax, etc.)
   // These are forwarded to Supabase metadata + taskboard webhook as-is.
   [key: string]: unknown;
@@ -91,6 +99,14 @@ function validatePayload(
     description,
     wantsAppointment,
     preferredWindow,
+    sharedBy,
+    utmSource,
+    utmMedium,
+    utmCampaign,
+    formSendId,
+    sendId,
+    form_send_id,
+    send_id,
   } = raw;
 
   if (typeof fullName !== "string" || fullName.trim().length === 0) {
@@ -154,6 +170,11 @@ function validatePayload(
 
   const finalSource = resolvedSource ??
     (resolvedType ? defaultSourceByType[resolvedType] : undefined);
+  const rawFormSendId = formSendId ?? sendId ?? form_send_id ?? send_id;
+  const normalizedFormSendId =
+    typeof rawFormSendId === "string" && rawFormSendId.trim().length > 0
+      ? rawFormSendId.trim().slice(0, 80)
+      : undefined;
 
   // Build base payload
   const data: ContactPayload = {
@@ -173,6 +194,13 @@ function validatePayload(
     preferredWindow: Array.isArray(preferredWindow)
       ? (preferredWindow as string[]).map((w) => String(w).trim())
       : undefined,
+    sharedBy: typeof sharedBy === "string" && sharedBy.trim() ? sharedBy.trim() : undefined,
+    utmSource: typeof utmSource === "string" && utmSource.trim() ? utmSource.trim() : undefined,
+    utmMedium: typeof utmMedium === "string" && utmMedium.trim() ? utmMedium.trim() : undefined,
+    utmCampaign: typeof utmCampaign === "string" && utmCampaign.trim() ? utmCampaign.trim() : undefined,
+    formSendId: normalizedFormSendId,
+    sendId: normalizedFormSendId,
+    form_send_id: normalizedFormSendId,
   };
 
   // For extended form types (immigration, tax), pass through all extra string fields
@@ -182,6 +210,8 @@ function validatePayload(
       "fullName", "phone", "email", "businessType", "services", "message",
       "source", "type", "serviceType", "preferredDate", "preferredTime",
       "description", "wantsAppointment", "preferredWindow", "turnstileToken",
+      "sharedBy", "utmSource", "utmMedium", "utmCampaign",
+      "formSendId", "sendId", "form_send_id", "send_id",
     ]);
     for (const [k, v] of Object.entries(raw)) {
       if (baseKeys.has(k)) continue;
