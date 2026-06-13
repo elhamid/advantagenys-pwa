@@ -60,7 +60,7 @@ describe("FormEmbed", () => {
     window.history.replaceState(
       {},
       "",
-      "/resources/forms/itin-registration-form?shared_by=staff-123&utm_source=advantageos&utm_medium=staff_share&utm_campaign=form_share&ignored=value"
+      "/resources/forms/itin-registration-form?shared_by=staff-123&send_id=event-123&utm_source=advantageos&utm_medium=staff_share&utm_campaign=form_share&ignored=value"
     );
 
     render(
@@ -76,7 +76,31 @@ describe("FormEmbed", () => {
 
     expect(screen.getByTitle("ITIN Registration Form")).toHaveAttribute(
       "src",
-      "https://form.jotform.com/210224697492156?shared_by=staff-123&utm_source=advantageos&utm_medium=staff_share&utm_campaign=form_share"
+      "https://form.jotform.com/210224697492156?shared_by=staff-123&send_id=event-123&utm_source=advantageos&utm_medium=staff_share&utm_campaign=form_share"
+    );
+  });
+
+  it("passes tracked form send id aliases into embedded JotForm URLs", () => {
+    window.history.replaceState(
+      {},
+      "",
+      "/resources/forms/itin-registration-form?form_send_id=event-a&formSendId=event-b&sendId=event-c"
+    );
+
+    render(
+      <FormEmbed
+        form={{
+          id: "210224697492156",
+          title: "ITIN Registration Form",
+          platform: "jotform",
+          embedUrl: "https://form.jotform.com/210224697492156",
+        } as never}
+      />
+    );
+
+    expect(screen.getByTitle("ITIN Registration Form")).toHaveAttribute(
+      "src",
+      "https://form.jotform.com/210224697492156?form_send_id=event-a&formSendId=event-b&sendId=event-c"
     );
   });
 });

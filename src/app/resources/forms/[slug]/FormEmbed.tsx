@@ -9,6 +9,10 @@ interface FormEmbedProps {
 
 const PASSTHROUGH_PARAMS = [
   "shared_by",
+  "send_id",
+  "form_send_id",
+  "formSendId",
+  "sendId",
   "utm_source",
   "utm_medium",
   "utm_campaign",

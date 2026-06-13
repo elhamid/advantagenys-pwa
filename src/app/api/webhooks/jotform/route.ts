@@ -38,6 +38,9 @@ interface NormalizedLead {
   utmSource?: string;
   utmMedium?: string;
   utmCampaign?: string;
+  formSendId?: string;
+  sendId?: string;
+  form_send_id?: string;
   metadata: {
     lead_type: string;
     raw: Record<string, unknown>;
@@ -239,6 +242,14 @@ function normalizeSubmission(submission: JotFormSubmission): NormalizedLead {
     "utm_campaign",
     "utm campaign",
   ]);
+  const formSendId = findTraceValue(submission.answers, [
+    "send_id",
+    "send id",
+    "form_send_id",
+    "form send id",
+    "formSendId",
+    "sendId",
+  ]);
 
   return {
     fullName,
@@ -254,6 +265,7 @@ function normalizeSubmission(submission: JotFormSubmission): NormalizedLead {
     ...(utmSource ? { utmSource } : {}),
     ...(utmMedium ? { utmMedium } : {}),
     ...(utmCampaign ? { utmCampaign } : {}),
+    ...(formSendId ? { formSendId, sendId: formSendId, form_send_id: formSendId } : {}),
     metadata: {
       lead_type: leadType,
       raw: {
@@ -261,6 +273,7 @@ function normalizeSubmission(submission: JotFormSubmission): NormalizedLead {
         submissionID: submission.submissionID,
         formTitle,
         source: "jotform-webhook",
+        ...(formSendId ? { formSendId, sendId: formSendId, form_send_id: formSendId } : {}),
         phone_missing: phone.startsWith("jotform:") ? "true" : "false",
         answers: rawAnswers,
       },

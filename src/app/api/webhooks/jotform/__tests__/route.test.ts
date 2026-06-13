@@ -71,6 +71,12 @@ describe("/api/webhooks/jotform", () => {
           answer: "staff_share",
           type: "control_textbox",
         },
+        "4": {
+          name: "send_id",
+          text: "Send ID",
+          answer: "event-jotform-123",
+          type: "control_textbox",
+        },
       },
     };
 
@@ -109,7 +115,11 @@ describe("/api/webhooks/jotform", () => {
       serviceType: "Business Consulting",
       sharedBy: "staff-user-123",
       utmMedium: "staff_share",
+      formSendId: "event-jotform-123",
+      sendId: "event-jotform-123",
+      form_send_id: "event-jotform-123",
     });
+    expect(forwardedBody.metadata.raw.formSendId).toBe("event-jotform-123");
     expect(forwardedBody.metadata.raw.formID).toBe("form-1");
   });
 
