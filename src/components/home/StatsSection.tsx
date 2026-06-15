@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
 import { motion, useInView } from "framer-motion";
 import { STATS } from "@/lib/constants";
 import { GOOGLE_RATING } from "@/lib/reviews";
@@ -32,36 +32,9 @@ function ScrollReveal({
 }
 
 function useCountUp(target: number, suffix = "", decimals = 0) {
-  const [value, setValue] = useState(0);
   const ref = useRef<HTMLSpanElement>(null);
-  const counted = useRef(false);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !counted.current) {
-          counted.current = true;
-          const duration = 1800;
-          const start = performance.now();
-          const step = (now: number) => {
-            const elapsed = now - start;
-            const progress = Math.min(elapsed / duration, 1);
-            const eased = 1 - Math.pow(1 - progress, 3);
-            setValue(parseFloat((eased * target).toFixed(decimals)));
-            if (progress < 1) requestAnimationFrame(step);
-          };
-          requestAnimationFrame(step);
-        }
-      },
-      { threshold: 0.3 },
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [target, decimals]);
-
-  return { ref, display: `${value}${suffix}` };
+  const display = decimals > 0 ? target.toFixed(decimals) : String(target);
+  return { ref, display: `${display}${suffix}` };
 }
 
 export function StatsSection() {

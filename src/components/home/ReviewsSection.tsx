@@ -42,9 +42,8 @@ export function ReviewsSection() {
             Don&apos;t take our word for it.
           </h2>
           <p className="mx-auto mb-10 max-w-2xl text-center text-sm leading-6 text-gray-500 md:mb-14 md:text-base">
-            Social proof should show up before doubt does. These are real reviews
-            from business owners who trusted the team with formation, licensing,
-            taxes, and compliance.
+            Real reviews from New York business owners who trusted Advantage
+            with formation, licensing, taxes, and compliance.
           </p>
         </ScrollReveal>
 
