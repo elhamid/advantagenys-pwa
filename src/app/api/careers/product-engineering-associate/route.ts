@@ -6,9 +6,7 @@ import {
   CAREERS_ROLE_TITLE,
   type AiUseDisclosure,
   type CareerApplicationPayload,
-  type EnteredCompensationCurrency,
   cleanText,
-  parseMoney,
   scoreCareerApplication,
   validateApplicationPayload,
   validateProof,
@@ -54,7 +52,7 @@ function jsonFromPayload(payload: CareerApplicationPayload) {
       file_type: payload.resumeFileType ?? null,
       file_size: payload.resumeFileSize ?? null,
     },
-    compensation: payload.compensation,
+    compensation: payload.compensation ?? {},
     availability: payload.availability,
     experience_summary: payload.experienceSummary,
     surfaces: payload.surfaces,
@@ -81,7 +79,6 @@ function jsonFromPayload(payload: CareerApplicationPayload) {
 }
 
 function buildTextBody(payload: CareerApplicationPayload): string {
-  const comp = payload.compensation;
   return [
     `CAREER APPLICATION - ${payload.role}`,
     `Application ID: ${payload.applicationId}`,
@@ -96,9 +93,6 @@ function buildTextBody(payload: CareerApplicationPayload): string {
     `Portfolio/GitHub: ${payload.portfolio ?? "not provided"}`,
     `Resume link: ${payload.resumeUrl ?? "file attached or not provided"}`,
     "",
-    `Expected monthly compensation: INR ${comp.inrMonthly ?? "not entered"} / USD ${comp.usdMonthly ?? "not entered"}`,
-    `Entered currency: ${comp.enteredCurrency}`,
-    `USD/INR reference rate: ${comp.usdInrRate ?? "not available"} ${comp.rateDate ? `(${comp.rateDate})` : ""}`,
     `Availability: ${payload.availability}`,
     "",
     "Experience summary:",
@@ -146,7 +140,6 @@ function buildHtmlBody(payload: CareerApplicationPayload): string {
     ["WhatsApp/phone", payload.whatsapp],
     ["Location", payload.location],
     ["Referral code", payload.referralCode ?? "not provided"],
-    ["Compensation", `INR ${payload.compensation.inrMonthly ?? "not entered"} / USD ${payload.compensation.usdMonthly ?? "not entered"}`],
     ["AI/tool usage", payload.aiUseDisclosure],
   ]
     .map(
@@ -255,7 +248,6 @@ function buildPayload(
   resumeFile: File | null,
   proofFile: File | null
 ): CareerApplicationPayload {
-  const enteredCurrency = (cleanText(formData.get("enteredCurrency")) ?? "INR") as EnteredCompensationCurrency;
   const aiUseDisclosure = (cleanText(formData.get("aiUseDisclosure")) ?? "yes") as AiUseDisclosure;
 
   return {
@@ -275,13 +267,6 @@ function buildPayload(
     resumeFileName: resumeFile?.name,
     resumeFileType: resumeFile?.type,
     resumeFileSize: resumeFile?.size,
-    compensation: {
-      enteredCurrency,
-      inrMonthly: parseMoney(formData.get("compensationInr")),
-      usdMonthly: parseMoney(formData.get("compensationUsd")),
-      usdInrRate: parseMoney(formData.get("usdInrRate")),
-      rateDate: cleanText(formData.get("rateDate")),
-    },
     availability: cleanText(formData.get("availability")) ?? "",
     experienceSummary: cleanText(formData.get("experienceSummary")) ?? "",
     surfaces: formData

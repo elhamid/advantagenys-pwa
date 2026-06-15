@@ -205,7 +205,7 @@ export function recruitingRecordFromPayload(
       uploaded: proof.uploaded,
     },
     verification_code: payload.verificationCode ?? null,
-    compensation: payload.compensation,
+    compensation: payload.compensation ?? {},
     work_sample: {
       surfaces: payload.surfaces,
       experience_summary: payload.experienceSummary,

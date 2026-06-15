@@ -77,7 +77,7 @@ export interface CareerApplicationPayload {
   resumeFileName?: string;
   resumeFileType?: string;
   resumeFileSize?: number;
-  compensation: CompensationExpectation;
+  compensation?: CompensationExpectation;
   availability: string;
   experienceSummary: string;
   surfaces: string[];
@@ -210,14 +210,6 @@ export function validateApplicationPayload(payload: CareerApplicationPayload): V
 
   if (payload.portfolio && !URL_RE.test(payload.portfolio)) {
     return { valid: false, error: "Portfolio/GitHub must be a valid URL." };
-  }
-
-  if (!payload.compensation.inrMonthly && !payload.compensation.usdMonthly) {
-    return { valid: false, error: "Expected monthly compensation is required." };
-  }
-
-  if (!["INR", "USD"].includes(payload.compensation.enteredCurrency)) {
-    return { valid: false, error: "Compensation currency is required." };
   }
 
   if (!["yes", "light", "no"].includes(payload.aiUseDisclosure)) {

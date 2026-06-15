@@ -92,7 +92,6 @@ export default function ProductEngineeringAssociatePage() {
               <ol className="mt-3 space-y-2">
                 <li>Identity and referral</li>
                 <li>Resume or profile link</li>
-                <li>Compensation in INR or USD</li>
                 <li>Mini product review</li>
                 <li>AI/tool usage disclosure</li>
               </ol>
