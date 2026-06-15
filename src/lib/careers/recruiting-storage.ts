@@ -66,13 +66,36 @@ function safePathPart(value: string): string {
   return safe.slice(0, 80) || "unknown";
 }
 
+// Map validated MIME types to a known-safe extension. The storage key must
+// never reuse a raw, attacker-controlled filename extension.
+const MIME_EXTENSION: Record<string, string> = {
+  "application/pdf": "pdf",
+  "application/msword": "doc",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "docx",
+  "image/png": "png",
+  "image/jpeg": "jpg",
+  "image/webp": "webp",
+};
+
+// Derive the extension from the validated MIME type. If the MIME is unknown,
+// fall back to a strictly sanitized extension from the filename (alphanumeric
+// only, capped) so no odd/injected segments enter the storage key.
+export function safeExtension(file: File): string {
+  const fromMime = MIME_EXTENSION[file.type];
+  if (fromMime) return fromMime;
+
+  const rawExt = file.name.includes(".") ? file.name.split(".").pop() ?? "" : "";
+  const sanitized = rawExt.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 8);
+  return sanitized || "bin";
+}
+
 function resumePath(payload: CareerApplicationPayload, file: File): string {
-  const ext = file.name.includes(".") ? file.name.split(".").pop() : "bin";
+  const ext = safeExtension(file);
   return `${payload.hiringLane}/${payload.partnerTag}/${payload.applicationId}/${safePathPart(payload.fullName)}-resume.${ext}`;
 }
 
 function proofPath(payload: CareerApplicationPayload, file: File): string {
-  const ext = file.name.includes(".") ? file.name.split(".").pop() : "bin";
+  const ext = safeExtension(file);
   return `${payload.hiringLane}/${payload.partnerTag}/${payload.applicationId}/${safePathPart(payload.fullName)}-proof.${ext}`;
 }
 
@@ -246,6 +269,23 @@ export async function storeRecruitingApplication(
       fileType: payload.proofFileType,
       fileSize: payload.proofFileSize,
       error: error instanceof Error ? error.message : "Proof upload failed.",
+    };
+  }
+
+  // Fail closed: if the candidate's only proof artifact is a file upload and
+  // that upload failed, the submission must NOT succeed with lost/orphaned
+  // proof. A validated recording/link URL is the only acceptable fallback.
+  const hasUrlProofArtifact =
+    Boolean(payload.proofRecordingUrl) || Boolean(payload.proofLinks);
+  const proofFileProvided = Boolean(proofFile && proofFile.size > 0);
+  if (proofFileProvided && !proof.uploaded && !hasUrlProofArtifact) {
+    return {
+      supabaseOk: false,
+      resume,
+      proof,
+      error:
+        proof.error ??
+        "Proof file upload failed and no alternative proof link was provided.",
     };
   }
 

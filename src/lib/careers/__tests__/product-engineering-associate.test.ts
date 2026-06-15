@@ -51,7 +51,7 @@ function validPayload(overrides: Partial<CareerApplicationPayload> = {}): Career
     proofFileName: "proof.png",
     proofFileType: "image/png",
     proofFileSize: 2048,
-    verificationCode: "PEA-AB12CD",
+    verificationCode: deriveVerificationCode("partner-a"),
     aiUseDisclosure: "yes",
     aiUseNotes: "I used AI to organize notes, then verified the page manually on mobile and desktop.",
     aiPrompts:
@@ -118,6 +118,55 @@ describe("product engineering associate careers helpers", () => {
         proofFileName: "proof.png",
         proofFileType: "image/png",
         proofFileSize: 2048,
+      })
+    );
+    expect(result).toEqual({ valid: true });
+  });
+
+  it("rejects a missing verification code", () => {
+    const result = validateApplicationPayload(validPayload({ verificationCode: undefined }));
+    expect(result.valid).toBe(false);
+    expect(result.error).toMatch(/verification code is required/i);
+  });
+
+  it("rejects a verification code that does not match the ref token", () => {
+    const result = validateApplicationPayload(validPayload({ verificationCode: "PEA-WRONG1" }));
+    expect(result.valid).toBe(false);
+    expect(result.error).toMatch(/verification code does not match/i);
+  });
+
+  it("accepts the placeholder verification code for a no-ref application", () => {
+    const result = validateApplicationPayload(
+      validPayload({
+        referralCode: undefined,
+        verificationCode: VERIFICATION_PLACEHOLDER,
+      })
+    );
+    expect(result).toEqual({ valid: true });
+  });
+
+  it("rejects a raw non-URL proofLinks value as the only artifact", () => {
+    const result = validateApplicationPayload(
+      validPayload({
+        proofLinks: "I looked at it on my phone",
+        proofRecordingUrl: undefined,
+        proofFileName: undefined,
+        proofFileType: undefined,
+        proofFileSize: undefined,
+      })
+    );
+    expect(result.valid).toBe(false);
+    expect(result.error).toMatch(/proof links must start with/i);
+  });
+
+  it("accepts a validated proofLinks URL as the only artifact", () => {
+    const result = validateApplicationPayload(
+      validPayload({
+        proofLinks: "https://drive.google.com/example",
+        proofRecordingUrl: undefined,
+        proofFileName: undefined,
+        proofFileType: undefined,
+        proofFileSize: undefined,
       })
     );
     expect(result).toEqual({ valid: true });
