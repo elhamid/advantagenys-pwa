@@ -8,6 +8,7 @@ const storageMock = vi.hoisted(() => ({
 vi.mock("@/lib/careers/recruiting-storage", () => storageMock);
 
 import { POST, _testing } from "../route";
+import { deriveVerificationCode } from "@/lib/careers/product-engineering-associate";
 
 function buildFormData(overrides: Record<string, string> = {}) {
   const data = new FormData();
@@ -34,7 +35,7 @@ function buildFormData(overrides: Record<string, string> = {}) {
     consoleNetworkNotes: "One console warning appeared; no failed network requests.",
     proofLinks: "https://drive.google.com/proof",
     proofRecordingUrl: "https://www.loom.com/share/proof",
-    verificationCode: "PEA-AB12CD",
+    verificationCode: deriveVerificationCode("partner-a"),
     aiUseDisclosure: "yes",
     aiUseNotes: "I used AI to organize notes, then verified the page manually on mobile and desktop.",
     aiPrompts:
@@ -126,6 +127,36 @@ describe("POST /api/careers/product-engineering-associate", () => {
     expect(response.status).toBe(400);
     const body = await response.json();
     expect(body.error).toMatch(/pdf, doc, or docx/i);
+  });
+
+  it("rejects a mismatched verification code", async () => {
+    const response = await POST(makeRequest(buildFormData({ verificationCode: "PEA-WRONG1" })));
+    expect(response.status).toBe(400);
+    const body = await response.json();
+    expect(body.error).toMatch(/verification code does not match/i);
+  });
+
+  it("rejects a missing verification code", async () => {
+    const response = await POST(makeRequest(buildFormData({ verificationCode: "" })));
+    expect(response.status).toBe(400);
+    const body = await response.json();
+    expect(body.error).toMatch(/verification code is required/i);
+  });
+
+  it("fails when the proof file upload fails and there is no fallback link", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    storageMock.storeRecruitingApplication.mockResolvedValue({
+      supabaseOk: false,
+      resume: { uploaded: false },
+      proof: { uploaded: false, error: "Proof upload failed: network error" },
+      error: "Proof file upload failed and no alternative proof link was provided.",
+    });
+
+    const formData = buildFormData({ proofLinks: "", proofRecordingUrl: "" });
+    formData.set("proofScreenshot", new File(["proof"], "proof.png", { type: "image/png" }));
+
+    const response = await POST(makeRequest(formData));
+    expect(response.status).toBe(502);
   });
 
   it("fails in production when Supabase storage fails", async () => {

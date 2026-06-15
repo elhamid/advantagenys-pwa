@@ -228,6 +228,18 @@ export function validateApplicationPayload(payload: CareerApplicationPayload): V
     return { valid: false, error: "Select at least one product surface you can work with." };
   }
 
+  const submittedCode = (payload.verificationCode ?? "").trim();
+  if (!submittedCode) {
+    return { valid: false, error: "Verification code is required." };
+  }
+  const expectedCode = deriveVerificationCode(payload.referralCode);
+  if (submittedCode.toUpperCase() !== expectedCode.toUpperCase()) {
+    return {
+      valid: false,
+      error: "Verification code does not match. Copy the code shown on the work-sample page.",
+    };
+  }
+
   if (payload.issueFindings.length < 80) {
     return {
       valid: false,
@@ -239,10 +251,19 @@ export function validateApplicationPayload(payload: CareerApplicationPayload): V
     return { valid: false, error: "Proof recording link must start with http:// or https://." };
   }
 
+  if (payload.proofLinks && !URL_RE.test(payload.proofLinks)) {
+    return {
+      valid: false,
+      error: "Proof links must start with http:// or https://.",
+    };
+  }
+
+  // A required proof artifact is satisfied ONLY by a validated recording/link URL
+  // or a proof file upload — a raw, non-URL proofLinks string does NOT count.
   const hasProofArtifact =
     Boolean(payload.proofRecordingUrl) ||
     Boolean(payload.proofFileName) ||
-    Boolean(payload.proofLinks);
+    (Boolean(payload.proofLinks) && URL_RE.test(payload.proofLinks as string));
   if (!hasProofArtifact) {
     return {
       valid: false,
