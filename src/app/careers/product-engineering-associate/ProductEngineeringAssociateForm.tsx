@@ -1,21 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   CAREERS_ROLE_TITLE,
   WORK_SAMPLE_URL,
-  convertInrToUsd,
-  convertUsdToInr,
   deriveVerificationCode,
 } from "@/lib/careers/product-engineering-associate";
-
-interface ExchangeRateState {
-  rate: number | null;
-  date?: string;
-  source?: string;
-  status: "loading" | "ready" | "error";
-}
 
 const surfaceOptions = [
   "Client-facing pages",
@@ -26,96 +17,18 @@ const surfaceOptions = [
   "Small frontend/content fixes",
 ];
 
-function formatInr(value: number) {
-  return new Intl.NumberFormat("en-IN", {
-    maximumFractionDigits: 0,
-  }).format(value);
-}
-
-function formatUsd(value: number) {
-  return new Intl.NumberFormat("en-US", {
-    maximumFractionDigits: 2,
-    minimumFractionDigits: value % 1 === 0 ? 0 : 2,
-  }).format(value);
-}
-
-function formatRate(value: number) {
-  return new Intl.NumberFormat("en-IN", {
-    maximumFractionDigits: 4,
-    minimumFractionDigits: 2,
-  }).format(value);
-}
-
 export function ProductEngineeringAssociateForm() {
   const searchParams = useSearchParams();
   const refToken = searchParams.get("ref") ?? searchParams.get("partner") ?? "";
   const initialReferral = refToken;
   const suggestedVerificationCode = refToken ? deriveVerificationCode(refToken) : "";
   const formRef = useRef<HTMLFormElement>(null);
-  const [rateState, setRateState] = useState<ExchangeRateState>({
-    rate: null,
-    status: "loading",
-  });
-  const [enteredCurrency, setEnteredCurrency] = useState<"INR" | "USD">("INR");
-  const [inr, setInr] = useState("");
-  const [usd, setUsd] = useState("");
   const [resumeName, setResumeName] = useState("");
   const [proofName, setProofName] = useState("");
   const [proofRecordingUrl, setProofRecordingUrl] = useState("");
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [error, setError] = useState("");
   const [applicationId, setApplicationId] = useState("");
-
-  useEffect(() => {
-    let active = true;
-    fetch("/api/careers/product-engineering-associate/exchange-rate")
-      .then((res) => res.json())
-      .then((data) => {
-        if (!active) return;
-        if (data.success && typeof data.rate === "number") {
-          setRateState({
-            rate: data.rate,
-            date: data.date,
-            source: data.source,
-            status: "ready",
-          });
-        } else {
-          setRateState({ rate: null, status: "error" });
-        }
-      })
-      .catch(() => {
-        if (active) setRateState({ rate: null, status: "error" });
-      });
-    return () => {
-      active = false;
-    };
-  }, []);
-
-  const rateHelp = useMemo(() => {
-    if (rateState.status === "loading") return "Loading USD/INR reference rate...";
-    if (rateState.status === "error" || !rateState.rate) {
-      return "Exchange-rate lookup is unavailable. Enter either value manually.";
-    }
-    return `1 USD = ${formatRate(rateState.rate)} INR, ${rateState.source}, ${rateState.date ?? "latest working day"}.`;
-  }, [rateState]);
-
-  function handleInrChange(value: string) {
-    setEnteredCurrency("INR");
-    setInr(value);
-    const numeric = Number(value.replace(/,/g, ""));
-    if (rateState.rate && Number.isFinite(numeric) && numeric > 0) {
-      setUsd(formatUsd(convertInrToUsd(numeric, rateState.rate)));
-    }
-  }
-
-  function handleUsdChange(value: string) {
-    setEnteredCurrency("USD");
-    setUsd(value);
-    const numeric = Number(value.replace(/,/g, ""));
-    if (rateState.rate && Number.isFinite(numeric) && numeric > 0) {
-      setInr(formatInr(convertUsdToInr(numeric, rateState.rate)));
-    }
-  }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -135,9 +48,6 @@ export function ProductEngineeringAssociateForm() {
     setError("");
 
     const formData = new FormData(formRef.current);
-    formData.set("enteredCurrency", enteredCurrency);
-    if (rateState.rate) formData.set("usdInrRate", String(rateState.rate));
-    if (rateState.date) formData.set("rateDate", rateState.date);
 
     try {
       const response = await fetch("/api/careers/product-engineering-associate", {
@@ -154,8 +64,6 @@ export function ProductEngineeringAssociateForm() {
       setResumeName("");
       setProofName("");
       setProofRecordingUrl("");
-      setInr("");
-      setUsd("");
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : "Application could not be submitted.");
       setStatus("error");
@@ -229,7 +137,7 @@ export function ProductEngineeringAssociateForm() {
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-[var(--text)]">Resume and compensation</h2>
+            <h2 className="text-xl font-bold text-[var(--text)]">Resume</h2>
             <div className="mt-5 grid gap-4 lg:grid-cols-2">
               <label className="flex min-h-32 cursor-pointer flex-col justify-center border border-dashed border-[var(--border)] bg-[var(--bg)] px-4 py-5 text-sm font-semibold text-[var(--text)] hover:border-[var(--blue-accent)]">
                 <span className="flex items-center gap-2">
@@ -255,42 +163,6 @@ export function ProductEngineeringAssociateForm() {
                   Optional, strongly recommended if file upload is inconvenient.
                 </span>
               </label>
-            </div>
-
-            <div className="mt-5 border border-[var(--border)] bg-[var(--bg)] p-4">
-              <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
-                <div>
-                  <h3 className="text-sm font-bold uppercase tracking-[0.08em] text-[var(--text-muted)]">
-                    Expected monthly compensation
-                  </h3>
-                  <p className="mt-1 text-sm text-[var(--text-secondary)]">{rateHelp}</p>
-                </div>
-                <span className="text-xs font-medium text-[var(--text-muted)]">Reference conversion only</span>
-              </div>
-              <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                <label className="block text-sm font-semibold text-[var(--text)]">
-                  INR per month
-                  <input
-                    name="compensationInr"
-                    inputMode="decimal"
-                    value={inr}
-                    onChange={(event) => handleInrChange(event.target.value)}
-                    placeholder="90000"
-                    className="mt-2 w-full border border-[var(--border)] bg-white px-3 py-3 text-sm outline-none focus:border-[var(--blue-accent)]"
-                  />
-                </label>
-                <label className="block text-sm font-semibold text-[var(--text)]">
-                  USD per month
-                  <input
-                    name="compensationUsd"
-                    inputMode="decimal"
-                    value={usd}
-                    onChange={(event) => handleUsdChange(event.target.value)}
-                    placeholder="1100"
-                    className="mt-2 w-full border border-[var(--border)] bg-white px-3 py-3 text-sm outline-none focus:border-[var(--blue-accent)]"
-                  />
-                </label>
-              </div>
             </div>
           </section>
 
