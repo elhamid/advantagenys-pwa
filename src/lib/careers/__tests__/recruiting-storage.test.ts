@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { CAREERS_ROLE_TITLE, type CareerApplicationPayload } from "../product-engineering-associate";
-import { recruitingRecordFromPayload, type ResumeStorageRecord } from "../recruiting-storage";
+import {
+  recruitingRecordFromPayload,
+  type ProofStorageRecord,
+  type ResumeStorageRecord,
+} from "../recruiting-storage";
 
 const payload: CareerApplicationPayload = {
   applicationId: "app-test",
@@ -32,8 +36,15 @@ const payload: CareerApplicationPayload = {
   riskyQuestion: "Should I change only copy, or can I adjust behavior after verifying scope?",
   consoleNetworkNotes: "One console warning appeared; no failed network requests.",
   proofLinks: "https://drive.google.com/proof",
+  proofRecordingUrl: "https://www.loom.com/share/proof",
+  proofFileName: "proof.png",
+  proofFileType: "image/png",
+  proofFileSize: 2048,
+  verificationCode: "PEA-AB12CD",
   aiUseDisclosure: "yes",
   aiUseNotes: "I used AI to organize notes, then verified the page manually.",
+  aiPrompts:
+    "Prompt: 'list usability issues on this quote form'. The AI claimed the phone field validated input; I checked and it accepted letters, so I corrected that.",
 };
 
 describe("recruiting storage mapping", () => {
@@ -44,6 +55,14 @@ describe("recruiting storage mapping", () => {
       fileType: "application/pdf",
       fileSize: 1024,
       path: "junior_product_engineering_associate/JKH/app-test/priya-shah-resume.pdf",
+    };
+
+    const proof: ProofStorageRecord = {
+      uploaded: true,
+      fileName: "proof.png",
+      fileType: "image/png",
+      fileSize: 2048,
+      path: "junior_product_engineering_associate/JKH/app-test/priya-shah-proof.png",
     };
 
     const record = recruitingRecordFromPayload(
@@ -61,7 +80,8 @@ describe("recruiting storage mapping", () => {
           toolTransparency: 8,
         },
       },
-      resume
+      resume,
+      proof
     );
 
     expect(record.hiring_lane).toBe("junior_product_engineering_associate");
@@ -75,5 +95,13 @@ describe("recruiting storage mapping", () => {
         uploaded: true,
       })
     );
+    expect(record.proof).toEqual(
+      expect.objectContaining({
+        storage_path: proof.path,
+        signed_url: null,
+        uploaded: true,
+      })
+    );
+    expect(record.verification_code).toBe("PEA-AB12CD");
   });
 });

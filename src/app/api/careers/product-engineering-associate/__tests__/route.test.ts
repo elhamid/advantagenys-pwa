@@ -33,8 +33,12 @@ function buildFormData(overrides: Record<string, string> = {}) {
     riskyQuestion: "Should I change only copy, or can I adjust form behavior too?",
     consoleNetworkNotes: "One console warning appeared; no failed network requests.",
     proofLinks: "https://drive.google.com/proof",
+    proofRecordingUrl: "https://www.loom.com/share/proof",
+    verificationCode: "PEA-AB12CD",
     aiUseDisclosure: "yes",
     aiUseNotes: "I used AI to organize notes, then verified the page manually on mobile and desktop.",
+    aiPrompts:
+      "Prompt: 'find usability issues on this quote form'. The AI claimed the phone field validated input; I caught that it accepted letters and corrected it.",
     ...overrides,
   };
 
@@ -94,6 +98,7 @@ describe("POST /api/careers/product-engineering-associate", () => {
         total: expect.any(Number),
         explanation: expect.any(String),
       }),
+      null,
       null
     );
 

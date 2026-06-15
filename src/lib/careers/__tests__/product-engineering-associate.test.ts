@@ -1,10 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
   CAREERS_ROLE_TITLE,
+  VERIFICATION_PLACEHOLDER,
   convertInrToUsd,
   convertUsdToInr,
+  deriveVerificationCode,
   scoreCareerApplication,
   validateApplicationPayload,
+  validateProof,
   validateResume,
   type CareerApplicationPayload,
 } from "../product-engineering-associate";
@@ -44,8 +47,15 @@ function validPayload(overrides: Partial<CareerApplicationPayload> = {}): Career
     riskyQuestion: "Should I change only copy, or can I adjust form behavior too?",
     consoleNetworkNotes: "One console warning appeared; no failed network requests.",
     proofLinks: "https://drive.google.com/example",
+    proofRecordingUrl: "https://www.loom.com/share/example",
+    proofFileName: "proof.png",
+    proofFileType: "image/png",
+    proofFileSize: 2048,
+    verificationCode: "PEA-AB12CD",
     aiUseDisclosure: "yes",
     aiUseNotes: "I used AI to organize notes, then verified the page manually on mobile and desktop.",
+    aiPrompts:
+      "Prompt: 'find usability issues on this quote form'. The AI assumed the phone field validated input; I checked and it accepted letters, so I corrected that claim.",
     ...overrides,
   };
 }
@@ -70,6 +80,61 @@ describe("product engineering associate careers helpers", () => {
       })
     );
     expect(result).toEqual({ valid: true });
+  });
+
+  it("derives a stable verification code from a ref token", () => {
+    const code = deriveVerificationCode("edbd1234");
+    expect(code).toMatch(/^PEA-[A-Z0-9]{6}$/);
+    expect(deriveVerificationCode("edbd1234")).toBe(code);
+    expect(deriveVerificationCode("EDBD1234")).toBe(code);
+    expect(deriveVerificationCode("other-ref")).not.toBe(code);
+  });
+
+  it("uses the placeholder verification code when no ref is present", () => {
+    expect(deriveVerificationCode(null)).toBe(VERIFICATION_PLACEHOLDER);
+    expect(deriveVerificationCode("")).toBe(VERIFICATION_PLACEHOLDER);
+    expect(deriveVerificationCode("   ")).toBe(VERIFICATION_PLACEHOLDER);
+  });
+
+  it("requires at least one proof-of-inspection artifact", () => {
+    const result = validateApplicationPayload(
+      validPayload({
+        proofLinks: undefined,
+        proofRecordingUrl: undefined,
+        proofFileName: undefined,
+        proofFileType: undefined,
+        proofFileSize: undefined,
+      })
+    );
+    expect(result.valid).toBe(false);
+    expect(result.error).toMatch(/proof of inspection/i);
+  });
+
+  it("accepts a proof file artifact alone", () => {
+    const result = validateApplicationPayload(
+      validPayload({
+        proofLinks: undefined,
+        proofRecordingUrl: undefined,
+        proofFileName: "proof.png",
+        proofFileType: "image/png",
+        proofFileSize: 2048,
+      })
+    );
+    expect(result).toEqual({ valid: true });
+  });
+
+  it("requires the AI prompts disclosure", () => {
+    const result = validateApplicationPayload(validPayload({ aiPrompts: "" }));
+    expect(result.valid).toBe(false);
+    expect(result.error).toMatch(/aiPrompts/i);
+  });
+
+  it("validates proof file type and size", () => {
+    const png = new File(["proof"], "proof.png", { type: "image/png" });
+    expect(validateProof(png)).toEqual({ valid: true });
+
+    const exe = new File(["bad"], "proof.exe", { type: "application/x-msdownload" });
+    expect(validateProof(exe).valid).toBe(false);
   });
 
   it("rejects thin work-sample issue findings", () => {

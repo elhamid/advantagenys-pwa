@@ -32,8 +32,11 @@ function CandidateCard({ app }: { app: RecruitingApplicationForReview }) {
   const candidate = app.candidate ?? {};
   const workSample = app.work_sample ?? {};
   const resume = app.resume ?? {};
+  const proof = app.proof ?? {};
+  const aiUse = app.ai_use ?? {};
   const breakdown = app.score_breakdown ?? {};
   const resumeUrl = resume.signed_url ?? resume.url;
+  const proofUrl = proof.signed_url ?? proof.recording_url ?? workSample.proof_recording_url ?? null;
 
   return (
     <article className="border border-[var(--border)] bg-[var(--surface)] p-4 shadow-[var(--shadow-sm)]">
@@ -84,24 +87,62 @@ function CandidateCard({ app }: { app: RecruitingApplicationForReview }) {
           <p className="mt-3 text-sm font-semibold text-[var(--text)]">Fix first</p>
           <p className="mt-1 text-sm leading-6 text-[var(--text-secondary)]">{workSample.first_fix_reason}</p>
         </div>
-        <div className="border border-[var(--border)] bg-[var(--bg)] p-3 text-sm">
-          <div className="font-bold text-[var(--text)]">Resume</div>
-          <div className="mt-2 break-all text-[var(--text-secondary)]">{resume.file_name ?? "No resume provided"}</div>
-          <div className="mt-2 text-xs font-semibold uppercase tracking-[0.08em] text-[var(--text-muted)]">
-            {resume.uploaded ? "Storage linked" : resume.url ? "External link" : "Optional not provided"}
+        <div className="space-y-3">
+          <div className="border border-[var(--border)] bg-[var(--bg)] p-3 text-sm">
+            <div className="font-bold text-[var(--text)]">Resume</div>
+            <div className="mt-2 break-all text-[var(--text-secondary)]">{resume.file_name ?? "No resume provided"}</div>
+            <div className="mt-2 text-xs font-semibold uppercase tracking-[0.08em] text-[var(--text-muted)]">
+              {resume.uploaded ? "Storage linked" : resume.url ? "External link" : "Optional not provided"}
+            </div>
+            {resumeUrl ? (
+              <a
+                href={resumeUrl}
+                className="mt-3 inline-flex min-h-9 items-center bg-[var(--blue-accent)] px-3 text-xs font-bold text-white"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Open resume
+              </a>
+            ) : null}
           </div>
-          {resumeUrl ? (
-            <a
-              href={resumeUrl}
-              className="mt-3 inline-flex min-h-9 items-center bg-[var(--blue-accent)] px-3 text-xs font-bold text-white"
-              target="_blank"
-              rel="noreferrer"
-            >
-              Open resume
-            </a>
-          ) : null}
+
+          <div className="border border-[var(--border)] bg-[var(--bg)] p-3 text-sm">
+            <div className="font-bold text-[var(--text)]">Proof of inspection</div>
+            <div className="mt-2 break-all text-[var(--text-secondary)]">
+              {proof.file_name ?? (proofUrl ? "Recording link" : "No proof provided")}
+            </div>
+            <div className="mt-2 text-xs font-semibold uppercase tracking-[0.08em] text-[var(--text-muted)]">
+              {proof.uploaded ? "Storage linked" : proofUrl ? "External link" : "Missing"}
+            </div>
+            {proofUrl ? (
+              <a
+                href={proofUrl}
+                className="mt-3 inline-flex min-h-9 items-center bg-[var(--blue-accent)] px-3 text-xs font-bold text-white"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Open proof
+              </a>
+            ) : null}
+            {app.verification_code ? (
+              <div className="mt-3 text-xs text-[var(--text-muted)]">
+                Code: <span className="font-bold text-[var(--text)]">{app.verification_code}</span>
+              </div>
+            ) : null}
+          </div>
         </div>
       </div>
+
+      {aiUse.prompts ? (
+        <div className="mt-4">
+          <h3 className="text-sm font-bold uppercase tracking-[0.08em] text-[var(--text-muted)]">
+            AI prompts and self-correction
+          </h3>
+          <p className="mt-2 line-clamp-4 whitespace-pre-wrap text-sm leading-6 text-[var(--text-secondary)]">
+            {aiUse.prompts}
+          </p>
+        </div>
+      ) : null}
     </article>
   );
 }

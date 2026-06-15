@@ -6,11 +6,48 @@ export const WORK_SAMPLE_URL = `${CAREERS_ROLE_PATH}/sample`;
 
 export const MAX_RESUME_BYTES = 5 * 1024 * 1024;
 
+export const MAX_PROOF_BYTES = 10 * 1024 * 1024;
+
 export const ACCEPTED_RESUME_TYPES = new Set([
   "application/pdf",
   "application/msword",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 ]);
+
+export const ACCEPTED_PROOF_TYPES = new Set([
+  "application/pdf",
+  "image/png",
+  "image/jpeg",
+  "image/webp",
+]);
+
+const VERIFICATION_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+export const VERIFICATION_PLACEHOLDER = "PEA-OPEN";
+
+/**
+ * Deterministically derive a short, candidate-visible verification code from
+ * the per-candidate ref token. Same ref always yields the same code, so the
+ * sample page and the application form agree without any backend round-trip.
+ */
+export function deriveVerificationCode(ref: string | null | undefined): string {
+  const normalized = (ref ?? "").trim().toLowerCase();
+  if (!normalized) return VERIFICATION_PLACEHOLDER;
+
+  let hash = 2166136261;
+  for (let i = 0; i < normalized.length; i += 1) {
+    hash ^= normalized.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+
+  let value = hash >>> 0;
+  let code = "";
+  for (let i = 0; i < 6; i += 1) {
+    code += VERIFICATION_ALPHABET[value % VERIFICATION_ALPHABET.length];
+    value = Math.floor(value / VERIFICATION_ALPHABET.length);
+    if (value === 0) value = (hash >>> 0) + i + 1;
+  }
+  return `PEA-${code}`;
+}
 
 export type AiUseDisclosure = "yes" | "light" | "no";
 export type EnteredCompensationCurrency = "INR" | "USD";
@@ -44,6 +81,7 @@ export interface CareerApplicationPayload {
   availability: string;
   experienceSummary: string;
   surfaces: string[];
+  verificationCode?: string;
   issueFindings: string;
   topIssueSteps: string;
   firstFixReason: string;
@@ -51,8 +89,13 @@ export interface CareerApplicationPayload {
   riskyQuestion: string;
   consoleNetworkNotes: string;
   proofLinks?: string;
+  proofRecordingUrl?: string;
+  proofFileName?: string;
+  proofFileType?: string;
+  proofFileSize?: number;
   aiUseDisclosure: AiUseDisclosure;
   aiUseNotes: string;
+  aiPrompts: string;
 }
 
 export interface CareerApplicationScore {
@@ -114,6 +157,20 @@ export function validateResume(file: File | null): ValidationResult {
   return { valid: true };
 }
 
+export function validateProof(file: File | null): ValidationResult {
+  if (!file || file.size === 0) return { valid: true };
+  if (file.size > MAX_PROOF_BYTES) {
+    return { valid: false, error: "Proof file must be 10 MB or smaller." };
+  }
+  if (!ACCEPTED_PROOF_TYPES.has(file.type)) {
+    return {
+      valid: false,
+      error: "Proof must be a PNG, JPG, WEBP, or PDF screenshot file.",
+    };
+  }
+  return { valid: true };
+}
+
 export function validateApplicationPayload(payload: CareerApplicationPayload): ValidationResult {
   const required: Array<[string, string]> = [
     ["fullName", payload.fullName],
@@ -129,6 +186,7 @@ export function validateApplicationPayload(payload: CareerApplicationPayload): V
     ["riskyQuestion", payload.riskyQuestion],
     ["consoleNetworkNotes", payload.consoleNetworkNotes],
     ["aiUseNotes", payload.aiUseNotes],
+    ["aiPrompts", payload.aiPrompts],
   ];
 
   const missing = required.find(([, value]) => !value || value.trim().length < 2);
@@ -177,6 +235,22 @@ export function validateApplicationPayload(payload: CareerApplicationPayload): V
     };
   }
 
+  if (payload.proofRecordingUrl && !URL_RE.test(payload.proofRecordingUrl)) {
+    return { valid: false, error: "Proof recording link must start with http:// or https://." };
+  }
+
+  const hasProofArtifact =
+    Boolean(payload.proofRecordingUrl) ||
+    Boolean(payload.proofFileName) ||
+    Boolean(payload.proofLinks);
+  if (!hasProofArtifact) {
+    return {
+      valid: false,
+      error:
+        "Proof of inspection is required. Upload an annotated screenshot or paste a screen-recording link (mobile + desktop).",
+    };
+  }
+
   return { valid: true };
 }
 
@@ -216,13 +290,18 @@ export function scoreCareerApplication(payload: CareerApplicationPayload): Caree
       2 +
       keywordBonus(`${payload.riskyQuestion} ${payload.smallImprovement}`, ["before", "safe", "small", "verify", "scope"])
   );
+  const hasProofArtifact = Boolean(payload.proofFileName) || Boolean(payload.proofRecordingUrl);
   const proofDiscipline = clampScore(
     scoreTextLength(payload.consoleNetworkNotes, [45, 90, 160]) +
-      (payload.proofLinks ? 1.5 : 0) +
+      (hasProofArtifact ? 2 : 0) +
+      (payload.proofLinks ? 1 : 0) +
       (payload.surfaces.length >= 2 ? 1 : 0)
   );
   const toolTransparency = clampScore(
-    scoreTextLength(payload.aiUseNotes, [50, 100, 180]) +
+    (scoreTextLength(payload.aiUseNotes, [50, 100, 180]) +
+      scoreTextLength(payload.aiPrompts, [40, 120, 240])) /
+      2 +
+      keywordBonus(payload.aiPrompts, ["prompt", "wrong", "corrected", "caught", "fixed", "verified"]) +
       (payload.aiUseDisclosure === "yes" || payload.aiUseDisclosure === "light" ? 0.5 : 0)
   );
 
