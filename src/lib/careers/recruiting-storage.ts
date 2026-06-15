@@ -3,8 +3,18 @@ import type { CareerApplicationPayload, CareerApplicationScore } from "./product
 
 export const RECRUITING_TABLE = "recruiting_applications";
 export const RECRUITING_RESUME_BUCKET = "recruiting-resumes";
+export const RECRUITING_PROOF_BUCKET = "recruiting-proof";
 
 export interface ResumeStorageRecord {
+  fileName?: string;
+  fileType?: string;
+  fileSize?: number;
+  path?: string;
+  uploaded: boolean;
+  error?: string;
+}
+
+export interface ProofStorageRecord {
   fileName?: string;
   fileType?: string;
   fileSize?: number;
@@ -16,6 +26,7 @@ export interface ResumeStorageRecord {
 export interface RecruitingStorageResult {
   supabaseOk: boolean;
   resume: ResumeStorageRecord;
+  proof: ProofStorageRecord;
   error?: string;
 }
 
@@ -60,6 +71,42 @@ function resumePath(payload: CareerApplicationPayload, file: File): string {
   return `${payload.hiringLane}/${payload.partnerTag}/${payload.applicationId}/${safePathPart(payload.fullName)}-resume.${ext}`;
 }
 
+function proofPath(payload: CareerApplicationPayload, file: File): string {
+  const ext = file.name.includes(".") ? file.name.split(".").pop() : "bin";
+  return `${payload.hiringLane}/${payload.partnerTag}/${payload.applicationId}/${safePathPart(payload.fullName)}-proof.${ext}`;
+}
+
+async function uploadProof(
+  supabase: SupabaseClient,
+  payload: CareerApplicationPayload,
+  proofFile: File | null
+): Promise<ProofStorageRecord> {
+  if (!proofFile || proofFile.size === 0) {
+    return {
+      uploaded: false,
+      fileName: payload.proofFileName,
+      fileType: payload.proofFileType,
+      fileSize: payload.proofFileSize,
+    };
+  }
+
+  const path = proofPath(payload, proofFile);
+  const { error } = await supabase.storage.from(RECRUITING_PROOF_BUCKET).upload(path, proofFile, {
+    contentType: proofFile.type,
+    upsert: false,
+  });
+
+  if (error) throw new Error(`Proof upload failed: ${error.message}`);
+
+  return {
+    uploaded: true,
+    fileName: proofFile.name,
+    fileType: proofFile.type,
+    fileSize: proofFile.size,
+    path,
+  };
+}
+
 async function uploadResume(
   supabase: SupabaseClient,
   payload: CareerApplicationPayload,
@@ -94,7 +141,8 @@ async function uploadResume(
 export function recruitingRecordFromPayload(
   payload: CareerApplicationPayload,
   score: CareerApplicationScore,
-  resume: ResumeStorageRecord
+  resume: ResumeStorageRecord,
+  proof: ProofStorageRecord
 ) {
   return {
     application_id: payload.applicationId,
@@ -124,6 +172,16 @@ export function recruitingRecordFromPayload(
       signed_url: null,
       uploaded: resume.uploaded,
     },
+    proof: {
+      recording_url: payload.proofRecordingUrl ?? null,
+      file_name: proof.fileName ?? payload.proofFileName ?? null,
+      file_type: proof.fileType ?? payload.proofFileType ?? null,
+      file_size: proof.fileSize ?? payload.proofFileSize ?? null,
+      storage_path: proof.path ?? null,
+      signed_url: null,
+      uploaded: proof.uploaded,
+    },
+    verification_code: payload.verificationCode ?? null,
     compensation: payload.compensation,
     work_sample: {
       surfaces: payload.surfaces,
@@ -135,10 +193,12 @@ export function recruitingRecordFromPayload(
       risky_question: payload.riskyQuestion,
       console_network_notes: payload.consoleNetworkNotes,
       proof_links: payload.proofLinks ?? null,
+      proof_recording_url: payload.proofRecordingUrl ?? null,
     },
     ai_use: {
       disclosure: payload.aiUseDisclosure,
       notes: payload.aiUseNotes,
+      prompts: payload.aiPrompts,
     },
     raw_payload: payload,
     submitted_at: payload.submittedAt,
@@ -148,13 +208,15 @@ export function recruitingRecordFromPayload(
 export async function storeRecruitingApplication(
   payload: CareerApplicationPayload,
   score: CareerApplicationScore,
-  resumeFile: File | null
+  resumeFile: File | null,
+  proofFile: File | null = null
 ): Promise<RecruitingStorageResult> {
   const supabase = getRecruitingSupabase();
   if (!supabase) {
     return {
       supabaseOk: false,
       resume: { uploaded: false },
+      proof: { uploaded: false },
       error: "Supabase is not configured.",
     };
   }
@@ -173,17 +235,32 @@ export async function storeRecruitingApplication(
     };
   }
 
+  let proof: ProofStorageRecord;
+
   try {
-    const record = recruitingRecordFromPayload(payload, score, resume);
+    proof = await uploadProof(supabase, payload, proofFile);
+  } catch (error) {
+    proof = {
+      uploaded: false,
+      fileName: payload.proofFileName,
+      fileType: payload.proofFileType,
+      fileSize: payload.proofFileSize,
+      error: error instanceof Error ? error.message : "Proof upload failed.",
+    };
+  }
+
+  try {
+    const record = recruitingRecordFromPayload(payload, score, resume, proof);
     const { error } = await supabase.from(RECRUITING_TABLE).insert(record);
 
     if (error) throw new Error(`Recruiting record insert failed: ${error.message}`);
 
-    return { supabaseOk: true, resume };
+    return { supabaseOk: true, resume, proof };
   } catch (error) {
     return {
       supabaseOk: false,
       resume: { uploaded: false },
+      proof: { uploaded: false },
       error: error instanceof Error ? error.message : "Recruiting application could not be stored.",
     };
   }

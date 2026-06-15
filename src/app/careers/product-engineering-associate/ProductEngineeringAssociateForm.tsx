@@ -7,6 +7,7 @@ import {
   WORK_SAMPLE_URL,
   convertInrToUsd,
   convertUsdToInr,
+  deriveVerificationCode,
 } from "@/lib/careers/product-engineering-associate";
 
 interface ExchangeRateState {
@@ -47,7 +48,9 @@ function formatRate(value: number) {
 
 export function ProductEngineeringAssociateForm() {
   const searchParams = useSearchParams();
-  const initialReferral = searchParams.get("ref") ?? searchParams.get("partner") ?? "";
+  const refToken = searchParams.get("ref") ?? searchParams.get("partner") ?? "";
+  const initialReferral = refToken;
+  const suggestedVerificationCode = refToken ? deriveVerificationCode(refToken) : "";
   const formRef = useRef<HTMLFormElement>(null);
   const [rateState, setRateState] = useState<ExchangeRateState>({
     rate: null,
@@ -57,6 +60,8 @@ export function ProductEngineeringAssociateForm() {
   const [inr, setInr] = useState("");
   const [usd, setUsd] = useState("");
   const [resumeName, setResumeName] = useState("");
+  const [proofName, setProofName] = useState("");
+  const [proofRecordingUrl, setProofRecordingUrl] = useState("");
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [error, setError] = useState("");
   const [applicationId, setApplicationId] = useState("");
@@ -116,6 +121,16 @@ export function ProductEngineeringAssociateForm() {
     event.preventDefault();
     if (!formRef.current) return;
 
+    const proofInput = formRef.current.elements.namedItem("proofScreenshot") as HTMLInputElement | null;
+    const hasProofFile = Boolean(proofInput?.files && proofInput.files.length > 0);
+    if (!hasProofFile && proofRecordingUrl.trim().length === 0) {
+      setError(
+        "Add proof of inspection: upload an annotated screenshot (mobile + desktop) or paste a screen-recording link."
+      );
+      setStatus("error");
+      return;
+    }
+
     setStatus("submitting");
     setError("");
 
@@ -137,6 +152,8 @@ export function ProductEngineeringAssociateForm() {
       setStatus("success");
       formRef.current.reset();
       setResumeName("");
+      setProofName("");
+      setProofRecordingUrl("");
       setInr("");
       setUsd("");
     } catch (submitError) {
@@ -280,8 +297,22 @@ export function ProductEngineeringAssociateForm() {
           <section>
             <h2 className="text-xl font-bold text-[var(--text)]">Product work sample</h2>
             <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">
-              Review the fictional sample at <a href={WORK_SAMPLE_URL} target="_blank" rel="noopener noreferrer" className="font-semibold text-[var(--blue-accent)] underline-offset-4 hover:underline">{WORK_SAMPLE_URL}</a> on mobile and desktop.
+              Open the sanitized exercise at <a href={WORK_SAMPLE_URL} target="_blank" rel="noopener noreferrer" className="font-semibold text-[var(--blue-accent)] underline-offset-4 hover:underline">{WORK_SAMPLE_URL}</a> and run the mini flow on both a phone and a desktop. Complete a submission and read every screen carefully. We are not telling you how many issues exist.
             </p>
+
+            <label className="mt-5 block text-sm font-semibold text-[var(--text)]">
+              Verification code from the sample page
+              <input
+                name="verificationCode"
+                required
+                defaultValue={suggestedVerificationCode}
+                placeholder="PEA-XXXXXX"
+                className="mt-2 w-full border border-[var(--border)] bg-white px-3 py-3 text-sm outline-none focus:border-[var(--blue-accent)]"
+              />
+              <span className="mt-2 block text-xs font-normal text-[var(--text-secondary)]">
+                Copy the code shown on the sample page so we can match your invitation.
+              </span>
+            </label>
 
             <label className="mt-5 block text-sm font-semibold text-[var(--text)]">
               Experience summary
@@ -302,38 +333,82 @@ export function ProductEngineeringAssociateForm() {
 
             <div className="mt-5 grid gap-4">
               <label className="block text-sm font-semibold text-[var(--text)]">
-                Five issues or improvements
+                Inspect the flow on a phone and on a desktop. List every issue you find. (We are not telling you how many.)
                 <textarea name="issueFindings" required rows={6} className="mt-2 w-full border border-[var(--border)] bg-white px-3 py-3 text-sm outline-none focus:border-[var(--blue-accent)]" />
               </label>
               <label className="block text-sm font-semibold text-[var(--text)]">
-                Steps to reproduce the most important issue
-                <textarea name="topIssueSteps" required rows={4} className="mt-2 w-full border border-[var(--border)] bg-white px-3 py-3 text-sm outline-none focus:border-[var(--blue-accent)]" />
+                Pick the issue that matters most to someone trying to get a quote. Write exact reproduction steps: device, what you tapped, what you expected, what actually happened.
+                <textarea name="topIssueSteps" required rows={5} className="mt-2 w-full border border-[var(--border)] bg-white px-3 py-3 text-sm outline-none focus:border-[var(--blue-accent)]" />
               </label>
               <label className="block text-sm font-semibold text-[var(--text)]">
-                Which issue would you fix first, and why?
-                <textarea name="firstFixReason" required rows={3} className="mt-2 w-full border border-[var(--border)] bg-white px-3 py-3 text-sm outline-none focus:border-[var(--blue-accent)]" />
+                This flow drives most of our inbound leads. Which issue would you fix FIRST, and what would you deliberately NOT touch yet — and why?
+                <textarea name="firstFixReason" required rows={4} className="mt-2 w-full border border-[var(--border)] bg-white px-3 py-3 text-sm outline-none focus:border-[var(--blue-accent)]" />
               </label>
               <label className="block text-sm font-semibold text-[var(--text)]">
-                One small improvement you would make
+                Name one small, safe improvement you could ship without asking anyone.
                 <textarea name="smallImprovement" required rows={3} className="mt-2 w-full border border-[var(--border)] bg-white px-3 py-3 text-sm outline-none focus:border-[var(--blue-accent)]" />
               </label>
               <label className="block text-sm font-semibold text-[var(--text)]">
-                One question before changing anything risky
+                Name one change you would NOT make without checking first, and the exact question you would ask before doing it.
                 <textarea name="riskyQuestion" required rows={3} className="mt-2 w-full border border-[var(--border)] bg-white px-3 py-3 text-sm outline-none focus:border-[var(--blue-accent)]" />
               </label>
               <label className="block text-sm font-semibold text-[var(--text)]">
                 Browser console or network errors noticed
                 <textarea name="consoleNetworkNotes" required rows={3} className="mt-2 w-full border border-[var(--border)] bg-white px-3 py-3 text-sm outline-none focus:border-[var(--blue-accent)]" />
               </label>
-              <label className="block text-sm font-semibold text-[var(--text)]">
-                Screenshot proof links
-                <textarea name="proofLinks" rows={3} placeholder="Paste Google Drive, Dropbox, or other proof links." className="mt-2 w-full border border-[var(--border)] bg-white px-3 py-3 text-sm outline-none focus:border-[var(--blue-accent)]" />
-              </label>
             </div>
           </section>
 
           <section>
+            <h2 className="text-xl font-bold text-[var(--text)]">Proof of inspection</h2>
+            <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">
+              Required. Provide at least one artifact: annotated screenshots covering mobile and
+              desktop, or a short screen recording. The role is testing flows with proof, so proof is part of the bar.
+            </p>
+            <div className="mt-5 grid gap-4 lg:grid-cols-2">
+              <label className="flex min-h-32 cursor-pointer flex-col justify-center border border-dashed border-[var(--border)] bg-[var(--bg)] px-4 py-5 text-sm font-semibold text-[var(--text)] hover:border-[var(--blue-accent)]">
+                <span className="flex items-center gap-2">
+                  <span className="text-[var(--blue-accent)]" aria-hidden="true">Upload</span>
+                  Annotated screenshots (mobile + desktop)
+                </span>
+                <span className="mt-2 text-xs font-normal text-[var(--text-secondary)]">
+                  PNG, JPG, WEBP, or PDF. Max 10 MB.
+                </span>
+                <span className="mt-3 text-xs text-[var(--text-muted)]">{proofName || "No file selected"}</span>
+                <input
+                  name="proofScreenshot"
+                  type="file"
+                  accept=".png,.jpg,.jpeg,.webp,.pdf,image/png,image/jpeg,image/webp,application/pdf"
+                  className="sr-only"
+                  onChange={(event) => setProofName(event.currentTarget.files?.[0]?.name ?? "")}
+                />
+              </label>
+              <label className="block text-sm font-semibold text-[var(--text)]">
+                Or a screen recording link
+                <input
+                  name="proofRecordingUrl"
+                  type="url"
+                  value={proofRecordingUrl}
+                  onChange={(event) => setProofRecordingUrl(event.target.value)}
+                  placeholder="https://www.loom.com/share/... or Drive link"
+                  className="mt-2 w-full border border-[var(--border)] bg-white px-3 py-3 text-sm outline-none focus:border-[var(--blue-accent)]"
+                />
+                <span className="mt-2 block text-xs font-normal text-[var(--text-secondary)]">
+                  Loom, Drive, Dropbox, or similar. At least one artifact (file or link) is required.
+                </span>
+              </label>
+            </div>
+            <label className="mt-4 block text-sm font-semibold text-[var(--text)]">
+              Additional proof links (optional)
+              <textarea name="proofLinks" rows={2} placeholder="Any extra screenshot or recording links." className="mt-2 w-full border border-[var(--border)] bg-white px-3 py-3 text-sm outline-none focus:border-[var(--blue-accent)]" />
+            </label>
+          </section>
+
+          <section>
             <h2 className="text-xl font-bold text-[var(--text)]">AI/tool usage</h2>
+            <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">
+              AI is allowed — proof still matters. Showing what your tools got wrong, and how you caught it, is a positive signal.
+            </p>
             <div className="mt-4 grid gap-4 sm:grid-cols-[220px_minmax(0,1fr)]">
               <label className="block text-sm font-semibold text-[var(--text)]">
                 Did you use AI/tools?
@@ -348,6 +423,10 @@ export function ProductEngineeringAssociateForm() {
                 <textarea name="aiUseNotes" required rows={4} className="mt-2 w-full border border-[var(--border)] bg-white px-3 py-3 text-sm outline-none focus:border-[var(--blue-accent)]" />
               </label>
             </div>
+            <label className="mt-4 block text-sm font-semibold text-[var(--text)]">
+              Paste the actual AI prompt(s) you used for this exercise, and describe one thing the AI got wrong that you caught and corrected.
+              <textarea name="aiPrompts" required rows={5} placeholder="Paste your prompt(s), then explain the mistake you caught and how you fixed it." className="mt-2 w-full border border-[var(--border)] bg-white px-3 py-3 text-sm outline-none focus:border-[var(--blue-accent)]" />
+            </label>
           </section>
 
           {status === "error" && (

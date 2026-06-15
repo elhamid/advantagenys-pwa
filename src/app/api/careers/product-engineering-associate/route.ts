@@ -11,6 +11,7 @@ import {
   parseMoney,
   scoreCareerApplication,
   validateApplicationPayload,
+  validateProof,
   validateResume,
 } from "@/lib/careers/product-engineering-associate";
 import { storeRecruitingApplication } from "@/lib/careers/recruiting-storage";
@@ -57,6 +58,7 @@ function jsonFromPayload(payload: CareerApplicationPayload) {
     availability: payload.availability,
     experience_summary: payload.experienceSummary,
     surfaces: payload.surfaces,
+    verification_code: payload.verificationCode ?? null,
     work_sample: {
       issue_findings: payload.issueFindings,
       top_issue_steps: payload.topIssueSteps,
@@ -65,10 +67,15 @@ function jsonFromPayload(payload: CareerApplicationPayload) {
       risky_question: payload.riskyQuestion,
       console_network_notes: payload.consoleNetworkNotes,
       proof_links: payload.proofLinks ?? null,
+      proof_recording_url: payload.proofRecordingUrl ?? null,
+      proof_file_name: payload.proofFileName ?? null,
+      proof_file_type: payload.proofFileType ?? null,
+      proof_file_size: payload.proofFileSize ?? null,
     },
     ai_use: {
       disclosure: payload.aiUseDisclosure,
       notes: payload.aiUseNotes,
+      prompts: payload.aiPrompts,
     },
   };
 }
@@ -117,10 +124,16 @@ function buildTextBody(payload: CareerApplicationPayload): string {
     "Console/network notes:",
     payload.consoleNetworkNotes,
     "",
+    `Verification code: ${payload.verificationCode ?? "not provided"}`,
     `Proof links: ${payload.proofLinks ?? "not provided"}`,
+    `Proof recording link: ${payload.proofRecordingUrl ?? "not provided"}`,
+    `Proof file: ${payload.proofFileName ?? "not attached"}`,
     "",
     `AI/tool usage: ${payload.aiUseDisclosure}`,
     payload.aiUseNotes,
+    "",
+    "AI prompts used + what was caught/corrected:",
+    payload.aiPrompts,
   ].join("\n");
 }
 
@@ -166,7 +179,11 @@ function buildHtmlBody(payload: CareerApplicationPayload): string {
 </html>`;
 }
 
-async function sendCareersEmail(payload: CareerApplicationPayload, resumeFile: File | null): Promise<boolean> {
+async function sendCareersEmail(
+  payload: CareerApplicationPayload,
+  resumeFile: File | null,
+  proofFile: File | null
+): Promise<boolean> {
   const host = process.env.EMAIL_HOST;
   const port = parseInt(process.env.EMAIL_PORT ?? "465", 10);
   const user = process.env.EMAIL_USER;
@@ -182,16 +199,22 @@ async function sendCareersEmail(payload: CareerApplicationPayload, resumeFile: F
     auth: { user, pass },
   });
 
-  const attachments =
-    resumeFile && resumeFile.size > 0
-      ? [
-          {
-            filename: resumeFile.name,
-            content: Buffer.from(await resumeFile.arrayBuffer()),
-            contentType: resumeFile.type,
-          },
-        ]
-      : undefined;
+  const attachmentList: Array<{ filename: string; content: Buffer; contentType: string }> = [];
+  if (resumeFile && resumeFile.size > 0) {
+    attachmentList.push({
+      filename: resumeFile.name,
+      content: Buffer.from(await resumeFile.arrayBuffer()),
+      contentType: resumeFile.type,
+    });
+  }
+  if (proofFile && proofFile.size > 0) {
+    attachmentList.push({
+      filename: `proof-${proofFile.name}`,
+      content: Buffer.from(await proofFile.arrayBuffer()),
+      contentType: proofFile.type,
+    });
+  }
+  const attachments = attachmentList.length > 0 ? attachmentList : undefined;
 
   await transporter.sendMail({
     from: `"Advantage Recruiting" <${user}>`,
@@ -227,7 +250,11 @@ async function forwardToCareersWebhook(payload: CareerApplicationPayload): Promi
   return response.ok;
 }
 
-function buildPayload(formData: FormData, resumeFile: File | null): CareerApplicationPayload {
+function buildPayload(
+  formData: FormData,
+  resumeFile: File | null,
+  proofFile: File | null
+): CareerApplicationPayload {
   const enteredCurrency = (cleanText(formData.get("enteredCurrency")) ?? "INR") as EnteredCompensationCurrency;
   const aiUseDisclosure = (cleanText(formData.get("aiUseDisclosure")) ?? "yes") as AiUseDisclosure;
 
@@ -261,6 +288,7 @@ function buildPayload(formData: FormData, resumeFile: File | null): CareerApplic
       .getAll("surfaces")
       .filter((value): value is string => typeof value === "string" && value.trim().length > 0)
       .map((value) => value.trim()),
+    verificationCode: cleanText(formData.get("verificationCode")),
     issueFindings: cleanText(formData.get("issueFindings")) ?? "",
     topIssueSteps: cleanText(formData.get("topIssueSteps")) ?? "",
     firstFixReason: cleanText(formData.get("firstFixReason")) ?? "",
@@ -268,8 +296,13 @@ function buildPayload(formData: FormData, resumeFile: File | null): CareerApplic
     riskyQuestion: cleanText(formData.get("riskyQuestion")) ?? "",
     consoleNetworkNotes: cleanText(formData.get("consoleNetworkNotes")) ?? "",
     proofLinks: cleanText(formData.get("proofLinks")),
+    proofRecordingUrl: cleanText(formData.get("proofRecordingUrl")),
+    proofFileName: proofFile?.name,
+    proofFileType: proofFile?.type,
+    proofFileSize: proofFile?.size,
     aiUseDisclosure,
     aiUseNotes: cleanText(formData.get("aiUseNotes")) ?? "",
+    aiPrompts: cleanText(formData.get("aiPrompts")) ?? "",
   };
 }
 
@@ -306,7 +339,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const payload = buildPayload(formData, resumeFile);
+    const rawProof = formData.get("proofScreenshot");
+    const proofFile = isUploadedFile(rawProof) && rawProof.size > 0 ? rawProof : null;
+    const proofValidation = validateProof(proofFile);
+
+    if (!proofValidation.valid) {
+      return NextResponse.json(
+        { success: false, error: proofValidation.error },
+        { status: 400 }
+      );
+    }
+
+    const payload = buildPayload(formData, resumeFile, proofFile);
     const validation = validateApplicationPayload(payload);
 
     if (!validation.valid) {
@@ -318,16 +362,17 @@ export async function POST(request: NextRequest) {
 
     const score = scoreCareerApplication(payload);
     const [storageResult, webhookOk, emailOk] = await Promise.all([
-      storeRecruitingApplication(payload, score, resumeFile).catch((error) => ({
+      storeRecruitingApplication(payload, score, resumeFile, proofFile).catch((error) => ({
         supabaseOk: false,
         resume: { uploaded: false },
+        proof: { uploaded: false },
         error: error instanceof Error ? error.message : "Recruiting storage failed.",
       })),
       forwardToCareersWebhook(payload).catch((error) => {
         console.error("[careers] webhook failed", error);
         return false;
       }),
-      sendCareersEmail(payload, resumeFile).catch((error) => {
+      sendCareersEmail(payload, resumeFile, proofFile).catch((error) => {
         console.error("[careers] email failed", error);
         return false;
       }),
@@ -359,6 +404,7 @@ export async function POST(request: NextRequest) {
       delivery: {
         supabase: storageResult.supabaseOk,
         resumeUploaded: storageResult.resume.uploaded,
+        proofUploaded: storageResult.proof?.uploaded ?? false,
         webhook: webhookOk,
         email: emailOk,
         localOnly: !deliveryOk && noDeliveryConfigured,

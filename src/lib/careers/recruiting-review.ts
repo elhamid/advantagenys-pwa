@@ -1,6 +1,11 @@
 import { headers } from "next/headers";
 import { timingSafeEqual } from "node:crypto";
-import { getRecruitingSupabase, RECRUITING_RESUME_BUCKET, RECRUITING_TABLE } from "./recruiting-storage";
+import {
+  getRecruitingSupabase,
+  RECRUITING_PROOF_BUCKET,
+  RECRUITING_RESUME_BUCKET,
+  RECRUITING_TABLE,
+} from "./recruiting-storage";
 
 export type RecruitingReviewScope = "superadmin" | "jkh";
 
@@ -33,6 +38,16 @@ export interface RecruitingApplicationForReview {
     signed_url?: string | null;
     uploaded?: boolean;
   };
+  proof?: {
+    recording_url?: string | null;
+    file_name?: string | null;
+    file_type?: string | null;
+    file_size?: number | null;
+    storage_path?: string | null;
+    signed_url?: string | null;
+    uploaded?: boolean;
+  };
+  verification_code?: string | null;
   compensation: Record<string, unknown>;
   work_sample: {
     surfaces?: string[];
@@ -44,10 +59,12 @@ export interface RecruitingApplicationForReview {
     risky_question?: string;
     console_network_notes?: string;
     proof_links?: string | null;
+    proof_recording_url?: string | null;
   };
   ai_use: {
     disclosure?: string;
     notes?: string;
+    prompts?: string;
   };
 }
 
@@ -96,7 +113,7 @@ export async function listRecruitingApplications(
   let query = supabase
     .from(RECRUITING_TABLE)
     .select(
-      "application_id,submitted_at,role,hiring_lane,referral_code,partner_tag,status,score,score_label,score_explanation,score_breakdown,candidate,resume,compensation,work_sample,ai_use"
+      "application_id,submitted_at,role,hiring_lane,referral_code,partner_tag,status,score,score_label,score_explanation,score_breakdown,candidate,resume,proof,verification_code,compensation,work_sample,ai_use"
     )
     .order("submitted_at", { ascending: false })
     .limit(50);
@@ -111,20 +128,37 @@ export async function listRecruitingApplications(
   const applications = (data ?? []) as RecruitingApplicationForReview[];
   return Promise.all(
     applications.map(async (application) => {
-      const storagePath = application.resume?.storage_path;
-      if (!storagePath) return application;
+      let next = application;
 
-      const { data: signedData, error: signedError } = await supabase.storage
-        .from(RECRUITING_RESUME_BUCKET)
-        .createSignedUrl(storagePath, 60 * 60);
+      const resumePath = application.resume?.storage_path;
+      if (resumePath) {
+        const { data: signedData, error: signedError } = await supabase.storage
+          .from(RECRUITING_RESUME_BUCKET)
+          .createSignedUrl(resumePath, 60 * 60);
+        next = {
+          ...next,
+          resume: {
+            ...next.resume,
+            signed_url: signedError ? null : signedData.signedUrl,
+          },
+        };
+      }
 
-      return {
-        ...application,
-        resume: {
-          ...application.resume,
-          signed_url: signedError ? null : signedData.signedUrl,
-        },
-      };
+      const proofPath = application.proof?.storage_path;
+      if (proofPath) {
+        const { data: signedData, error: signedError } = await supabase.storage
+          .from(RECRUITING_PROOF_BUCKET)
+          .createSignedUrl(proofPath, 60 * 60);
+        next = {
+          ...next,
+          proof: {
+            ...next.proof,
+            signed_url: signedError ? null : signedData.signedUrl,
+          },
+        };
+      }
+
+      return next;
     })
   );
 }
