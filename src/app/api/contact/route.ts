@@ -146,6 +146,7 @@ function validatePayload(body: unknown): ValidationResult {
 
   const utm = validateUtm(obj.utm);
   const sharedBy = str(obj.sharedBy) ?? str(obj.shared_by);
+  const formSendId = str(obj.formSendId) ?? str(obj.form_send_id) ?? str(obj.send_id);
   const turnstileToken = str(obj.turnstileToken);
 
   // --- Build variant --------------------------------------------------------
@@ -155,6 +156,7 @@ function validatePayload(body: unknown): ValidationResult {
     email,
     source,
     sharedBy,
+    formSendId,
     utm,
     turnstileToken,
   };
@@ -397,6 +399,11 @@ async function forwardToTaskboard(data: LeadSubmission): Promise<boolean> {
     if (data.preferredWindow && data.preferredWindow.length > 0) {
       webhookPayload.preferred_window = data.preferredWindow;
     }
+  }
+
+  if (data.formSendId) {
+    webhookPayload.send_id = data.formSendId;
+    webhookPayload.form_send_id = data.formSendId;
   }
 
   // `turnstileToken` is server-side only; strip from the outgoing payload.

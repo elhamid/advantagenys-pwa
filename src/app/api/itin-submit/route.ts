@@ -73,6 +73,7 @@ interface ItinPayload {
   passportExpiry: string;
   passportCountry: string;
   comment: string;
+  formSendId?: string;
   // Backward-compat
   passportPhotoBase64?: string;
   passportPhotoFilename?: string;
@@ -370,6 +371,13 @@ async function forwardToTaskboard(
     email: data.email.trim() || undefined,
     services: ["ITIN"],
     source: "itin-kiosk",
+    ...(data.formSendId
+      ? {
+          formSendId: data.formSendId,
+          send_id: data.formSendId,
+          form_send_id: data.formSendId,
+        }
+      : {}),
     itin: {
       firstName: data.firstName.trim(),
       lastName: data.lastName.trim(),
@@ -471,6 +479,11 @@ export async function POST(request: NextRequest) {
       passportExpiry: (formData.get("passportExpiry") as string) || "",
       passportCountry: (formData.get("passportCountry") as string) || "",
       comment: (formData.get("comment") as string) || "",
+      formSendId:
+        (formData.get("formSendId") as string) ||
+        (formData.get("form_send_id") as string) ||
+        (formData.get("send_id") as string) ||
+        "",
     };
 
     // Backward-compat: legacy passportPhoto field (base64, no Supabase)

@@ -58,6 +58,8 @@ export interface LeadSubmissionBase {
   source: LeadSource;
   /** Staff user id from shared form links; forwarded to taskboard for owner assignment. */
   sharedBy?: string;
+  /** Per-send tracking id from AdvantageOS Send Form links. */
+  formSendId?: string;
   /** Attribution metadata captured at form mount time. */
   utm?: UtmParams;
   /** Cloudflare Turnstile token, when the form surfaces the widget. */

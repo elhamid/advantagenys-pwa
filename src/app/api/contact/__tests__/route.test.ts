@@ -457,6 +457,28 @@ describe('POST /api/contact', () => {
     expect(sentBody.sharedBy).toBe('user-hamid')
   })
 
+  it('preserves form send id attribution in the webhook payload', async () => {
+    const fetchSpy = makeFetchMock()
+    global.fetch = fetchSpy
+
+    await POST(
+      makeRequest({
+        ...validContact,
+        sharedBy: 'user-hamid',
+        formSendId: 'send-abc',
+      }),
+    )
+
+    const webhookCall = (fetchSpy.mock.calls as unknown as [string, RequestInit][]).find(
+      ([url]) => !String(url).includes('cloudflare.com'),
+    )
+    expect(webhookCall).toBeDefined()
+    const sentBody = JSON.parse(webhookCall![1].body as string)
+    expect(sentBody.formSendId).toBe('send-abc')
+    expect(sentBody.send_id).toBe('send-abc')
+    expect(sentBody.form_send_id).toBe('send-abc')
+  })
+
   // -----------------------------------------------------------------------
   // 14. Native-form type variants validate + forward
   // -----------------------------------------------------------------------

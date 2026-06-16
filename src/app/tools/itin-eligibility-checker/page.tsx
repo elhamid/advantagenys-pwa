@@ -6,7 +6,7 @@ import { Container } from "@/components/ui/Container";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { PHONE } from "@/lib/constants";
-import { useSharedByParam, useUtmParams } from "@/hooks/useUtmParams";
+import { useFormSendIdParam, useSharedByParam, useUtmParams } from "@/hooks/useUtmParams";
 import { toolComplete } from "@/lib/analytics/events";
 
 /* ---------- flow types ---------- */
@@ -97,6 +97,7 @@ const jsonLd = {
 export default function ItinEligibilityChecker() {
   const utm = useUtmParams();
   const sharedBy = useSharedByParam();
+  const formSendId = useFormSendIdParam();
   const [currentQ, setCurrentQ] = useState(0);
   const [outcome, setOutcome] = useState<Outcome>(null);
   const [showGate, setShowGate] = useState(false);
@@ -135,6 +136,7 @@ export default function ItinEligibilityChecker() {
           type: "contact",
           source: "tool-itin-eligibility",
           sharedBy: sharedBy || undefined,
+          formSendId,
           fullName: leadForm.fullName,
           phone: leadForm.phone,
           message: `ITIN Eligibility: ${outcome}. Answers: ${JSON.stringify(answers)}`,
