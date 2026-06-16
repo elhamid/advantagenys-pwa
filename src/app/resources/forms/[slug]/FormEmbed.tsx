@@ -10,6 +10,10 @@ interface FormEmbedProps {
 
 const PASSTHROUGH_PARAMS = [
   "shared_by",
+  "sharedBy",
+  "send_id",
+  "form_send_id",
+  "formSendId",
   "utm_source",
   "utm_medium",
   "utm_campaign",
@@ -93,7 +97,7 @@ export function FormEmbed({ form }: FormEmbedProps) {
         <iframe
           id={form.platform === "jotform" ? `JotFormIFrame-${form.id}` : undefined}
           title={form.title}
-          src={form.embedUrl}
+          src={rawFormUrl ?? form.embedUrl}
           style={{
             width: "100%",
             minHeight: "600px",

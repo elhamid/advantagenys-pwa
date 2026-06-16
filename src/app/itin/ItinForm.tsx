@@ -69,6 +69,7 @@ const StepReview = dynamic(
 
 import { type ItinData, INITIAL, STEPS } from "./steps/types";
 import { I94Lookup } from "./I94Lookup";
+import { useFormSendIdParam } from "@/hooks/useUtmParams";
 
 /* ═══════════════════════════════════════════════
    Keyboard-aware bottom offset (iPad/mobile)
@@ -110,6 +111,7 @@ const COMPANY_PRIORITY_COUNTRIES: Record<string, string> = {
 };
 
 export function ItinForm({ onSuccess, testMode = false, companyName }: Props) {
+  const formSendId = useFormSendIdParam();
   const priorityCountry = companyName ? (COMPANY_PRIORITY_COUNTRIES[companyName] ?? undefined) : undefined;
   const [step, setStep] = useState(0);
   const [data, setData] = useState<ItinData>(() => ({
@@ -418,6 +420,7 @@ export function ItinForm({ onSuccess, testMode = false, companyName }: Props) {
       payload.append("passportExpiry", data.passportExpiry);
       payload.append("passportCountry", up(data.passportCountry));
       payload.append("comment", up(data.comment));
+      if (formSendId) payload.append("formSendId", formSendId);
 
       if (data.documentScan) payload.append("documentScan", data.documentScan);
       if (data.selfie) payload.append("selfie", data.selfie);
