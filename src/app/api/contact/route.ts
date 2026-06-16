@@ -146,6 +146,7 @@ function validatePayload(body: unknown): ValidationResult {
 
   const utm = validateUtm(obj.utm);
   const sharedBy = str(obj.sharedBy) ?? str(obj.shared_by);
+  const sendId = str(obj.send_id) ?? str(obj.sendId);
   const turnstileToken = str(obj.turnstileToken);
 
   // --- Build variant --------------------------------------------------------
@@ -155,6 +156,7 @@ function validatePayload(body: unknown): ValidationResult {
     email,
     source,
     sharedBy,
+    send_id: sendId ? sendId.slice(0, 100) : undefined,
     utm,
     turnstileToken,
   };
@@ -381,6 +383,10 @@ async function forwardToTaskboard(data: LeadSubmission): Promise<boolean> {
   // contact_profiles.tags[] + service columns.
   const webhookPayload: Record<string, unknown> = {
     ...data,
+    metadata: {
+      lead_type: data.type,
+      raw: data,
+    },
   };
 
   // Legacy-compatible: older taskboard handlers expect `message` on booking to

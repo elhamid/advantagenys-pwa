@@ -457,6 +457,27 @@ describe('POST /api/contact', () => {
     expect(sentBody.sharedBy).toBe('user-hamid')
   })
 
+  it('normalizes send_id attribution and forwards it to the webhook payload', async () => {
+    const fetchSpy = makeFetchMock()
+    global.fetch = fetchSpy
+
+    await POST(
+      makeRequest({
+        ...validContact,
+        sendId: 'share-event-123',
+      }),
+    )
+
+    const webhookCall = (fetchSpy.mock.calls as unknown as [string, RequestInit][]).find(
+      ([url]) => !String(url).includes('cloudflare.com'),
+    )
+    expect(webhookCall).toBeDefined()
+    const sentBody = JSON.parse(webhookCall![1].body as string)
+    expect(sentBody.send_id).toBe('share-event-123')
+    expect(sentBody.metadata.raw.send_id).toBe('share-event-123')
+    expect(sentBody.sendId).toBeUndefined()
+  })
+
   // -----------------------------------------------------------------------
   // 14. Native-form type variants validate + forward
   // -----------------------------------------------------------------------

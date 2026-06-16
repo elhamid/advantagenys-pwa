@@ -66,6 +66,19 @@ function captureSharedByFromUrl(): string | undefined {
   }
 }
 
+function captureSendIdFromUrl(): string | undefined {
+  if (typeof window === "undefined") return undefined;
+
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const value = params.get("send_id") ?? params.get("sendId");
+    const trimmed = value?.trim();
+    return trimmed ? trimmed.slice(0, 100) : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 function hasUtmFields(utm: UtmParams): boolean {
   return UTM_KEYS.some((key) => Boolean(utm[key]));
 }
@@ -170,4 +183,19 @@ export function useSharedByParam(): string | undefined {
   }, []);
 
   return sharedBy;
+}
+
+export function useSendIdParam(): string | undefined {
+  const [sendId, setSendId] = useState<string | undefined>(() =>
+    captureSendIdFromUrl()
+  );
+
+  useEffect(() => {
+    const next = captureSendIdFromUrl();
+    if (next !== sendId) setSendId(next);
+    // Mount-time capture only; deps intentionally empty.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return sendId;
 }

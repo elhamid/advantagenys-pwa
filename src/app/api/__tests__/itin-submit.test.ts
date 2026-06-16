@@ -128,6 +128,26 @@ describe("POST /api/itin-submit", () => {
     consoleWarnSpy.mockRestore();
   });
 
+  it("forwards send_id to the taskboard webhook payload", async () => {
+    const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+    const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    const fields = { ...validFields, phone: "9295550002", send_id: "share-event-456" };
+    const res = await POST(makeRequest(fields));
+    expect(res.status).toBe(200);
+
+    const taskboardCall = (global.fetch as unknown as ReturnType<typeof vi.fn>).mock.calls.find(
+      (call) => String(call[0]).includes("test-webhook.example.com")
+    );
+    expect(taskboardCall).toBeDefined();
+    const sentBody = JSON.parse(taskboardCall![1].body as string);
+    expect(sentBody.send_id).toBe("share-event-456");
+    expect(sentBody.metadata.raw.send_id).toBe("share-event-456");
+
+    consoleSpy.mockRestore();
+    consoleWarnSpy.mockRestore();
+  });
+
   // -----------------------------------------------------------------------
   // 2. Missing required fields return 400
   // -----------------------------------------------------------------------

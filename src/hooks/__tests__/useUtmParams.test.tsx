@@ -1,6 +1,6 @@
 import { renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { useSharedByParam, useUtmParams } from "../useUtmParams";
+import { useSendIdParam, useSharedByParam, useUtmParams } from "../useUtmParams";
 
 const STORAGE_KEY = "advantage.utm";
 
@@ -120,5 +120,16 @@ describe("useUtmParams", () => {
     expect(utmResult.current).toMatchObject({ utm_source: "advantageos" });
     expect(utmResult.current).not.toHaveProperty("shared_by");
     expect(sharedByResult.current).toBe("user-123");
+  });
+
+  it("captures send_id attribution without storing it as UTM", () => {
+    setUrl("utm_source=advantageos&send_id=share-event-123");
+
+    const { result: utmResult } = renderHook(() => useUtmParams());
+    const { result: sendIdResult } = renderHook(() => useSendIdParam());
+
+    expect(utmResult.current).toMatchObject({ utm_source: "advantageos" });
+    expect(utmResult.current).not.toHaveProperty("send_id");
+    expect(sendIdResult.current).toBe("share-event-123");
   });
 });

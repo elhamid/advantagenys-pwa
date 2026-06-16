@@ -58,6 +58,8 @@ export interface LeadSubmissionBase {
   source: LeadSource;
   /** Staff user id from shared form links; forwarded to taskboard for owner assignment. */
   sharedBy?: string;
+  /** Taskboard form share id; forwarded so form_share_events can be completed. */
+  send_id?: string;
   /** Attribution metadata captured at form mount time. */
   utm?: UtmParams;
   /** Cloudflare Turnstile token, when the form surfaces the widget. */
