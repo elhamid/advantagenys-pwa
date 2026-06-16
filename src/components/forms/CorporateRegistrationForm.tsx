@@ -23,11 +23,17 @@ const businessTypes = [
 const yesNoOptions = ["Yes", "No", "Not Sure"] as const;
 
 const ownerCountOptions = [1, 2, 3] as const;
+const staffRoutingOptions = ["Jay", "Kedar", "Zia", "Akram", "Other"] as const;
 
 interface CorporateRegistrationData {
   fullName: string;
   phone: string;
+  cellPhone: string;
   email: string;
+  ownerAddress: string;
+  ownerCity: string;
+  ownerState: string;
+  ownerZipCode: string;
   desiredBusinessName: string;
   businessType: string;
   businessAddress: string;
@@ -39,10 +45,22 @@ interface CorporateRegistrationData {
   needEIN: string;
   needSalesTax: string;
   needPayroll: string;
+  preferredStaff: string;
+  website: string;
+  seoInterest: string;
+  documentUrls: string;
   additionalNotes: string;
 }
 
-const emptyOwner: AdditionalOwner = { name: "", phone: "" };
+const emptyOwner: AdditionalOwner = {
+  name: "",
+  phone: "",
+  cellPhone: "",
+  address: "",
+  city: "",
+  state: "NY",
+  zipCode: "",
+};
 
 export function CorporateRegistrationForm() {
   const utm = useUtmParams();
@@ -52,7 +70,12 @@ export function CorporateRegistrationForm() {
   const [formData, setFormData] = useState<CorporateRegistrationData>({
     fullName: "",
     phone: "",
+    cellPhone: "",
     email: "",
+    ownerAddress: "",
+    ownerCity: "",
+    ownerState: "NY",
+    ownerZipCode: "",
     desiredBusinessName: "",
     businessType: "",
     businessAddress: "",
@@ -64,6 +87,10 @@ export function CorporateRegistrationForm() {
     needEIN: "",
     needSalesTax: "",
     needPayroll: "",
+    preferredStaff: "",
+    website: "",
+    seoInterest: "",
+    documentUrls: "",
     additionalNotes: "",
   });
   const [numberOfOwners, setNumberOfOwners] = useState<number>(1);
@@ -93,6 +120,14 @@ export function CorporateRegistrationForm() {
     };
   }
 
+  function parseDocumentUrls(raw: string): string[] | undefined {
+    const urls = raw
+      .split(/[\n,]/)
+      .map((item) => item.trim())
+      .filter(Boolean);
+    return urls.length > 0 ? urls : undefined;
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitting(true);
@@ -113,7 +148,12 @@ export function CorporateRegistrationForm() {
       send_id: sendId || undefined,
       fullName: formData.fullName,
       phone: formData.phone,
+      cellPhone: formData.cellPhone || undefined,
       email: formData.email || undefined,
+      ownerAddress: formData.ownerAddress || undefined,
+      ownerCity: formData.ownerCity || undefined,
+      ownerState: formData.ownerState || undefined,
+      ownerZipCode: formData.ownerZipCode || undefined,
       desiredBusinessName: formData.desiredBusinessName || undefined,
       businessType: formData.businessType || undefined,
       businessAddress: formData.businessAddress || undefined,
@@ -128,6 +168,10 @@ export function CorporateRegistrationForm() {
       needEIN: formData.needEIN || undefined,
       needSalesTax: formData.needSalesTax || undefined,
       needPayroll: formData.needPayroll || undefined,
+      preferredStaff: formData.preferredStaff || undefined,
+      website: formData.website || undefined,
+      seoInterest: formData.seoInterest || undefined,
+      documentUrls: parseDocumentUrls(formData.documentUrls),
       additionalNotes: formData.additionalNotes || undefined,
       utm: Object.keys(utm).length > 0 ? utm : undefined,
       turnstileToken: turnstileToken || undefined,
@@ -234,6 +278,20 @@ export function CorporateRegistrationForm() {
           />
         </div>
 
+        <div>
+          <label htmlFor="corpCellPhone" className="block text-sm font-medium text-[var(--text)] mb-1">
+            Cell Phone <span className="text-[var(--text-muted)]">(optional)</span>
+          </label>
+          <input
+            type="tel"
+            id="corpCellPhone"
+            value={formData.cellPhone}
+            onChange={update("cellPhone")}
+            placeholder="If different from main phone"
+            className={inputClasses}
+          />
+        </div>
+
         {/* Email */}
         <div>
           <label htmlFor="corpEmail" className="block text-sm font-medium text-[var(--text)] mb-1">
@@ -248,6 +306,64 @@ export function CorporateRegistrationForm() {
             placeholder="you@example.com"
             className={inputClasses}
           />
+        </div>
+
+        <div className="rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface-raised,var(--surface))] p-4 space-y-4">
+          <p className="text-sm font-semibold text-[var(--text)]">Owner Address</p>
+          <div>
+            <label htmlFor="ownerAddress" className="block text-sm font-medium text-[var(--text)] mb-1">
+              Owner Street Address
+            </label>
+            <input
+              type="text"
+              id="ownerAddress"
+              value={formData.ownerAddress}
+              onChange={update("ownerAddress")}
+              placeholder="Home or mailing address"
+              className={inputClasses}
+            />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label htmlFor="ownerCity" className="block text-sm font-medium text-[var(--text)] mb-1">
+                City
+              </label>
+              <input
+                type="text"
+                id="ownerCity"
+                value={formData.ownerCity}
+                onChange={update("ownerCity")}
+                placeholder="City"
+                className={inputClasses}
+              />
+            </div>
+            <div>
+              <label htmlFor="ownerState" className="block text-sm font-medium text-[var(--text)] mb-1">
+                State
+              </label>
+              <input
+                type="text"
+                id="ownerState"
+                value={formData.ownerState}
+                onChange={update("ownerState")}
+                placeholder="NY"
+                className={inputClasses}
+              />
+            </div>
+            <div>
+              <label htmlFor="ownerZipCode" className="block text-sm font-medium text-[var(--text)] mb-1">
+                ZIP Code
+              </label>
+              <input
+                type="text"
+                id="ownerZipCode"
+                value={formData.ownerZipCode}
+                onChange={update("ownerZipCode")}
+                placeholder="10001"
+                className={inputClasses}
+              />
+            </div>
+          </div>
         </div>
 
         {/* Number of Owners */}
@@ -325,6 +441,85 @@ export function CorporateRegistrationForm() {
                       placeholder="(929) 000-0000"
                       className={inputClasses}
                     />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor={`owner${ownerNum}CellPhone`}
+                      className="block text-sm font-medium text-[var(--text)] mb-1"
+                    >
+                      Cell Phone
+                    </label>
+                    <input
+                      type="tel"
+                      id={`owner${ownerNum}CellPhone`}
+                      value={additionalOwners[i].cellPhone ?? ""}
+                      onChange={updateOwner(i, "cellPhone")}
+                      placeholder="If different from main phone"
+                      className={inputClasses}
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor={`owner${ownerNum}Address`}
+                      className="block text-sm font-medium text-[var(--text)] mb-1"
+                    >
+                      Address
+                    </label>
+                    <input
+                      type="text"
+                      id={`owner${ownerNum}Address`}
+                      value={additionalOwners[i].address ?? ""}
+                      onChange={updateOwner(i, "address")}
+                      placeholder={`Owner ${ownerNum} address`}
+                      className={inputClasses}
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <label
+                        htmlFor={`owner${ownerNum}City`}
+                        className="block text-sm font-medium text-[var(--text)] mb-1"
+                      >
+                        City
+                      </label>
+                      <input
+                        type="text"
+                        id={`owner${ownerNum}City`}
+                        value={additionalOwners[i].city ?? ""}
+                        onChange={updateOwner(i, "city")}
+                        className={inputClasses}
+                      />
+                    </div>
+                    <div>
+                      <label
+                        htmlFor={`owner${ownerNum}State`}
+                        className="block text-sm font-medium text-[var(--text)] mb-1"
+                      >
+                        State
+                      </label>
+                      <input
+                        type="text"
+                        id={`owner${ownerNum}State`}
+                        value={additionalOwners[i].state ?? ""}
+                        onChange={updateOwner(i, "state")}
+                        className={inputClasses}
+                      />
+                    </div>
+                    <div>
+                      <label
+                        htmlFor={`owner${ownerNum}ZipCode`}
+                        className="block text-sm font-medium text-[var(--text)] mb-1"
+                      >
+                        ZIP Code
+                      </label>
+                      <input
+                        type="text"
+                        id={`owner${ownerNum}ZipCode`}
+                        value={additionalOwners[i].zipCode ?? ""}
+                        onChange={updateOwner(i, "zipCode")}
+                        className={inputClasses}
+                      />
+                    </div>
                   </div>
                 </div>
               </motion.div>
@@ -457,6 +652,25 @@ export function CorporateRegistrationForm() {
           />
         </div>
 
+        <div>
+          <label htmlFor="preferredStaff" className="block text-sm font-medium text-[var(--text)] mb-1">
+            Who do you want to meet?
+          </label>
+          <select
+            id="preferredStaff"
+            value={formData.preferredStaff}
+            onChange={update("preferredStaff")}
+            className={inputClasses}
+          >
+            <option value="">No preference</option>
+            {staffRoutingOptions.map((person) => (
+              <option key={person} value={person}>
+                {person}
+              </option>
+            ))}
+          </select>
+        </div>
+
         {/* EIN */}
         <div>
           <p className="block text-sm font-medium text-[var(--text)] mb-2">
@@ -521,6 +735,54 @@ export function CorporateRegistrationForm() {
               </label>
             ))}
           </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="website" className="block text-sm font-medium text-[var(--text)] mb-1">
+              Website or Google profile
+            </label>
+            <input
+              type="text"
+              id="website"
+              value={formData.website}
+              onChange={update("website")}
+              placeholder="https://..."
+              className={inputClasses}
+            />
+          </div>
+          <div>
+            <label htmlFor="seoInterest" className="block text-sm font-medium text-[var(--text)] mb-1">
+              Website / SEO help
+            </label>
+            <select
+              id="seoInterest"
+              value={formData.seoInterest}
+              onChange={update("seoInterest")}
+              className={inputClasses}
+            >
+              <option value="">Select one</option>
+              {yesNoOptions.map((option) => (
+                <option key={`seo-${option}`} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label htmlFor="documentUrls" className="block text-sm font-medium text-[var(--text)] mb-1">
+            Supporting document links <span className="text-[var(--text-muted)]">(optional)</span>
+          </label>
+          <textarea
+            id="documentUrls"
+            rows={3}
+            value={formData.documentUrls}
+            onChange={update("documentUrls")}
+            placeholder="Paste Google Drive, Dropbox, or other document links. One per line."
+            className={inputClasses}
+          />
         </div>
 
         {/* Additional Notes */}

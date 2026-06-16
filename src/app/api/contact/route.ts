@@ -214,11 +214,39 @@ function validatePayload(body: unknown): ValidationResult {
       };
     }
     case "corporate-registration": {
+      const rawAdditionalOwners = Array.isArray(obj.additionalOwners)
+        ? obj.additionalOwners
+            .filter((owner): owner is Record<string, unknown> => !!owner && typeof owner === "object" && !Array.isArray(owner))
+            .map((owner) => ({
+              name: strOrEmpty(owner.name) ?? "",
+              phone: strOrEmpty(owner.phone) ?? "",
+              cellPhone: strOrEmpty(owner.cellPhone),
+              address: strOrEmpty(owner.address),
+              city: strOrEmpty(owner.city),
+              state: strOrEmpty(owner.state),
+              zipCode: strOrEmpty(owner.zipCode),
+            }))
+            .filter((owner) =>
+              Object.values(owner).some((value) => typeof value === "string" && value.trim()),
+            )
+        : undefined;
+      const numberOfOwners =
+        typeof obj.numberOfOwners === "number"
+          ? obj.numberOfOwners
+          : typeof obj.numberOfOwners === "string" && obj.numberOfOwners.trim()
+            ? Number.parseInt(obj.numberOfOwners, 10)
+            : undefined;
+
       return {
         valid: true,
         data: {
           ...base,
           type: "corporate-registration",
+          cellPhone: strOrEmpty(obj.cellPhone),
+          ownerAddress: strOrEmpty(obj.ownerAddress),
+          ownerCity: strOrEmpty(obj.ownerCity),
+          ownerState: strOrEmpty(obj.ownerState),
+          ownerZipCode: strOrEmpty(obj.ownerZipCode),
           desiredBusinessName: strOrEmpty(obj.desiredBusinessName),
           businessType: strOrEmpty(obj.businessType),
           businessAddress: strOrEmpty(obj.businessAddress),
@@ -227,9 +255,15 @@ function validatePayload(body: unknown): ValidationResult {
           zipCode: strOrEmpty(obj.zipCode),
           natureOfBusiness: strOrEmpty(obj.natureOfBusiness),
           numberOfMembers: strOrEmpty(obj.numberOfMembers),
+          numberOfOwners: Number.isFinite(numberOfOwners) ? numberOfOwners : undefined,
+          additionalOwners: rawAdditionalOwners && rawAdditionalOwners.length > 0 ? rawAdditionalOwners : undefined,
           needEIN: strOrEmpty(obj.needEIN),
           needSalesTax: strOrEmpty(obj.needSalesTax),
           needPayroll: strOrEmpty(obj.needPayroll),
+          preferredStaff: strOrEmpty(obj.preferredStaff),
+          website: strOrEmpty(obj.website),
+          seoInterest: strOrEmpty(obj.seoInterest),
+          documentUrls: strArray(obj.documentUrls),
           additionalNotes: strOrEmpty(obj.additionalNotes),
         },
       };

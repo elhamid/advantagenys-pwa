@@ -50,17 +50,23 @@ describe("CorporateRegistrationForm", () => {
   it("submits the registration payload and shows the success state", async () => {
     const fetchSpy = mockFetchResponse(true, { success: true });
     vi.stubGlobal("fetch", fetchSpy);
-    window.history.replaceState({}, "", "/resources/forms/corporation-services?shared_by=user-hamid");
+    window.history.replaceState({}, "", "/resources/forms/corporation-services?shared_by=user-hamid&send_id=share-123");
 
     const user = userEvent.setup();
     render(<CorporateRegistrationForm />);
 
     await user.type(screen.getByLabelText(/business owner full name/i), "Alex Owner");
     await user.type(screen.getByLabelText(/phone number/i), "9295550102");
+    await user.type(screen.getByLabelText(/cell phone/i), "9295550103");
     await user.type(screen.getByLabelText(/^email/i), "alex@example.com");
+    await user.type(screen.getByLabelText(/owner street address/i), "10 Owner St");
     await user.type(screen.getByLabelText(/desired business name/i), "Alex LLC");
     await user.selectOptions(screen.getByLabelText(/business type/i), "LLC");
+    await user.selectOptions(screen.getByLabelText(/who do you want to meet/i), "Kedar");
     await user.click(screen.getAllByLabelText(/^yes$/i)[0]);
+    await user.selectOptions(screen.getByLabelText(/website \/ seo help/i), "Yes");
+    await user.type(screen.getByLabelText(/website or google profile/i), "https://alex.example.com");
+    await user.type(screen.getByLabelText(/supporting document links/i), "https://drive.example.com/doc-1");
     await user.click(screen.getByRole("button", { name: /submit registration/i }));
 
     await waitFor(() => expect(fetchSpy).toHaveBeenCalledOnce());
@@ -77,6 +83,13 @@ describe("CorporateRegistrationForm", () => {
       type: "corporate-registration",
       source: "website-corporate-registration",
       sharedBy: "user-hamid",
+      send_id: "share-123",
+      cellPhone: "9295550103",
+      ownerAddress: "10 Owner St",
+      preferredStaff: "Kedar",
+      website: "https://alex.example.com",
+      seoInterest: "Yes",
+      documentUrls: ["https://drive.example.com/doc-1"],
     });
 
     expect(await screen.findByText(/thank you, alex owner/i)).toBeInTheDocument();

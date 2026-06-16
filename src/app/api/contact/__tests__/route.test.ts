@@ -507,6 +507,66 @@ describe('POST /api/contact', () => {
     expect(sentBody.source).toBe('website-client-info')
   })
 
+  it('accepts a corporate-registration submission and forwards owner/completeness fields', async () => {
+    const fetchSpy = makeFetchMock()
+    global.fetch = fetchSpy
+
+    const res = await POST(
+      makeRequest({
+        fullName: 'Jane Owner',
+        phone: '9295551212',
+        cellPhone: '9295551213',
+        email: 'jane@example.com',
+        type: 'corporate-registration',
+        desiredBusinessName: 'Jane Services LLC',
+        numberOfOwners: 2,
+        additionalOwners: [
+          {
+            name: 'Second Owner',
+            phone: '9295551214',
+            cellPhone: '9295551215',
+            address: '20 Second St',
+            city: 'Queens',
+            state: 'NY',
+            zipCode: '11101',
+          },
+        ],
+        ownerAddress: '10 Owner St',
+        ownerCity: 'New York',
+        ownerState: 'NY',
+        ownerZipCode: '10001',
+        preferredStaff: 'Kedar',
+        website: 'https://jane.example.com',
+        seoInterest: 'Yes',
+        documentUrls: ['https://drive.example.com/corp-doc'],
+        turnstileToken: 'valid-token',
+      }),
+    )
+    expect(res.status).toBe(200)
+
+    const webhookCall = (fetchSpy.mock.calls as unknown as [string, RequestInit][]).find(
+      ([url]) => !String(url).includes('cloudflare.com'),
+    )
+    const sentBody = JSON.parse(webhookCall![1].body as string)
+    expect(sentBody.type).toBe('corporate-registration')
+    expect(sentBody.source).toBe('website-corporate-registration')
+    expect(sentBody.numberOfOwners).toBe(2)
+    expect(sentBody.additionalOwners).toEqual([
+      expect.objectContaining({
+        name: 'Second Owner',
+        phone: '9295551214',
+        cellPhone: '9295551215',
+        address: '20 Second St',
+      }),
+    ])
+    expect(sentBody.ownerAddress).toBe('10 Owner St')
+    expect(sentBody.preferredStaff).toBe('Kedar')
+    expect(sentBody.website).toBe('https://jane.example.com')
+    expect(sentBody.seoInterest).toBe('Yes')
+    expect(sentBody.documentUrls).toEqual(['https://drive.example.com/corp-doc'])
+    expect(sentBody.metadata.raw.documentUrls).toEqual(['https://drive.example.com/corp-doc'])
+  })
+
   // -----------------------------------------------------------------------
   // Edge: non-JSON body → 400
   // -----------------------------------------------------------------------

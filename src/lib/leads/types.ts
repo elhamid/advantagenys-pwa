@@ -110,10 +110,20 @@ export interface ClientInfoLead extends LeadSubmissionBase {
 export interface AdditionalOwner {
   name: string;
   phone: string;
+  cellPhone?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
 }
 
 export interface CorporateRegistrationLead extends LeadSubmissionBase {
   type: "corporate-registration";
+  cellPhone?: string;
+  ownerAddress?: string;
+  ownerCity?: string;
+  ownerState?: string;
+  ownerZipCode?: string;
   desiredBusinessName?: string;
   businessType?: string;
   businessAddress?: string;
@@ -127,6 +137,10 @@ export interface CorporateRegistrationLead extends LeadSubmissionBase {
   needEIN?: string;
   needSalesTax?: string;
   needPayroll?: string;
+  preferredStaff?: string;
+  website?: string;
+  seoInterest?: string;
+  documentUrls?: string[];
   additionalNotes?: string;
 }
 
