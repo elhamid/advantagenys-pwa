@@ -71,7 +71,7 @@ export default async function FormPage({ params }: PageProps) {
       <section className="pb-24">
         <Container>
           {form.platform === "native" && form.nativeComponent ? (
-            <NativeForm componentName={form.nativeComponent} />
+            <NativeForm form={form} />
           ) : (
             <FormEmbed form={form} />
           )}
