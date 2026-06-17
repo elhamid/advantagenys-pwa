@@ -2,7 +2,6 @@ import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import FormPage, { generateMetadata, generateStaticParams } from "../page";
-import { FormEmbed } from "../FormEmbed";
 import { FormPageShareBar } from "../FormPageShareBar";
 import { NativeForm } from "../NativeForm";
 
@@ -69,15 +68,36 @@ vi.mock("next/dynamic", () => ({
   default: () => () => <div data-testid="native-form-component">Native form</div>,
 }));
 
+vi.mock("@/components/forms/GeneratedNativeForm", () => ({
+  GeneratedNativeForm: () => <div data-testid="generated-native-form">Generated native form</div>,
+}));
+
+vi.mock("@/lib/native-form-schemas/generated", () => ({
+  getNativeFormSchema: vi.fn((slug: string) => (
+    slug === "generated-native"
+      ? { slug, title: "Generated Native", description: "", jotformId: "123", taskboardType: "generated", serviceType: "Tax Services", fields: [], attributionFields: {} }
+      : undefined
+  )),
+}));
+
 vi.mock("@/lib/forms", () => ({
   forms: [
     { slug: "native-intake", active: true, type: "form" },
+    { slug: "generated-native", active: true, type: "form" },
     { slug: "jotform-intake", active: true, type: "form" },
     { slug: "link-only", active: true, type: "link" },
     { slug: "inactive", active: false, type: "form" },
   ],
   getFormBySlug: vi.fn((slug: string) => {
     if (slug === "native-intake") return nativeForm;
+    if (slug === "generated-native") {
+      return {
+        ...nativeForm,
+        slug: "generated-native",
+        title: "Generated Native",
+        nativeComponent: "GeneratedNativeForm",
+      };
+    }
     if (slug === "jotform-intake") return jotform;
     return null;
   }),
@@ -94,7 +114,7 @@ afterEach(() => {
 
 describe("Resource form route", () => {
   it("generates static params for active non-link forms", async () => {
-    expect(await generateStaticParams()).toEqual([{ slug: "native-intake" }, { slug: "jotform-intake" }]);
+    expect(await generateStaticParams()).toEqual([{ slug: "native-intake" }, { slug: "generated-native" }, { slug: "jotform-intake" }]);
   });
 
   it("generates metadata for a known form slug", async () => {
@@ -157,11 +177,14 @@ describe("Resource form route", () => {
   });
 
   it("renders the NativeForm fallback and selected component", () => {
-    const { rerender } = render(<NativeForm componentName="ClientInfoForm" />);
+    const { rerender } = render(<NativeForm form={nativeForm as never} />);
 
     expect(screen.getByTestId("native-form-component")).toBeInTheDocument();
 
-    rerender(<NativeForm componentName="UnknownComponent" />);
+    rerender(<NativeForm form={{ ...nativeForm, nativeComponent: "GeneratedNativeForm", slug: "generated-native" } as never} />);
+    expect(screen.getByTestId("generated-native-form")).toBeInTheDocument();
+
+    rerender(<NativeForm form={{ ...nativeForm, nativeComponent: "UnknownComponent" } as never} />);
     expect(screen.getByText(/form not available/i)).toBeInTheDocument();
   });
 });

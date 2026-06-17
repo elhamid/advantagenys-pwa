@@ -12,6 +12,12 @@ export interface FormConfig {
   priority: number;
   encrypted?: boolean;
   slug: string;
+  // Taskboard/CRM outreach templates — optional, populated for top revenue forms.
+  shortLinkSlug?: string;
+  whatsappText?: string;
+  emailSubject?: string;
+  emailBody?: string;
+  ogImage?: string;
 }
 
 function toSlug(title: string): string {
@@ -29,75 +35,93 @@ export const forms: FormConfig[] = [
     title: "ITIN Registration Form",
     description: "Apply for your Individual Tax ID Number (W-7)",
     category: "tax",
-    platform: "jotform",
-    embedUrl: "https://form.jotform.com/210224697492156",
+    platform: "native",
+    nativeComponent: "GeneratedNativeForm",
     active: true,
     priority: 1,
     slug: toSlug("ITIN Registration Form"),
+    shortLinkSlug: "itin",
+    whatsappText:
+      "Hi {firstName}, here is the secure link to apply for your ITIN with us — we are an IRS Certified Acceptance Agent so you won't need to mail your passport. https://advantagenys.com/r/itin",
+    emailSubject: "Your ITIN application — next step",
+    emailBody:
+      "Hi {firstName},\n\nThanks for reaching out about your ITIN. Because we are an IRS Certified Acceptance Agent, we can certify your documents on-site — no need to mail your passport to the IRS.\n\nPlease complete the short intake form here:\nhttps://advantagenys.com/r/itin\n\nOnce we receive it, our team will schedule your certification appointment.\n\nAdvantage Business Consulting\n(929) 933-1396",
   },
   {
     id: "220756155957061",
     title: "Profit & Loss Form",
     description: "Submit your business P&L information",
     category: "financial",
-    platform: "jotform",
-    embedUrl: "https://form.jotform.com/220756155957061",
+    platform: "native",
+    nativeComponent: "GeneratedNativeForm",
     active: true,
-    priority: 2,
+    priority: 3,
     slug: toSlug("Profit & Loss Form"),
   },
   {
-    id: "native-tax-return",
+    id: "230235945738159",
     title: "Tax Return Questionnaire",
     description: "Complete your annual tax return intake",
     category: "tax",
     platform: "native",
-    nativeComponent: "TaxReturnForm",
+    nativeComponent: "GeneratedNativeForm",
     active: true,
-    priority: 3,
+    priority: 4,
     encrypted: true,
     slug: toSlug("Tax Return Questionnaire"),
+    shortLinkSlug: "tax",
+    whatsappText:
+      "Hi {firstName}, please complete your annual tax return intake here: https://advantagenys.com/r/tax — it is encrypted end-to-end.",
+    emailSubject: "Annual tax return — intake form",
+    emailBody:
+      "Hi {firstName},\n\nPlease complete your annual tax return questionnaire at the link below. It is end-to-end encrypted.\n\nhttps://advantagenys.com/r/tax\n\nOur team will review and reach out with anything missing.\n\nAdvantage Business Consulting\n(929) 933-1396",
   },
   {
-    id: "native-immigration-petitioner",
+    id: "220887424251052",
     title: "Immigration Form for Petitioner",
     description: "I-130/I-864 petition filing",
     category: "immigration",
     platform: "native",
-    nativeComponent: "ImmigrationPetitionerForm",
+    nativeComponent: "GeneratedNativeForm",
     active: true,
-    priority: 4,
+    priority: 5,
     slug: toSlug("Immigration Form for Petitioner"),
   },
   {
-    id: "native-immigration-beneficiary",
+    id: "220896671023154",
     title: "Immigration Form for Beneficiary",
     description: "Beneficiary information for green card",
     category: "immigration",
     platform: "native",
-    nativeComponent: "ImmigrationBeneficiaryForm",
+    nativeComponent: "GeneratedNativeForm",
     active: true,
-    priority: 5,
+    priority: 6,
     slug: toSlug("Immigration Form for Beneficiary"),
   },
   {
     id: "253426701953054",
-    title: "L2-V3-HIL-NYC Qualification Check",
-    description: "Check your HIC license eligibility",
+    title: "Contractor License Qualifier",
+    description: "Check your eligibility for a New York contractor license",
     category: "licensing",
-    platform: "jotform",
-    embedUrl: "https://form.jotform.com/253426701953054",
+    platform: "native",
+    nativeComponent: "GeneratedNativeForm",
     active: true,
-    priority: 6,
-    slug: toSlug("L2-V3-HIL-NYC Qualification Check"),
+    priority: 2,
+    slug: toSlug("Contractor License Qualifier"),
+    shortLinkSlug: "contractor",
+    whatsappText:
+      "Hi {firstName}, take this 2-minute qualifier to see if you are ready for a NYC Home Improvement Contractor license: https://advantagenys.com/r/contractor",
+    emailSubject: "NYC Contractor License — quick qualifier",
+    emailBody:
+      "Hi {firstName},\n\nHere is the 2-minute qualifier to check your eligibility for a NYC Home Improvement Contractor (HIC) license:\n\nhttps://advantagenys.com/r/contractor\n\nWe will follow up with a custom plan once you finish.\n\nAdvantage Business Consulting\n(929) 933-1396",
   },
   {
     id: "241705190161044",
     title: "BOIR Form",
     description: "Beneficial Ownership Information Report",
     category: "business",
-    platform: "jotform",
-    embedUrl: "https://form.jotform.com/241705190161044",
+    platform: "native",
+    nativeComponent: "GeneratedNativeForm",
     active: true,
     priority: 7,
     slug: toSlug("BOIR Form"),
@@ -107,13 +131,14 @@ export const forms: FormConfig[] = [
     title: "Citizenship Info Form",
     description: "N-400 naturalization application",
     category: "immigration",
-    platform: "jotform",
-    embedUrl: "https://form.jotform.com/241966156522056",
+    platform: "native",
+    nativeComponent: "GeneratedNativeForm",
     active: true,
     priority: 8,
     slug: toSlug("Citizenship Info Form"),
   },
   {
+    // Retired 2026-04-24 — 21mo cold on JotForm, low-intent. Keep entry for slug history.
     id: "221784773077062",
     title: "Divorce Application",
     description: "Uncontested divorce filing",
@@ -125,6 +150,8 @@ export const forms: FormConfig[] = [
     slug: toSlug("Divorce Application"),
   },
   {
+    // Retired 2026-04-22 — launch-readiness gate. Keep entry for slug history;
+    // marked inactive so it never appears in the resources grid.
     id: "222615377389062",
     title: "Sales Tax Return Form",
     description: "Quarterly/annual NYS sales tax filing",
@@ -136,6 +163,7 @@ export const forms: FormConfig[] = [
     slug: toSlug("Sales Tax Return Form"),
   },
   {
+    // Retired 2026-04-22 — launch-readiness gate.
     id: "260414184804049",
     title: "Bookkeeping Form",
     description: "Upload bank statements and financial documents",
@@ -147,6 +175,8 @@ export const forms: FormConfig[] = [
     slug: toSlug("Bookkeeping Form"),
   },
   {
+    // Retired 2026-04-22 — launch-readiness gate. Superseded by I-130
+    // Petitioner (220887424251052).
     id: "243156342192150",
     title: "New I-130 Petitioner",
     description: "Updated immigration petition form",
@@ -158,6 +188,8 @@ export const forms: FormConfig[] = [
     slug: toSlug("New I-130 Petitioner"),
   },
   {
+    // Retired 2026-04-22 — launch-readiness gate. Superseded by I-130
+    // Beneficiary (220896671023154).
     id: "243156183104146",
     title: "New I-130 Beneficiary",
     description: "Updated beneficiary information form",
@@ -173,8 +205,8 @@ export const forms: FormConfig[] = [
     title: "L1-HIL Auto 02",
     description: "Automated HIC license processing",
     category: "licensing",
-    platform: "jotform",
-    embedUrl: "https://form.jotform.com/253344597070157",
+    platform: "native",
+    nativeComponent: "GeneratedNativeForm",
     active: true,
     priority: 14,
     slug: toSlug("L1-HIL Auto 02"),
@@ -184,8 +216,8 @@ export const forms: FormConfig[] = [
     title: "HIC Auto Processing",
     description: "HIC license auto-qualification",
     category: "licensing",
-    platform: "jotform",
-    embedUrl: "https://form.jotform.com/253484272415054",
+    platform: "native",
+    nativeComponent: "GeneratedNativeForm",
     active: true,
     priority: 15,
     slug: toSlug("HIC Auto Processing"),
@@ -199,7 +231,9 @@ export const forms: FormConfig[] = [
     nativeComponent: "ClientInfoForm",
     active: true,
     priority: 16,
+    encrypted: true,
     slug: toSlug("Basic Info Client Intake"),
+    shortLinkSlug: "client-info",
   },
   {
     id: "native-corp",
@@ -211,6 +245,12 @@ export const forms: FormConfig[] = [
     active: true,
     priority: 17,
     slug: toSlug("Corporation Services"),
+    shortLinkSlug: "corp",
+    whatsappText:
+      "Hi {firstName}, here is the LLC/Corporation registration form so we can get your entity filed: https://advantagenys.com/r/corp",
+    emailSubject: "LLC/Corporation registration — intake form",
+    emailBody:
+      "Hi {firstName},\n\nTo start your entity formation, please fill out the short registration form at:\n\nhttps://advantagenys.com/r/corp\n\nWe will review, file with NY DOS, and get your EIN set up.\n\nAdvantage Business Consulting\n(929) 933-1396",
   },
   {
     id: "native-insurance",
@@ -222,6 +262,12 @@ export const forms: FormConfig[] = [
     active: true,
     priority: 18,
     slug: toSlug("Client Form for Insurance"),
+    shortLinkSlug: "insurance",
+    whatsappText:
+      "Hi {firstName}, please share your business details so we can quote coverage (GL, workers comp, disability): https://advantagenys.com/r/insurance",
+    emailSubject: "Business insurance — quote intake",
+    emailBody:
+      "Hi {firstName},\n\nTo quote your business insurance (general liability, workers compensation, disability), please fill out our short intake at:\n\nhttps://advantagenys.com/r/insurance\n\nAs a licensed broker we compare multiple carriers to find the best rate for your situation.\n\nAdvantage Business Consulting\n(929) 933-1396",
   },
   {
     id: "link-office-address",
@@ -262,7 +308,7 @@ export const forms: FormConfig[] = [
   {
     id: "link-zelle-info",
     title: "Zelle Payment Info",
-    description: "Payment via Zelle to 229advantage@gmail.com or 929-933-1396",
+    description: "Payment via Zelle to 229advantage@gmail.com (Advantage Business Consulting LLC)",
     category: "other",
     platform: "native",
     type: "link",
@@ -281,6 +327,12 @@ export const forms: FormConfig[] = [
     active: true,
     priority: 23,
     slug: toSlug("Home Improvement Licensing"),
+    shortLinkSlug: "hic",
+    whatsappText:
+      "Hi {firstName}, here is the HIC license application form — we will handle filing and the insurance requirements: https://advantagenys.com/r/hic",
+    emailSubject: "Home Improvement Contractor license — application",
+    emailBody:
+      "Hi {firstName},\n\nTo start your NYC Home Improvement Contractor (HIC) license application, please fill out:\n\nhttps://advantagenys.com/r/hic\n\nWe will review your answers and handle filing with NYC Consumer Affairs plus the insurance requirements.\n\nAdvantage Business Consulting\n(929) 933-1396",
   },
 ];
 
@@ -309,6 +361,10 @@ export const categoryColors: Record<FormConfig["category"], string> = {
 
 export function getFormBySlug(slug: string): FormConfig | undefined {
   return forms.find((f) => f.slug === slug);
+}
+
+export function getFormByShortLinkSlug(shortLinkSlug: string): FormConfig | undefined {
+  return forms.find((f) => f.shortLinkSlug === shortLinkSlug && f.active);
 }
 
 export function getFormsByCategory(category: CategoryKey): FormConfig[] {

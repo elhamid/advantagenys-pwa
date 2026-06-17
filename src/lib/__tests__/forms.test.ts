@@ -6,7 +6,6 @@ import {
   getFormsByCategory,
   categoryColors,
   type FormConfig,
-  type CategoryKey,
 } from "../forms";
 
 describe("forms data integrity", () => {
@@ -38,23 +37,23 @@ describe("forms data integrity", () => {
     });
   });
 
-  it("all JotForm IDs are numeric strings (15–18 digits)", () => {
-    const jotformEntries = forms.filter((f) => f.platform === "jotform");
-    jotformEntries.forEach((f) => {
+  it("all retired JotForm IDs are numeric strings (15–18 digits)", () => {
+    const retiredJotformEntries = forms.filter((f) => f.platform === "jotform");
+    retiredJotformEntries.forEach((f) => {
       expect(f.id).toMatch(/^\d{12,18}$/);
     });
   });
 
-  it("all JotForm entries have a valid embedUrl", () => {
-    const jotformEntries = forms.filter((f) => f.platform === "jotform");
-    jotformEntries.forEach((f) => {
+  it("all retired JotForm entries have a valid embedUrl", () => {
+    const retiredJotformEntries = forms.filter((f) => f.platform === "jotform");
+    retiredJotformEntries.forEach((f) => {
       expect(f.embedUrl).toMatch(/^https:\/\/form\.jotform\.com\/\d+$/);
     });
   });
 
-  it("JotForm embedUrl IDs match the form id field", () => {
-    const jotformEntries = forms.filter((f) => f.platform === "jotform");
-    jotformEntries.forEach((f) => {
+  it("retired JotForm embedUrl IDs match the form id field", () => {
+    const retiredJotformEntries = forms.filter((f) => f.platform === "jotform");
+    retiredJotformEntries.forEach((f) => {
       expect(f.embedUrl).toContain(f.id);
     });
   });
@@ -65,6 +64,29 @@ describe("forms data integrity", () => {
     );
     nativeWithComponent.forEach((f) => {
       expect(f.embedUrl).toBeUndefined();
+    });
+  });
+
+  it("all active legacy JotForm-backed forms now use the generated native component", () => {
+    const generatedSlugs = [
+      "itin-registration-form",
+      "profit-loss-form",
+      "tax-return-questionnaire",
+      "immigration-form-for-petitioner",
+      "immigration-form-for-beneficiary",
+      "contractor-license-qualifier",
+      "boir-form",
+      "citizenship-info-form",
+      "l1-hil-auto-02",
+      "hic-auto-processing",
+    ];
+
+    generatedSlugs.forEach((slug) => {
+      const form = getFormBySlug(slug);
+      expect(form?.active).toBe(true);
+      expect(form?.platform).toBe("native");
+      expect(form?.nativeComponent).toBe("GeneratedNativeForm");
+      expect(form?.embedUrl).toBeUndefined();
     });
   });
 
