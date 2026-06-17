@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sendContactEmail } from "@/lib/email";
-import { encryptField } from "@/lib/crypto";
 import {
   LEAD_SOURCES,
   type LeadSource,
@@ -57,6 +56,12 @@ function strArray(v: unknown): string[] | undefined {
   if (!Array.isArray(v)) return undefined;
   const arr = v.filter((x): x is string => typeof x === "string" && x.trim().length > 0);
   return arr.length > 0 ? arr : undefined;
+}
+
+function maskSensitiveIdentifier(value: string): string {
+  const compact = value.replace(/\D/g, "");
+  const last4 = compact.slice(-4);
+  return last4 ? `[sensitive ending ${last4}]` : "[sensitive provided]";
 }
 
 function validateUtm(v: unknown): UtmParams | undefined {
@@ -516,9 +521,9 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // --- Encrypt sensitive fields before storage/forwarding ----------------
+    // --- Mask sensitive fields before storage/forwarding -------------------
     if (data.type === "client-info" && data.ssnOrItin) {
-      data.ssnOrItin = encryptField(data.ssnOrItin);
+      data.ssnOrItin = maskSensitiveIdentifier(data.ssnOrItin);
     }
 
     const logLabel =

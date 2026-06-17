@@ -494,6 +494,7 @@ describe('POST /api/contact', () => {
         type: 'client-info',
         serviceInterested: 'Tax Services',
         referralSource: 'Google',
+        ssnOrItin: '123-45-6789',
         turnstileToken: 'valid-token',
       }),
     )
@@ -505,6 +506,7 @@ describe('POST /api/contact', () => {
     const sentBody = JSON.parse(webhookCall![1].body as string)
     expect(sentBody.type).toBe('client-info')
     expect(sentBody.serviceInterested).toBe('Tax Services')
+    expect(sentBody.ssnOrItin).toBe('[sensitive ending 6789]')
     expect(sentBody.source).toBe('website-client-info')
   })
 
