@@ -181,11 +181,17 @@ async function forwardToTaskboard(payload: Record<string, unknown>): Promise<{ o
   return { ok: res.ok, status: res.status, text };
 }
 
-async function mirrorToJotForm(schema: NativeFormSchema, params: URLSearchParams): Promise<void> {
+interface JotFormMirrorResult {
+  attempted: boolean;
+  ok: boolean;
+  status: number | null;
+}
+
+async function mirrorToJotForm(schema: NativeFormSchema, params: URLSearchParams): Promise<JotFormMirrorResult> {
   const apiKey = process.env.JOTFORM_API_KEY;
   if (!apiKey) {
     console.warn("[native-form-submit] JOTFORM_API_KEY missing; mirror skipped");
-    return;
+    return { attempted: false, ok: false, status: null };
   }
 
   const res = await fetch(`https://api.jotform.com/form/${schema.jotformId}/submissions`, {
@@ -204,7 +210,14 @@ async function mirrorToJotForm(schema: NativeFormSchema, params: URLSearchParams
       status: res.status,
       text: text.slice(0, 500),
     });
+    return { attempted: true, ok: false, status: res.status };
   }
+
+  console.info("[native-form-submit] JotForm mirror completed", {
+    form: schema.slug,
+    status: res.status,
+  });
+  return { attempted: true, ok: true, status: res.status };
 }
 
 export async function POST(request: NextRequest) {
@@ -330,9 +343,11 @@ export async function POST(request: NextRequest) {
     formSendId,
     utm,
   });
-  mirrorToJotForm(schema, mirrorParams).catch((err) => {
+  try {
+    await mirrorToJotForm(schema, mirrorParams);
+  } catch (err) {
     console.error("[native-form-submit] JotForm mirror exception", err);
-  });
+  }
 
   return NextResponse.json({ success: true }, { status: 201 });
 }
