@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { useReducedMotion, useScroll, useTransform } from "framer-motion";
 import Image from "next/image";
+import Link from "next/link";
 import { PHONE } from "@/lib/constants";
 import { phoneClick, whatsappClick } from "@/lib/analytics/events";
 import { useInAppBrowser, safeBlankTarget } from "@/hooks/useInAppBrowser";
@@ -174,8 +175,8 @@ export function HeroSection() {
               Call
             </a>
             {/* ITIN application badge */}
-            <a
-              href="/itin"
+            <Link
+              href="/resources/forms/itin-registration-form"
               className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold text-white transition-all duration-200 active:scale-[0.97] min-h-[44px]"
               style={{
                 background: "linear-gradient(135deg, rgba(5,150,105,0.75) 0%, rgba(13,148,136,0.75) 100%)",
@@ -188,7 +189,7 @@ export function HeroSection() {
                 <path d="M9 12l2 2 4-4" />
               </svg>
               ITIN Apply
-            </a>
+            </Link>
           </div>
         </motion.div>
       </div>

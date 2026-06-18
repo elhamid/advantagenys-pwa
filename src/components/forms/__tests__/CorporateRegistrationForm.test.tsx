@@ -44,6 +44,11 @@ describe("CorporateRegistrationForm", () => {
     expect(screen.getByLabelText(/phone number/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/^email/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/desired business name/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^owner address/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/owner ssn/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/filing receipt date/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/corporation address/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/business website/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /submit registration/i })).toBeInTheDocument();
   });
 
@@ -58,8 +63,19 @@ describe("CorporateRegistrationForm", () => {
     await user.type(screen.getByLabelText(/business owner full name/i), "Alex Owner");
     await user.type(screen.getByLabelText(/phone number/i), "9295550102");
     await user.type(screen.getByLabelText(/^email/i), "alex@example.com");
+    await user.type(screen.getByLabelText(/^owner address/i), "12 Owner Street");
+    await user.type(screen.getByLabelText(/owner city/i), "Queens");
+    await user.type(screen.getByLabelText(/owner zip code/i), "11377");
+    await user.type(screen.getByLabelText(/owner ssn/i), "123-45-6789");
+    await user.type(screen.getByLabelText(/owner date of birth/i), "1990-01-15");
     await user.type(screen.getByLabelText(/desired business name/i), "Alex LLC");
     await user.selectOptions(screen.getByLabelText(/business type/i), "LLC");
+    await user.type(screen.getByLabelText(/filing receipt date/i), "2026-06-17");
+    await user.type(screen.getByLabelText(/corporation address/i), "41 Corp Avenue");
+    await user.type(screen.getByLabelText(/corporation city/i), "Brooklyn");
+    await user.type(screen.getByLabelText(/corporation zip code/i), "11211");
+    await user.selectOptions(screen.getByLabelText(/who do you want to meet/i), "Jay");
+    await user.selectOptions(screen.getByLabelText(/business website/i), "Need SEO / Google presence");
     await user.click(screen.getAllByLabelText(/^yes$/i)[0]);
     await user.click(screen.getByRole("button", { name: /submit registration/i }));
 
@@ -73,6 +89,17 @@ describe("CorporateRegistrationForm", () => {
       email: "alex@example.com",
       desiredBusinessName: "Alex LLC",
       businessType: "LLC",
+      ownerAddress: "12 Owner Street",
+      ownerCity: "Queens",
+      ownerZipCode: "11377",
+      ownerSsnOrItin: "123-45-6789",
+      ownerDateOfBirth: "1990-01-15",
+      filingReceiptDate: "2026-06-17",
+      corporationAddress: "41 Corp Avenue",
+      corporationCity: "Brooklyn",
+      corporationZipCode: "11211",
+      meetingPreference: "Jay",
+      websiteSeoOptions: "Need SEO / Google presence",
       needEIN: "Yes",
       type: "corporate-registration",
       source: "website-corporate-registration",

@@ -45,6 +45,9 @@ describe("ClientInfoForm", () => {
     expect(screen.getByLabelText(/phone number/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/^email/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/service interested in/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/who do you want to meet/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/referred by/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/purpose/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /submit information/i })).toBeInTheDocument();
   });
 
@@ -59,6 +62,9 @@ describe("ClientInfoForm", () => {
     await user.type(screen.getByLabelText(/phone number/i), "9295550101");
     await user.type(screen.getByLabelText(/^email/i), "jane@example.com");
     await user.selectOptions(screen.getByLabelText(/service interested in/i), "Tax Services");
+    await user.selectOptions(screen.getByLabelText(/who do you want to meet/i), "Jay");
+    await user.type(screen.getByLabelText(/referred by/i), "Maria Referral");
+    await user.type(screen.getByLabelText(/purpose/i), "Open a complete client profile and prepare tax service intake.");
     await user.selectOptions(screen.getByLabelText(/how did you hear about us/i), "Google");
     await user.click(screen.getByRole("button", { name: /submit information/i }));
 
@@ -71,6 +77,9 @@ describe("ClientInfoForm", () => {
       phone: "9295550101",
       email: "jane@example.com",
       serviceInterested: "Tax Services",
+      meetingPreference: "Jay",
+      referredBy: "Maria Referral",
+      purpose: "Open a complete client profile and prepare tax service intake.",
       referralSource: "Google",
       type: "client-info",
       source: "website-client-info",

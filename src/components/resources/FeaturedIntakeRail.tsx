@@ -18,7 +18,7 @@ const CARDS: IntakeCard[] = [
     title: "Get Your ITIN",
     copy: "Apply for your Individual Tax ID Number. Takes about 10 minutes.",
     time: "~10 min",
-    href: "/itin",
+    href: "/resources/forms/itin-registration-form",
     accent: "#059669",
     accentBg: "#ECFDF5",
     accentText: "#065F46",

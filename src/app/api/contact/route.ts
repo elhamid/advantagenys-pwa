@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { sendContactEmail } from "@/lib/email";
 import {
   LEAD_SOURCES,
+  type AdditionalOwner,
   type LeadSource,
   type LeadSubmission,
   type UtmParams,
@@ -56,6 +57,31 @@ function strArray(v: unknown): string[] | undefined {
   if (!Array.isArray(v)) return undefined;
   const arr = v.filter((x): x is string => typeof x === "string" && x.trim().length > 0);
   return arr.length > 0 ? arr : undefined;
+}
+
+function num(v: unknown): number | undefined {
+  return typeof v === "number" && Number.isFinite(v) ? v : undefined;
+}
+
+function additionalOwnerArray(v: unknown): AdditionalOwner[] | undefined {
+  if (!Array.isArray(v)) return undefined;
+  const owners = v
+    .filter((entry): entry is Record<string, unknown> => Boolean(entry) && typeof entry === "object" && !Array.isArray(entry))
+    .map((entry) => ({
+      name: strOrEmpty(entry.name) ?? "",
+      address: strOrEmpty(entry.address),
+      city: strOrEmpty(entry.city),
+      state: strOrEmpty(entry.state),
+      zipCode: strOrEmpty(entry.zipCode),
+      ssnOrItin: strOrEmpty(entry.ssnOrItin),
+      dateOfBirth: strOrEmpty(entry.dateOfBirth),
+      telephone: strOrEmpty(entry.telephone),
+      cellPhone: strOrEmpty(entry.cellPhone),
+      phone: strOrEmpty(entry.phone),
+    }))
+    .filter((owner) => Object.values(owner).some((value) => typeof value === "string" && value.trim()));
+
+  return owners.length > 0 ? owners : undefined;
 }
 
 function maskSensitiveIdentifier(value: string): string {
@@ -213,6 +239,9 @@ function validatePayload(body: unknown): ValidationResult {
           ssnOrItin: strOrEmpty(obj.ssnOrItin),
           businessName: strOrEmpty(obj.businessName),
           serviceInterested: strOrEmpty(obj.serviceInterested),
+          meetingPreference: strOrEmpty(obj.meetingPreference),
+          referredBy: strOrEmpty(obj.referredBy),
+          purpose: strOrEmpty(obj.purpose),
           referralSource: strOrEmpty(obj.referralSource),
           additionalNotes: strOrEmpty(obj.additionalNotes),
         },
@@ -226,12 +255,44 @@ function validatePayload(body: unknown): ValidationResult {
           type: "corporate-registration",
           desiredBusinessName: strOrEmpty(obj.desiredBusinessName),
           businessType: strOrEmpty(obj.businessType),
-          businessAddress: strOrEmpty(obj.businessAddress),
-          city: strOrEmpty(obj.city),
-          state: strOrEmpty(obj.state),
-          zipCode: strOrEmpty(obj.zipCode),
+          ein: strOrEmpty(obj.ein),
+          filingReceiptDate: strOrEmpty(obj.filingReceiptDate),
           natureOfBusiness: strOrEmpty(obj.natureOfBusiness),
+          ownerAddress: strOrEmpty(obj.ownerAddress),
+          ownerCity: strOrEmpty(obj.ownerCity),
+          ownerState: strOrEmpty(obj.ownerState),
+          ownerZipCode: strOrEmpty(obj.ownerZipCode),
+          ownerSsnOrItin: strOrEmpty(obj.ownerSsnOrItin),
+          ownerDateOfBirth: strOrEmpty(obj.ownerDateOfBirth),
+          ownerTelephone: strOrEmpty(obj.ownerTelephone),
+          ownerCellPhone: strOrEmpty(obj.ownerCellPhone),
           numberOfMembers: strOrEmpty(obj.numberOfMembers),
+          numberOfOwners: num(obj.numberOfOwners),
+          additionalOwners: additionalOwnerArray(obj.additionalOwners),
+          additionalOwner2Name: strOrEmpty(obj.additionalOwner2Name),
+          additionalOwner2Address: strOrEmpty(obj.additionalOwner2Address),
+          additionalOwner2City: strOrEmpty(obj.additionalOwner2City),
+          additionalOwner2State: strOrEmpty(obj.additionalOwner2State),
+          additionalOwner2ZipCode: strOrEmpty(obj.additionalOwner2ZipCode),
+          additionalOwner2SsnOrItin: strOrEmpty(obj.additionalOwner2SsnOrItin),
+          additionalOwner2DateOfBirth: strOrEmpty(obj.additionalOwner2DateOfBirth),
+          additionalOwner2Telephone: strOrEmpty(obj.additionalOwner2Telephone),
+          additionalOwner2CellPhone: strOrEmpty(obj.additionalOwner2CellPhone),
+          additionalOwner3Name: strOrEmpty(obj.additionalOwner3Name),
+          additionalOwner3Address: strOrEmpty(obj.additionalOwner3Address),
+          additionalOwner3City: strOrEmpty(obj.additionalOwner3City),
+          additionalOwner3State: strOrEmpty(obj.additionalOwner3State),
+          additionalOwner3ZipCode: strOrEmpty(obj.additionalOwner3ZipCode),
+          additionalOwner3SsnOrItin: strOrEmpty(obj.additionalOwner3SsnOrItin),
+          additionalOwner3DateOfBirth: strOrEmpty(obj.additionalOwner3DateOfBirth),
+          additionalOwner3Telephone: strOrEmpty(obj.additionalOwner3Telephone),
+          additionalOwner3CellPhone: strOrEmpty(obj.additionalOwner3CellPhone),
+          meetingPreference: strOrEmpty(obj.meetingPreference),
+          corporationAddress: strOrEmpty(obj.corporationAddress),
+          corporationCity: strOrEmpty(obj.corporationCity),
+          corporationState: strOrEmpty(obj.corporationState),
+          corporationZipCode: strOrEmpty(obj.corporationZipCode),
+          websiteSeoOptions: strOrEmpty(obj.websiteSeoOptions),
           needEIN: strOrEmpty(obj.needEIN),
           needSalesTax: strOrEmpty(obj.needSalesTax),
           needPayroll: strOrEmpty(obj.needPayroll),
@@ -253,6 +314,9 @@ function validatePayload(body: unknown): ValidationResult {
           zipCode: strOrEmpty(obj.zipCode),
           industryTrade: strOrEmpty(obj.industryTrade),
           numberOfEmployees: strOrEmpty(obj.numberOfEmployees),
+          amountToBeInsured: strOrEmpty(obj.amountToBeInsured),
+          locationSquareFeet: strOrEmpty(obj.locationSquareFeet),
+          estimatedYearlyPayroll: strOrEmpty(obj.estimatedYearlyPayroll),
           annualRevenue: strOrEmpty(obj.annualRevenue),
           insuranceTypesNeeded: strArray(obj.insuranceTypesNeeded),
           currentProvider: strOrEmpty(obj.currentProvider),
@@ -270,6 +334,7 @@ function validatePayload(body: unknown): ValidationResult {
           businessName: strOrEmpty(obj.businessName),
           businessAddress: strOrEmpty(obj.businessAddress),
           city: strOrEmpty(obj.city),
+          county: strOrEmpty(obj.county),
           state: strOrEmpty(obj.state),
           zipCode: strOrEmpty(obj.zipCode),
           licenseType: strOrEmpty(obj.licenseType),
@@ -524,6 +589,23 @@ export async function POST(request: NextRequest) {
     // --- Mask sensitive fields before storage/forwarding -------------------
     if (data.type === "client-info" && data.ssnOrItin) {
       data.ssnOrItin = maskSensitiveIdentifier(data.ssnOrItin);
+    }
+    if (data.type === "corporate-registration") {
+      if (data.ownerSsnOrItin) {
+        data.ownerSsnOrItin = maskSensitiveIdentifier(data.ownerSsnOrItin);
+      }
+      if (data.additionalOwner2SsnOrItin) {
+        data.additionalOwner2SsnOrItin = maskSensitiveIdentifier(data.additionalOwner2SsnOrItin);
+      }
+      if (data.additionalOwner3SsnOrItin) {
+        data.additionalOwner3SsnOrItin = maskSensitiveIdentifier(data.additionalOwner3SsnOrItin);
+      }
+      if (data.additionalOwners) {
+        data.additionalOwners = data.additionalOwners.map((owner) => ({
+          ...owner,
+          ssnOrItin: owner.ssnOrItin ? maskSensitiveIdentifier(owner.ssnOrItin) : owner.ssnOrItin,
+        }));
+      }
     }
 
     const logLabel =

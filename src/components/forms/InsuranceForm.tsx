@@ -48,6 +48,9 @@ interface InsuranceFormData {
   zipCode: string;
   industryTrade: string;
   numberOfEmployees: string;
+  amountToBeInsured: string;
+  locationSquareFeet: string;
+  estimatedYearlyPayroll: string;
   annualRevenue: string;
   insuranceTypesNeeded: string[];
   currentProvider: string;
@@ -72,6 +75,9 @@ export function InsuranceForm() {
     zipCode: "",
     industryTrade: "",
     numberOfEmployees: "",
+    amountToBeInsured: "",
+    locationSquareFeet: "",
+    estimatedYearlyPayroll: "",
     annualRevenue: "",
     insuranceTypesNeeded: [],
     currentProvider: "",
@@ -121,6 +127,9 @@ export function InsuranceForm() {
       zipCode: formData.zipCode || undefined,
       industryTrade: formData.industryTrade || undefined,
       numberOfEmployees: formData.numberOfEmployees || undefined,
+      amountToBeInsured: formData.amountToBeInsured || undefined,
+      locationSquareFeet: formData.locationSquareFeet || undefined,
+      estimatedYearlyPayroll: formData.estimatedYearlyPayroll || undefined,
       annualRevenue: formData.annualRevenue || undefined,
       insuranceTypesNeeded:
         formData.insuranceTypesNeeded.length > 0
@@ -368,24 +377,69 @@ export function InsuranceForm() {
           </div>
         </div>
 
-        {/* Annual Revenue */}
-        <div>
-          <label htmlFor="insuranceRevenue" className="block text-sm font-medium text-[var(--text)] mb-1">
-            Annual Revenue
-          </label>
-          <select
-            id="insuranceRevenue"
-            value={formData.annualRevenue}
-            onChange={(e) => setFormData((prev) => ({ ...prev, annualRevenue: e.target.value }))}
-            className={inputClasses}
-          >
-            <option value="">Select revenue range</option>
-            {revenueRanges.map((range) => (
-              <option key={range} value={range}>
-                {range}
-              </option>
-            ))}
-          </select>
+        {/* Coverage Amount & Location Size Row */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="insuranceAmount" className="block text-sm font-medium text-[var(--text)] mb-1">
+              Amount to Be Insured
+            </label>
+            <input
+              type="text"
+              id="insuranceAmount"
+              value={formData.amountToBeInsured}
+              onChange={(e) => setFormData((prev) => ({ ...prev, amountToBeInsured: e.target.value }))}
+              placeholder="e.g., $500,000"
+              className={inputClasses}
+            />
+          </div>
+          <div>
+            <label htmlFor="insuranceSquareFeet" className="block text-sm font-medium text-[var(--text)] mb-1">
+              Square Feet of Location
+            </label>
+            <input
+              type="text"
+              id="insuranceSquareFeet"
+              value={formData.locationSquareFeet}
+              onChange={(e) => setFormData((prev) => ({ ...prev, locationSquareFeet: e.target.value }))}
+              placeholder="e.g., 2,200"
+              className={inputClasses}
+            />
+          </div>
+        </div>
+
+        {/* Payroll & Annual Revenue Row */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="insurancePayroll" className="block text-sm font-medium text-[var(--text)] mb-1">
+              Estimated Yearly Payroll
+            </label>
+            <input
+              type="text"
+              id="insurancePayroll"
+              value={formData.estimatedYearlyPayroll}
+              onChange={(e) => setFormData((prev) => ({ ...prev, estimatedYearlyPayroll: e.target.value }))}
+              placeholder="e.g., $420,000"
+              className={inputClasses}
+            />
+          </div>
+          <div>
+            <label htmlFor="insuranceRevenue" className="block text-sm font-medium text-[var(--text)] mb-1">
+              Annual Revenue
+            </label>
+            <select
+              id="insuranceRevenue"
+              value={formData.annualRevenue}
+              onChange={(e) => setFormData((prev) => ({ ...prev, annualRevenue: e.target.value }))}
+              className={inputClasses}
+            >
+              <option value="">Select revenue range</option>
+              {revenueRanges.map((range) => (
+                <option key={range} value={range}>
+                  {range}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         {/* Insurance Types Needed */}

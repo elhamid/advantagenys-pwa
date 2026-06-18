@@ -23,6 +23,14 @@ export function proxy(request: NextRequest) {
   const ua = request.headers.get("user-agent") || "";
   const path = request.nextUrl.pathname;
 
+  if (path === "/itin" || path.startsWith("/itin/")) {
+    const url = new URL("/resources/forms/itin-registration-form", request.url);
+    request.nextUrl.searchParams.forEach((value, key) => {
+      url.searchParams.append(key, value);
+    });
+    return NextResponse.redirect(url);
+  }
+
   // Don't redirect if already on legacy pages, API routes, or static files
   if (
     path.startsWith("/legacy") ||
@@ -36,13 +44,6 @@ export function proxy(request: NextRequest) {
   }
 
   if (isLegacyBrowser(ua)) {
-    // Preserve the intended path -- /itin goes to /legacy/itin, everything else to /legacy
-    if (path.startsWith("/itin")) {
-      const company = request.nextUrl.searchParams.get("company");
-      const url = new URL("/legacy/itin", request.url);
-      if (company) url.searchParams.set("company", company);
-      return NextResponse.redirect(url);
-    }
     return NextResponse.redirect(new URL("/legacy", request.url));
   }
 
