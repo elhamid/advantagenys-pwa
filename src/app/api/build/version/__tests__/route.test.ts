@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { GET } from "../route";
+import { dynamic, GET } from "../route";
 
 describe("GET /api/build/version", () => {
   const originalEnv = {
@@ -15,15 +15,16 @@ describe("GET /api/build/version", () => {
   });
 
   it("returns public deployment metadata without caching", async () => {
-    process.env.VERCEL_GIT_COMMIT_SHA = "abc123";
+    process.env.VERCEL_GIT_COMMIT_SHA = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
     process.env.VERCEL_GIT_COMMIT_REF = "main";
     process.env.VERCEL_ENV = "production";
 
     const response = GET();
 
+    expect(dynamic).toBe("force-dynamic");
     expect(response.headers.get("cache-control")).toBe("no-store");
     await expect(response.json()).resolves.toEqual({
-      gitCommitSha: "abc123",
+      gitCommitSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       gitCommitRef: "main",
       vercelEnv: "production",
     });
