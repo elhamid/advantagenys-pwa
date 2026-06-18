@@ -27,6 +27,13 @@ describe("native-form-submit source contract", () => {
     expect(ROUTE_SOURCE).not.toContain("getPublicUrl");
   });
 
+  it("blocks inactive generated form slugs at the submission endpoint", () => {
+    expect(ROUTE_SOURCE).toContain('import { getFormBySlug } from "@/lib/forms"');
+    expect(ROUTE_SOURCE).toContain("const form = getFormBySlug(slug)");
+    expect(ROUTE_SOURCE).toContain("!form || !form.active");
+    expect(ROUTE_SOURCE).toContain("Form not available.");
+  });
+
   it("keeps retired legacy ITIN storage fail-closed", () => {
     expect(LEGACY_ITIN_STORAGE_SOURCE).toContain("Legacy ITIN document storage is retired.");
     expect(LEGACY_ITIN_STORAGE_SOURCE).toContain("refusing document upload");

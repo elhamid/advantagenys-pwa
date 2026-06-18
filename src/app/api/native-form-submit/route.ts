@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { getFormBySlug } from "@/lib/forms";
 import { getNativeFormSchema } from "@/lib/native-form-schemas/generated";
 import {
   answerRecord,
@@ -282,6 +283,10 @@ export async function POST(request: NextRequest) {
   const schema = getNativeFormSchema(slug);
   if (!schema) {
     return NextResponse.json({ success: false, error: "Unknown form." }, { status: 404 });
+  }
+  const form = getFormBySlug(slug);
+  if (!form || !form.active) {
+    return NextResponse.json({ success: false, error: "Form not available." }, { status: 404 });
   }
 
   const values = collectFormDataValues(formData, schema);

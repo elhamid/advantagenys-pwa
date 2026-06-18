@@ -88,6 +88,54 @@ describe("native form answers", () => {
     expect(answerRecord(answers, false).ssn).toBe("123-45-6789");
   });
 
+  it("normalizes Latin accents in non-name staff-packet values", () => {
+    const answers = buildNativeAnswers(schema, {
+      "1": "Jose Nino",
+      "2": "(929) 555-0101",
+      "3": "jose@example.com",
+      "4": "123-45-6789",
+      "5": "Bogotá",
+    });
+
+    expect(answerRecord(answers, true)).toMatchObject({
+      fullName: "Jose Nino",
+      phone: "(929) 555-0101",
+      birthCity: "Bogota",
+    });
+  });
+
+  it("preserves separators when normalizing multi-line textarea-style values", () => {
+    const answers = buildNativeAnswers(schema, {
+      "1": "Jose Nino",
+      "2": "(929) 555-0101",
+      "5": "2020 - $30000\n2021 - $35000\t2022 - $40000",
+    });
+
+    expect(answerRecord(answers, true).birthCity).toBe("2020 - $30000 2021 - $35000 2022 - $40000");
+  });
+
+  it("rejects accented legal names instead of silently rewriting passport spelling", () => {
+    const values = {
+      "1": "José Niño",
+      "2": "(929) 555-0101",
+    };
+
+    expect(nativeEnglishInputErrors(schema, values)).toEqual([
+      "Name must use English letters. For legal names, use the spelling from the passport or government ID.",
+    ]);
+  });
+
+  it("rejects non-Latin letters before the packet enters staff systems", () => {
+    const values = {
+      "1": "张伟",
+      "2": "(929) 555-0101",
+    };
+
+    expect(nativeEnglishInputErrors(schema, values)).toEqual([
+      "Name must use English letters. For legal names, use the spelling from the passport or government ID.",
+    ]);
+  });
+
   it("treats signatures and sensitive-looking labels as sensitive even without schema flags", () => {
     const localSchema: NativeFormSchema = {
       ...schema,
