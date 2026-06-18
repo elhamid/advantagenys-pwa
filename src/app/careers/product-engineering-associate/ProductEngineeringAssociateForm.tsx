@@ -1,7 +1,6 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { useSearchParams } from "next/navigation";
 import {
   CAREERS_ROLE_TITLE,
   WORK_SAMPLE_URL,
@@ -17,9 +16,6 @@ const surfaceOptions = [
 ];
 
 export function ProductEngineeringAssociateForm() {
-  const searchParams = useSearchParams();
-  const refToken = searchParams.get("ref") ?? searchParams.get("partner") ?? "";
-  const initialReferral = refToken;
   const formRef = useRef<HTMLFormElement>(null);
   const [resumeName, setResumeName] = useState("");
   const [proofName, setProofName] = useState("");
@@ -114,10 +110,6 @@ export function ProductEngineeringAssociateForm() {
               <label className="block text-sm font-semibold text-[var(--text)]">
                 City and country
                 <input name="location" required placeholder="Bengaluru, India" className="mt-2 w-full border border-[var(--border)] bg-white px-3 py-3 text-sm outline-none focus:border-[var(--blue-accent)]" />
-              </label>
-              <label className="block text-sm font-semibold text-[var(--text)]">
-                Referral partner code
-                <input name="referralCode" defaultValue={initialReferral} className="mt-2 w-full border border-[var(--border)] bg-white px-3 py-3 text-sm outline-none focus:border-[var(--blue-accent)]" />
               </label>
               <label className="block text-sm font-semibold text-[var(--text)]">
                 Availability
