@@ -6,7 +6,7 @@ test.describe("Junior Product Engineering Associate intake", () => {
 
     await expect(page.getByRole("heading", { name: "Junior Product Engineering Associate" })).toBeVisible();
     await expect(page.getByText("Invitation-only partner intake")).toBeVisible();
-    await expect(page.getByLabel("Referral partner code")).toHaveValue("partner-demo");
+    await expect(page.getByLabel("Referral partner code")).toHaveCount(0);
     await expect(page.getByText("Fictional work sample page")).toBeVisible();
 
     await page.route("**/api/careers/product-engineering-associate/exchange-rate", async (route) => {
