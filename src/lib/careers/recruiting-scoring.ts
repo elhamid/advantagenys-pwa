@@ -97,19 +97,50 @@ export const PLANTED_DEFECTS: PlantedDefect[] = [
 
 export const TOTAL_PLANTED_DEFECTS = PLANTED_DEFECTS.length;
 
-// Concrete inspection-detail markers. A defect mention only counts when one of
-// these appears NEAR it (same sentence/segment) — proof the candidate actually
-// looked, not just pasted the right word.
-const DETAIL_MARKERS: RegExp[] = [
-  /\bexpected\b/i,
-  /\bactual(?:ly)?\b/i,
-  /\bstep\s*\d|\b\d[.)]\s/i,
-  /\b(tap|tapp(?:ed|ing)?|click(?:ed|ing)?|scroll(?:ed|ing)?|enter(?:ed)?|typ(?:e|ed|ing)|select(?:ed)?|submit(?:ted)?)\b/i,
-  /\b(iphone|android|mobile|phone|desktop|chrome|safari|firefox|\d{2,4}px|viewport|laptop|tablet)\b/i,
-];
+// INSPECTION EVIDENCE — genuine proof the candidate actually exercised the flow,
+// INDEPENDENT of the defect label itself. This is what gates "caught with
+// detail". It deliberately EXCLUDES device/viewport words (phone/mobile/desktop
+// etc.) because those words also appear inside the planted-defect descriptions
+// and patterns, so a candidate could otherwise get credit for a bare defect
+// HEADLINE ("phone validation missing on mobile") with no real inspection.
+// A defect counts as caught only when a segment contains at least one of:
+//   - an explicit ACTION verb (tapped/clicked/scrolled/typed/...), OR
+//   - an EXPECTED-vs-ACTUAL pair (expected … but/instead …, should … got …), OR
+//   - a NUMBERED / SEQUENTIAL step (1., first, then, after, next).
+// Action verbs that signal the candidate PERFORMED an action — captured in past
+// tense / progressive ("tapped", "scrolling") OR as a first-person/imperative
+// action ("I tap", "I type", "then click", "when I submit"). Bare present-tense
+// nouns ("submit button", "load time", "the open question") must NOT match, so
+// we do NOT accept a lone present-tense verb on its own.
+const ACTION_VERB_PAST =
+  /\b(tapp(?:ed|ing)|click(?:ed|ing)|scroll(?:ed|ing)|enter(?:ed|ing)|typ(?:ed|ing)|select(?:ed|ing)|open(?:ed|ing)|submitt(?:ed|ing)|press(?:ed|ing)|fill(?:ed|ing)|navigat(?:ed|ing)|load(?:ed|ing)|past(?:ed|ing)|resiz(?:ed|ing)|rotat(?:ed|ing))\b/i;
+const ACTION_VERB_FIRST_PERSON =
+  /\b(?:i|then|when\s+i|so\s+i|and\s+i)\s+(tap|click|scroll|enter|type|select|open|submit|press|fill|paste|resize|rotate|navigate|load)\b/i;
+const ACTION_VERB = new RegExp(`${ACTION_VERB_PAST.source}|${ACTION_VERB_FIRST_PERSON.source}`, "i");
 
-// Phrases that indicate genuine reproduction discipline (for the repro sub-score).
-const REPRO_PATTERNS: RegExp[] = DETAIL_MARKERS;
+// Expected-vs-actual: requires BOTH an expectation cue and a contrast/result cue
+// so a bare "expected" headline doesn't qualify on its own.
+const EXPECTED_VS_ACTUAL =
+  /\b(expect(?:ed)?|should(?:'?ve| have)?|supposed to)\b[^.]*\b(but|instead|however|actually|actual|got|received|returned|showed?|happened|was|got\b)\b/i;
+
+const SEQUENTIAL_STEP = /\bstep\s*\d|\b\d[.)]\s|\b(first|then|next|after(?:ward)?|finally)\b/i;
+
+// The three independent evidence classes that gate a detail-bound defect catch.
+const INSPECTION_EVIDENCE: RegExp[] = [ACTION_VERB, EXPECTED_VS_ACTUAL, SEQUENTIAL_STEP];
+
+function hasInspectionEvidence(segment: string): boolean {
+  return INSPECTION_EVIDENCE.some((re) => re.test(segment));
+}
+
+// Reproduction sub-score (over the dedicated repro-steps FIELD, not the defect
+// gate): here device/viewport words are an acceptable positive signal of repro
+// discipline, so they stay in this list. This list is NOT used to gate defect
+// catches — only INSPECTION_EVIDENCE is.
+const REPRO_PATTERNS: RegExp[] = [
+  ...INSPECTION_EVIDENCE,
+  /\bactual(?:ly)?\b/i,
+  /\b(iphone|android|mobile|desktop|chrome|safari|firefox|\d{2,4}px|viewport|laptop|tablet)\b/i,
+];
 
 // Phrases indicating business-impact prioritization.
 const PRIORITY_PATTERNS: RegExp[] = [
@@ -223,12 +254,14 @@ export function scoreDefectMatch(payload: CareerApplicationPayload): DefectMatch
     for (const segment of segments) {
       if (!defect.patterns.some((re) => re.test(segment))) continue;
       matchedSomewhere = true;
-      // Detail-bound: the SAME segment must ALSO carry a concrete inspection
-      // marker (device / step / expected-vs-actual / UI action) AND be long
-      // enough to be a real observation, not a 2-3 word keyword fragment. A bare
-      // "Channel mismatch." or "Below the fold." fails both and counts as
-      // keyword-only.
-      const hasDetail = DETAIL_MARKERS.some((re) => re.test(segment)) && segment.length >= 40;
+      // Detail-bound: the SAME segment must ALSO carry INSPECTION EVIDENCE that
+      // is independent of the defect label — an action verb, an expected-vs-
+      // actual pair, or a numbered/sequential step — AND be long enough to be a
+      // real observation. A device word alone (phone/mobile/desktop) does NOT
+      // count, because those words appear inside the defect description itself.
+      // So a bare 40+ char defect HEADLINE ("phone validation missing on
+      // mobile") is keyword-only; only real inspection earns the catch.
+      const hasDetail = hasInspectionEvidence(segment) && segment.length >= 40;
       if (hasDetail) {
         matchedWithDetail = true;
         break;

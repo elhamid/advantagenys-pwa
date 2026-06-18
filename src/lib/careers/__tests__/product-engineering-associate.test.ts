@@ -261,6 +261,52 @@ describe("defect-match scoring against the planted sample defects (detail-bound)
     expect(result.keywordOnly.length).toBeGreaterThanOrEqual(3);
     expect(result.defectPoints).toBe(0);
   });
+
+  it("CLOSES the device-word bypass: 40+ char defect headlines with device words but NO action/step/expected-actual earn zero defect credit", () => {
+    // Each line is a long (>40 char) headline that names a real defect AND
+    // includes a device/viewport word (phone/mobile/desktop) — but contains no
+    // action verb, no numbered step, and no expected-vs-actual contrast. This is
+    // the exact bypass: device words must NOT, on their own, satisfy "detail".
+    const headlinesWithDeviceWords = [
+      "The phone validation is missing on mobile and that is a real concern for users here.",
+      "The submit button is below the fold on mobile which is bad for the overall experience.",
+      "The long reference link widens the layout on desktop and looks broken to visitors.",
+      "There is a channel mismatch where the confirmation mentions email on mobile screens.",
+      "The referral code field is prefilled on desktop and that seems editable to the user.",
+    ].join(" ");
+
+    const result = scoreDefectMatch(
+      validPayload({
+        issueFindings: headlinesWithDeviceWords,
+        topIssueSteps: "I read through the page on my device and noted the items above.",
+        consoleNetworkNotes: "Nothing else of note observed.",
+      })
+    );
+
+    // Device words alone do not count as inspection evidence.
+    expect(result.caughtCount).toBe(0);
+    expect(result.defectPoints).toBe(0);
+    // They are still recorded as keyword-only mentions for reviewer context.
+    expect(result.keywordOnly.length).toBeGreaterThanOrEqual(3);
+  });
+
+  it("DOES count the same defect once a real action/step/expected-actual is added", () => {
+    // Same defects, now with genuine inspection evidence independent of the
+    // defect label — proves we reject headlines, not real findings.
+    const withEvidence = [
+      "On mobile I scrolled and the submit button was below the fold, hidden under the tall service cards.",
+      "I typed letters into the phone field and it accepted them with no validation, expected an error but it submitted.",
+    ].join(" ");
+    const result = scoreDefectMatch(
+      validPayload({
+        issueFindings: withEvidence,
+        topIssueSteps: "Step 1: open on an iPhone. Step 2: type letters in the phone field. Expected a validation error, actually it submitted.",
+        consoleNetworkNotes: "No console errors noted.",
+      })
+    );
+    expect(result.caughtCount).toBeGreaterThanOrEqual(2);
+    expect(result.caught).toEqual(expect.arrayContaining(["submit_below_fold", "phone_validation"]));
+  });
 });
 
 describe("computeRecruitingScore tiers (0-100, deterministic)", () => {
@@ -299,6 +345,29 @@ describe("computeRecruitingScore tiers (0-100, deterministic)", () => {
     );
     expect(score.breakdown.gate.passed).toBe(true);
     expect(score.breakdown.defectsCaughtCount).toBeLessThan(3);
+    expect(score.label).not.toBe("strong");
+  });
+
+  it("NEVER reaches strong from defect headlines padded with device words (bypass closed end-to-end)", () => {
+    // Gate passes, every field filled, all five defects NAMED with device words,
+    // but no action/step/expected-actual -> all keyword-only -> not strong.
+    const headlines = [
+      "The phone validation is missing on mobile and that is a real concern for users here.",
+      "The submit button is below the fold on mobile which is bad for the overall experience.",
+      "The long reference link widens the layout on desktop and looks broken to visitors.",
+      "There is a channel mismatch where the confirmation mentions email on mobile screens.",
+      "The referral code field is prefilled on desktop and that seems editable to the user.",
+    ].join(" ");
+    const score = computeRecruitingScore(
+      validPayload({
+        issueFindings: headlines,
+        topIssueSteps: "I read the page on my device and wrote up the headlines above for review.",
+        firstFixReason: "I would fix the phone issue first because it affects conversion on every lead.",
+        consoleNetworkNotes: "Nothing else of note observed on the page.",
+      })
+    );
+    expect(score.breakdown.gate.passed).toBe(true);
+    expect(score.breakdown.defectsCaughtCount).toBe(0);
     expect(score.label).not.toBe("strong");
   });
 
