@@ -26,6 +26,13 @@ const jotform = {
   embedUrl: "https://form.jotform.com/abc123",
 } as const;
 
+const inactiveNative = {
+  ...nativeForm,
+  slug: "inactive",
+  title: "Inactive Intake",
+  active: false,
+} as const;
+
 vi.mock("next/navigation", () => ({
   notFound: vi.fn(() => {
     throw new Error("NOT_FOUND");
@@ -99,6 +106,7 @@ vi.mock("@/lib/forms", () => ({
       };
     }
     if (slug === "jotform-intake") return jotform;
+    if (slug === "inactive") return inactiveNative;
     return null;
   }),
 }));
@@ -126,6 +134,12 @@ describe("Resource form route", () => {
 
   it("returns a fallback metadata title for unknown forms", async () => {
     const metadata = await generateMetadata({ params: Promise.resolve({ slug: "missing" }) });
+
+    expect(metadata.title).toBe("Form Not Found");
+  });
+
+  it("returns fallback metadata for inactive forms", async () => {
+    const metadata = await generateMetadata({ params: Promise.resolve({ slug: "inactive" }) });
 
     expect(metadata.title).toBe("Form Not Found");
   });
@@ -166,6 +180,10 @@ describe("Resource form route", () => {
 
     unmount();
     expect(document.body.querySelector('script[src="https://cdn.jotfor.ms/s/umd/latest/for-form-embed-handler.js"]')).toBeNull();
+  });
+
+  it("does not render inactive direct form slugs", async () => {
+    await expect(FormPage({ params: Promise.resolve({ slug: "inactive" }) })).rejects.toThrow("NOT_FOUND");
   });
 
   it("renders the FormPageShareBar variants", () => {
