@@ -13,7 +13,7 @@ import type { NativeFormSchema } from "@/lib/native-form-schemas/types";
 export const runtime = "nodejs";
 
 const MAX_FILE_SIZE_BYTES = 12 * 1024 * 1024;
-const DOCUMENT_BUCKET = process.env.FORM_DOCUMENTS_BUCKET || "itin-documents";
+const DOCUMENT_BUCKET = process.env.FORM_DOCUMENTS_BUCKET || "form-documents";
 
 const ALLOWED_UPLOAD_TYPES = new Set([
   "application/pdf",
@@ -54,18 +54,49 @@ function fileExtension(file: File): string {
   return safePathPart(fromName || "bin");
 }
 
+function uniqueDocumentKey(documentUrls: Record<string, unknown>, label: string, qid: string): string {
+  if (!documentUrls[label]) return label;
+  const qidKey = `${label} (${qid})`;
+  if (!documentUrls[qidKey]) return qidKey;
+
+  let index = 2;
+  let key = `${qidKey} ${index}`;
+  while (documentUrls[key]) {
+    index += 1;
+    key = `${qidKey} ${index}`;
+  }
+  return key;
+}
+
+async function ensurePrivateUploadBucket(client: NonNullable<ReturnType<typeof getUploadClient>>): Promise<void> {
+  const { data } = await client.storage.getBucket(DOCUMENT_BUCKET);
+  if (data) {
+    if (data.public) {
+      throw new Error("Document upload bucket is public. Refusing to store sensitive form documents.");
+    }
+    return;
+  }
+
+  const { error } = await client.storage.createBucket(DOCUMENT_BUCKET, {
+    public: false,
+    fileSizeLimit: MAX_FILE_SIZE_BYTES,
+    allowedMimeTypes: Array.from(ALLOWED_UPLOAD_TYPES),
+  });
+  if (error) throw error;
+}
+
 async function uploadNativeFiles(args: {
   schema: NativeFormSchema;
   formData: FormData;
   phone: string;
 }): Promise<{
   answerUrls: Record<string, string | string[]>;
-  documentUrls: Record<string, string | string[]>;
+  documentUrls: Record<string, unknown>;
   errors: string[];
 }> {
   const { schema, formData, phone } = args;
   const answerUrls: Record<string, string | string[]> = {};
-  const documentUrls: Record<string, string | string[]> = {};
+  const documentUrls: Record<string, unknown> = {};
   const errors: string[] = [];
   const client = getUploadClient();
 
@@ -77,6 +108,17 @@ async function uploadNativeFiles(args: {
     if (requiredMissing.length > 0) {
       errors.push("Document upload is temporarily unavailable. Please try again later.");
     }
+    return { answerUrls, documentUrls, errors };
+  }
+
+  try {
+    await ensurePrivateUploadBucket(client);
+  } catch (err) {
+    console.error("[native-form-submit] private upload bucket unavailable", {
+      bucket: DOCUMENT_BUCKET,
+      message: err instanceof Error ? err.message : String(err),
+    });
+    errors.push("Document upload is temporarily unavailable. Please try again later.");
     return { answerUrls, documentUrls, errors };
   }
 
@@ -122,16 +164,20 @@ async function uploadNativeFiles(args: {
         continue;
       }
 
-      const { data } = client.storage.from(DOCUMENT_BUCKET).getPublicUrl(path);
-      if (data.publicUrl) urls.push(data.publicUrl);
+      urls.push(JSON.stringify({
+        bucket: DOCUMENT_BUCKET,
+        path,
+        name: file.name || field.name,
+        contentType: file.type,
+      }));
     }
 
     if (urls.length === 1) {
-      answerUrls[field.qid] = urls[0];
-      documentUrls[field.label] = urls[0];
+      answerUrls[field.qid] = "Document uploaded";
+      documentUrls[uniqueDocumentKey(documentUrls, field.label, field.qid)] = JSON.parse(urls[0]);
     } else if (urls.length > 1) {
-      answerUrls[field.qid] = urls;
-      documentUrls[field.label] = urls;
+      answerUrls[field.qid] = `${urls.length} documents uploaded`;
+      documentUrls[uniqueDocumentKey(documentUrls, field.label, field.qid)] = urls.map((url) => JSON.parse(url));
     }
   }
 

@@ -88,6 +88,82 @@ describe("native form answers", () => {
     expect(answerRecord(answers, false).ssn).toBe("123-45-6789");
   });
 
+  it("treats signatures and sensitive-looking labels as sensitive even without schema flags", () => {
+    const localSchema: NativeFormSchema = {
+      ...schema,
+      fields: [
+        ...schema.fields,
+        {
+          qid: "5",
+          name: "signature",
+          label: "Filer Signature",
+          kind: "signature",
+          required: true,
+          jotformType: "control_signature",
+        },
+        {
+          qid: "6",
+          name: "businessEin",
+          label: "Business Tax ID (EIN)",
+          kind: "text",
+          required: true,
+          jotformType: "control_textbox",
+        },
+      ],
+    };
+
+    const answers = buildNativeAnswers(localSchema, {
+      "1": "Jane Client",
+      "2": "(929) 555-0101",
+      "4": "123-45-6789",
+      "5": "Jane Signature",
+      "6": "12-3456789",
+    });
+
+    expect(answerRecord(answers, true)).toMatchObject({
+      signature: "[sensitive provided]",
+      businessEin: "[sensitive ending 6789]",
+    });
+    expect(answerRecord(answers, false)).toMatchObject({
+      signature: "Jane Signature",
+      businessEin: "12-3456789",
+    });
+  });
+
+  it("keeps duplicate generated field names by suffixing the qid", () => {
+    const localSchema: NativeFormSchema = {
+      ...schema,
+      fields: [
+        {
+          qid: "10",
+          name: "ifYes168",
+          label: "If yes, describe the first record",
+          kind: "text",
+          required: false,
+          jotformType: "control_textbox",
+        },
+        {
+          qid: "11",
+          name: "ifYes168",
+          label: "If yes, describe the second record",
+          kind: "text",
+          required: false,
+          jotformType: "control_textbox",
+        },
+      ],
+    };
+
+    const answers = buildNativeAnswers(localSchema, {
+      "10": "first duplicate answer",
+      "11": "second duplicate answer",
+    });
+
+    expect(answerRecord(answers, true)).toEqual({
+      ifYes168: "first duplicate answer",
+      ifYes168_11: "second duplicate answer",
+    });
+  });
+
   it("adds the backup marker and attribution fields to JotForm mirror params", () => {
     const answers = buildNativeAnswers(schema, {
       "1": "Jane Client",

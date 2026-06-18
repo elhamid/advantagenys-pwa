@@ -14,12 +14,14 @@ interface FormCardProps {
   kioskMode?: boolean;
 }
 
+const NATIVE_ITIN_FORM_URL = "/resources/forms/itin-registration-form";
+
 export function FormCard({ form, index = 0, kioskMode = false }: FormCardProps) {
   const colorClass = categoryColors[form.category];
   const categoryLabel = categories.find((c) => c.key === form.category)?.label || form.category;
   const isLink = form.type === "link";
   const isItinForm = form.id === "210224697492156" || form.slug === "itin-registration-form";
-  const formUrl = isItinForm ? "/itin" : isLink ? (form.linkUrl || "#") : `/resources/forms/${form.slug}`;
+  const formUrl = isItinForm ? NATIVE_ITIN_FORM_URL : isLink ? (form.linkUrl || "#") : `/resources/forms/${form.slug}`;
   const shareUrl = isLink ? (form.linkUrl || "#") : `/resources/forms/${form.slug}`;
   const Icon = categoryIcons[form.category];
 
@@ -71,7 +73,7 @@ export function FormCard({ form, index = 0, kioskMode = false }: FormCardProps) 
             </a>
           ) : isItinForm ? (
             <Link
-              href="/itin"
+              href={formUrl}
               className={`flex-1 inline-flex items-center justify-center gap-2 font-bold rounded-[var(--radius)] bg-emerald-600 text-white hover:bg-emerald-500 shadow-md hover:shadow-lg transition-all duration-200 active:scale-[0.97] ${kioskMode ? "px-4 py-3.5 text-base" : "px-4 py-3 text-sm"}`}
             >
               <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
