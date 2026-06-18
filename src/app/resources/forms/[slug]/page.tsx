@@ -5,11 +5,14 @@ import { forms, getFormBySlug } from "@/lib/forms";
 import { FormEmbed } from "./FormEmbed";
 import { NativeForm } from "./NativeForm";
 import { FormPageShareBar } from "./FormPageShareBar";
+import { FormLanguageNotice } from "@/components/forms/FormLanguageNotice";
 import Link from "next/link";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
+
+export const dynamicParams = false;
 
 export async function generateStaticParams() {
   return forms.filter((f) => f.active && f.type !== "link").map((f) => ({ slug: f.slug }));
@@ -18,7 +21,7 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
   const form = getFormBySlug(slug);
-  if (!form) return { title: "Form Not Found" };
+  if (!form || !form.active) return { title: "Form Not Found" };
 
   return {
     title: form.title,
@@ -30,7 +33,7 @@ export default async function FormPage({ params }: PageProps) {
   const { slug } = await params;
   const form = getFormBySlug(slug);
 
-  if (!form || form.type === "link" || (!form.embedUrl && form.platform !== "native")) {
+  if (!form || !form.active || form.type === "link" || (!form.embedUrl && form.platform !== "native")) {
     notFound();
   }
 
@@ -61,6 +64,15 @@ export default async function FormPage({ params }: PageProps) {
                   This form uses encrypted submission for your security.
                 </p>
               )}
+              <div className="mt-5 max-w-2xl rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)] px-4 py-3">
+                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+                  After you submit
+                </p>
+                <p className="mt-1 text-sm text-[var(--text-secondary)]">
+                  It becomes a staff review packet so our team can check your answers
+                  and follow up with missing items or next steps.
+                </p>
+              </div>
             </div>
 
             <FormPageShareBar title={form.title} slug={form.slug} />
@@ -70,8 +82,9 @@ export default async function FormPage({ params }: PageProps) {
 
       <section className="pb-24">
         <Container>
+          <FormLanguageNotice />
           {form.platform === "native" && form.nativeComponent ? (
-            <NativeForm componentName={form.nativeComponent} />
+            <NativeForm form={form} />
           ) : (
             <FormEmbed form={form} />
           )}

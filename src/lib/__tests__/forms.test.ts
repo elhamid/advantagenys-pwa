@@ -3,10 +3,10 @@ import {
   forms,
   categories,
   getFormBySlug,
+  getFormByShortLinkSlug,
   getFormsByCategory,
   categoryColors,
   type FormConfig,
-  type CategoryKey,
 } from "../forms";
 
 describe("forms data integrity", () => {
@@ -32,29 +32,47 @@ describe("forms data integrity", () => {
     expect(unique.size).toBe(priorities.length);
   });
 
-  it("all active flags are booleans", () => {
-    forms.forEach((f) => {
-      expect(typeof f.active).toBe("boolean");
-    });
+  it("has 7 retired forms (inactive) including thin HIC stubs", () => {
+    const retired = forms.filter((f) => !f.active).map((f) => f.id);
+    expect(retired).toEqual(
+      expect.arrayContaining([
+        "221784773077062", // Divorce Application
+        "222615377389062", // Sales Tax Return Form
+        "260414184804049", // Bookkeeping Form
+        "243156342192150", // New I-130 Petitioner
+        "243156183104146", // New I-130 Beneficiary
+        "253344597070157", // L1-HIL Auto 02 thin HIC routing stub
+        "253484272415054", // HIC Auto Processing thin automation stub
+      ])
+    );
+    expect(retired).toHaveLength(7);
   });
 
-  it("all JotForm IDs are numeric strings (15–18 digits)", () => {
-    const jotformEntries = forms.filter((f) => f.platform === "jotform");
-    jotformEntries.forEach((f) => {
+  it("every active form has a boolean true active flag", () => {
+    forms
+      .filter((f) => f.active)
+      .forEach((f) => {
+        expect(f.active).toBe(true);
+      });
+  });
+
+  it("all retired JotForm IDs are numeric strings (15–18 digits)", () => {
+    const retiredJotformEntries = forms.filter((f) => f.platform === "jotform");
+    retiredJotformEntries.forEach((f) => {
       expect(f.id).toMatch(/^\d{12,18}$/);
     });
   });
 
-  it("all JotForm entries have a valid embedUrl", () => {
-    const jotformEntries = forms.filter((f) => f.platform === "jotform");
-    jotformEntries.forEach((f) => {
+  it("all retired JotForm entries have a valid embedUrl", () => {
+    const retiredJotformEntries = forms.filter((f) => f.platform === "jotform");
+    retiredJotformEntries.forEach((f) => {
       expect(f.embedUrl).toMatch(/^https:\/\/form\.jotform\.com\/\d+$/);
     });
   });
 
-  it("JotForm embedUrl IDs match the form id field", () => {
-    const jotformEntries = forms.filter((f) => f.platform === "jotform");
-    jotformEntries.forEach((f) => {
+  it("retired JotForm embedUrl IDs match the form id field", () => {
+    const retiredJotformEntries = forms.filter((f) => f.platform === "jotform");
+    retiredJotformEntries.forEach((f) => {
       expect(f.embedUrl).toContain(f.id);
     });
   });
@@ -65,6 +83,27 @@ describe("forms data integrity", () => {
     );
     nativeWithComponent.forEach((f) => {
       expect(f.embedUrl).toBeUndefined();
+    });
+  });
+
+  it("all active legacy JotForm-backed forms now use the generated native component", () => {
+    const generatedSlugs = [
+      "itin-registration-form",
+      "profit-loss-form",
+      "tax-return-questionnaire",
+      "immigration-form-for-petitioner",
+      "immigration-form-for-beneficiary",
+      "contractor-license-qualifier",
+      "boir-form",
+      "citizenship-info-form",
+    ];
+
+    generatedSlugs.forEach((slug) => {
+      const form = getFormBySlug(slug);
+      expect(form?.active).toBe(true);
+      expect(form?.platform).toBe("native");
+      expect(form?.nativeComponent).toBe("GeneratedNativeForm");
+      expect(form?.embedUrl).toBeUndefined();
     });
   });
 
@@ -111,8 +150,6 @@ describe("getFormBySlug()", () => {
     const form = getFormBySlug("tax-return-questionnaire");
     expect(form).toBeDefined();
     expect(form?.category).toBe("tax");
-    expect(form?.platform).toBe("native");
-    expect(form?.nativeComponent).toBe("TaxReturnForm");
     expect(form?.encrypted).toBe(true);
   });
 
@@ -199,6 +236,27 @@ describe("getFormsByCategory()", () => {
       expect(f.active).toBe(true);
     });
   });
+
+  it("does not expose thin HIC automation stubs in active licensing forms", () => {
+    const licensingForms = getFormsByCategory("licensing");
+    const slugs = licensingForms.map((f) => f.slug);
+
+    expect(slugs).toContain("contractor-license-qualifier");
+    expect(slugs).toContain("home-improvement-licensing");
+    expect(slugs).not.toContain("l1-hil-auto-02");
+    expect(slugs).not.toContain("hic-auto-processing");
+  });
+
+  it("describes active immigration forms as intake review packets, not final filing", () => {
+    const immigrationForms = getFormsByCategory("immigration");
+
+    immigrationForms.forEach((form) => {
+      expect(form.description.toLowerCase()).toContain("intake");
+      expect(form.description.toLowerCase()).toContain("review");
+      expect(form.description.toLowerCase()).not.toContain("filing");
+      expect(form.description.toLowerCase()).not.toContain("application");
+    });
+  });
 });
 
 describe("categories array", () => {
@@ -276,5 +334,12 @@ describe("specific known forms", () => {
     expect(form?.platform).toBe("native");
     expect(form?.nativeComponent).toBe("HomeImprovementForm");
     expect(form?.category).toBe("licensing");
+  });
+
+  it("HIC short link resolves to the full Home Improvement Licensing packet", () => {
+    const form = getFormByShortLinkSlug("hic");
+    expect(form?.slug).toBe("home-improvement-licensing");
+    expect(form?.nativeComponent).toBe("HomeImprovementForm");
+    expect(form?.active).toBe(true);
   });
 });
