@@ -3,7 +3,6 @@ import { getFormBySlug } from "@/lib/forms";
 import { toPublicDescriptor } from "../descriptor";
 
 export const dynamic = "force-dynamic";
-export const revalidate = 3600;
 
 function corsHeaders() {
   const allowed =
