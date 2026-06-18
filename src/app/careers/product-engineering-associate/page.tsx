@@ -11,7 +11,7 @@ import { ProductEngineeringAssociateForm } from "./ProductEngineeringAssociateFo
 export const metadata: Metadata = {
   title: CAREERS_ROLE_TITLE,
   description:
-    "Invitation-only application for a junior product engineering associate role supporting Advantage web products, forms, dashboards, and user-flow testing.",
+    "Open application for a junior product engineering associate role supporting Advantage web products, forms, dashboards, and user-flow testing.",
   alternates: { canonical: CAREERS_ROLE_PATH },
   robots: {
     index: false,
@@ -26,7 +26,7 @@ export default function ProductEngineeringAssociatePage() {
         <Container className="grid gap-10 py-12 lg:grid-cols-[minmax(0,1fr)_420px] lg:py-16">
           <div className="max-w-3xl">
             <div className="mb-5 inline-flex rounded-full border border-[var(--border)] bg-[var(--blue-bg)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.08em] text-[var(--deep-blue)]">
-              Invitation-only partner intake
+              Partner referral intake
             </div>
             <h1 className="text-3xl font-bold leading-tight text-[var(--text)] sm:text-5xl">
               {CAREERS_ROLE_TITLE}
