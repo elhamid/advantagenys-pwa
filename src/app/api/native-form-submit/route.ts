@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { getFormBySlug } from "@/lib/forms";
 import { getNativeFormSchema } from "@/lib/native-form-schemas/generated";
 import {
   answerRecord,
@@ -7,6 +8,7 @@ import {
   buildNativeAnswers,
   collectFormDataValues,
   extractNativeContact,
+  nativeEnglishInputErrors,
 } from "@/lib/native-form-schemas/answers";
 import type { NativeFormSchema } from "@/lib/native-form-schemas/types";
 
@@ -283,8 +285,20 @@ export async function POST(request: NextRequest) {
   if (!schema) {
     return NextResponse.json({ success: false, error: "Unknown form." }, { status: 404 });
   }
+  const form = getFormBySlug(slug);
+  if (!form || !form.active) {
+    return NextResponse.json({ success: false, error: "Form not available." }, { status: 404 });
+  }
 
   const values = collectFormDataValues(formData, schema);
+  const englishErrors = nativeEnglishInputErrors(schema, values);
+  if (englishErrors.length > 0) {
+    return NextResponse.json(
+      { success: false, error: englishErrors[0] },
+      { status: 400 }
+    );
+  }
+
   const preliminaryAnswers = buildNativeAnswers(schema, values);
   const preliminaryContact = extractNativeContact(preliminaryAnswers);
 

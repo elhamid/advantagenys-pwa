@@ -17,7 +17,7 @@ export type PublicFormDescriptor = {
 };
 
 export function toPublicDescriptor(f: FormConfig): PublicFormDescriptor {
-  const publicUrl = `${BASE_URL}/resources/forms/${f.slug}`;
+  const publicUrl = f.type === "link" && f.linkUrl ? f.linkUrl : `${BASE_URL}/resources/forms/${f.slug}`;
   const shortUrl = f.shortLinkSlug ? `${BASE_URL}/r/${f.shortLinkSlug}` : null;
   return {
     slug: f.slug,

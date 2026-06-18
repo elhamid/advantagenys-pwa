@@ -3,6 +3,7 @@ import {
   forms,
   categories,
   getFormBySlug,
+  getFormByShortLinkSlug,
   getFormsByCategory,
   categoryColors,
   type FormConfig,
@@ -31,7 +32,7 @@ describe("forms data integrity", () => {
     expect(unique.size).toBe(priorities.length);
   });
 
-  it("has 5 retired forms (inactive) — Divorce, Sales Tax, Bookkeeping, New I-130 pair", () => {
+  it("has 7 retired forms (inactive) including thin HIC stubs", () => {
     const retired = forms.filter((f) => !f.active).map((f) => f.id);
     expect(retired).toEqual(
       expect.arrayContaining([
@@ -40,9 +41,11 @@ describe("forms data integrity", () => {
         "260414184804049", // Bookkeeping Form
         "243156342192150", // New I-130 Petitioner
         "243156183104146", // New I-130 Beneficiary
+        "253344597070157", // L1-HIL Auto 02 thin HIC routing stub
+        "253484272415054", // HIC Auto Processing thin automation stub
       ])
     );
-    expect(retired).toHaveLength(5);
+    expect(retired).toHaveLength(7);
   });
 
   it("every active form has a boolean true active flag", () => {
@@ -93,8 +96,6 @@ describe("forms data integrity", () => {
       "contractor-license-qualifier",
       "boir-form",
       "citizenship-info-form",
-      "l1-hil-auto-02",
-      "hic-auto-processing",
     ];
 
     generatedSlugs.forEach((slug) => {
@@ -235,6 +236,27 @@ describe("getFormsByCategory()", () => {
       expect(f.active).toBe(true);
     });
   });
+
+  it("does not expose thin HIC automation stubs in active licensing forms", () => {
+    const licensingForms = getFormsByCategory("licensing");
+    const slugs = licensingForms.map((f) => f.slug);
+
+    expect(slugs).toContain("contractor-license-qualifier");
+    expect(slugs).toContain("home-improvement-licensing");
+    expect(slugs).not.toContain("l1-hil-auto-02");
+    expect(slugs).not.toContain("hic-auto-processing");
+  });
+
+  it("describes active immigration forms as intake review packets, not final filing", () => {
+    const immigrationForms = getFormsByCategory("immigration");
+
+    immigrationForms.forEach((form) => {
+      expect(form.description.toLowerCase()).toContain("intake");
+      expect(form.description.toLowerCase()).toContain("review");
+      expect(form.description.toLowerCase()).not.toContain("filing");
+      expect(form.description.toLowerCase()).not.toContain("application");
+    });
+  });
 });
 
 describe("categories array", () => {
@@ -312,5 +334,12 @@ describe("specific known forms", () => {
     expect(form?.platform).toBe("native");
     expect(form?.nativeComponent).toBe("HomeImprovementForm");
     expect(form?.category).toBe("licensing");
+  });
+
+  it("HIC short link resolves to the full Home Improvement Licensing packet", () => {
+    const form = getFormByShortLinkSlug("hic");
+    expect(form?.slug).toBe("home-improvement-licensing");
+    expect(form?.nativeComponent).toBe("HomeImprovementForm");
+    expect(form?.active).toBe(true);
   });
 });

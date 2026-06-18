@@ -26,6 +26,13 @@ const jotform = {
   embedUrl: "https://form.jotform.com/abc123",
 } as const;
 
+const inactiveNative = {
+  ...nativeForm,
+  slug: "inactive",
+  title: "Inactive Intake",
+  active: false,
+} as const;
+
 vi.mock("next/navigation", () => ({
   notFound: vi.fn(() => {
     throw new Error("NOT_FOUND");
@@ -99,6 +106,7 @@ vi.mock("@/lib/forms", () => ({
       };
     }
     if (slug === "jotform-intake") return jotform;
+    if (slug === "inactive") return inactiveNative;
     return null;
   }),
 }));
@@ -130,11 +138,21 @@ describe("Resource form route", () => {
     expect(metadata.title).toBe("Form Not Found");
   });
 
+  it("returns fallback metadata for inactive forms", async () => {
+    const metadata = await generateMetadata({ params: Promise.resolve({ slug: "inactive" }) });
+
+    expect(metadata.title).toBe("Form Not Found");
+  });
+
   it("renders the native form branch", async () => {
     const jsx = await FormPage({ params: Promise.resolve({ slug: "native-intake" }) });
     render(jsx);
 
     expect(screen.getByRole("heading", { name: /native intake/i })).toBeInTheDocument();
+    expect(screen.getByText(/after you submit/i)).toBeInTheDocument();
+    expect(screen.getByText(/staff review packet/i)).toBeInTheDocument();
+    expect(screen.getByText(/language and spelling/i)).toBeInTheDocument();
+    expect(screen.getByText(/passport or government id/i)).toBeInTheDocument();
     expect(screen.getByTestId("native-form-component")).toBeInTheDocument();
     expect(screen.getByTestId("share-full")).toHaveTextContent("/resources/forms/native-intake");
     expect(screen.getByTestId("share-whatsapp")).toBeInTheDocument();
@@ -166,6 +184,10 @@ describe("Resource form route", () => {
 
     unmount();
     expect(document.body.querySelector('script[src="https://cdn.jotfor.ms/s/umd/latest/for-form-embed-handler.js"]')).toBeNull();
+  });
+
+  it("does not render inactive direct form slugs", async () => {
+    await expect(FormPage({ params: Promise.resolve({ slug: "inactive" }) })).rejects.toThrow("NOT_FOUND");
   });
 
   it("renders the FormPageShareBar variants", () => {

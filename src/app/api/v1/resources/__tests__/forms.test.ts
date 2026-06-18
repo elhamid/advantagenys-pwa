@@ -33,8 +33,27 @@ describe("GET /api/v1/resources/forms", () => {
       expect(form).toHaveProperty("active", true);
       expect(typeof form.slug).toBe("string");
       expect(typeof form.title).toBe("string");
-      expect(form.publicUrl).toContain("advantagenys.com/resources/forms/");
+      expect(typeof form.publicUrl).toBe("string");
     }
+  });
+
+  it("service forms use form detail URLs and link resources use their live destination URLs", async () => {
+    const res = GET();
+    const body = await res.json();
+
+    const itin = body.forms.find((form: { slug: string }) => form.slug === "itin-registration-form");
+    expect(itin.publicUrl).toContain("advantagenys.com/resources/forms/itin-registration-form");
+
+    const officeAddress = body.forms.find((form: { slug: string }) => form.slug === "office-address");
+    expect(officeAddress.publicUrl).toBe(
+      "https://maps.google.com/?q=229-14+Linden+Blvd+Cambria+Heights+NY+11411"
+    );
+
+    const abcReviews = body.forms.find((form: { slug: string }) => form.slug === "abc-google-reviews");
+    expect(abcReviews.publicUrl).toBe("https://g.page/r/CZy_8wX9_yQNEBM/review");
+
+    const zelle = body.forms.find((form: { slug: string }) => form.slug === "zelle-payment-info");
+    expect(zelle.publicUrl).toBe("https://www.zellepay.com");
   });
 
   // -----------------------------------------------------------------------

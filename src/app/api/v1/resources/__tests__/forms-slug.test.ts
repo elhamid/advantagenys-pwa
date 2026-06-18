@@ -23,6 +23,18 @@ describe("GET /api/v1/resources/forms/[slug]", () => {
     expect(body.publicUrl).toContain("advantagenys.com/resources/forms/itin-registration-form");
   });
 
+  it("returns a live destination publicUrl for active link resources", async () => {
+    const [req, ctx] = makeGetRequest("office-address");
+    const res = await GET(req, ctx);
+    expect(res.status).toBe(200);
+
+    const body = await res.json();
+    expect(body.slug).toBe("office-address");
+    expect(body.publicUrl).toBe(
+      "https://maps.google.com/?q=229-14+Linden+Blvd+Cambria+Heights+NY+11411"
+    );
+  });
+
   // -----------------------------------------------------------------------
   // 2. Invalid slug returns 404
   // -----------------------------------------------------------------------

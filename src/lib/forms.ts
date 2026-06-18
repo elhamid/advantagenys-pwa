@@ -79,7 +79,7 @@ export const forms: FormConfig[] = [
   {
     id: "220887424251052",
     title: "Immigration Form for Petitioner",
-    description: "I-130/I-864 petition filing",
+    description: "I-130/I-864 petitioner intake for team review",
     category: "immigration",
     platform: "native",
     nativeComponent: "GeneratedNativeForm",
@@ -90,7 +90,7 @@ export const forms: FormConfig[] = [
   {
     id: "220896671023154",
     title: "Immigration Form for Beneficiary",
-    description: "Beneficiary information for green card",
+    description: "Beneficiary green card intake for team review",
     category: "immigration",
     platform: "native",
     nativeComponent: "GeneratedNativeForm",
@@ -129,7 +129,7 @@ export const forms: FormConfig[] = [
   {
     id: "241966156522056",
     title: "Citizenship Info Form",
-    description: "N-400 naturalization application",
+    description: "N-400 naturalization intake for team review",
     category: "immigration",
     platform: "native",
     nativeComponent: "GeneratedNativeForm",
@@ -201,24 +201,28 @@ export const forms: FormConfig[] = [
     slug: toSlug("New I-130 Beneficiary"),
   },
   {
+    // Retired 2026-06-18 — thin HIC routing/consent stub. Keep slug history;
+    // the public customer-facing HIC packet is `Home Improvement Licensing`.
     id: "253344597070157",
     title: "L1-HIL Auto 02",
     description: "Automated HIC license processing",
     category: "licensing",
     platform: "native",
     nativeComponent: "GeneratedNativeForm",
-    active: true,
+    active: false,
     priority: 14,
     slug: toSlug("L1-HIL Auto 02"),
   },
   {
+    // Retired 2026-06-18 — thin contact/ID automation stub. Keep slug history;
+    // the public customer-facing HIC packet is `Home Improvement Licensing`.
     id: "253484272415054",
     title: "HIC Auto Processing",
     description: "HIC license auto-qualification",
     category: "licensing",
     platform: "native",
     nativeComponent: "GeneratedNativeForm",
-    active: true,
+    active: false,
     priority: 15,
     slug: toSlug("HIC Auto Processing"),
   },

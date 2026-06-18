@@ -283,6 +283,63 @@ describe('POST /api/contact', () => {
     expect(sentBody.turnstileToken).toBeUndefined()
   })
 
+  it('normalizes Latin accents in non-name staff-visible fields before forwarding', async () => {
+    const fetchSpy = makeFetchMock()
+    global.fetch = fetchSpy
+
+    await POST(makeRequest({
+      ...validContact,
+      fullName: 'Jose Nino',
+      businessType: 'Café owner',
+      message: 'Necesito ayuda con renovacion',
+    }))
+
+    const webhookCall = (fetchSpy.mock.calls as unknown as [string, RequestInit][]).find(
+      ([url]) => !String(url).includes('cloudflare.com'),
+    )
+    const sentBody = JSON.parse(webhookCall![1].body as string)
+    expect(sentBody.fullName).toBe('Jose Nino')
+    expect(sentBody.businessType).toBe('Cafe owner')
+  })
+
+  it('rejects accented legal names instead of silently rewriting passport spelling', async () => {
+    const res = await POST(makeRequest({
+      ...validContact,
+      fullName: 'José Niño',
+    }))
+
+    expect(res.status).toBe(400)
+    const body = await res.json()
+    expect(body.error).toMatch(/english letters/i)
+    expect(body.error).toMatch(/passport/i)
+  })
+
+  it('rejects accented business names instead of silently rewriting legal entity spelling', async () => {
+    const res = await POST(makeRequest({
+      ...validContact,
+      type: 'client-info',
+      fullName: 'Jose Nino',
+      businessName: 'Café Nino LLC',
+    }))
+
+    expect(res.status).toBe(400)
+    const body = await res.json()
+    expect(body.error).toMatch(/english letters/i)
+    expect(body.error).toMatch(/passport/i)
+  })
+
+  it('rejects non-Latin staff-visible input with an English-entry instruction', async () => {
+    const res = await POST(makeRequest({
+      ...validContact,
+      fullName: '张伟',
+    }))
+
+    expect(res.status).toBe(400)
+    const body = await res.json()
+    expect(body.error).toMatch(/english letters/i)
+    expect(body.error).toMatch(/passport/i)
+  })
+
   it('sends x-pwa-secret header to webhook', async () => {
     const fetchSpy = makeFetchMock()
     global.fetch = fetchSpy
