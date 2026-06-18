@@ -1,19 +1,17 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import {
   CAREERS_ROLE_TITLE,
   WORK_SAMPLE_URL,
-  convertInrToUsd,
-  convertUsdToInr,
 } from "@/lib/careers/product-engineering-associate";
 
-interface ExchangeRateState {
-  rate: number | null;
-  date?: string;
-  source?: string;
-  status: "loading" | "ready" | "error";
-}
+// Hidden anti-spam honeypot field name. Kept inline (not imported from the
+// recruiting-antispam module) so this client component never pulls node:crypto
+// into the browser bundle. Must match HONEYPOT_FIELD on the server. Name is
+// deliberately non-semantic so browser autofill does not target it. On the
+// server a filled value is a SOFT flag-for-review signal, never a hard reject.
+const HONEYPOT_FIELD = "contact_ref_2";
 
 const surfaceOptions = [
   "Client-facing pages",
@@ -24,35 +22,8 @@ const surfaceOptions = [
   "Small frontend/content fixes",
 ];
 
-function formatInr(value: number) {
-  return new Intl.NumberFormat("en-IN", {
-    maximumFractionDigits: 0,
-  }).format(value);
-}
-
-function formatUsd(value: number) {
-  return new Intl.NumberFormat("en-US", {
-    maximumFractionDigits: 2,
-    minimumFractionDigits: value % 1 === 0 ? 0 : 2,
-  }).format(value);
-}
-
-function formatRate(value: number) {
-  return new Intl.NumberFormat("en-IN", {
-    maximumFractionDigits: 4,
-    minimumFractionDigits: 2,
-  }).format(value);
-}
-
 export function ProductEngineeringAssociateForm() {
   const formRef = useRef<HTMLFormElement>(null);
-  const [rateState, setRateState] = useState<ExchangeRateState>({
-    rate: null,
-    status: "loading",
-  });
-  const [enteredCurrency, setEnteredCurrency] = useState<"INR" | "USD">("INR");
-  const [inr, setInr] = useState("");
-  const [usd, setUsd] = useState("");
   const [resumeName, setResumeName] = useState("");
   const [proofName, setProofName] = useState("");
   const [proofRecordingUrl, setProofRecordingUrl] = useState("");
@@ -60,60 +31,19 @@ export function ProductEngineeringAssociateForm() {
   const [error, setError] = useState("");
   const [applicationId, setApplicationId] = useState("");
 
-  useEffect(() => {
-    let active = true;
-    fetch("/api/careers/product-engineering-associate/exchange-rate")
-      .then((res) => res.json())
-      .then((data) => {
-        if (!active) return;
-        if (data.success && typeof data.rate === "number") {
-          setRateState({
-            rate: data.rate,
-            date: data.date,
-            source: data.source,
-            status: "ready",
-          });
-        } else {
-          setRateState({ rate: null, status: "error" });
-        }
-      })
-      .catch(() => {
-        if (active) setRateState({ rate: null, status: "error" });
-      });
-    return () => {
-      active = false;
-    };
-  }, []);
-
-  const rateHelp = useMemo(() => {
-    if (rateState.status === "loading") return "Loading USD/INR reference rate...";
-    if (rateState.status === "error" || !rateState.rate) {
-      return "Exchange-rate lookup is unavailable. Enter either value manually.";
-    }
-    return `1 USD = ${formatRate(rateState.rate)} INR, ${rateState.source}, ${rateState.date ?? "latest working day"}.`;
-  }, [rateState]);
-
-  function handleInrChange(value: string) {
-    setEnteredCurrency("INR");
-    setInr(value);
-    const numeric = Number(value.replace(/,/g, ""));
-    if (rateState.rate && Number.isFinite(numeric) && numeric > 0) {
-      setUsd(formatUsd(convertInrToUsd(numeric, rateState.rate)));
-    }
-  }
-
-  function handleUsdChange(value: string) {
-    setEnteredCurrency("USD");
-    setUsd(value);
-    const numeric = Number(value.replace(/,/g, ""));
-    if (rateState.rate && Number.isFinite(numeric) && numeric > 0) {
-      setInr(formatInr(convertUsdToInr(numeric, rateState.rate)));
-    }
-  }
-
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!formRef.current) return;
+
+    const resumeInput = formRef.current.elements.namedItem("resume") as HTMLInputElement | null;
+    const resumeUrlInput = formRef.current.elements.namedItem("resumeUrl") as HTMLInputElement | null;
+    const hasResumeFile = Boolean(resumeInput?.files && resumeInput.files.length > 0);
+    const hasResumeLink = Boolean(resumeUrlInput?.value && resumeUrlInput.value.trim().length > 0);
+    if (!hasResumeFile && !hasResumeLink) {
+      setError("A resume is required: upload a PDF/DOC/DOCX file or paste a resume link.");
+      setStatus("error");
+      return;
+    }
 
     const proofInput = formRef.current.elements.namedItem("proofScreenshot") as HTMLInputElement | null;
     const hasProofFile = Boolean(proofInput?.files && proofInput.files.length > 0);
@@ -129,9 +59,6 @@ export function ProductEngineeringAssociateForm() {
     setError("");
 
     const formData = new FormData(formRef.current);
-    formData.set("enteredCurrency", enteredCurrency);
-    if (rateState.rate) formData.set("usdInrRate", String(rateState.rate));
-    if (rateState.date) formData.set("rateDate", rateState.date);
 
     try {
       const response = await fetch("/api/careers/product-engineering-associate", {
@@ -148,8 +75,6 @@ export function ProductEngineeringAssociateForm() {
       setResumeName("");
       setProofName("");
       setProofRecordingUrl("");
-      setInr("");
-      setUsd("");
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : "Application could not be submitted.");
       setStatus("error");
@@ -178,6 +103,22 @@ export function ProductEngineeringAssociateForm() {
         </div>
       ) : (
         <div className="space-y-8">
+          {/* Honeypot: hidden from humans and assistive tech, off-screen, not
+              tabbable, with a non-semantic name + autoComplete="new-password" so
+              browser autofill / password managers skip it. A filled value is a
+              SOFT flag-for-review signal on the server, NEVER a hard reject, so a
+              legit candidate is never blocked even if their browser fills it.
+              The shared ?ref= link's normal candidate never sees this field. */}
+          <div aria-hidden="true" className="absolute h-0 w-0 overflow-hidden" style={{ position: "absolute", left: "-9999px" }}>
+            <input
+              type="text"
+              name={HONEYPOT_FIELD}
+              tabIndex={-1}
+              autoComplete="new-password"
+              aria-hidden="true"
+            />
+          </div>
+
           <section>
             <div className="mb-5">
               <h2 className="text-xl font-bold text-[var(--text)]">Candidate details</h2>
@@ -219,7 +160,7 @@ export function ProductEngineeringAssociateForm() {
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-[var(--text)]">Resume and compensation</h2>
+            <h2 className="text-xl font-bold text-[var(--text)]">Resume</h2>
             <div className="mt-5 grid gap-4 lg:grid-cols-2">
               <label className="flex min-h-32 cursor-pointer flex-col justify-center border border-dashed border-[var(--border)] bg-[var(--bg)] px-4 py-5 text-sm font-semibold text-[var(--text)] hover:border-[var(--blue-accent)]">
                 <span className="flex items-center gap-2">
@@ -227,7 +168,7 @@ export function ProductEngineeringAssociateForm() {
                   Resume file
                 </span>
                 <span className="mt-2 text-xs font-normal text-[var(--text-secondary)]">
-                  Optional, strongly recommended. PDF, DOC, or DOCX. Max 5 MB.
+                  Required (file or link below). PDF, DOC, or DOCX. Max 5 MB.
                 </span>
                 <span className="mt-3 text-xs text-[var(--text-muted)]">{resumeName || "No file selected"}</span>
                 <input
@@ -242,45 +183,9 @@ export function ProductEngineeringAssociateForm() {
                 Resume link
                 <input name="resumeUrl" type="url" placeholder="https://drive.google.com/..." className="mt-2 w-full border border-[var(--border)] bg-white px-3 py-3 text-sm outline-none focus:border-[var(--blue-accent)]" />
                 <span className="mt-2 block text-xs font-normal text-[var(--text-secondary)]">
-                  Optional, strongly recommended if file upload is inconvenient.
+                  Use this instead of a file if upload is inconvenient. A resume file or link is required.
                 </span>
               </label>
-            </div>
-
-            <div className="mt-5 border border-[var(--border)] bg-[var(--bg)] p-4">
-              <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
-                <div>
-                  <h3 className="text-sm font-bold uppercase tracking-[0.08em] text-[var(--text-muted)]">
-                    Expected monthly compensation
-                  </h3>
-                  <p className="mt-1 text-sm text-[var(--text-secondary)]">{rateHelp}</p>
-                </div>
-                <span className="text-xs font-medium text-[var(--text-muted)]">Reference conversion only</span>
-              </div>
-              <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                <label className="block text-sm font-semibold text-[var(--text)]">
-                  INR per month
-                  <input
-                    name="compensationInr"
-                    inputMode="decimal"
-                    value={inr}
-                    onChange={(event) => handleInrChange(event.target.value)}
-                    placeholder="90000"
-                    className="mt-2 w-full border border-[var(--border)] bg-white px-3 py-3 text-sm outline-none focus:border-[var(--blue-accent)]"
-                  />
-                </label>
-                <label className="block text-sm font-semibold text-[var(--text)]">
-                  USD per month
-                  <input
-                    name="compensationUsd"
-                    inputMode="decimal"
-                    value={usd}
-                    onChange={(event) => handleUsdChange(event.target.value)}
-                    placeholder="1100"
-                    className="mt-2 w-full border border-[var(--border)] bg-white px-3 py-3 text-sm outline-none focus:border-[var(--blue-accent)]"
-                  />
-                </label>
-              </div>
             </div>
           </section>
 
