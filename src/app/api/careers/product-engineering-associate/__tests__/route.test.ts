@@ -3,16 +3,19 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const storageMock = vi.hoisted(() => ({
   storeRecruitingApplication: vi.fn(),
+  fingerprintExists: vi.fn(),
+  isRecruitingSupabaseConfigured: vi.fn(),
 }));
 
 vi.mock("@/lib/careers/recruiting-storage", () => storageMock);
 
 import { POST, _testing } from "../route";
 import { deriveVerificationCode } from "@/lib/careers/product-engineering-associate";
+import { HONEYPOT_FIELD } from "@/lib/careers/recruiting-antispam";
 
 function buildFormData(overrides: Record<string, string> = {}) {
   const data = new FormData();
-  const fields = {
+  const fields: Record<string, string> = {
     fullName: "Priya Shah",
     email: "priya@example.com",
     whatsapp: "+91 98765 43210",
@@ -20,19 +23,16 @@ function buildFormData(overrides: Record<string, string> = {}) {
     referralCode: "partner-a",
     availability: "Two weeks",
     resumeUrl: "https://drive.google.com/resume",
-    compensationInr: "90000",
-    compensationUsd: "940.34",
-    enteredCurrency: "INR",
-    usdInrRate: "95.71",
-    rateDate: "2026-06-08",
-    experienceSummary: "I have tested forms, dashboards, and small React pages.",
+    experienceSummary: "I have tested forms, dashboards, and small React pages on real devices.",
     issueFindings:
-      "1. Mobile spacing is tight. 2. CTA label is unclear. 3. Form field lacks helper text. 4. Console has a warning. 5. Desktop heading wraps oddly.",
-    topIssueSteps: "Open the page on mobile, scroll to the form, tap the CTA, and compare the visible result.",
-    firstFixReason: "I would fix the CTA first because it affects whether the user can continue.",
-    smallImprovement: "I would tighten the form labels and make the next action clearer.",
-    riskyQuestion: "Should I change only copy, or can I adjust form behavior too?",
-    consoleNetworkNotes: "One console warning appeared; no failed network requests.",
+      "On mobile the submit is below the fold and the selected service is not echoed. The phone field has no validation and accepts letters. The confirmation says email but the scenario promised WhatsApp — channel mismatch. The referral code is prefilled and editable. On desktop the long link does not wrap and widens the layout.",
+    topIssueSteps:
+      "Step 1: open on an iPhone at 390px. Step 2: type letters in the phone field. Expected: a validation error. Actual: it accepts garbage and submits. Step 3: scroll, the submit is below the fold.",
+    firstFixReason:
+      "I would fix the phone validation first because invalid numbers break follow-up on every lead and hurt conversion. I would not touch the prefilled referral yet.",
+    smallImprovement: "I would add an aria-label to the submit button and echo the selected service.",
+    riskyQuestion: "I would not change the referral prefill without asking whether it is intentional attribution; I would confirm scope first.",
+    consoleNetworkNotes: "No console errors, but the form submits with no network request.",
     proofLinks: "https://drive.google.com/proof",
     proofRecordingUrl: "https://www.loom.com/share/proof",
     verificationCode: deriveVerificationCode("partner-a"),
@@ -61,16 +61,23 @@ function makeRequest(formData: FormData): NextRequest {
 describe("POST /api/careers/product-engineering-associate", () => {
   beforeEach(() => {
     _testing.applicationLimiter.reset();
+    storageMock.storeRecruitingApplication.mockReset();
+    storageMock.fingerprintExists.mockReset();
+    storageMock.isRecruitingSupabaseConfigured.mockReset();
     process.env.CAREERS_WEBHOOK_URL = "https://careers-webhook.example.com";
     delete process.env.EMAIL_HOST;
     delete process.env.EMAIL_USER;
     delete process.env.EMAIL_PASS;
     delete process.env.EMAIL_TO;
+    storageMock.isRecruitingSupabaseConfigured.mockReturnValue(true);
+    storageMock.fingerprintExists.mockResolvedValue(false);
     storageMock.storeRecruitingApplication.mockResolvedValue({
       supabaseOk: true,
       resume: { uploaded: false },
+      proof: { uploaded: false },
     });
-    global.fetch = vi.fn(async () => ({ ok: true } as Response));
+    // Dead-link HEAD checks + webhook fetch.
+    global.fetch = vi.fn(async () => ({ ok: true, status: 200 } as Response));
   });
 
   afterEach(() => {
@@ -87,8 +94,10 @@ describe("POST /api/careers/product-engineering-associate", () => {
     expect(body.success).toBe(true);
     expect(body.applicationId).toEqual(expect.any(String));
     expect(body.score).toBeUndefined();
+    expect(body.delivery.persisted).toBe(true);
     expect(body.delivery.supabase).toBe(true);
     expect(body.delivery.webhook).toBe(true);
+    expect(body.delivery.localOnly).toBe(false);
     expect(storageMock.storeRecruitingApplication).toHaveBeenCalledWith(
       expect.objectContaining({
         hiringLane: "junior_product_engineering_associate",
@@ -97,26 +106,19 @@ describe("POST /api/careers/product-engineering-associate", () => {
       }),
       expect.objectContaining({
         total: expect.any(Number),
+        label: expect.any(String),
         explanation: expect.any(String),
       }),
       null,
       null
     );
-
-    expect(global.fetch).toHaveBeenCalledWith(
-      "https://careers-webhook.example.com",
-      expect.objectContaining({
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      })
-    );
   });
 
-  it("accepts applications without resume file or link", async () => {
+  it("requires a resume (file or link)", async () => {
     const response = await POST(makeRequest(buildFormData({ resumeUrl: "" })));
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(400);
     const body = await response.json();
-    expect(body.success).toBe(true);
+    expect(body.error).toMatch(/resume is required/i);
   });
 
   it("rejects unsupported resume file types", async () => {
@@ -129,22 +131,56 @@ describe("POST /api/careers/product-engineering-associate", () => {
     expect(body.error).toMatch(/pdf, doc, or docx/i);
   });
 
-  it("accepts a submission with an arbitrary verification code (open shared link)", async () => {
-    const response = await POST(makeRequest(buildFormData({ verificationCode: "PEA-WRONG1" })));
-    expect(response.status).toBe(200);
+  it("rejects when the honeypot field is filled (bot)", async () => {
+    const formData = buildFormData();
+    formData.set(HONEYPOT_FIELD, "http://spam.example");
+    const response = await POST(makeRequest(formData));
+    expect(response.status).toBe(400);
     const body = await response.json();
-    expect(body.success).toBe(true);
-    expect(body.applicationId).toEqual(expect.any(String));
-    expect(storageMock.storeRecruitingApplication).toHaveBeenCalled();
+    expect(body.success).toBe(false);
+    expect(storageMock.storeRecruitingApplication).not.toHaveBeenCalled();
   });
 
-  it("accepts a submission with no verification code (forwarded shared link)", async () => {
-    const response = await POST(makeRequest(buildFormData({ verificationCode: "" })));
+  it("rejects a disposable email domain", async () => {
+    const response = await POST(makeRequest(buildFormData({ email: "throwaway@mailinator.com" })));
+    expect(response.status).toBe(400);
+    const body = await response.json();
+    expect(body.error).toMatch(/permanent email/i);
+  });
+
+  it("rejects an exact duplicate (same email+phone fingerprint)", async () => {
+    storageMock.fingerprintExists.mockResolvedValue(true);
+    const response = await POST(makeRequest(buildFormData()));
+    expect(response.status).toBe(409);
+    const body = await response.json();
+    expect(body.error).toMatch(/already have an application/i);
+    expect(storageMock.storeRecruitingApplication).not.toHaveBeenCalled();
+  });
+
+  it("allows a first-time candidate even if the dedupe check errors", async () => {
+    storageMock.fingerprintExists.mockRejectedValue(new Error("db down"));
+    const response = await POST(makeRequest(buildFormData()));
     expect(response.status).toBe(200);
     const body = await response.json();
     expect(body.success).toBe(true);
-    expect(body.applicationId).toEqual(expect.any(String));
-    expect(storageMock.storeRecruitingApplication).toHaveBeenCalled();
+  });
+
+  it("accepts the open shared link with an arbitrary or missing verification code", async () => {
+    const arbitrary = await POST(makeRequest(buildFormData({ verificationCode: "PEA-WRONG1" })));
+    expect(arbitrary.status).toBe(200);
+    _testing.applicationLimiter.reset();
+    const missing = await POST(makeRequest(buildFormData({ verificationCode: "", email: "second@example.com" })));
+    expect(missing.status).toBe(200);
+  });
+
+  it("fails LOUD in production when Supabase is not configured at all", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    storageMock.isRecruitingSupabaseConfigured.mockReturnValue(false);
+    const response = await POST(makeRequest(buildFormData()));
+    expect(response.status).toBe(503);
+    const body = await response.json();
+    expect(body.success).toBe(false);
+    expect(storageMock.storeRecruitingApplication).not.toHaveBeenCalled();
   });
 
   it("fails when the proof file upload fails and there is no fallback link", async () => {
@@ -168,6 +204,7 @@ describe("POST /api/careers/product-engineering-associate", () => {
     storageMock.storeRecruitingApplication.mockResolvedValue({
       supabaseOk: false,
       resume: { uploaded: false },
+      proof: { uploaded: false },
       error: "insert failed",
     });
 

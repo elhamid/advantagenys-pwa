@@ -2,8 +2,6 @@ import { describe, expect, it } from "vitest";
 import {
   CAREERS_ROLE_TITLE,
   VERIFICATION_PLACEHOLDER,
-  convertInrToUsd,
-  convertUsdToInr,
   deriveVerificationCode,
   scoreCareerApplication,
   validateApplicationPayload,
@@ -11,8 +9,33 @@ import {
   validateResume,
   type CareerApplicationPayload,
 } from "../product-engineering-associate";
+import {
+  computeRecruitingScore,
+  gateResult,
+  scoreDefectMatch,
+  PLANTED_DEFECTS,
+  TOTAL_PLANTED_DEFECTS,
+} from "../recruiting-scoring";
+
+// A candidate who genuinely inspected the sample and caught real planted defects:
+// channel mismatch, no phone validation, below-fold submit, prefilled referral,
+// non-wrapping long link. Plus reproduction steps + impact prioritization.
+function strongFindings() {
+  return {
+    issueFindings:
+      "On mobile the submit button is pushed below the fold because the service cards stack tall, and the selected service is never echoed near submit. The phone field has no validation and accepts letters. The confirmation says it will email a quote even though the scenario promised WhatsApp — a channel mismatch. The referral code is prefilled (JKH-2026) and editable. On desktop the long reference link does not wrap and widens the layout, causing horizontal scroll.",
+    topIssueSteps:
+      "Step 1: open the page on an iPhone at 390px in Safari. Step 2: tap into the phone field and type letters. Expected: validation error. Actual: it accepts garbage and still submits. Step 3: scroll — the submit button is below the fold.",
+    firstFixReason:
+      "I would fix the phone validation first because invalid phone numbers break our ability to follow up on every lead, which directly hurts conversion. I would NOT touch the referral prefill yet without checking why it is seeded.",
+    riskyQuestion:
+      "I would not change the referral code behavior without asking first: is the prefilled JKH-2026 intentional attribution? I would confirm scope before editing it.",
+    consoleNetworkNotes: "No console errors, but the form submits with no network request to a backend.",
+  };
+}
 
 function validPayload(overrides: Partial<CareerApplicationPayload> = {}): CareerApplicationPayload {
+  const findings = strongFindings();
   return {
     applicationId: "app-test",
     submittedAt: "2026-06-08T00:00:00.000Z",
@@ -29,23 +52,15 @@ function validPayload(overrides: Partial<CareerApplicationPayload> = {}): Career
     resumeFileName: "resume.pdf",
     resumeFileType: "application/pdf",
     resumeFileSize: 1024,
-    compensation: {
-      enteredCurrency: "INR",
-      inrMonthly: 90000,
-      usdMonthly: 940.34,
-      usdInrRate: 95.71,
-      rateDate: "2026-06-08",
-    },
     availability: "Two weeks",
-    experienceSummary: "I have tested forms, dashboards, and small React pages.",
+    experienceSummary: "I have tested forms, dashboards, and small React pages on real devices.",
     surfaces: ["Forms", "Dashboards"],
-    issueFindings:
-      "1. Mobile spacing is tight. 2. CTA label is unclear. 3. Form field lacks helper text. 4. Console has a warning. 5. Desktop heading wraps oddly.",
-    topIssueSteps: "Open the page on mobile, scroll to the form, tap the CTA, and compare the visible result.",
-    firstFixReason: "I would fix the CTA first because it affects whether the user can continue.",
-    smallImprovement: "I would tighten the form labels and make the next action clearer.",
-    riskyQuestion: "Should I change only copy, or can I adjust form behavior too?",
-    consoleNetworkNotes: "One console warning appeared; no failed network requests.",
+    issueFindings: findings.issueFindings,
+    topIssueSteps: findings.topIssueSteps,
+    firstFixReason: findings.firstFixReason,
+    smallImprovement: "I would add an aria-label to the submit button and confirm the selected service near it.",
+    riskyQuestion: findings.riskyQuestion,
+    consoleNetworkNotes: findings.consoleNetworkNotes,
     proofLinks: "https://drive.google.com/example",
     proofRecordingUrl: "https://www.loom.com/share/example",
     proofFileName: "proof.png",
@@ -55,22 +70,17 @@ function validPayload(overrides: Partial<CareerApplicationPayload> = {}): Career
     aiUseDisclosure: "yes",
     aiUseNotes: "I used AI to organize notes, then verified the page manually on mobile and desktop.",
     aiPrompts:
-      "Prompt: 'find usability issues on this quote form'. The AI assumed the phone field validated input; I checked and it accepted letters, so I corrected that claim.",
+      "Prompt: 'find usability issues on this quote form'. The AI assumed the phone field validated input; I checked and it accepted letters, so I corrected that claim and verified it myself.",
     ...overrides,
   };
 }
 
-describe("product engineering associate careers helpers", () => {
-  it("converts expected monthly compensation both ways", () => {
-    expect(convertUsdToInr(1000, 95.71)).toBe(95710);
-    expect(convertInrToUsd(95710, 95.71)).toBe(1000);
-  });
-
+describe("validateApplicationPayload", () => {
   it("accepts a complete application payload", () => {
     expect(validateApplicationPayload(validPayload())).toEqual({ valid: true });
   });
 
-  it("allows submission without resume proof", () => {
+  it("requires a resume file or link (resume is no longer optional)", () => {
     const result = validateApplicationPayload(
       validPayload({
         resumeFileName: undefined,
@@ -79,21 +89,20 @@ describe("product engineering associate careers helpers", () => {
         resumeUrl: undefined,
       })
     );
+    expect(result.valid).toBe(false);
+    expect(result.error).toMatch(/resume is required/i);
+  });
+
+  it("accepts a resume provided as a link only", () => {
+    const result = validateApplicationPayload(
+      validPayload({
+        resumeFileName: undefined,
+        resumeFileType: undefined,
+        resumeFileSize: undefined,
+        resumeUrl: "https://drive.google.com/resume",
+      })
+    );
     expect(result).toEqual({ valid: true });
-  });
-
-  it("derives a stable verification code from a ref token", () => {
-    const code = deriveVerificationCode("edbd1234");
-    expect(code).toMatch(/^PEA-[A-Z0-9]{6}$/);
-    expect(deriveVerificationCode("edbd1234")).toBe(code);
-    expect(deriveVerificationCode("EDBD1234")).toBe(code);
-    expect(deriveVerificationCode("other-ref")).not.toBe(code);
-  });
-
-  it("uses the placeholder verification code when no ref is present", () => {
-    expect(deriveVerificationCode(null)).toBe(VERIFICATION_PLACEHOLDER);
-    expect(deriveVerificationCode("")).toBe(VERIFICATION_PLACEHOLDER);
-    expect(deriveVerificationCode("   ")).toBe(VERIFICATION_PLACEHOLDER);
   });
 
   it("requires at least one proof-of-inspection artifact", () => {
@@ -123,24 +132,9 @@ describe("product engineering associate careers helpers", () => {
     expect(result).toEqual({ valid: true });
   });
 
-  it("accepts an application with no verification code (open shared link)", () => {
-    const result = validateApplicationPayload(validPayload({ verificationCode: undefined }));
-    expect(result).toEqual({ valid: true });
-  });
-
-  it("accepts an application with an arbitrary verification code value", () => {
-    const result = validateApplicationPayload(validPayload({ verificationCode: "PEA-WRONG1" }));
-    expect(result).toEqual({ valid: true });
-  });
-
-  it("accepts a no-ref application without any code (forwarded shared link)", () => {
-    const result = validateApplicationPayload(
-      validPayload({
-        referralCode: undefined,
-        verificationCode: undefined,
-      })
-    );
-    expect(result).toEqual({ valid: true });
+  it("accepts an application via the open shared link with no/arbitrary verification code", () => {
+    expect(validateApplicationPayload(validPayload({ verificationCode: undefined }))).toEqual({ valid: true });
+    expect(validateApplicationPayload(validPayload({ verificationCode: "PEA-WRONG1" }))).toEqual({ valid: true });
   });
 
   it("rejects a raw non-URL proofLinks value as the only artifact", () => {
@@ -157,62 +151,139 @@ describe("product engineering associate careers helpers", () => {
     expect(result.error).toMatch(/proof links must start with/i);
   });
 
-  it("accepts a validated proofLinks URL as the only artifact", () => {
-    const result = validateApplicationPayload(
-      validPayload({
-        proofLinks: "https://drive.google.com/example",
-        proofRecordingUrl: undefined,
-        proofFileName: undefined,
-        proofFileType: undefined,
-        proofFileSize: undefined,
-      })
-    );
-    expect(result).toEqual({ valid: true });
-  });
-
-  it("requires the AI prompts disclosure", () => {
-    const result = validateApplicationPayload(validPayload({ aiPrompts: "" }));
-    expect(result.valid).toBe(false);
-    expect(result.error).toMatch(/aiPrompts/i);
-  });
-
-  it("validates proof file type and size", () => {
-    const png = new File(["proof"], "proof.png", { type: "image/png" });
-    expect(validateProof(png)).toEqual({ valid: true });
-
-    const exe = new File(["bad"], "proof.exe", { type: "application/x-msdownload" });
-    expect(validateProof(exe).valid).toBe(false);
-  });
-
   it("rejects thin work-sample issue findings", () => {
     const result = validateApplicationPayload(validPayload({ issueFindings: "Looks fine." }));
     expect(result.valid).toBe(false);
     expect(result.error).toMatch(/issue findings/i);
   });
 
+  it("validates proof file type and size", () => {
+    const png = new File(["proof"], "proof.png", { type: "image/png" });
+    expect(validateProof(png)).toEqual({ valid: true });
+    const exe = new File(["bad"], "proof.exe", { type: "application/x-msdownload" });
+    expect(validateProof(exe).valid).toBe(false);
+  });
+
   it("validates resume type and size", () => {
     const pdf = new File(["resume"], "resume.pdf", { type: "application/pdf" });
     expect(validateResume(pdf)).toEqual({ valid: true });
-
     const png = new File(["bad"], "resume.png", { type: "image/png" });
     expect(validateResume(png).valid).toBe(false);
   });
+});
 
-  it("scores a detailed product review with reviewer-readable explanation", () => {
-    const score = scoreCareerApplication(validPayload());
+describe("deriveVerificationCode (unchanged informational helper)", () => {
+  it("derives a stable code from a ref token", () => {
+    const code = deriveVerificationCode("edbd1234");
+    expect(code).toMatch(/^PEA-[A-Z0-9]{6}$/);
+    expect(deriveVerificationCode("EDBD1234")).toBe(code);
+    expect(deriveVerificationCode("other-ref")).not.toBe(code);
+  });
 
-    expect(score.total).toBeGreaterThan(6);
-    expect(score.label).toEqual(expect.any(String));
-    expect(score.explanation).toMatch(/review|proof|detail|prioritization/i);
-    expect(score.breakdown).toEqual(
-      expect.objectContaining({
-        workSampleDetail: expect.any(Number),
-        reproductionClarity: expect.any(Number),
-        prioritization: expect.any(Number),
-        judgment: expect.any(Number),
-        proofDiscipline: expect.any(Number),
-        toolTransparency: expect.any(Number),
+  it("uses the placeholder when no ref is present", () => {
+    expect(deriveVerificationCode(null)).toBe(VERIFICATION_PLACEHOLDER);
+    expect(deriveVerificationCode("")).toBe(VERIFICATION_PLACEHOLDER);
+  });
+});
+
+describe("hard gates", () => {
+  it("passes when email, phone, proof, resume, and AI honesty are all present", () => {
+    const gate = gateResult(validPayload());
+    expect(gate.passed).toBe(true);
+    expect(gate.failures).toHaveLength(0);
+  });
+
+  it("fails when there is no resume", () => {
+    const gate = gateResult(validPayload({ resumeFileName: undefined, resumeUrl: undefined }));
+    expect(gate.passed).toBe(false);
+    expect(gate.failures).toContain("no_resume");
+  });
+
+  it("fails when AI is disclosed as used but no prompt is pasted", () => {
+    const gate = gateResult(validPayload({ aiUseDisclosure: "yes", aiPrompts: "" }));
+    expect(gate.passed).toBe(false);
+    expect(gate.failures).toContain("ai_disclosure_incomplete");
+  });
+
+  it("fails on an invalid phone", () => {
+    const gate = gateResult(validPayload({ whatsapp: "abc" }));
+    expect(gate.passed).toBe(false);
+    expect(gate.failures).toContain("invalid_phone");
+  });
+});
+
+describe("defect-match scoring against the planted sample defects", () => {
+  it("catches the real planted defects from genuine findings", () => {
+    const result = scoreDefectMatch(validPayload());
+    expect(result.caughtCount).toBeGreaterThanOrEqual(4);
+    // All five planted-defect ids are known to the rubric.
+    expect(PLANTED_DEFECTS).toHaveLength(TOTAL_PLANTED_DEFECTS);
+    expect(result.caught).toEqual(expect.arrayContaining(["phone_validation", "channel_mismatch"]));
+    expect(result.reproductionPoints).toBeGreaterThan(0);
+    expect(result.prioritizationPoints).toBeGreaterThan(0);
+  });
+
+  it("scores near zero defects for buzzword padding with no real findings", () => {
+    const padded =
+      "This is a great product. Mobile and desktop look modern. The form and cta and console and network are present. I reviewed everything carefully and it is high quality work with attention to detail.";
+    const result = scoreDefectMatch(
+      validPayload({
+        issueFindings: padded,
+        topIssueSteps: padded,
+        firstFixReason: padded,
+        riskyQuestion: padded,
+        consoleNetworkNotes: padded,
       })
     );
+    expect(result.caughtCount).toBeLessThanOrEqual(1);
+  });
+});
+
+describe("computeRecruitingScore tiers (0-100, deterministic)", () => {
+  it("returns a strong tier and qualified=true for a genuine, complete submission", () => {
+    const score = computeRecruitingScore(validPayload());
+    expect(score.total).toBeGreaterThanOrEqual(70);
+    expect(score.label).toBe("strong");
+    expect(score.breakdown.qualified).toBe(true);
+    expect(score.breakdown.defectsCaughtCount).toBeGreaterThanOrEqual(3);
+    expect(score.breakdown.llm).toBeNull();
+  });
+
+  it("caps a gate-failing submission to weak even with detailed text", () => {
+    const score = computeRecruitingScore(validPayload({ resumeFileName: undefined, resumeUrl: undefined }));
+    expect(score.label).toBe("weak");
+    expect(score.total).toBeLessThanOrEqual(49);
+    expect(score.breakdown.qualified).toBe(false);
+    expect(score.explanation).toMatch(/hard gate/i);
+  });
+
+  it("downgrades a dead resume link via the signal context", () => {
+    const reachable = computeRecruitingScore(
+      validPayload({ resumeFileName: undefined, resumeUrl: "https://drive.google.com/resume" }),
+      { resumeReachable: true }
+    );
+    const dead = computeRecruitingScore(
+      validPayload({ resumeFileName: undefined, resumeUrl: "https://drive.google.com/resume" }),
+      { resumeReachable: false }
+    );
+    expect(dead.total).toBeLessThan(reachable.total);
+  });
+
+  it("exposes a structured breakdown for the review UI", () => {
+    const score = computeRecruitingScore(validPayload());
+    expect(score.breakdown).toEqual(
+      expect.objectContaining({
+        gate: expect.any(Object),
+        defectMatch: expect.any(Object),
+        signals: expect.any(Object),
+        defectsCaught: expect.any(Array),
+        totalPlantedDefects: TOTAL_PLANTED_DEFECTS,
+        qualified: expect.any(Boolean),
+      })
+    );
+  });
+
+  it("is exported as scoreCareerApplication for the route", () => {
+    expect(scoreCareerApplication(validPayload()).total).toBe(computeRecruitingScore(validPayload()).total);
   });
 });

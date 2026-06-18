@@ -12,7 +12,19 @@ import {
   validateProof,
   validateResume,
 } from "@/lib/careers/product-engineering-associate";
-import { storeRecruitingApplication } from "@/lib/careers/recruiting-storage";
+import {
+  fingerprintExists,
+  isRecruitingSupabaseConfigured,
+  storeRecruitingApplication,
+} from "@/lib/careers/recruiting-storage";
+import {
+  applicantFingerprint,
+  checkHoneypot,
+  checkUrlReachable,
+  HONEYPOT_FIELD,
+  isDisposableEmail,
+} from "@/lib/careers/recruiting-antispam";
+import type { SignalContext } from "@/lib/careers/recruiting-scoring";
 
 export const runtime = "nodejs";
 
@@ -52,7 +64,6 @@ function jsonFromPayload(payload: CareerApplicationPayload) {
       file_type: payload.resumeFileType ?? null,
       file_size: payload.resumeFileSize ?? null,
     },
-    compensation: payload.compensation ?? {},
     availability: payload.availability,
     experience_summary: payload.experienceSummary,
     surfaces: payload.surfaces,
@@ -313,6 +324,17 @@ export async function POST(request: NextRequest) {
 
   try {
     const formData = await request.formData();
+
+    // Anti-spam: hidden honeypot. A human never fills it; a bot that auto-fills
+    // all inputs trips it. Hard reject (but respond 200-shaped so bots get no
+    // signal). The shared ?ref= link's normal candidate never sees this field.
+    if (checkHoneypot(formData.get(HONEYPOT_FIELD) as string | null).tripped) {
+      return NextResponse.json(
+        { success: false, error: "Submission rejected." },
+        { status: 400 }
+      );
+    }
+
     const rawResume = formData.get("resume");
     const resumeFile = isUploadedFile(rawResume) && rawResume.size > 0 ? rawResume : null;
     const resumeValidation = validateResume(resumeFile);
@@ -345,7 +367,68 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const score = scoreCareerApplication(payload);
+    // Anti-spam: disposable / throwaway email domains. Small built-in list — a
+    // real candidate using a normal provider is never affected.
+    if (isDisposableEmail(payload.email)) {
+      return NextResponse.json(
+        { success: false, error: "Please apply with a permanent email address." },
+        { status: 400 }
+      );
+    }
+
+    // Persistence FAIL-LOUD: if no Supabase URL+key resolves at all, do NOT let
+    // the candidate think they applied while the row silently no-ops. In
+    // production this is a hard 5xx. (Outside production it falls through to
+    // email/webhook/localOnly as before, so dev/preview stays usable.)
+    if (!isRecruitingSupabaseConfigured() && process.env.NODE_ENV === "production") {
+      console.error(
+        "[careers] PERSISTENCE MISCONFIGURED: no Supabase URL+service key resolved; refusing to accept application without a place to store it."
+      );
+      return NextResponse.json(
+        { success: false, error: "Applications are temporarily unavailable. Please try again shortly." },
+        { status: 503 }
+      );
+    }
+
+    // Anti-spam: exact-duplicate block. Hash of normalized email+phone. Only an
+    // EXACT prior submission hard-rejects — a first-time candidate via the
+    // shared link is never blocked.
+    const fingerprint = applicantFingerprint(payload.email, payload.whatsapp);
+    const duplicate = await fingerprintExists(fingerprint).catch((error) => {
+      console.error("[careers] dedupe check failed (allowing submission)", error);
+      return false;
+    });
+    if (duplicate) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "We already have an application from this email and phone. If you need to update it, reply to your confirmation instead of re-submitting.",
+        },
+        { status: 409 }
+      );
+    }
+
+    // Best-effort dead-link checks (soft signal only — never hard-reject; a
+    // network hiccup must not lose a real candidate). Feeds the score so an
+    // obviously dead artifact/resume link lowers the tier.
+    const resumeLink = payload.resumeUrl && /^https?:\/\//i.test(payload.resumeUrl) ? payload.resumeUrl : null;
+    const artifactLink =
+      payload.proofRecordingUrl && /^https?:\/\//i.test(payload.proofRecordingUrl)
+        ? payload.proofRecordingUrl
+        : payload.proofLinks && /^https?:\/\//i.test(payload.proofLinks)
+          ? payload.proofLinks
+          : null;
+    const [resumeCheck, artifactCheck] = await Promise.all([
+      resumeLink ? checkUrlReachable(resumeLink) : Promise.resolve(null),
+      artifactLink ? checkUrlReachable(artifactLink) : Promise.resolve(null),
+    ]);
+    const scoreContext: SignalContext = {
+      resumeReachable: resumeCheck ? resumeCheck.reachable : undefined,
+      artifactReachable: artifactCheck ? artifactCheck.reachable : undefined,
+    };
+
+    const score = scoreCareerApplication(payload, scoreContext);
     const [storageResult, webhookOk, emailOk] = await Promise.all([
       storeRecruitingApplication(payload, score, resumeFile, proofFile).catch((error) => ({
         supabaseOk: false,
@@ -383,16 +466,34 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const localOnly = !deliveryOk && noDeliveryConfigured;
+    // Make every submission's persistence outcome OBSERVABLE in the server log:
+    // clearly state whether the row persisted to Supabase vs fell through to
+    // email/webhook or was dropped to localOnly (no durable store).
+    console.log(
+      `[careers] application ${payload.applicationId} persistence: ` +
+        `supabaseOk=${storageResult.supabaseOk} ` +
+        `resumeUploaded=${storageResult.resume.uploaded} ` +
+        `proofUploaded=${storageResult.proof?.uploaded ?? false} ` +
+        `webhook=${webhookOk} email=${emailOk} ` +
+        `localOnly=${localOnly}` +
+        (storageResult.error ? ` storageError="${storageResult.error}"` : "")
+    );
+
     return NextResponse.json({
       success: true,
       applicationId: payload.applicationId,
       delivery: {
+        // Did the row durably persist to the recruiting_applications table?
+        persisted: storageResult.supabaseOk,
         supabase: storageResult.supabaseOk,
         resumeUploaded: storageResult.resume.uploaded,
         proofUploaded: storageResult.proof?.uploaded ?? false,
         webhook: webhookOk,
         email: emailOk,
-        localOnly: !deliveryOk && noDeliveryConfigured,
+        // True only when NOTHING durable was configured and the submission was
+        // accepted without a store of record — visible so it is never silent.
+        localOnly,
       },
     });
   } catch {

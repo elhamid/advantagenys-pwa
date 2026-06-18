@@ -1,5 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { CAREERS_ROLE_TITLE, type CareerApplicationPayload } from "../product-engineering-associate";
+import {
+  CAREERS_ROLE_TITLE,
+  type CareerApplicationPayload,
+  type CareerApplicationScore,
+} from "../product-engineering-associate";
 import {
   recruitingRecordFromPayload,
   resetRecruitingSupabaseForTests,
@@ -8,6 +12,54 @@ import {
   type ProofStorageRecord,
   type ResumeStorageRecord,
 } from "../recruiting-storage";
+
+// New deterministic-rubric score shape (0-100 total, structured breakdown).
+function makeScore(total: number, label: CareerApplicationScore["label"] = "strong"): CareerApplicationScore {
+  return {
+    total,
+    label,
+    explanation: "Detailed product review with reviewer-ready proof.",
+    breakdown: {
+      gate: {
+        passed: true,
+        failures: [],
+        checks: {
+          validEmail: true,
+          validPhone: true,
+          hasProofArtifact: true,
+          hasResume: true,
+          aiHonestyAnswered: true,
+        },
+      },
+      defectMatch: {
+        caught: ["phone_validation", "channel_mismatch", "nonwrapping_link"],
+        caughtCount: 3,
+        defectPoints: 18,
+        reproductionPoints: 8,
+        prioritizationPoints: 3,
+        restraintPoints: 2,
+        total: 31,
+      },
+      signals: {
+        completeness: 12,
+        resumeReachable: 10,
+        artifactReachable: 10,
+        availability: 5,
+        surfaces: 4,
+        validProfileUrl: 6,
+        aiHonesty: 6,
+        total: 53,
+      },
+      defectsCaught: ["phone_validation", "channel_mismatch", "nonwrapping_link"],
+      defectsCaughtCount: 3,
+      totalPlantedDefects: 5,
+      qualified: true,
+      llm: null,
+    },
+  };
+}
+
+const strongScore = makeScore(82);
 
 const supabaseMock = vi.hoisted(() => ({
   uploadResult: { error: null as { message: string } | null },
@@ -42,11 +94,6 @@ const payload: CareerApplicationPayload = {
   resumeFileName: "resume.pdf",
   resumeFileType: "application/pdf",
   resumeFileSize: 1024,
-  compensation: {
-    enteredCurrency: "INR",
-    inrMonthly: 90000,
-    usdMonthly: 940.34,
-  },
   availability: "Two weeks",
   experienceSummary: "I have tested forms, dashboards, and small React pages.",
   surfaces: ["Forms", "Dashboards"],
@@ -87,29 +134,15 @@ describe("recruiting storage mapping", () => {
       path: "junior_product_engineering_associate/JKH/app-test/priya-shah-proof.png",
     };
 
-    const record = recruitingRecordFromPayload(
-      payload,
-      {
-        total: 8.4,
-        label: "strong",
-        explanation: "Detailed product review with reviewer-ready proof.",
-        breakdown: {
-          workSampleDetail: 9,
-          reproductionClarity: 8,
-          prioritization: 8,
-          judgment: 8,
-          proofDiscipline: 9,
-          toolTransparency: 8,
-        },
-      },
-      resume,
-      proof
-    );
+    const record = recruitingRecordFromPayload(payload, strongScore, resume, proof);
 
     expect(record.hiring_lane).toBe("junior_product_engineering_associate");
     expect(record.partner_tag).toBe("JKH");
-    expect(record.score).toBe(8.4);
+    expect(record.score).toBe(82);
     expect(record.score_explanation).toMatch(/proof/i);
+    // Anti-spam dedupe key is persisted; compensation is no longer written.
+    expect(record.applicant_fingerprint).toEqual(expect.any(String));
+    expect((record as Record<string, unknown>).compensation).toBeUndefined();
     expect(record.resume).toEqual(
       expect.objectContaining({
         storage_path: resume.path,
@@ -160,19 +193,7 @@ describe("storeRecruitingApplication fail-closed proof handling", () => {
     resetRecruitingSupabaseForTests();
   }
 
-  const score = {
-    total: 8,
-    label: "strong",
-    explanation: "Detailed.",
-    breakdown: {
-      workSampleDetail: 8,
-      reproductionClarity: 8,
-      prioritization: 8,
-      judgment: 8,
-      proofDiscipline: 8,
-      toolTransparency: 8,
-    },
-  };
+  const score = makeScore(80);
 
   it("fails closed when the only proof artifact is a file upload that fails", async () => {
     configureSupabaseEnv();

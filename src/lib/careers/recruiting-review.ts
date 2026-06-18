@@ -20,7 +20,10 @@ export interface RecruitingApplicationForReview {
   score: number | null;
   score_label: string | null;
   score_explanation: string | null;
-  score_breakdown: Record<string, number>;
+  // Structured deterministic rubric breakdown (gate / defectMatch / signals /
+  // defectsCaught / qualified). Kept loose here; the review UI reads the fields
+  // it renders defensively.
+  score_breakdown: Record<string, unknown>;
   candidate: {
     full_name?: string;
     email?: string;
@@ -48,7 +51,6 @@ export interface RecruitingApplicationForReview {
     uploaded?: boolean;
   };
   verification_code?: string | null;
-  compensation: Record<string, unknown>;
   work_sample: {
     surfaces?: string[];
     experience_summary?: string;
@@ -113,7 +115,7 @@ export async function listRecruitingApplications(
   let query = supabase
     .from(RECRUITING_TABLE)
     .select(
-      "application_id,submitted_at,role,hiring_lane,referral_code,partner_tag,status,score,score_label,score_explanation,score_breakdown,candidate,resume,proof,verification_code,compensation,work_sample,ai_use"
+      "application_id,submitted_at,role,hiring_lane,referral_code,partner_tag,status,score,score_label,score_explanation,score_breakdown,candidate,resume,proof,verification_code,work_sample,ai_use"
     )
     .order("submitted_at", { ascending: false })
     .limit(50);

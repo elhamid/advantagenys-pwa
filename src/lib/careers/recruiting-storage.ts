@@ -1,5 +1,6 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { CareerApplicationPayload, CareerApplicationScore } from "./product-engineering-associate";
+import { applicantFingerprint } from "./recruiting-antispam";
 
 export const RECRUITING_TABLE = "recruiting_applications";
 export const RECRUITING_RESUME_BUCKET = "recruiting-resumes";
@@ -59,6 +60,41 @@ export function getRecruitingSupabase(): SupabaseClient | null {
 
 export function resetRecruitingSupabaseForTests() {
   cachedClient = undefined;
+}
+
+/**
+ * True when a Supabase URL + service key actually resolve. The route uses this
+ * to FAIL LOUD in production rather than silently accepting an application that
+ * has nowhere durable to land.
+ */
+export function isRecruitingSupabaseConfigured(): boolean {
+  const url =
+    process.env.NEXT_PUBLIC_SUPABASE_URL ||
+    process.env.SUPABASE_URL ||
+    process.env.TASKBOARD_SUPABASE_URL;
+  const serviceKey =
+    process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.TASKBOARD_SUPABASE_SERVICE_KEY;
+  return Boolean(url && serviceKey);
+}
+
+/**
+ * Anti-spam dedupe: does a prior application already exist for this normalized
+ * email+phone fingerprint? Returns false when Supabase is not configured (the
+ * route handles that separately) so a missing store never blocks a candidate.
+ */
+export async function fingerprintExists(fingerprint: string): Promise<boolean> {
+  const supabase = getRecruitingSupabase();
+  if (!supabase) return false;
+
+  const { data, error } = await supabase
+    .from(RECRUITING_TABLE)
+    .select("application_id")
+    .eq("applicant_fingerprint", fingerprint)
+    .limit(1);
+
+  if (error) throw new Error(error.message);
+  return Array.isArray(data) && data.length > 0;
 }
 
 function safePathPart(value: string): string {
@@ -205,7 +241,7 @@ export function recruitingRecordFromPayload(
       uploaded: proof.uploaded,
     },
     verification_code: payload.verificationCode ?? null,
-    compensation: payload.compensation ?? {},
+    applicant_fingerprint: applicantFingerprint(payload.email, payload.whatsapp),
     work_sample: {
       surfaces: payload.surfaces,
       experience_summary: payload.experienceSummary,
