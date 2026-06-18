@@ -283,6 +283,37 @@ describe('POST /api/contact', () => {
     expect(sentBody.turnstileToken).toBeUndefined()
   })
 
+  it('normalizes Latin accents before forwarding staff-visible fields', async () => {
+    const fetchSpy = makeFetchMock()
+    global.fetch = fetchSpy
+
+    await POST(makeRequest({
+      ...validContact,
+      fullName: 'José Niño',
+      businessType: 'Café owner',
+      message: 'Necesito ayuda con renovacion',
+    }))
+
+    const webhookCall = (fetchSpy.mock.calls as unknown as [string, RequestInit][]).find(
+      ([url]) => !String(url).includes('cloudflare.com'),
+    )
+    const sentBody = JSON.parse(webhookCall![1].body as string)
+    expect(sentBody.fullName).toBe('Jose Nino')
+    expect(sentBody.businessType).toBe('Cafe owner')
+  })
+
+  it('rejects non-Latin staff-visible input with an English-entry instruction', async () => {
+    const res = await POST(makeRequest({
+      ...validContact,
+      fullName: '张伟',
+    }))
+
+    expect(res.status).toBe(400)
+    const body = await res.json()
+    expect(body.error).toMatch(/english letters/i)
+    expect(body.error).toMatch(/passport/i)
+  })
+
   it('sends x-pwa-secret header to webhook', async () => {
     const fetchSpy = makeFetchMock()
     global.fetch = fetchSpy

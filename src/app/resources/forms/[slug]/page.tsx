@@ -5,6 +5,7 @@ import { forms, getFormBySlug } from "@/lib/forms";
 import { FormEmbed } from "./FormEmbed";
 import { NativeForm } from "./NativeForm";
 import { FormPageShareBar } from "./FormPageShareBar";
+import { FormLanguageNotice } from "@/components/forms/FormLanguageNotice";
 import Link from "next/link";
 
 interface PageProps {
@@ -81,6 +82,7 @@ export default async function FormPage({ params }: PageProps) {
 
       <section className="pb-24">
         <Container>
+          <FormLanguageNotice />
           {form.platform === "native" && form.nativeComponent ? (
             <NativeForm form={form} />
           ) : (

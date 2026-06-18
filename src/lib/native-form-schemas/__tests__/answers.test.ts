@@ -6,6 +6,7 @@ import {
   buildNativeAnswers,
   extractNativeContact,
   maskSensitiveValue,
+  nativeEnglishInputErrors,
 } from "../answers";
 import type { NativeFormSchema } from "../types";
 
@@ -86,6 +87,31 @@ describe("native form answers", () => {
       ssn: "[sensitive ending 6789]",
     });
     expect(answerRecord(answers, false).ssn).toBe("123-45-6789");
+  });
+
+  it("normalizes Latin accents into English staff-packet values", () => {
+    const answers = buildNativeAnswers(schema, {
+      "1": "José Niño",
+      "2": "(929) 555-0101",
+      "3": "jose@example.com",
+      "4": "123-45-6789",
+    });
+
+    expect(answerRecord(answers, true)).toMatchObject({
+      fullName: "Jose Nino",
+      phone: "(929) 555-0101",
+    });
+  });
+
+  it("rejects non-Latin letters before the packet enters staff systems", () => {
+    const values = {
+      "1": "张伟",
+      "2": "(929) 555-0101",
+    };
+
+    expect(nativeEnglishInputErrors(schema, values)).toEqual([
+      "Name must use English letters. For legal names, use the spelling from the passport or government ID.",
+    ]);
   });
 
   it("treats signatures and sensitive-looking labels as sensitive even without schema flags", () => {

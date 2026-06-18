@@ -7,6 +7,7 @@ import {
   type LeadSubmission,
   type UtmParams,
 } from "@/lib/leads/types";
+import { englishInputError, normalizeEnglishTextValue } from "@/lib/forms/english-normalization";
 import { getClientIp } from "@/lib/rate-limit";
 import { contactLimiter } from "./contact-limiter";
 
@@ -43,19 +44,24 @@ const VALID_SOURCES = new Set<string>(LEAD_SOURCES as readonly string[]);
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function str(v: unknown): string | undefined {
-  return typeof v === "string" && v.trim().length > 0 ? v.trim() : undefined;
+  if (typeof v !== "string") return undefined;
+  const normalized = normalizeEnglishTextValue(v);
+  return normalized.length > 0 ? normalized : undefined;
 }
 
 function strOrEmpty(v: unknown): string | undefined {
   // Returns a trimmed string even when trimmed length is 0 (treats empty as undefined).
   if (typeof v !== "string") return undefined;
-  const trimmed = v.trim();
-  return trimmed.length > 0 ? trimmed : undefined;
+  const normalized = normalizeEnglishTextValue(v);
+  return normalized.length > 0 ? normalized : undefined;
 }
 
 function strArray(v: unknown): string[] | undefined {
   if (!Array.isArray(v)) return undefined;
-  const arr = v.filter((x): x is string => typeof x === "string" && x.trim().length > 0);
+  const arr = v
+    .filter((x): x is string => typeof x === "string")
+    .map(normalizeEnglishTextValue)
+    .filter(Boolean);
   return arr.length > 0 ? arr : undefined;
 }
 
@@ -88,6 +94,41 @@ function maskSensitiveIdentifier(value: string): string {
   const compact = value.replace(/\D/g, "");
   const last4 = compact.slice(-4);
   return last4 ? `[sensitive ending ${last4}]` : "[sensitive provided]";
+}
+
+const STAFF_ENGLISH_SKIP_KEY_PATTERN =
+  /^(email|phone|telephone|cellPhone|dateOfBirth|filingReceiptDate|policyExpiration|preferredDate|preferredTime|turnstileToken|source|type|utm|zipCode|ssnOrItin|ownerSsnOrItin|additionalOwner2SsnOrItin|additionalOwner3SsnOrItin|ein)$/i;
+
+function labelFromKey(key: string): string {
+  return key
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .replace(/[_-]+/g, " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function firstStaffEnglishInputError(value: unknown, key = "field"): string | null {
+  if (STAFF_ENGLISH_SKIP_KEY_PATTERN.test(key)) return null;
+  if (typeof value === "string") return englishInputError(value, labelFromKey(key));
+  if (Array.isArray(value)) {
+    for (const entry of value) {
+      const error = firstStaffEnglishInputError(entry, key);
+      if (error) return error;
+    }
+    return null;
+  }
+  if (value && typeof value === "object") {
+    for (const [childKey, childValue] of Object.entries(value)) {
+      const error = firstStaffEnglishInputError(childValue, childKey);
+      if (error) return error;
+    }
+  }
+  return null;
+}
+
+function validStaffEnglishLead(data: LeadSubmission): ValidationResult {
+  const error = firstStaffEnglishInputError(data);
+  if (error) return { valid: false, error };
+  return { valid: true, data };
 }
 
 function validateUtm(v: unknown): UtmParams | undefined {
@@ -195,24 +236,19 @@ function validatePayload(body: unknown): ValidationResult {
   switch (leadType) {
     case "contact": {
       const services = strArray(obj.services);
-      return {
-        valid: true,
-        data: {
+      return validStaffEnglishLead({
           ...base,
           type: "contact",
           businessType: strOrEmpty(obj.businessType),
           services,
           message: strOrEmpty(obj.message),
-        },
-      };
+      });
     }
     case "booking": {
       const wantsAppointmentRaw = obj.wantsAppointment;
       const wantsAppointment =
         typeof wantsAppointmentRaw === "boolean" ? wantsAppointmentRaw : undefined;
-      return {
-        valid: true,
-        data: {
+      return validStaffEnglishLead({
           ...base,
           type: "booking",
           serviceType: strOrEmpty(obj.serviceType),
@@ -222,13 +258,10 @@ function validatePayload(body: unknown): ValidationResult {
           wantsAppointment,
           description: strOrEmpty(obj.description),
           message: strOrEmpty(obj.message),
-        },
-      };
+      });
     }
     case "client-info": {
-      return {
-        valid: true,
-        data: {
+      return validStaffEnglishLead({
           ...base,
           type: "client-info",
           dateOfBirth: strOrEmpty(obj.dateOfBirth),
@@ -244,13 +277,10 @@ function validatePayload(body: unknown): ValidationResult {
           purpose: strOrEmpty(obj.purpose),
           referralSource: strOrEmpty(obj.referralSource),
           additionalNotes: strOrEmpty(obj.additionalNotes),
-        },
-      };
+      });
     }
     case "corporate-registration": {
-      return {
-        valid: true,
-        data: {
+      return validStaffEnglishLead({
           ...base,
           type: "corporate-registration",
           desiredBusinessName: strOrEmpty(obj.desiredBusinessName),
@@ -297,13 +327,10 @@ function validatePayload(body: unknown): ValidationResult {
           needSalesTax: strOrEmpty(obj.needSalesTax),
           needPayroll: strOrEmpty(obj.needPayroll),
           additionalNotes: strOrEmpty(obj.additionalNotes),
-        },
-      };
+      });
     }
     case "insurance": {
-      return {
-        valid: true,
-        data: {
+      return validStaffEnglishLead({
           ...base,
           type: "insurance",
           businessName: strOrEmpty(obj.businessName),
@@ -322,13 +349,10 @@ function validatePayload(body: unknown): ValidationResult {
           currentProvider: strOrEmpty(obj.currentProvider),
           policyExpiration: strOrEmpty(obj.policyExpiration),
           notes: strOrEmpty(obj.notes),
-        },
-      };
+      });
     }
     case "home-improvement": {
-      return {
-        valid: true,
-        data: {
+      return validStaffEnglishLead({
           ...base,
           type: "home-improvement",
           businessName: strOrEmpty(obj.businessName),
@@ -341,13 +365,10 @@ function validatePayload(body: unknown): ValidationResult {
           hasExistingLicense: strOrEmpty(obj.hasExistingLicense),
           licenseNumber: strOrEmpty(obj.licenseNumber),
           additionalNotes: strOrEmpty(obj.additionalNotes),
-        },
-      };
+      });
     }
     case "contractor-qualifier": {
-      return {
-        valid: true,
-        data: {
+      return validStaffEnglishLead({
           ...base,
           type: "contractor-qualifier",
           workLocation: strOrEmpty(obj.workLocation),
@@ -358,8 +379,7 @@ function validatePayload(body: unknown): ValidationResult {
           timeline: strOrEmpty(obj.timeline),
           verdict: strOrEmpty(obj.verdict),
           preferredLanguage: strOrEmpty(obj.preferredLanguage),
-        },
-      };
+      });
     }
   }
 }
