@@ -2,11 +2,34 @@
 
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { categories, type CategoryKey, getFormsByCategory } from "@/lib/forms";
+import { categories, type CategoryKey, type FormConfig, getFormsByCategory } from "@/lib/forms";
 import { FormCard } from "./FormCard";
+import { ShareButton } from "./ShareButton";
 
 interface FormsGridProps {
   kioskMode?: boolean;
+}
+
+function UtilityLinkRow({ item }: { item: FormConfig }) {
+  if (!item.linkUrl) return null;
+
+  return (
+    <div className="flex items-center gap-3 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)] px-3 py-2.5">
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-semibold text-[var(--text)] truncate">{item.title}</p>
+        <p className="text-xs text-[var(--text-muted)] truncate">{item.description}</p>
+      </div>
+      <a
+        href={item.linkUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center justify-center rounded-[var(--radius-sm)] border border-[var(--border)] px-3 py-1.5 text-xs font-semibold text-[var(--text)] hover:bg-[var(--blue-pale)] hover:text-[var(--blue-accent)] transition-colors"
+      >
+        Open
+      </a>
+      <ShareButton title={item.title} url={item.linkUrl} variant="copy" className="p-1.5" />
+    </div>
+  );
 }
 
 export function FormsGrid({ kioskMode = false }: FormsGridProps) {
@@ -26,6 +49,9 @@ export function FormsGrid({ kioskMode = false }: FormsGridProps) {
     }
     return results;
   }, [activeCategory, search]);
+
+  const serviceForms = filtered.filter((form) => form.type !== "link");
+  const utilityLinks = filtered.filter((form) => form.type === "link");
 
   return (
     <div>
@@ -98,11 +124,28 @@ export function FormsGrid({ kioskMode = false }: FormsGridProps) {
           transition={{ duration: 0.2 }}
           className={`grid gap-4 ${kioskMode ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"}`}
         >
-          {filtered.map((form, i) => (
+          {serviceForms.map((form, i) => (
             <FormCard key={form.id} form={form} index={i} kioskMode={kioskMode} />
           ))}
         </motion.div>
       </AnimatePresence>
+
+      {utilityLinks.length > 0 && (
+        <section className={serviceForms.length > 0 ? "mt-8" : ""} aria-label="Quick links">
+          <div className="mb-3 flex items-center gap-2">
+            <div className="h-px flex-1 bg-[var(--border)]" />
+            <p className="text-xs font-semibold uppercase text-[var(--text-muted)]">
+              Quick links
+            </p>
+            <div className="h-px flex-1 bg-[var(--border)]" />
+          </div>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            {utilityLinks.map((item) => (
+              <UtilityLinkRow key={item.id} item={item} />
+            ))}
+          </div>
+        </section>
+      )}
 
       {filtered.length === 0 && (
         <div className="text-center py-16">

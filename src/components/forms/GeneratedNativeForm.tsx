@@ -62,6 +62,8 @@ function renderOptionField(field: NativeFormField, mode: "radio" | "checkbox") {
 }
 
 function renderField(field: NativeFormField) {
+  if (field.hidden) return null;
+
   if (field.kind === "radio") return renderOptionField(field, "radio");
   if (field.kind === "checkbox") return renderOptionField(field, "checkbox");
 
@@ -143,6 +145,7 @@ export function GeneratedNativeForm({ schema }: GeneratedNativeFormProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const startedRef = useRef(false);
+  const visibleFields = schema.fields.filter((field) => !field.hidden);
 
   function handleFirstFocus() {
     if (startedRef.current) return;
@@ -199,7 +202,7 @@ export function GeneratedNativeForm({ schema }: GeneratedNativeFormProps) {
     <Card>
       <form onSubmit={handleSubmit} onFocus={handleFirstFocus} className="space-y-6">
         <div className="grid grid-cols-1 gap-5">
-          {schema.fields.map((field) => (
+          {visibleFields.map((field) => (
             <div key={field.qid}>{renderField(field)}</div>
           ))}
         </div>

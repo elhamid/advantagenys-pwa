@@ -5,6 +5,13 @@ import { FormsGrid } from '../FormsGrid'
 vi.mock('framer-motion', () => ({
   motion: {
     div: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+    button: ({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
+      <button type="button" {...props}>
+        {children}
+      </button>
+    ),
+    span: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
+    svg: ({ children }: { children: React.ReactNode }) => <svg>{children}</svg>,
   },
   AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }))
@@ -45,8 +52,16 @@ describe('FormsGrid', () => {
     expect(clearButton).toBeDefined()
     fireEvent.click(clearButton!)
 
-    expect(screen.getByText(/23 items/i)).toBeInTheDocument()
+    expect(screen.getByText(/16 items/i)).toBeInTheDocument()
     expect(screen.queryByText(/matching/i)).not.toBeInTheDocument()
     expect(container).toBeTruthy()
+  })
+
+  it('keeps utility links in a compact section below real forms', () => {
+    render(<FormsGrid />)
+
+    expect(screen.getByRole('region', { name: /quick links/i })).toBeInTheDocument()
+    expect(screen.getByText('Zelle Payment Info')).toBeInTheDocument()
+    expect(screen.getByText('Corporation Services')).toBeInTheDocument()
   })
 })
