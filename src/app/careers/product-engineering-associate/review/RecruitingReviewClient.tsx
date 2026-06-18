@@ -20,11 +20,21 @@ function fmtDate(value: string) {
   }).format(new Date(value));
 }
 
+// Score is now 0-100 from the deterministic qualification + defect-match rubric.
 function scoreTone(score: number | null) {
   if (score === null) return "bg-slate-100 text-slate-700";
-  if (score >= 8.2) return "bg-emerald-50 text-emerald-700";
-  if (score >= 6.8) return "bg-amber-50 text-amber-700";
+  if (score >= 70) return "bg-emerald-50 text-emerald-700";
+  if (score >= 50) return "bg-amber-50 text-amber-700";
   return "bg-red-50 text-red-700";
+}
+
+interface RubricBreakdown {
+  defectsCaughtCount?: number;
+  totalPlantedDefects?: number;
+  qualified?: boolean;
+  defectMatch?: { total?: number; keywordOnly?: string[] };
+  signals?: { total?: number };
+  gate?: { passed?: boolean; failures?: string[] };
 }
 
 function CandidateCard({ app }: { app: RecruitingApplicationForReview }) {
@@ -34,7 +44,14 @@ function CandidateCard({ app }: { app: RecruitingApplicationForReview }) {
   const resume = app.resume ?? {};
   const proof = app.proof ?? {};
   const aiUse = app.ai_use ?? {};
-  const breakdown = app.score_breakdown ?? {};
+  const breakdown = (app.score_breakdown ?? {}) as RubricBreakdown;
+  const defectsCaught = breakdown.defectsCaughtCount ?? 0;
+  const totalDefects = breakdown.totalPlantedDefects ?? 5;
+  const qualified = breakdown.qualified === true;
+  const defectPts = breakdown.defectMatch?.total;
+  const signalPts = breakdown.signals?.total;
+  const keywordOnlyCount = breakdown.defectMatch?.keywordOnly?.length ?? 0;
+  const gateFailures = breakdown.gate?.failures ?? [];
   const resumeUrl = resume.signed_url ?? resume.url;
   const proofUrl = proof.signed_url ?? proof.recording_url ?? workSample.proof_recording_url ?? null;
 
@@ -67,15 +84,37 @@ function CandidateCard({ app }: { app: RecruitingApplicationForReview }) {
 
       <p className="mt-4 text-sm leading-6 text-[var(--text)]">{app.score_explanation}</p>
 
-      <div className="mt-4 grid gap-2 sm:grid-cols-3 lg:grid-cols-6">
-        {Object.entries(breakdown).map(([key, value]) => (
-          <div key={key} className="border border-[var(--border)] bg-[var(--bg)] px-3 py-2">
-            <div className="text-xs font-semibold capitalize text-[var(--text-muted)]">
-              {key.replace(/([A-Z])/g, " $1")}
-            </div>
-            <div className="mt-1 text-lg font-bold text-[var(--text)]">{Number(value).toFixed(1)}</div>
-          </div>
-        ))}
+      <div className="mt-4 flex flex-wrap items-center gap-2">
+        <span
+          className={`px-2 py-1 text-xs font-bold uppercase tracking-[0.06em] ${
+            qualified ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-600"
+          }`}
+        >
+          {qualified ? "Qualified" : "Not qualified"}
+        </span>
+        <span className="border border-[var(--border)] bg-[var(--bg)] px-2 py-1 text-xs font-semibold text-[var(--text-secondary)]">
+          Defects caught (with detail): {defectsCaught}/{totalDefects}
+        </span>
+        {keywordOnlyCount > 0 ? (
+          <span className="bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-700">
+            Keyword-only mentions: {keywordOnlyCount} (no inspection detail)
+          </span>
+        ) : null}
+        {typeof defectPts === "number" ? (
+          <span className="border border-[var(--border)] bg-[var(--bg)] px-2 py-1 text-xs font-semibold text-[var(--text-secondary)]">
+            Defect-match: {defectPts.toFixed(1)}/45
+          </span>
+        ) : null}
+        {typeof signalPts === "number" ? (
+          <span className="border border-[var(--border)] bg-[var(--bg)] px-2 py-1 text-xs font-semibold text-[var(--text-secondary)]">
+            Signals: {signalPts.toFixed(1)}/55
+          </span>
+        ) : null}
+        {gateFailures.length > 0 ? (
+          <span className="bg-red-50 px-2 py-1 text-xs font-semibold text-red-700">
+            Gate failed: {gateFailures.join(", ")}
+          </span>
+        ) : null}
       </div>
 
       <div className="mt-5 grid gap-4 lg:grid-cols-[1fr_280px]">

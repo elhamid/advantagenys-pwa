@@ -50,15 +50,6 @@ export function deriveVerificationCode(ref: string | null | undefined): string {
 }
 
 export type AiUseDisclosure = "yes" | "light" | "no";
-export type EnteredCompensationCurrency = "INR" | "USD";
-
-export interface CompensationExpectation {
-  enteredCurrency: EnteredCompensationCurrency;
-  inrMonthly?: number;
-  usdMonthly?: number;
-  usdInrRate?: number;
-  rateDate?: string;
-}
 
 export interface CareerApplicationPayload {
   applicationId: string;
@@ -77,7 +68,6 @@ export interface CareerApplicationPayload {
   resumeFileName?: string;
   resumeFileType?: string;
   resumeFileSize?: number;
-  compensation?: CompensationExpectation;
   availability: string;
   experienceSummary: string;
   surfaces: string[];
@@ -98,19 +88,12 @@ export interface CareerApplicationPayload {
   aiPrompts: string;
 }
 
-export interface CareerApplicationScore {
-  total: number;
-  label: string;
-  explanation: string;
-  breakdown: {
-    workSampleDetail: number;
-    reproductionClarity: number;
-    prioritization: number;
-    judgment: number;
-    proofDiscipline: number;
-    toolTransparency: number;
-  };
-}
+// The score shape is defined by the deterministic rubric in recruiting-scoring.ts.
+// Re-exported here so existing importers keep a single import surface.
+export type {
+  RecruitingScore as CareerApplicationScore,
+  RecruitingTier,
+} from "./recruiting-scoring";
 
 export interface ValidationResult {
   valid: boolean;
@@ -124,23 +107,6 @@ export function cleanText(value: FormDataEntryValue | null): string | undefined 
   if (typeof value !== "string") return undefined;
   const trimmed = value.trim();
   return trimmed.length > 0 ? trimmed : undefined;
-}
-
-export function parseMoney(value: FormDataEntryValue | null): number | undefined {
-  if (typeof value !== "string") return undefined;
-  const normalized = value.replace(/,/g, "").trim();
-  if (!normalized) return undefined;
-  const parsed = Number(normalized);
-  if (!Number.isFinite(parsed) || parsed <= 0) return undefined;
-  return Math.round(parsed * 100) / 100;
-}
-
-export function convertUsdToInr(usd: number, rate: number): number {
-  return Math.round(usd * rate);
-}
-
-export function convertInrToUsd(inr: number, rate: number): number {
-  return Math.round((inr / rate) * 100) / 100;
 }
 
 export function validateResume(file: File | null): ValidationResult {
@@ -204,6 +170,17 @@ export function validateApplicationPayload(payload: CareerApplicationPayload): V
     return { valid: false, error: "Resume link must start with http:// or https://." };
   }
 
+  // Resume is required: a candidate must provide a resume FILE or a valid link.
+  const hasResume =
+    Boolean(payload.resumeFileName) ||
+    (Boolean(payload.resumeUrl) && URL_RE.test(payload.resumeUrl as string));
+  if (!hasResume) {
+    return {
+      valid: false,
+      error: "A resume is required. Upload a PDF/DOC/DOCX file or paste a resume link.",
+    };
+  }
+
   if (payload.linkedin && !URL_RE.test(payload.linkedin)) {
     return { valid: false, error: "LinkedIn must be a valid URL." };
   }
@@ -259,87 +236,10 @@ export function validateApplicationPayload(payload: CareerApplicationPayload): V
   return { valid: true };
 }
 
-function clampScore(value: number): number {
-  return Math.max(0, Math.min(10, Math.round(value * 10) / 10));
-}
-
-function scoreTextLength(value: string, thresholds: [number, number, number]): number {
-  const length = value.trim().length;
-  if (length >= thresholds[2]) return 10;
-  if (length >= thresholds[1]) return 7.5;
-  if (length >= thresholds[0]) return 5;
-  return 2.5;
-}
-
-function keywordBonus(value: string, keywords: string[]): number {
-  const lower = value.toLowerCase();
-  return keywords.reduce((score, keyword) => score + (lower.includes(keyword) ? 0.5 : 0), 0);
-}
-
-export function scoreCareerApplication(payload: CareerApplicationPayload): CareerApplicationScore {
-  const workSampleDetail = clampScore(
-    scoreTextLength(payload.issueFindings, [120, 240, 420]) +
-      keywordBonus(payload.issueFindings, ["mobile", "desktop", "console", "network", "form", "cta"])
-  );
-  const reproductionClarity = clampScore(
-    scoreTextLength(payload.topIssueSteps, [80, 150, 260]) +
-      keywordBonus(payload.topIssueSteps, ["open", "click", "scroll", "submit", "expected", "actual"])
-  );
-  const prioritization = clampScore(
-    scoreTextLength(payload.firstFixReason, [70, 140, 240]) +
-      keywordBonus(payload.firstFixReason, ["because", "user", "risk", "conversion", "continue"])
-  );
-  const judgment = clampScore(
-    (scoreTextLength(payload.riskyQuestion, [50, 100, 180]) +
-      scoreTextLength(payload.smallImprovement, [50, 100, 180])) /
-      2 +
-      keywordBonus(`${payload.riskyQuestion} ${payload.smallImprovement}`, ["before", "safe", "small", "verify", "scope"])
-  );
-  const hasProofArtifact = Boolean(payload.proofFileName) || Boolean(payload.proofRecordingUrl);
-  const proofDiscipline = clampScore(
-    scoreTextLength(payload.consoleNetworkNotes, [45, 90, 160]) +
-      (hasProofArtifact ? 2 : 0) +
-      (payload.proofLinks ? 1 : 0) +
-      (payload.surfaces.length >= 2 ? 1 : 0)
-  );
-  const toolTransparency = clampScore(
-    (scoreTextLength(payload.aiUseNotes, [50, 100, 180]) +
-      scoreTextLength(payload.aiPrompts, [40, 120, 240])) /
-      2 +
-      keywordBonus(payload.aiPrompts, ["prompt", "wrong", "corrected", "caught", "fixed", "verified"]) +
-      (payload.aiUseDisclosure === "yes" || payload.aiUseDisclosure === "light" ? 0.5 : 0)
-  );
-
-  const total = clampScore(
-    workSampleDetail * 0.24 +
-      reproductionClarity * 0.18 +
-      prioritization * 0.18 +
-      judgment * 0.16 +
-      proofDiscipline * 0.14 +
-      toolTransparency * 0.1
-  );
-
-  const label = total >= 8.2 ? "strong" : total >= 6.8 ? "promising" : total >= 5.4 ? "needs review" : "weak";
-  const explanation =
-    total >= 8.2
-      ? "Detailed product review with clear reproduction steps, practical prioritization, and reviewer-ready proof."
-      : total >= 6.8
-        ? "Promising application with enough detail for review; strongest candidates should show concrete proof and sharper prioritization."
-        : total >= 5.4
-          ? "Readable but needs manual review for detail, proof quality, or prioritization before advancing."
-          : "Thin work sample. The reviewer should look for missing proof, vague reproduction steps, or weak risk judgment.";
-
-  return {
-    total,
-    label,
-    explanation,
-    breakdown: {
-      workSampleDetail,
-      reproductionClarity,
-      prioritization,
-      judgment,
-      proofDiscipline,
-      toolTransparency,
-    },
-  };
-}
+// Scoring now lives in recruiting-scoring.ts as a deterministic qualification +
+// defect-match rubric. This thin wrapper keeps the existing call site
+// (`scoreCareerApplication`) stable while delegating to the new rubric.
+export {
+  computeRecruitingScore as scoreCareerApplication,
+  type SignalContext as RecruitingScoreContext,
+} from "./recruiting-scoring";
