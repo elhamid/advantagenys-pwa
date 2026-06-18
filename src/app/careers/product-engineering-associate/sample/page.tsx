@@ -1,9 +1,6 @@
 import type { Metadata } from "next";
 import { Container } from "@/components/ui/Container";
-import {
-  CAREERS_ROLE_PATH,
-  deriveVerificationCode,
-} from "@/lib/careers/product-engineering-associate";
+import { CAREERS_ROLE_PATH } from "@/lib/careers/product-engineering-associate";
 import { SampleQuoteFlow } from "./SampleQuoteFlow";
 
 export const metadata: Metadata = {
@@ -15,22 +12,7 @@ export const metadata: Metadata = {
   },
 };
 
-interface SamplePageProps {
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-}
-
-function firstParam(value: string | string[] | undefined): string | undefined {
-  if (Array.isArray(value)) return value[0];
-  return value;
-}
-
-export default async function ProductEngineeringAssociateSamplePage({
-  searchParams,
-}: SamplePageProps) {
-  const params = await searchParams;
-  const ref = firstParam(params.ref) ?? firstParam(params.partner);
-  const verificationCode = deriveVerificationCode(ref);
-
+export default async function ProductEngineeringAssociateSamplePage() {
   return (
     <main className="min-h-screen bg-[var(--bg)]">
       <section className="border-b border-[var(--border)] bg-[var(--surface)]">
@@ -57,18 +39,6 @@ export default async function ProductEngineeringAssociateSamplePage({
                 contact details, and expects a WhatsApp follow-up. Run the flow below on{" "}
                 <strong>both a phone and a desktop</strong>, complete it end to end, and find what
                 is wrong. We are not telling you how many issues exist or where they are.
-              </p>
-            </div>
-
-            <div className="mt-5 border border-[var(--border)] bg-[var(--bg)] px-4 py-4">
-              <h2 className="text-sm font-bold uppercase tracking-[0.08em] text-[var(--text-muted)]">
-                Verification code
-              </h2>
-              <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">
-                Include this code in your submission so we can match it to your invitation:
-              </p>
-              <p className="mt-2 text-2xl font-black tracking-[0.12em] text-[var(--text)]">
-                {verificationCode}
               </p>
             </div>
 

@@ -129,18 +129,22 @@ describe("POST /api/careers/product-engineering-associate", () => {
     expect(body.error).toMatch(/pdf, doc, or docx/i);
   });
 
-  it("rejects a mismatched verification code", async () => {
+  it("accepts a submission with an arbitrary verification code (open shared link)", async () => {
     const response = await POST(makeRequest(buildFormData({ verificationCode: "PEA-WRONG1" })));
-    expect(response.status).toBe(400);
+    expect(response.status).toBe(200);
     const body = await response.json();
-    expect(body.error).toMatch(/verification code does not match/i);
+    expect(body.success).toBe(true);
+    expect(body.applicationId).toEqual(expect.any(String));
+    expect(storageMock.storeRecruitingApplication).toHaveBeenCalled();
   });
 
-  it("rejects a missing verification code", async () => {
+  it("accepts a submission with no verification code (forwarded shared link)", async () => {
     const response = await POST(makeRequest(buildFormData({ verificationCode: "" })));
-    expect(response.status).toBe(400);
+    expect(response.status).toBe(200);
     const body = await response.json();
-    expect(body.error).toMatch(/verification code is required/i);
+    expect(body.success).toBe(true);
+    expect(body.applicationId).toEqual(expect.any(String));
+    expect(storageMock.storeRecruitingApplication).toHaveBeenCalled();
   });
 
   it("fails when the proof file upload fails and there is no fallback link", async () => {

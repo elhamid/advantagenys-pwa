@@ -18,7 +18,7 @@ import { storeRecruitingApplication } from "@/lib/careers/recruiting-storage";
 
 export const runtime = "nodejs";
 
-const applicationLimiter = createRateLimiter(5, 60_000, {
+const applicationLimiter = createRateLimiter(20, 60_000, {
   label: "api/careers/product-engineering-associate",
 });
 

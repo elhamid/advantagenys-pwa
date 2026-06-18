@@ -228,17 +228,9 @@ export function validateApplicationPayload(payload: CareerApplicationPayload): V
     return { valid: false, error: "Select at least one product surface you can work with." };
   }
 
-  const submittedCode = (payload.verificationCode ?? "").trim();
-  if (!submittedCode) {
-    return { valid: false, error: "Verification code is required." };
-  }
-  const expectedCode = deriveVerificationCode(payload.referralCode);
-  if (submittedCode.toUpperCase() !== expectedCode.toUpperCase()) {
-    return {
-      valid: false,
-      error: "Verification code does not match. Copy the code shown on the work-sample page.",
-    };
-  }
+  // Verification-code gate removed: this is an open, shared application link.
+  // Any candidate with the link can submit; each submission creates a new record.
+  // The verificationCode field (if present) is recorded as informational only.
 
   if (payload.issueFindings.length < 80) {
     return {

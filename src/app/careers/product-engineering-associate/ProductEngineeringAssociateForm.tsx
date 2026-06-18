@@ -7,7 +7,6 @@ import {
   WORK_SAMPLE_URL,
   convertInrToUsd,
   convertUsdToInr,
-  deriveVerificationCode,
 } from "@/lib/careers/product-engineering-associate";
 
 interface ExchangeRateState {
@@ -50,7 +49,6 @@ export function ProductEngineeringAssociateForm() {
   const searchParams = useSearchParams();
   const refToken = searchParams.get("ref") ?? searchParams.get("partner") ?? "";
   const initialReferral = refToken;
-  const suggestedVerificationCode = refToken ? deriveVerificationCode(refToken) : "";
   const formRef = useRef<HTMLFormElement>(null);
   const [rateState, setRateState] = useState<ExchangeRateState>({
     rate: null,
@@ -299,20 +297,6 @@ export function ProductEngineeringAssociateForm() {
             <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">
               Open the sanitized exercise at <a href={WORK_SAMPLE_URL} target="_blank" rel="noopener noreferrer" className="font-semibold text-[var(--blue-accent)] underline-offset-4 hover:underline">{WORK_SAMPLE_URL}</a> and run the mini flow on both a phone and a desktop. Complete a submission and read every screen carefully. We are not telling you how many issues exist.
             </p>
-
-            <label className="mt-5 block text-sm font-semibold text-[var(--text)]">
-              Verification code from the sample page
-              <input
-                name="verificationCode"
-                required
-                defaultValue={suggestedVerificationCode}
-                placeholder="PEA-XXXXXX"
-                className="mt-2 w-full border border-[var(--border)] bg-white px-3 py-3 text-sm outline-none focus:border-[var(--blue-accent)]"
-              />
-              <span className="mt-2 block text-xs font-normal text-[var(--text-secondary)]">
-                Copy the code shown on the sample page so we can match your invitation.
-              </span>
-            </label>
 
             <label className="mt-5 block text-sm font-semibold text-[var(--text)]">
               Experience summary
