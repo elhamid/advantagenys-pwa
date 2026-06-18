@@ -43,16 +43,16 @@ const VALID_SOURCES = new Set<string>(LEAD_SOURCES as readonly string[]);
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-function str(v: unknown): string | undefined {
+function str(v: unknown, options: Parameters<typeof normalizeEnglishTextValue>[1] = {}): string | undefined {
   if (typeof v !== "string") return undefined;
-  const normalized = normalizeEnglishTextValue(v);
+  const normalized = normalizeEnglishTextValue(v, options);
   return normalized.length > 0 ? normalized : undefined;
 }
 
-function strOrEmpty(v: unknown): string | undefined {
+function strOrEmpty(v: unknown, options: Parameters<typeof normalizeEnglishTextValue>[1] = {}): string | undefined {
   // Returns a trimmed string even when trimmed length is 0 (treats empty as undefined).
   if (typeof v !== "string") return undefined;
-  const normalized = normalizeEnglishTextValue(v);
+  const normalized = normalizeEnglishTextValue(v, options);
   return normalized.length > 0 ? normalized : undefined;
 }
 
@@ -60,7 +60,7 @@ function strArray(v: unknown): string[] | undefined {
   if (!Array.isArray(v)) return undefined;
   const arr = v
     .filter((x): x is string => typeof x === "string")
-    .map(normalizeEnglishTextValue)
+    .map((entry) => normalizeEnglishTextValue(entry))
     .filter(Boolean);
   return arr.length > 0 ? arr : undefined;
 }
@@ -74,7 +74,7 @@ function additionalOwnerArray(v: unknown): AdditionalOwner[] | undefined {
   const owners = v
     .filter((entry): entry is Record<string, unknown> => Boolean(entry) && typeof entry === "object" && !Array.isArray(entry))
     .map((entry) => ({
-      name: strOrEmpty(entry.name) ?? "",
+      name: strOrEmpty(entry.name, { stripDiacritics: false }) ?? "",
       address: strOrEmpty(entry.address),
       city: strOrEmpty(entry.city),
       state: strOrEmpty(entry.state),
@@ -98,6 +98,8 @@ function maskSensitiveIdentifier(value: string): string {
 
 const STAFF_ENGLISH_SKIP_KEY_PATTERN =
   /^(email|phone|telephone|cellPhone|dateOfBirth|filingReceiptDate|policyExpiration|preferredDate|preferredTime|turnstileToken|source|type|utm|zipCode|ssnOrItin|ownerSsnOrItin|additionalOwner2SsnOrItin|additionalOwner3SsnOrItin|ein)$/i;
+const STAFF_EXACT_ENGLISH_KEY_PATTERN =
+  /^(fullName|name|ownerName|businessName|companyName|corporationName|entityName|legalName)$/i;
 
 function labelFromKey(key: string): string {
   return key
@@ -108,7 +110,11 @@ function labelFromKey(key: string): string {
 
 function firstStaffEnglishInputError(value: unknown, key = "field"): string | null {
   if (STAFF_ENGLISH_SKIP_KEY_PATTERN.test(key)) return null;
-  if (typeof value === "string") return englishInputError(value, labelFromKey(key));
+  if (typeof value === "string") {
+    return englishInputError(value, labelFromKey(key), {
+      requireBasicEnglishLetters: STAFF_EXACT_ENGLISH_KEY_PATTERN.test(key),
+    });
+  }
   if (Array.isArray(value)) {
     for (const entry of value) {
       const error = firstStaffEnglishInputError(entry, key);
@@ -158,7 +164,7 @@ function validatePayload(body: unknown): ValidationResult {
   const obj = body as Record<string, unknown>;
 
   // --- Base fields ----------------------------------------------------------
-  const fullName = str(obj.fullName);
+  const fullName = str(obj.fullName, { stripDiacritics: false });
   if (!fullName) return { valid: false, error: "Full name is required." };
 
   const phoneRaw = typeof obj.phone === "string" ? obj.phone.trim() : "";
