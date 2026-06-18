@@ -73,11 +73,13 @@ export interface HoneypotResult {
 }
 
 /**
- * The honeypot field is hidden from humans via CSS/aria; any non-empty value
- * means an automated agent filled it. Field name is intentionally plausible
- * ("company_website") so naive bots target it.
+ * The honeypot field is hidden from humans via CSS/aria. A non-empty value is a
+ * weak bot signal — but it is treated as a SOFT signal upstream (flag-for-review,
+ * never a hard reject) because browser autofill / password managers can populate
+ * hidden fields. The field name is deliberately NON-semantic so autofill engines
+ * do not map it to a known field type (name/email/url/org), reducing false trips.
  */
-export const HONEYPOT_FIELD = "company_website";
+export const HONEYPOT_FIELD = "contact_ref_2";
 
 export function checkHoneypot(value: string | null | undefined): HoneypotResult {
   return { tripped: typeof value === "string" && value.trim().length > 0 };

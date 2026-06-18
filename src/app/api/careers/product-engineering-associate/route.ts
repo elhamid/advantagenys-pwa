@@ -325,15 +325,11 @@ export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
 
-    // Anti-spam: hidden honeypot. A human never fills it; a bot that auto-fills
-    // all inputs trips it. Hard reject (but respond 200-shaped so bots get no
-    // signal). The shared ?ref= link's normal candidate never sees this field.
-    if (checkHoneypot(formData.get(HONEYPOT_FIELD) as string | null).tripped) {
-      return NextResponse.json(
-        { success: false, error: "Submission rejected." },
-        { status: 400 }
-      );
-    }
+    // Anti-spam: hidden honeypot — SOFT signal only. A human never intentionally
+    // fills it, but browser autofill / password managers can populate hidden
+    // fields, so we must NOT hard-reject on it (that would block a real
+    // candidate). A tripped honeypot flags the stored row for review instead.
+    const honeypotTripped = checkHoneypot(formData.get(HONEYPOT_FIELD) as string | null).tripped;
 
     const rawResume = formData.get("resume");
     const resumeFile = isUploadedFile(rawResume) && rawResume.size > 0 ? rawResume : null;
@@ -390,22 +386,28 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Anti-spam: exact-duplicate block. Hash of normalized email+phone. Only an
-    // EXACT prior submission hard-rejects — a first-time candidate via the
-    // shared link is never blocked.
+    // Anti-spam: duplicate detection — SOFT. A candidate who fixes a typo and
+    // re-applies with the same email+phone is a legitimate corrected resubmit,
+    // NOT spam. We never 409-block and never silently drop it: the resubmission
+    // is accepted and the row is flagged so a reviewer keeps the latest version
+    // and can reconcile duplicates.
     const fingerprint = applicantFingerprint(payload.email, payload.whatsapp);
     const duplicate = await fingerprintExists(fingerprint).catch((error) => {
       console.error("[careers] dedupe check failed (allowing submission)", error);
       return false;
     });
+
+    // Resolve the row status from the soft anti-spam signals (honeypot wins
+    // since it is the stronger bot signal, then resubmission).
+    const rowStatus = honeypotTripped ? "spam_review" : duplicate ? "resubmission" : "new";
+    if (honeypotTripped) {
+      console.warn(
+        `[careers] honeypot filled for ${payload.email} — accepting but flagging row status=spam_review (likely autofill or bot).`
+      );
+    }
     if (duplicate) {
-      return NextResponse.json(
-        {
-          success: false,
-          error:
-            "We already have an application from this email and phone. If you need to update it, reply to your confirmation instead of re-submitting.",
-        },
-        { status: 409 }
+      console.log(
+        `[careers] resubmission from a known email+phone fingerprint — accepting as status=resubmission for review.`
       );
     }
 
@@ -430,7 +432,7 @@ export async function POST(request: NextRequest) {
 
     const score = scoreCareerApplication(payload, scoreContext);
     const [storageResult, webhookOk, emailOk] = await Promise.all([
-      storeRecruitingApplication(payload, score, resumeFile, proofFile).catch((error) => ({
+      storeRecruitingApplication(payload, score, resumeFile, proofFile, rowStatus).catch((error) => ({
         supabaseOk: false,
         resume: { uploaded: false },
         proof: { uploaded: false },
@@ -472,6 +474,7 @@ export async function POST(request: NextRequest) {
     // email/webhook or was dropped to localOnly (no durable store).
     console.log(
       `[careers] application ${payload.applicationId} persistence: ` +
+        `status=${rowStatus} ` +
         `supabaseOk=${storageResult.supabaseOk} ` +
         `resumeUploaded=${storageResult.resume.uploaded} ` +
         `proofUploaded=${storageResult.proof?.uploaded ?? false} ` +
@@ -483,6 +486,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       applicationId: payload.applicationId,
+      // Visible so a resubmission/flagged row is never silent.
+      status: rowStatus,
+      resubmission: rowStatus === "resubmission",
       delivery: {
         // Did the row durably persist to the recruiting_applications table?
         persisted: storageResult.supabaseOk,

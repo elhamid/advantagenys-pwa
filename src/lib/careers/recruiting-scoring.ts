@@ -18,15 +18,25 @@ import type { CareerApplicationPayload } from "./product-engineering-associate";
 
 // ---------------------------------------------------------------------------
 // GROUND TRUTH — the planted defects in sample/SampleQuoteFlow.tsx.
-// Each defect has match patterns over the candidate's own free-text. A defect
-// counts as "found" when ANY of its patterns appears in the combined answer
-// text. Keep these in sync with the sample exercise.
+//
+// A defect counts as CAUGHT WITH DETAIL only when a defect-identifying pattern
+// co-occurs (within the SAME sentence/segment) with concrete inspection
+// evidence — a device, a step, an expected-vs-actual observation, or a UI
+// action. A bare keyword anywhere in the blob ("confirmation email", "long
+// link", "below the fold") is NOT enough: it is recorded as a weak/keyword-only
+// mention but earns no defect points and does not count toward the strong-tier
+// floor. This makes the scorer reward real inspection, not buzzword padding.
+// Keep these in sync with the sample exercise.
 // ---------------------------------------------------------------------------
 
 export interface PlantedDefect {
   id: string;
   label: string;
-  /** Regexes (case-insensitive) — any match means the candidate caught it. */
+  /**
+   * Identifying patterns — a strict pattern that names the defect specifically.
+   * Matching one of these in a segment that ALSO shows inspection detail counts
+   * as "caught with detail". A match without nearby detail is keyword-only.
+   */
   patterns: RegExp[];
 }
 
@@ -37,8 +47,8 @@ export const PLANTED_DEFECTS: PlantedDefect[] = [
     patterns: [
       /whatsapp[^.]{0,40}email|email[^.]{0,40}whatsapp/i,
       /channel\s*mismatch/i,
-      /(promis|said|expect)[^.]{0,30}whatsapp/i,
-      /confirmation[^.]{0,40}email/i,
+      /(promis|said|expect|scenario)[^.]{0,40}whatsapp/i,
+      /(confirmation|success|thank|message)[^.]{0,40}email/i,
       /wrong\s*channel/i,
     ],
   },
@@ -48,8 +58,8 @@ export const PLANTED_DEFECTS: PlantedDefect[] = [
     patterns: [
       /phone[^.]{0,40}(no|without|lacks|missing|isn'?t|not)\s*valid/i,
       /(no|missing|lacks)[^.]{0,20}phone[^.]{0,20}valid/i,
-      /phone[^.]{0,40}(accept|allow)[^.]{0,20}(letter|text|garbage|anything|alpha)/i,
-      /(letter|alpha|text)[^.]{0,30}phone/i,
+      /phone[^.]{0,40}(accept|allow|takes)[^.]{0,20}(letter|text|garbage|anything|alpha|invalid)/i,
+      /(letter|alpha|garbage)[^.]{0,30}phone/i,
       /phone[^.]{0,30}validation/i,
     ],
   },
@@ -58,8 +68,8 @@ export const PLANTED_DEFECTS: PlantedDefect[] = [
     label: "Submit button pushed below the fold on mobile / selected service not echoed",
     patterns: [
       /below[\s-]*the[\s-]*fold/i,
-      /(submit|cta|button)[^.]{0,40}(below|off|hidden|scroll)/i,
-      /(scroll|hidden)[^.]{0,40}(submit|cta|button)/i,
+      /(submit|cta|button)[^.]{0,40}(below|off[\s-]*screen|hidden|cut\s*off)/i,
+      /(scroll[^.]{0,20}(to\s*)?(reach|find|see)[^.]{0,20})?(submit|cta|button)/i,
       /service[^.]{0,40}(not\s*echo|not\s*shown|not\s*displayed|not\s*confirmed|no\s*confirmation)/i,
       /tall[^.]{0,30}(stack|card|list)/i,
     ],
@@ -78,24 +88,28 @@ export const PLANTED_DEFECTS: PlantedDefect[] = [
     id: "nonwrapping_link",
     label: "Long reference link does not wrap and widens layout on desktop",
     patterns: [
-      /(link|url)[^.]{0,40}(wrap|overflow|widen|stretch|break|nowrap|horizontal\s*scroll)/i,
+      /(link|url)[^.]{0,40}(wrap|overflow|widen|stretch|nowrap|horizontal\s*scroll)/i,
       /(wrap|overflow|widen|nowrap)[^.]{0,30}(link|url|layout)/i,
       /(layout|form|page)[^.]{0,40}(widen|stretch|overflow|horizontal\s*scroll)/i,
-      /long[^.]{0,20}(link|url)/i,
     ],
   },
 ];
 
 export const TOTAL_PLANTED_DEFECTS = PLANTED_DEFECTS.length;
 
-// Phrases that indicate genuine reproduction discipline.
-const REPRO_PATTERNS: RegExp[] = [
-  /\bstep\s*\d|\b\d[.)]\s|first[, ].*then|then\b/i,
+// Concrete inspection-detail markers. A defect mention only counts when one of
+// these appears NEAR it (same sentence/segment) — proof the candidate actually
+// looked, not just pasted the right word.
+const DETAIL_MARKERS: RegExp[] = [
   /\bexpected\b/i,
-  /\bactual\b/i,
-  /\b(tap|tapp|click|scroll|open|enter|type|submit|select)\b/i,
-  /\b(iphone|android|mobile|phone|desktop|chrome|safari|firefox|390px|375px|viewport)\b/i,
+  /\bactual(?:ly)?\b/i,
+  /\bstep\s*\d|\b\d[.)]\s/i,
+  /\b(tap|tapp(?:ed|ing)?|click(?:ed|ing)?|scroll(?:ed|ing)?|enter(?:ed)?|typ(?:e|ed|ing)|select(?:ed)?|submit(?:ted)?)\b/i,
+  /\b(iphone|android|mobile|phone|desktop|chrome|safari|firefox|\d{2,4}px|viewport|laptop|tablet)\b/i,
 ];
+
+// Phrases that indicate genuine reproduction discipline (for the repro sub-score).
+const REPRO_PATTERNS: RegExp[] = DETAIL_MARKERS;
 
 // Phrases indicating business-impact prioritization.
 const PRIORITY_PATTERNS: RegExp[] = [
@@ -172,24 +186,60 @@ export function gateResult(payload: CareerApplicationPayload): GateResult {
 // ---------------------------------------------------------------------------
 
 export interface DefectMatchResult {
-  caught: string[]; // defect ids found
+  /** Defect ids caught WITH nearby inspection detail — the real signal. */
+  caught: string[];
+  /** Defect ids mentioned by keyword only (no nearby detail) — informational. */
+  keywordOnly: string[];
+  /** Count of detail-bound catches; drives points and the strong-tier floor. */
   caughtCount: number;
-  defectPoints: number; // up to 30: 6 per planted defect found
+  defectPoints: number; // up to 30: 6 per detail-bound planted defect
   reproductionPoints: number; // up to 8
   prioritizationPoints: number; // up to 4
   restraintPoints: number; // up to 3
   total: number; // up to 45
 }
 
+// Split free text into sentence/segment units so a defect keyword and its
+// supporting detail must appear together to count.
+function toSegments(text: string): string[] {
+  return text
+    .split(/(?<=[.!?;:\n])|\n+/)
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
+}
+
 export function scoreDefectMatch(payload: CareerApplicationPayload): DefectMatchResult {
   // Combined free-text the candidate wrote about the exercise.
   const findingsText = [payload.issueFindings, payload.topIssueSteps, payload.consoleNetworkNotes].join("\n");
+  const segments = toSegments(findingsText);
 
   const caught: string[] = [];
+  const keywordOnly: string[] = [];
+
   for (const defect of PLANTED_DEFECTS) {
-    if (defect.patterns.some((re) => re.test(findingsText))) caught.push(defect.id);
+    let matchedSomewhere = false;
+    let matchedWithDetail = false;
+
+    for (const segment of segments) {
+      if (!defect.patterns.some((re) => re.test(segment))) continue;
+      matchedSomewhere = true;
+      // Detail-bound: the SAME segment must ALSO carry a concrete inspection
+      // marker (device / step / expected-vs-actual / UI action) AND be long
+      // enough to be a real observation, not a 2-3 word keyword fragment. A bare
+      // "Channel mismatch." or "Below the fold." fails both and counts as
+      // keyword-only.
+      const hasDetail = DETAIL_MARKERS.some((re) => re.test(segment)) && segment.length >= 40;
+      if (hasDetail) {
+        matchedWithDetail = true;
+        break;
+      }
+    }
+
+    if (matchedWithDetail) caught.push(defect.id);
+    else if (matchedSomewhere) keywordOnly.push(defect.id);
   }
-  const perDefect = 30 / TOTAL_PLANTED_DEFECTS; // 6 pts each for the 5 planted defects
+
+  const perDefect = 30 / TOTAL_PLANTED_DEFECTS; // 6 pts each, detail-bound only
   const defectPoints = Math.round(caught.length * perDefect * 10) / 10;
 
   // Reproduction quality keyed off the dedicated repro-steps field.
@@ -208,6 +258,7 @@ export function scoreDefectMatch(payload: CareerApplicationPayload): DefectMatch
 
   return {
     caught,
+    keywordOnly,
     caughtCount: caught.length,
     defectPoints,
     reproductionPoints,
@@ -361,12 +412,24 @@ export function computeRecruitingScore(
     total = Math.min(total, 49);
   }
 
+  // Strong-tier FLOOR: signals (completeness/artifacts/honesty, ~55 pts) must
+  // NOT be able to reach "strong" on their own. A candidate who fills every
+  // field but catches no real defect WITH DETAIL lands "maybe" or "weak", never
+  // "strong". Strong requires: gate passed AND >=3 detail-bound defects AND the
+  // defect-match sub-score carrying real weight (not just signals padding).
+  const STRONG_DEFECT_FLOOR = 3;
+  const STRONG_DEFECT_POINTS_FLOOR = 24; // ~18 defect pts + repro/prio detail
+  const meetsStrongFloor =
+    gate.passed &&
+    defectMatch.caughtCount >= STRONG_DEFECT_FLOOR &&
+    defectMatch.total >= STRONG_DEFECT_POINTS_FLOOR;
+
   let label: RecruitingTier;
   if (!gate.passed) {
     label = "weak";
-  } else if (total >= 70 && defectMatch.caughtCount >= 3) {
+  } else if (total >= 70 && meetsStrongFloor) {
     label = "strong";
-  } else if (total >= 50 && defectMatch.caughtCount >= 1) {
+  } else if (defectMatch.caughtCount >= 1 && total >= 50) {
     label = "maybe";
   } else {
     label = "weak";

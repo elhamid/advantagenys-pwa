@@ -17,20 +17,26 @@ import {
   TOTAL_PLANTED_DEFECTS,
 } from "../recruiting-scoring";
 
-// A candidate who genuinely inspected the sample and caught real planted defects:
-// channel mismatch, no phone validation, below-fold submit, prefilled referral,
-// non-wrapping long link. Plus reproduction steps + impact prioritization.
+// A candidate who genuinely inspected the sample and caught real planted defects
+// WITH inspection detail: each defect is stated in a sentence that also shows a
+// device / step / expected-vs-actual / UI action, which is what the detail-bound
+// scorer now requires. Defects: channel mismatch, no phone validation, below-fold
+// submit, prefilled referral, non-wrapping long link.
 function strongFindings() {
   return {
     issueFindings:
-      "On mobile the submit button is pushed below the fold because the service cards stack tall, and the selected service is never echoed near submit. The phone field has no validation and accepts letters. The confirmation says it will email a quote even though the scenario promised WhatsApp — a channel mismatch. The referral code is prefilled (JKH-2026) and editable. On desktop the long reference link does not wrap and widens the layout, causing horizontal scroll.",
+      "On an iPhone at 390px I scrolled and the submit button sits below the fold because the service cards stack tall. " +
+      "I typed letters into the phone field on desktop Chrome and it accepted them with no validation and still submitted. " +
+      "After I tapped submit the confirmation said it would email a quote, but the scenario promised WhatsApp — a channel mismatch I saw on screen. " +
+      "I clicked into the referral field and it was prefilled JKH-2026 and editable, so I could overwrite the attribution. " +
+      "On desktop I pasted a long reference link and it did not wrap, which widened the layout and caused horizontal scroll.",
     topIssueSteps:
-      "Step 1: open the page on an iPhone at 390px in Safari. Step 2: tap into the phone field and type letters. Expected: validation error. Actual: it accepts garbage and still submits. Step 3: scroll — the submit button is below the fold.",
+      "Step 1: open the page on an iPhone at 390px in Safari. Step 2: tap into the phone field and type letters. Expected: a validation error. Actual: it accepts garbage and still submits.",
     firstFixReason:
       "I would fix the phone validation first because invalid phone numbers break our ability to follow up on every lead, which directly hurts conversion. I would NOT touch the referral prefill yet without checking why it is seeded.",
     riskyQuestion:
       "I would not change the referral code behavior without asking first: is the prefilled JKH-2026 intentional attribution? I would confirm scope before editing it.",
-    consoleNetworkNotes: "No console errors, but the form submits with no network request to a backend.",
+    consoleNetworkNotes: "No console errors, but after I tapped submit there was no network request to any backend.",
   };
 }
 
@@ -212,8 +218,8 @@ describe("hard gates", () => {
   });
 });
 
-describe("defect-match scoring against the planted sample defects", () => {
-  it("catches the real planted defects from genuine findings", () => {
+describe("defect-match scoring against the planted sample defects (detail-bound)", () => {
+  it("catches the real planted defects from genuine, detailed findings", () => {
     const result = scoreDefectMatch(validPayload());
     expect(result.caughtCount).toBeGreaterThanOrEqual(4);
     // All five planted-defect ids are known to the rubric.
@@ -223,7 +229,7 @@ describe("defect-match scoring against the planted sample defects", () => {
     expect(result.prioritizationPoints).toBeGreaterThan(0);
   });
 
-  it("scores near zero defects for buzzword padding with no real findings", () => {
+  it("scores zero defects for buzzword padding with no real findings", () => {
     const padded =
       "This is a great product. Mobile and desktop look modern. The form and cta and console and network are present. I reviewed everything carefully and it is high quality work with attention to detail.";
     const result = scoreDefectMatch(
@@ -235,7 +241,25 @@ describe("defect-match scoring against the planted sample defects", () => {
         consoleNetworkNotes: padded,
       })
     );
-    expect(result.caughtCount).toBeLessThanOrEqual(1);
+    expect(result.caughtCount).toBe(0);
+    expect(result.defectPoints).toBe(0);
+  });
+
+  it("does NOT count a bare defect keyword pasted without any inspection detail", () => {
+    // The exact defect words, but no device/step/expected-vs-actual near them.
+    const keywordsOnly =
+      "Channel mismatch. Phone validation. Below the fold. Referral prefilled. Long link does not wrap.";
+    const result = scoreDefectMatch(
+      validPayload({
+        issueFindings: keywordsOnly,
+        topIssueSteps: "I looked at it and it seemed fine overall.",
+        consoleNetworkNotes: "Nothing noted.",
+      })
+    );
+    // None counted with detail; they are recorded as keyword-only mentions.
+    expect(result.caughtCount).toBe(0);
+    expect(result.keywordOnly.length).toBeGreaterThanOrEqual(3);
+    expect(result.defectPoints).toBe(0);
   });
 });
 
@@ -255,6 +279,27 @@ describe("computeRecruitingScore tiers (0-100, deterministic)", () => {
     expect(score.total).toBeLessThanOrEqual(49);
     expect(score.breakdown.qualified).toBe(false);
     expect(score.explanation).toMatch(/hard gate/i);
+  });
+
+  it("NEVER reaches strong on signals alone — every field filled but no real defect caught", () => {
+    // Passes the gate, fills every field with plausible prose, but catches no
+    // planted defect WITH detail. Must land maybe/weak, never strong.
+    const filler =
+      "I carefully reviewed the page on my device and wrote up my observations. The experience felt reasonable and I documented what I saw with attention to the overall flow and quality.";
+    const score = computeRecruitingScore(
+      validPayload({
+        issueFindings: filler,
+        topIssueSteps: filler,
+        firstFixReason: filler,
+        smallImprovement: filler,
+        riskyQuestion: filler,
+        consoleNetworkNotes: filler,
+        aiUseNotes: filler,
+      })
+    );
+    expect(score.breakdown.gate.passed).toBe(true);
+    expect(score.breakdown.defectsCaughtCount).toBeLessThan(3);
+    expect(score.label).not.toBe("strong");
   });
 
   it("downgrades a dead resume link via the signal context", () => {

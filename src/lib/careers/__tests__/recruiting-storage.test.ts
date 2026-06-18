@@ -33,6 +33,7 @@ function makeScore(total: number, label: CareerApplicationScore["label"] = "stro
       },
       defectMatch: {
         caught: ["phone_validation", "channel_mismatch", "nonwrapping_link"],
+        keywordOnly: [],
         caughtCount: 3,
         defectPoints: 18,
         reproductionPoints: 8,
@@ -158,6 +159,17 @@ describe("recruiting storage mapping", () => {
       })
     );
     expect(record.verification_code).toBe("PEA-AB12CD");
+    // Default status is "new" when no override is passed.
+    expect(record.status).toBe("new");
+  });
+
+  it("applies a status override (e.g. resubmission / spam_review) to the record", () => {
+    const resume: ResumeStorageRecord = { uploaded: false };
+    const proof: ProofStorageRecord = { uploaded: false };
+    const resubmit = recruitingRecordFromPayload(payload, strongScore, resume, proof, "resubmission");
+    expect(resubmit.status).toBe("resubmission");
+    const spam = recruitingRecordFromPayload(payload, strongScore, resume, proof, "spam_review");
+    expect(spam.status).toBe("spam_review");
   });
 });
 

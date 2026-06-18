@@ -8,8 +8,10 @@ import {
 
 // Hidden anti-spam honeypot field name. Kept inline (not imported from the
 // recruiting-antispam module) so this client component never pulls node:crypto
-// into the browser bundle. Must match HONEYPOT_FIELD on the server.
-const HONEYPOT_FIELD = "company_website";
+// into the browser bundle. Must match HONEYPOT_FIELD on the server. Name is
+// deliberately non-semantic so browser autofill does not target it. On the
+// server a filled value is a SOFT flag-for-review signal, never a hard reject.
+const HONEYPOT_FIELD = "contact_ref_2";
 
 const surfaceOptions = [
   "Client-facing pages",
@@ -101,20 +103,20 @@ export function ProductEngineeringAssociateForm() {
         </div>
       ) : (
         <div className="space-y-8">
-          {/* Honeypot: hidden from humans and assistive tech. A real candidate
-              never fills this; bots that auto-fill all inputs trip the server
-              guard. Not part of the visible flow, so the shared ?ref= link's
-              normal candidate is never affected. */}
+          {/* Honeypot: hidden from humans and assistive tech, off-screen, not
+              tabbable, with a non-semantic name + autoComplete="new-password" so
+              browser autofill / password managers skip it. A filled value is a
+              SOFT flag-for-review signal on the server, NEVER a hard reject, so a
+              legit candidate is never blocked even if their browser fills it.
+              The shared ?ref= link's normal candidate never sees this field. */}
           <div aria-hidden="true" className="absolute h-0 w-0 overflow-hidden" style={{ position: "absolute", left: "-9999px" }}>
-            <label>
-              Company website
-              <input
-                type="text"
-                name={HONEYPOT_FIELD}
-                tabIndex={-1}
-                autoComplete="off"
-              />
-            </label>
+            <input
+              type="text"
+              name={HONEYPOT_FIELD}
+              tabIndex={-1}
+              autoComplete="new-password"
+              aria-hidden="true"
+            />
           </div>
 
           <section>

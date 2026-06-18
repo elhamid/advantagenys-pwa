@@ -32,7 +32,7 @@ interface RubricBreakdown {
   defectsCaughtCount?: number;
   totalPlantedDefects?: number;
   qualified?: boolean;
-  defectMatch?: { total?: number };
+  defectMatch?: { total?: number; keywordOnly?: string[] };
   signals?: { total?: number };
   gate?: { passed?: boolean; failures?: string[] };
 }
@@ -50,6 +50,7 @@ function CandidateCard({ app }: { app: RecruitingApplicationForReview }) {
   const qualified = breakdown.qualified === true;
   const defectPts = breakdown.defectMatch?.total;
   const signalPts = breakdown.signals?.total;
+  const keywordOnlyCount = breakdown.defectMatch?.keywordOnly?.length ?? 0;
   const gateFailures = breakdown.gate?.failures ?? [];
   const resumeUrl = resume.signed_url ?? resume.url;
   const proofUrl = proof.signed_url ?? proof.recording_url ?? workSample.proof_recording_url ?? null;
@@ -92,8 +93,13 @@ function CandidateCard({ app }: { app: RecruitingApplicationForReview }) {
           {qualified ? "Qualified" : "Not qualified"}
         </span>
         <span className="border border-[var(--border)] bg-[var(--bg)] px-2 py-1 text-xs font-semibold text-[var(--text-secondary)]">
-          Defects caught: {defectsCaught}/{totalDefects}
+          Defects caught (with detail): {defectsCaught}/{totalDefects}
         </span>
+        {keywordOnlyCount > 0 ? (
+          <span className="bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-700">
+            Keyword-only mentions: {keywordOnlyCount} (no inspection detail)
+          </span>
+        ) : null}
         {typeof defectPts === "number" ? (
           <span className="border border-[var(--border)] bg-[var(--bg)] px-2 py-1 text-xs font-semibold text-[var(--text-secondary)]">
             Defect-match: {defectPts.toFixed(1)}/45

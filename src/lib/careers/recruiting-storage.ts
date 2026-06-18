@@ -201,7 +201,10 @@ export function recruitingRecordFromPayload(
   payload: CareerApplicationPayload,
   score: CareerApplicationScore,
   resume: ResumeStorageRecord,
-  proof: ProofStorageRecord
+  proof: ProofStorageRecord,
+  // A resubmit from a known email+phone is accepted (never dropped/blocked) but
+  // flagged so a reviewer sees the latest version and can reconcile duplicates.
+  status: string = "new"
 ) {
   return {
     application_id: payload.applicationId,
@@ -209,7 +212,7 @@ export function recruitingRecordFromPayload(
     hiring_lane: payload.hiringLane,
     referral_code: payload.referralCode ?? null,
     partner_tag: payload.partnerTag,
-    status: "new",
+    status,
     score: score.total,
     score_label: score.label,
     score_explanation: score.explanation,
@@ -268,7 +271,10 @@ export async function storeRecruitingApplication(
   payload: CareerApplicationPayload,
   score: CareerApplicationScore,
   resumeFile: File | null,
-  proofFile: File | null = null
+  proofFile: File | null = null,
+  // Row status. "resubmission" when a known email+phone re-applies — accepted
+  // and flagged for review instead of being blocked or dropped.
+  status: string = "new"
 ): Promise<RecruitingStorageResult> {
   const supabase = getRecruitingSupabase();
   if (!supabase) {
@@ -326,7 +332,7 @@ export async function storeRecruitingApplication(
   }
 
   try {
-    const record = recruitingRecordFromPayload(payload, score, resume, proof);
+    const record = recruitingRecordFromPayload(payload, score, resume, proof, status);
     const { error } = await supabase.from(RECRUITING_TABLE).insert(record);
 
     if (error) throw new Error(`Recruiting record insert failed: ${error.message}`);

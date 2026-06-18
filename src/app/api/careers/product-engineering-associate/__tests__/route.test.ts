@@ -110,7 +110,8 @@ describe("POST /api/careers/product-engineering-associate", () => {
         explanation: expect.any(String),
       }),
       null,
-      null
+      null,
+      "new"
     );
   });
 
@@ -131,14 +132,24 @@ describe("POST /api/careers/product-engineering-associate", () => {
     expect(body.error).toMatch(/pdf, doc, or docx/i);
   });
 
-  it("rejects when the honeypot field is filled (bot)", async () => {
+  it("does NOT hard-reject a filled honeypot (autofill-safe); accepts and flags for review", async () => {
+    // Browser autofill can fill hidden fields — a real candidate must not be
+    // blocked. The submission is accepted and the row flagged status=spam_review.
     const formData = buildFormData();
     formData.set(HONEYPOT_FIELD, "http://spam.example");
     const response = await POST(makeRequest(formData));
-    expect(response.status).toBe(400);
+    expect(response.status).toBe(200);
     const body = await response.json();
-    expect(body.success).toBe(false);
-    expect(storageMock.storeRecruitingApplication).not.toHaveBeenCalled();
+    expect(body.success).toBe(true);
+    expect(body.status).toBe("spam_review");
+    // Stored, but flagged via the status argument (5th positional arg).
+    expect(storageMock.storeRecruitingApplication).toHaveBeenCalledWith(
+      expect.any(Object),
+      expect.any(Object),
+      null,
+      null,
+      "spam_review"
+    );
   });
 
   it("rejects a disposable email domain", async () => {
@@ -148,13 +159,30 @@ describe("POST /api/careers/product-engineering-associate", () => {
     expect(body.error).toMatch(/permanent email/i);
   });
 
-  it("rejects an exact duplicate (same email+phone fingerprint)", async () => {
+  it("accepts a corrected resubmit (same email+phone) and flags it, never 409-blocks", async () => {
     storageMock.fingerprintExists.mockResolvedValue(true);
     const response = await POST(makeRequest(buildFormData()));
-    expect(response.status).toBe(409);
+    expect(response.status).toBe(200);
     const body = await response.json();
-    expect(body.error).toMatch(/already have an application/i);
-    expect(storageMock.storeRecruitingApplication).not.toHaveBeenCalled();
+    expect(body.success).toBe(true);
+    expect(body.status).toBe("resubmission");
+    expect(body.resubmission).toBe(true);
+    expect(storageMock.storeRecruitingApplication).toHaveBeenCalledWith(
+      expect.any(Object),
+      expect.any(Object),
+      null,
+      null,
+      "resubmission"
+    );
+  });
+
+  it("treats a first-time, non-duplicate candidate as status=new", async () => {
+    storageMock.fingerprintExists.mockResolvedValue(false);
+    const response = await POST(makeRequest(buildFormData()));
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body.status).toBe("new");
+    expect(body.resubmission).toBe(false);
   });
 
   it("allows a first-time candidate even if the dedupe check errors", async () => {
@@ -163,6 +191,7 @@ describe("POST /api/careers/product-engineering-associate", () => {
     expect(response.status).toBe(200);
     const body = await response.json();
     expect(body.success).toBe(true);
+    expect(body.status).toBe("new");
   });
 
   it("accepts the open shared link with an arbitrary or missing verification code", async () => {

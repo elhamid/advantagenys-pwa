@@ -8,8 +8,10 @@ import {
 } from "../recruiting-antispam";
 
 describe("honeypot", () => {
-  it("is named consistently for the form + server", () => {
-    expect(HONEYPOT_FIELD).toBe("company_website");
+  it("uses a non-semantic name so browser autofill does not target it", () => {
+    expect(HONEYPOT_FIELD).toBe("contact_ref_2");
+    // Must not look like a known autofillable field (name/email/url/org/company).
+    expect(HONEYPOT_FIELD).not.toMatch(/name|email|url|website|company|org|phone|address/i);
   });
 
   it("does not trip on empty/whitespace/null (real candidate leaves it blank)", () => {
