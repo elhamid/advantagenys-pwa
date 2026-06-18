@@ -15,15 +15,17 @@ const NAV_ITEMS = [
 ];
 
 // ITIN gets its own highlighted nav entry — separate from NAV_ITEMS so it can be styled distinctly
-const ITIN_NAV = { label: "ITIN", href: "/resources/forms/itin-registration-form" };
+const ITIN_NAV = { label: "ITIN", href: "/itin" };
 
 interface HeaderProps {
   mobileNavOpen?: boolean;
+  onMobileNavOpen?: () => void;
   onMobileNavClose?: () => void;
 }
 
 export function Header({
   mobileNavOpen = false,
+  onMobileNavOpen,
   onMobileNavClose,
 }: HeaderProps) {
   // Scroll-aware hide/show on mobile
