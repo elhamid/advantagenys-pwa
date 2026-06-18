@@ -123,23 +123,21 @@ describe("product engineering associate careers helpers", () => {
     expect(result).toEqual({ valid: true });
   });
 
-  it("rejects a missing verification code", () => {
+  it("accepts an application with no verification code (open shared link)", () => {
     const result = validateApplicationPayload(validPayload({ verificationCode: undefined }));
-    expect(result.valid).toBe(false);
-    expect(result.error).toMatch(/verification code is required/i);
+    expect(result).toEqual({ valid: true });
   });
 
-  it("rejects a verification code that does not match the ref token", () => {
+  it("accepts an application with an arbitrary verification code value", () => {
     const result = validateApplicationPayload(validPayload({ verificationCode: "PEA-WRONG1" }));
-    expect(result.valid).toBe(false);
-    expect(result.error).toMatch(/verification code does not match/i);
+    expect(result).toEqual({ valid: true });
   });
 
-  it("accepts the placeholder verification code for a no-ref application", () => {
+  it("accepts a no-ref application without any code (forwarded shared link)", () => {
     const result = validateApplicationPayload(
       validPayload({
         referralCode: undefined,
-        verificationCode: VERIFICATION_PLACEHOLDER,
+        verificationCode: undefined,
       })
     );
     expect(result).toEqual({ valid: true });
