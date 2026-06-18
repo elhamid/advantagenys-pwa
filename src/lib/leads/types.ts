@@ -103,27 +103,68 @@ export interface ClientInfoLead extends LeadSubmissionBase {
   ssnOrItin?: string;
   businessName?: string;
   serviceInterested?: string;
+  meetingPreference?: string;
+  referredBy?: string;
+  purpose?: string;
   referralSource?: string;
   additionalNotes?: string;
 }
 
 export interface AdditionalOwner {
   name: string;
-  phone: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
+  ssnOrItin?: string;
+  dateOfBirth?: string;
+  telephone?: string;
+  cellPhone?: string;
+  phone?: string;
 }
 
 export interface CorporateRegistrationLead extends LeadSubmissionBase {
   type: "corporate-registration";
   desiredBusinessName?: string;
   businessType?: string;
-  businessAddress?: string;
-  city?: string;
-  state?: string;
-  zipCode?: string;
+  ein?: string;
+  filingReceiptDate?: string;
   natureOfBusiness?: string;
+  ownerAddress?: string;
+  ownerCity?: string;
+  ownerState?: string;
+  ownerZipCode?: string;
+  ownerSsnOrItin?: string;
+  ownerDateOfBirth?: string;
+  ownerTelephone?: string;
+  ownerCellPhone?: string;
   numberOfMembers?: string;
   numberOfOwners?: number;
   additionalOwners?: AdditionalOwner[];
+  additionalOwner2Name?: string;
+  additionalOwner2Address?: string;
+  additionalOwner2City?: string;
+  additionalOwner2State?: string;
+  additionalOwner2ZipCode?: string;
+  additionalOwner2SsnOrItin?: string;
+  additionalOwner2DateOfBirth?: string;
+  additionalOwner2Telephone?: string;
+  additionalOwner2CellPhone?: string;
+  additionalOwner3Name?: string;
+  additionalOwner3Address?: string;
+  additionalOwner3City?: string;
+  additionalOwner3State?: string;
+  additionalOwner3ZipCode?: string;
+  additionalOwner3SsnOrItin?: string;
+  additionalOwner3DateOfBirth?: string;
+  additionalOwner3Telephone?: string;
+  additionalOwner3CellPhone?: string;
+  meetingPreference?: string;
+  corporationAddress?: string;
+  corporationCity?: string;
+  corporationState?: string;
+  corporationZipCode?: string;
+  websiteSeoOptions?: string;
   needEIN?: string;
   needSalesTax?: string;
   needPayroll?: string;
@@ -140,6 +181,9 @@ export interface InsuranceLead extends LeadSubmissionBase {
   zipCode?: string;
   industryTrade?: string;
   numberOfEmployees?: string;
+  amountToBeInsured?: string;
+  locationSquareFeet?: string;
+  estimatedYearlyPayroll?: string;
   annualRevenue?: string;
   insuranceTypesNeeded?: string[];
   currentProvider?: string;

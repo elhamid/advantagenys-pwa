@@ -24,25 +24,58 @@ const yesNoOptions = ["Yes", "No", "Not Sure"] as const;
 
 const ownerCountOptions = [1, 2, 3] as const;
 
+const meetingOptions = ["Hamid", "Jay", "Kedar", "Zia", "Akram", "Not Sure"] as const;
+
+const websiteSeoOptions = [
+  "No website help needed",
+  "Need a new website",
+  "Need SEO / Google presence",
+  "Need both website and SEO",
+  "Not Sure",
+] as const;
+
 interface CorporateRegistrationData {
   fullName: string;
   phone: string;
   email: string;
   desiredBusinessName: string;
   businessType: string;
-  businessAddress: string;
-  city: string;
-  state: string;
-  zipCode: string;
+  ein: string;
+  filingReceiptDate: string;
   natureOfBusiness: string;
+  ownerAddress: string;
+  ownerCity: string;
+  ownerState: string;
+  ownerZipCode: string;
+  ownerSsnOrItin: string;
+  ownerDateOfBirth: string;
+  ownerTelephone: string;
+  ownerCellPhone: string;
   numberOfMembers: string;
+  meetingPreference: string;
+  corporationAddress: string;
+  corporationCity: string;
+  corporationState: string;
+  corporationZipCode: string;
+  websiteSeoOptions: string;
   needEIN: string;
   needSalesTax: string;
   needPayroll: string;
   additionalNotes: string;
 }
 
-const emptyOwner: AdditionalOwner = { name: "", phone: "" };
+const emptyOwner: AdditionalOwner = {
+  name: "",
+  address: "",
+  city: "",
+  state: "NY",
+  zipCode: "",
+  ssnOrItin: "",
+  dateOfBirth: "",
+  telephone: "",
+  cellPhone: "",
+  phone: "",
+};
 
 export function CorporateRegistrationForm() {
   const utm = useUtmParams();
@@ -55,12 +88,24 @@ export function CorporateRegistrationForm() {
     email: "",
     desiredBusinessName: "",
     businessType: "",
-    businessAddress: "",
-    city: "",
-    state: "NY",
-    zipCode: "",
+    ein: "",
+    filingReceiptDate: "",
     natureOfBusiness: "",
+    ownerAddress: "",
+    ownerCity: "",
+    ownerState: "NY",
+    ownerZipCode: "",
+    ownerSsnOrItin: "",
+    ownerDateOfBirth: "",
+    ownerTelephone: "",
+    ownerCellPhone: "",
     numberOfMembers: "",
+    meetingPreference: "",
+    corporationAddress: "",
+    corporationCity: "",
+    corporationState: "NY",
+    corporationZipCode: "",
+    websiteSeoOptions: "",
     needEIN: "",
     needSalesTax: "",
     needPayroll: "",
@@ -103,8 +148,10 @@ export function CorporateRegistrationForm() {
       numberOfOwners > 1
         ? additionalOwners
             .slice(0, numberOfOwners - 1)
-            .filter((o) => o.name.trim() || o.phone.trim())
+            .filter((o) => Object.values(o).some((value) => typeof value === "string" && value.trim()))
         : undefined;
+    const owner2 = ownersToSubmit?.[0];
+    const owner3 = ownersToSubmit?.[1];
 
     const payload: CorporateRegistrationLead & { turnstileToken?: string } = {
       type: "corporate-registration",
@@ -116,15 +163,45 @@ export function CorporateRegistrationForm() {
       email: formData.email || undefined,
       desiredBusinessName: formData.desiredBusinessName || undefined,
       businessType: formData.businessType || undefined,
-      businessAddress: formData.businessAddress || undefined,
-      city: formData.city || undefined,
-      state: formData.state || undefined,
-      zipCode: formData.zipCode || undefined,
+      ein: formData.ein || undefined,
+      filingReceiptDate: formData.filingReceiptDate || undefined,
       natureOfBusiness: formData.natureOfBusiness || undefined,
+      ownerAddress: formData.ownerAddress || undefined,
+      ownerCity: formData.ownerCity || undefined,
+      ownerState: formData.ownerState || undefined,
+      ownerZipCode: formData.ownerZipCode || undefined,
+      ownerSsnOrItin: formData.ownerSsnOrItin || undefined,
+      ownerDateOfBirth: formData.ownerDateOfBirth || undefined,
+      ownerTelephone: formData.ownerTelephone || undefined,
+      ownerCellPhone: formData.ownerCellPhone || undefined,
       numberOfMembers: formData.numberOfMembers || undefined,
       numberOfOwners,
       additionalOwners:
         ownersToSubmit && ownersToSubmit.length > 0 ? ownersToSubmit : undefined,
+      additionalOwner2Name: owner2?.name || undefined,
+      additionalOwner2Address: owner2?.address || undefined,
+      additionalOwner2City: owner2?.city || undefined,
+      additionalOwner2State: owner2?.state || undefined,
+      additionalOwner2ZipCode: owner2?.zipCode || undefined,
+      additionalOwner2SsnOrItin: owner2?.ssnOrItin || undefined,
+      additionalOwner2DateOfBirth: owner2?.dateOfBirth || undefined,
+      additionalOwner2Telephone: owner2?.telephone || undefined,
+      additionalOwner2CellPhone: owner2?.cellPhone || owner2?.phone || undefined,
+      additionalOwner3Name: owner3?.name || undefined,
+      additionalOwner3Address: owner3?.address || undefined,
+      additionalOwner3City: owner3?.city || undefined,
+      additionalOwner3State: owner3?.state || undefined,
+      additionalOwner3ZipCode: owner3?.zipCode || undefined,
+      additionalOwner3SsnOrItin: owner3?.ssnOrItin || undefined,
+      additionalOwner3DateOfBirth: owner3?.dateOfBirth || undefined,
+      additionalOwner3Telephone: owner3?.telephone || undefined,
+      additionalOwner3CellPhone: owner3?.cellPhone || owner3?.phone || undefined,
+      meetingPreference: formData.meetingPreference || undefined,
+      corporationAddress: formData.corporationAddress || undefined,
+      corporationCity: formData.corporationCity || undefined,
+      corporationState: formData.corporationState || undefined,
+      corporationZipCode: formData.corporationZipCode || undefined,
+      websiteSeoOptions: formData.websiteSeoOptions || undefined,
       needEIN: formData.needEIN || undefined,
       needSalesTax: formData.needSalesTax || undefined,
       needPayroll: formData.needPayroll || undefined,
@@ -250,6 +327,119 @@ export function CorporateRegistrationForm() {
           />
         </div>
 
+        {/* Owner 1 Address */}
+        <div>
+          <label htmlFor="ownerAddress" className="block text-sm font-medium text-[var(--text)] mb-1">
+            Owner Address
+          </label>
+          <input
+            type="text"
+            id="ownerAddress"
+            value={formData.ownerAddress}
+            onChange={update("ownerAddress")}
+            placeholder="Owner street address"
+            className={inputClasses}
+          />
+        </div>
+
+        {/* Owner 1 City / State / ZIP */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label htmlFor="ownerCity" className="block text-sm font-medium text-[var(--text)] mb-1">
+              Owner City
+            </label>
+            <input
+              type="text"
+              id="ownerCity"
+              value={formData.ownerCity}
+              onChange={update("ownerCity")}
+              placeholder="City"
+              className={inputClasses}
+            />
+          </div>
+          <div>
+            <label htmlFor="ownerState" className="block text-sm font-medium text-[var(--text)] mb-1">
+              Owner State
+            </label>
+            <input
+              type="text"
+              id="ownerState"
+              value={formData.ownerState}
+              onChange={update("ownerState")}
+              placeholder="NY"
+              className={inputClasses}
+            />
+          </div>
+          <div>
+            <label htmlFor="ownerZipCode" className="block text-sm font-medium text-[var(--text)] mb-1">
+              Owner ZIP Code
+            </label>
+            <input
+              type="text"
+              id="ownerZipCode"
+              value={formData.ownerZipCode}
+              onChange={update("ownerZipCode")}
+              placeholder="10001"
+              className={inputClasses}
+            />
+          </div>
+        </div>
+
+        {/* Owner 1 Sensitive / Contact Details */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="ownerSsnOrItin" className="block text-sm font-medium text-[var(--text)] mb-1">
+              Owner SSN / ITIN
+            </label>
+            <input
+              type="text"
+              id="ownerSsnOrItin"
+              value={formData.ownerSsnOrItin}
+              onChange={update("ownerSsnOrItin")}
+              placeholder="For filing use only"
+              className={inputClasses}
+            />
+          </div>
+          <div>
+            <label htmlFor="ownerDateOfBirth" className="block text-sm font-medium text-[var(--text)] mb-1">
+              Owner Date of Birth
+            </label>
+            <input
+              type="date"
+              id="ownerDateOfBirth"
+              value={formData.ownerDateOfBirth}
+              onChange={update("ownerDateOfBirth")}
+              className={inputClasses}
+            />
+          </div>
+          <div>
+            <label htmlFor="ownerTelephone" className="block text-sm font-medium text-[var(--text)] mb-1">
+              Owner Telephone
+            </label>
+            <input
+              type="tel"
+              id="ownerTelephone"
+              value={formData.ownerTelephone}
+              onChange={update("ownerTelephone")}
+              placeholder="Office or home phone"
+              className={inputClasses}
+            />
+          </div>
+          <div>
+            <label htmlFor="ownerCellPhone" className="block text-sm font-medium text-[var(--text)] mb-1">
+              Owner Cell Phone
+            </label>
+            <input
+              type="tel"
+              id="ownerCellPhone"
+              value={formData.ownerCellPhone}
+              onChange={update("ownerCellPhone")}
+              placeholder="Mobile phone"
+              className={inputClasses}
+            />
+          </div>
+        </div>
+
         {/* Number of Owners */}
         <div>
           <p className="block text-sm font-medium text-[var(--text)] mb-2">
@@ -311,20 +501,134 @@ export function CorporateRegistrationForm() {
                   </div>
                   <div>
                     <label
-                      htmlFor={`owner${ownerNum}Phone`}
+                      htmlFor={`owner${ownerNum}Address`}
                       className="block text-sm font-medium text-[var(--text)] mb-1"
                     >
-                      Phone Number <span className="text-red-500">*</span>
+                      Address
                     </label>
                     <input
-                      type="tel"
-                      id={`owner${ownerNum}Phone`}
-                      required
-                      value={additionalOwners[i].phone}
-                      onChange={updateOwner(i, "phone")}
-                      placeholder="(929) 000-0000"
+                      type="text"
+                      id={`owner${ownerNum}Address`}
+                      value={additionalOwners[i].address ?? ""}
+                      onChange={updateOwner(i, "address")}
+                      placeholder={`Owner ${ownerNum} street address`}
                       className={inputClasses}
                     />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <label
+                        htmlFor={`owner${ownerNum}City`}
+                        className="block text-sm font-medium text-[var(--text)] mb-1"
+                      >
+                        City
+                      </label>
+                      <input
+                        type="text"
+                        id={`owner${ownerNum}City`}
+                        value={additionalOwners[i].city ?? ""}
+                        onChange={updateOwner(i, "city")}
+                        placeholder="City"
+                        className={inputClasses}
+                      />
+                    </div>
+                    <div>
+                      <label
+                        htmlFor={`owner${ownerNum}State`}
+                        className="block text-sm font-medium text-[var(--text)] mb-1"
+                      >
+                        State
+                      </label>
+                      <input
+                        type="text"
+                        id={`owner${ownerNum}State`}
+                        value={additionalOwners[i].state ?? ""}
+                        onChange={updateOwner(i, "state")}
+                        placeholder="NY"
+                        className={inputClasses}
+                      />
+                    </div>
+                    <div>
+                      <label
+                        htmlFor={`owner${ownerNum}ZipCode`}
+                        className="block text-sm font-medium text-[var(--text)] mb-1"
+                      >
+                        ZIP Code
+                      </label>
+                      <input
+                        type="text"
+                        id={`owner${ownerNum}ZipCode`}
+                        value={additionalOwners[i].zipCode ?? ""}
+                        onChange={updateOwner(i, "zipCode")}
+                        placeholder="10001"
+                        className={inputClasses}
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label
+                        htmlFor={`owner${ownerNum}SsnOrItin`}
+                        className="block text-sm font-medium text-[var(--text)] mb-1"
+                      >
+                        SSN / ITIN
+                      </label>
+                      <input
+                        type="text"
+                        id={`owner${ownerNum}SsnOrItin`}
+                        value={additionalOwners[i].ssnOrItin ?? ""}
+                        onChange={updateOwner(i, "ssnOrItin")}
+                        placeholder="For filing use only"
+                        className={inputClasses}
+                      />
+                    </div>
+                    <div>
+                      <label
+                        htmlFor={`owner${ownerNum}DateOfBirth`}
+                        className="block text-sm font-medium text-[var(--text)] mb-1"
+                      >
+                        Date of Birth
+                      </label>
+                      <input
+                        type="date"
+                        id={`owner${ownerNum}DateOfBirth`}
+                        value={additionalOwners[i].dateOfBirth ?? ""}
+                        onChange={updateOwner(i, "dateOfBirth")}
+                        className={inputClasses}
+                      />
+                    </div>
+                    <div>
+                      <label
+                        htmlFor={`owner${ownerNum}Telephone`}
+                        className="block text-sm font-medium text-[var(--text)] mb-1"
+                      >
+                        Telephone
+                      </label>
+                      <input
+                        type="tel"
+                        id={`owner${ownerNum}Telephone`}
+                        value={additionalOwners[i].telephone ?? ""}
+                        onChange={updateOwner(i, "telephone")}
+                        placeholder="Office or home phone"
+                        className={inputClasses}
+                      />
+                    </div>
+                    <div>
+                      <label
+                        htmlFor={`owner${ownerNum}CellPhone`}
+                        className="block text-sm font-medium text-[var(--text)] mb-1"
+                      >
+                        Cell Phone
+                      </label>
+                      <input
+                        type="tel"
+                        id={`owner${ownerNum}CellPhone`}
+                        value={additionalOwners[i].cellPhone ?? ""}
+                        onChange={updateOwner(i, "cellPhone")}
+                        placeholder="Mobile phone"
+                        className={inputClasses}
+                      />
+                    </div>
                   </div>
                 </div>
               </motion.div>
@@ -368,58 +672,87 @@ export function CorporateRegistrationForm() {
           </select>
         </div>
 
-        {/* Address */}
+        {/* EIN / Filing Receipt */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="corpEin" className="block text-sm font-medium text-[var(--text)] mb-1">
+              EIN
+            </label>
+            <input
+              type="text"
+              id="corpEin"
+              value={formData.ein}
+              onChange={update("ein")}
+              placeholder="Leave blank if not issued yet"
+              className={inputClasses}
+            />
+          </div>
+          <div>
+            <label htmlFor="filingReceiptDate" className="block text-sm font-medium text-[var(--text)] mb-1">
+              Filing Receipt Date
+            </label>
+            <input
+              type="date"
+              id="filingReceiptDate"
+              value={formData.filingReceiptDate}
+              onChange={update("filingReceiptDate")}
+              className={inputClasses}
+            />
+          </div>
+        </div>
+
+        {/* Corporation Address */}
         <div>
-          <label htmlFor="businessAddress" className="block text-sm font-medium text-[var(--text)] mb-1">
-            Business Address
+          <label htmlFor="corporationAddress" className="block text-sm font-medium text-[var(--text)] mb-1">
+            Corporation Address
           </label>
           <input
             type="text"
-            id="businessAddress"
-            value={formData.businessAddress}
-            onChange={update("businessAddress")}
-            placeholder="Street address"
+            id="corporationAddress"
+            value={formData.corporationAddress}
+            onChange={update("corporationAddress")}
+            placeholder="Corporation street address"
             className={inputClasses}
           />
         </div>
 
-        {/* City / State / ZIP */}
+        {/* Corporation City / State / ZIP */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
-            <label htmlFor="city" className="block text-sm font-medium text-[var(--text)] mb-1">
-              City
+            <label htmlFor="corporationCity" className="block text-sm font-medium text-[var(--text)] mb-1">
+              Corporation City
             </label>
             <input
               type="text"
-              id="city"
-              value={formData.city}
-              onChange={update("city")}
+              id="corporationCity"
+              value={formData.corporationCity}
+              onChange={update("corporationCity")}
               placeholder="City"
               className={inputClasses}
             />
           </div>
           <div>
-            <label htmlFor="state" className="block text-sm font-medium text-[var(--text)] mb-1">
-              State
+            <label htmlFor="corporationState" className="block text-sm font-medium text-[var(--text)] mb-1">
+              Corporation State
             </label>
             <input
               type="text"
-              id="state"
-              value={formData.state}
-              onChange={update("state")}
+              id="corporationState"
+              value={formData.corporationState}
+              onChange={update("corporationState")}
               placeholder="NY"
               className={inputClasses}
             />
           </div>
           <div>
-            <label htmlFor="zipCode" className="block text-sm font-medium text-[var(--text)] mb-1">
-              ZIP Code
+            <label htmlFor="corporationZipCode" className="block text-sm font-medium text-[var(--text)] mb-1">
+              Corporation ZIP Code
             </label>
             <input
               type="text"
-              id="zipCode"
-              value={formData.zipCode}
-              onChange={update("zipCode")}
+              id="corporationZipCode"
+              value={formData.corporationZipCode}
+              onChange={update("corporationZipCode")}
               placeholder="10001"
               className={inputClasses}
             />
@@ -439,6 +772,46 @@ export function CorporateRegistrationForm() {
             placeholder="e.g. Restaurant, Construction, Consulting"
             className={inputClasses}
           />
+        </div>
+
+        {/* Meeting Preference / Website SEO */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="meetingPreference" className="block text-sm font-medium text-[var(--text)] mb-1">
+              Who do you want to meet?
+            </label>
+            <select
+              id="meetingPreference"
+              value={formData.meetingPreference}
+              onChange={update("meetingPreference")}
+              className={inputClasses}
+            >
+              <option value="">Select person</option>
+              {meetingOptions.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label htmlFor="websiteSeoOptions" className="block text-sm font-medium text-[var(--text)] mb-1">
+              Business Website & SEO Options
+            </label>
+            <select
+              id="websiteSeoOptions"
+              value={formData.websiteSeoOptions}
+              onChange={update("websiteSeoOptions")}
+              className={inputClasses}
+            >
+              <option value="">Select option</option>
+              {websiteSeoOptions.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         {/* Number of Partners/Members */}

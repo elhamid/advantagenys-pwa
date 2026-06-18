@@ -31,6 +31,8 @@ const referralSources = [
   "Other",
 ] as const;
 
+const meetingOptions = ["Hamid", "Jay", "Kedar", "Zia", "Akram", "Not Sure"] as const;
+
 interface ClientInfoFormData {
   fullName: string;
   dateOfBirth: string;
@@ -43,6 +45,9 @@ interface ClientInfoFormData {
   ssnOrItin: string;
   businessName: string;
   serviceInterested: string;
+  meetingPreference: string;
+  referredBy: string;
+  purpose: string;
   referralSource: string;
   additionalNotes: string;
 }
@@ -64,6 +69,9 @@ export function ClientInfoForm() {
     ssnOrItin: "",
     businessName: "",
     serviceInterested: "",
+    meetingPreference: "",
+    referredBy: "",
+    purpose: "",
     referralSource: "",
     additionalNotes: "",
   });
@@ -108,6 +116,9 @@ export function ClientInfoForm() {
       ssnOrItin: formData.ssnOrItin || undefined,
       businessName: formData.businessName || undefined,
       serviceInterested: formData.serviceInterested || undefined,
+      meetingPreference: formData.meetingPreference || undefined,
+      referredBy: formData.referredBy || undefined,
+      purpose: formData.purpose || undefined,
       referralSource: formData.referralSource || undefined,
       additionalNotes: formData.additionalNotes || undefined,
       utm: Object.keys(utm).length > 0 ? utm : undefined,
@@ -358,6 +369,59 @@ export function ClientInfoForm() {
               </option>
             ))}
           </select>
+        </div>
+
+        {/* Meeting Preference */}
+        <div>
+          <label htmlFor="meetingPreference" className="block text-sm font-medium text-[var(--text)] mb-1">
+            Who do you want to meet?
+          </label>
+          <select
+            id="meetingPreference"
+            name="meetingPreference"
+            value={formData.meetingPreference}
+            onChange={handleChange}
+            className={inputClasses}
+          >
+            <option value="">Select person</option>
+            {meetingOptions.map((opt) => (
+              <option key={opt} value={opt}>
+                {opt}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Referred By */}
+        <div>
+          <label htmlFor="referredBy" className="block text-sm font-medium text-[var(--text)] mb-1">
+            Referred By
+          </label>
+          <input
+            type="text"
+            id="referredBy"
+            name="referredBy"
+            value={formData.referredBy}
+            onChange={handleChange}
+            placeholder="Name of the person or business who referred you"
+            className={inputClasses}
+          />
+        </div>
+
+        {/* Purpose */}
+        <div>
+          <label htmlFor="purpose" className="block text-sm font-medium text-[var(--text)] mb-1">
+            Purpose
+          </label>
+          <textarea
+            id="purpose"
+            name="purpose"
+            rows={3}
+            value={formData.purpose}
+            onChange={handleChange}
+            placeholder="What are you trying to get done?"
+            className={inputClasses}
+          />
         </div>
 
         {/* How did you hear about us */}

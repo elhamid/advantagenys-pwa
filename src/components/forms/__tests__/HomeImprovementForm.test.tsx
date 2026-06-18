@@ -60,9 +60,14 @@ describe("HomeImprovementForm", () => {
     await user.type(screen.getByLabelText(/full name/i), "Jamie Contractor");
     await user.type(screen.getByLabelText(/phone number/i), "9295550103");
     await user.type(screen.getByLabelText(/^email/i), "jamie@example.com");
-    await user.selectOptions(screen.getByLabelText(/license type/i), "General Contractor");
+    await user.type(screen.getByLabelText(/business name/i), "Jamie Contracting LLC");
+    await user.type(screen.getByLabelText(/business address/i), "123 Liberty Ave");
+    await user.type(screen.getByLabelText(/city/i), "Queens");
+    await user.selectOptions(screen.getByLabelText(/county/i), "NYC — Queens");
+    await user.selectOptions(screen.getByLabelText(/license type/i), "General Contractor (NYC Only)");
     await user.click(screen.getByLabelText(/^yes$/i));
     await user.type(screen.getByLabelText(/license number/i), "LIC-12345");
+    await user.type(screen.getByLabelText(/additional notes/i), "Needs filing and insurance help.");
     await user.click(screen.getByRole("button", { name: /submit application/i }));
 
     await waitFor(() => expect(fetchSpy).toHaveBeenCalledOnce());
@@ -73,9 +78,14 @@ describe("HomeImprovementForm", () => {
       fullName: "Jamie Contractor",
       phone: "9295550103",
       email: "jamie@example.com",
-      licenseType: "General Contractor",
+      businessName: "Jamie Contracting LLC",
+      businessAddress: "123 Liberty Ave",
+      city: "Queens",
+      county: "NYC — Queens",
+      licenseType: "General Contractor (NYC Only)",
       hasExistingLicense: "yes",
       licenseNumber: "LIC-12345",
+      additionalNotes: "Needs filing and insurance help.",
       type: "home-improvement",
       source: "website-home-improvement",
     });
@@ -92,7 +102,8 @@ describe("HomeImprovementForm", () => {
     await user.type(screen.getByLabelText(/full name/i), "Jamie Contractor");
     await user.type(screen.getByLabelText(/phone number/i), "9295550103");
     await user.type(screen.getByLabelText(/^email/i), "jamie@example.com");
-    await user.selectOptions(screen.getByLabelText(/license type/i), "General Contractor");
+    await user.selectOptions(screen.getByLabelText(/county/i), "NYC — Queens");
+    await user.selectOptions(screen.getByLabelText(/license type/i), "General Contractor (NYC Only)");
     await user.click(screen.getByRole("button", { name: /submit application/i }));
 
     expect(await screen.findByText(/server error/i)).toBeInTheDocument();

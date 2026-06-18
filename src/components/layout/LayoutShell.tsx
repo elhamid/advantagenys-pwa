@@ -10,7 +10,6 @@ import { ChatWidget } from "@/components/chat/ChatWidget";
 
 const CHROMELESS_PREFIXES = [
   "/resources/kiosk",
-  "/itin",
   "/tv",
   "/p",
   "/careers/product-engineering-associate/review",
@@ -34,7 +33,6 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
     <>
       <Header
         mobileNavOpen={mobileNavOpen}
-        onMobileNavOpen={() => setMobileNavOpen(true)}
         onMobileNavClose={() => setMobileNavOpen(false)}
       />
       {/*
@@ -52,7 +50,7 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
       <BottomNav onOpenMore={() => setMobileNavOpen(true)} />
       {/* ITIN floating side badge — fixed right edge, desktop only */}
       <Link
-        href="/itin"
+        href="/resources/forms/itin-registration-form"
         className="hidden md:flex fixed right-0 top-1/2 -translate-y-1/2 z-40 flex-col items-center gap-1.5 px-2.5 py-5 rounded-l-2xl shadow-[0_4px_24px_rgba(5,150,105,0.35)] hover:shadow-[0_6px_32px_rgba(5,150,105,0.5)] transition-all duration-300 hover:pr-4 group"
         style={{
           background: "linear-gradient(160deg, #059669 0%, #0d9488 100%)",

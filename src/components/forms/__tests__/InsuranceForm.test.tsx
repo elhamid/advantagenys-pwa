@@ -42,6 +42,9 @@ describe("InsuranceForm", () => {
     expect(screen.getByText(/insurance intake form/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/full name/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/business name/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/amount to be insured/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/square feet of location/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/estimated yearly payroll/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/annual revenue/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/general liability/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /submit insurance request/i })).toBeInTheDocument();
@@ -59,6 +62,9 @@ describe("InsuranceForm", () => {
     await user.type(screen.getByLabelText(/^email/i), "morgan@example.com");
     await user.type(screen.getByLabelText(/business name/i), "Morgan LLC");
     await user.selectOptions(screen.getByLabelText(/business type/i), "LLC");
+    await user.type(screen.getByLabelText(/amount to be insured/i), "$500,000");
+    await user.type(screen.getByLabelText(/square feet of location/i), "2200");
+    await user.type(screen.getByLabelText(/estimated yearly payroll/i), "$420,000");
     await user.click(screen.getByLabelText(/general liability/i));
     await user.click(screen.getByLabelText(/workers' compensation/i));
     await user.click(screen.getByRole("button", { name: /submit insurance request/i }));
@@ -73,6 +79,9 @@ describe("InsuranceForm", () => {
       email: "morgan@example.com",
       businessName: "Morgan LLC",
       businessType: "LLC",
+      amountToBeInsured: "$500,000",
+      locationSquareFeet: "2200",
+      estimatedYearlyPayroll: "$420,000",
       insuranceTypesNeeded: ["General Liability", "Workers' Compensation"],
       type: "insurance",
       source: "website-insurance",

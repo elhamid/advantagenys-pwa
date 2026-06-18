@@ -68,4 +68,22 @@ describe('FormCard', () => {
       'https://maps.google.com/',
     )
   })
+
+  it('routes ITIN forms to the native Taskboard-connected intake path', () => {
+    render(
+      <FormCard
+        form={{
+          ...baseForm,
+          id: '210224697492156',
+          title: 'ITIN Registration',
+          slug: 'itin-registration-form',
+        }}
+      />,
+    )
+
+    expect(screen.getByRole('link', { name: 'Apply for ITIN Now' })).toHaveAttribute(
+      'href',
+      '/resources/forms/itin-registration-form',
+    )
+  })
 })

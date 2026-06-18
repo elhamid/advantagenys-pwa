@@ -18,6 +18,8 @@ export interface NativeContactFields {
   email?: string;
 }
 
+const SENSITIVE_LABEL_PATTERN = /\b(ssn|social security|itin|tax id|taxid|ein|passport|visa|alien|a-number|anumber|routing|account|bank|birth date|date of birth|dob|signature|id number|driver.?s license)\b/i;
+
 function normalizeValues(value: string | string[]): string | string[] {
   if (Array.isArray(value)) {
     return value.map((item) => item.trim()).filter(Boolean);
@@ -33,6 +35,12 @@ export function answerIsEmpty(value: string | string[]): boolean {
   return Array.isArray(value) ? value.length === 0 : value.trim().length === 0;
 }
 
+function isSensitiveField(field: Pick<NativeFormField, "label" | "kind" | "sensitive">): boolean {
+  if (field.sensitive === true) return true;
+  if (field.kind === "signature") return true;
+  return SENSITIVE_LABEL_PATTERN.test(field.label);
+}
+
 export function maskSensitiveValue(value: string | string[], field?: Pick<NativeFormField, "label" | "kind">): string | string[] {
   if (Array.isArray(value)) {
     return value.map((item) => maskSensitiveValue(item, field) as string);
@@ -46,9 +54,12 @@ export function maskSensitiveValue(value: string | string[], field?: Pick<Native
     return "[date provided]";
   }
 
-  const compact = trimmed.replace(/\s+/g, "");
-  const last4 = compact.replace(/\D/g, "").slice(-4) || compact.slice(-4);
-  return last4 ? `[sensitive ending ${last4}]` : "[sensitive provided]";
+  const digits = trimmed.replace(/\D/g, "");
+  if (digits.length >= 4) {
+    return `[sensitive ending ${digits.slice(-4)}]`;
+  }
+
+  return "[sensitive provided]";
 }
 
 export function buildNativeAnswers(
@@ -61,7 +72,7 @@ export function buildNativeAnswers(
     const value = normalizeValues(raw);
     if (answerIsEmpty(value)) return [];
 
-    const sensitive = field.sensitive === true;
+    const sensitive = isSensitiveField(field);
     return [{
       qid: field.qid,
       name: field.name,
@@ -77,7 +88,8 @@ export function buildNativeAnswers(
 export function answerRecord(answers: NativeAnswer[], masked = true): Record<string, string | string[]> {
   const record: Record<string, string | string[]> = {};
   for (const answer of answers) {
-    const key = answer.name || answer.label || answer.qid;
+    const baseKey = answer.name || answer.label || answer.qid;
+    const key = record[baseKey] === undefined ? baseKey : `${baseKey}_${answer.qid}`;
     const value = masked ? answer.maskedValue : answer.value;
     if (!answerIsEmpty(value)) record[key] = value;
   }
