@@ -63,6 +63,15 @@ export default async function FormPage({ params }: PageProps) {
                   This form uses encrypted submission for your security.
                 </p>
               )}
+              <div className="mt-5 max-w-2xl rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)] px-4 py-3">
+                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+                  After you submit
+                </p>
+                <p className="mt-1 text-sm text-[var(--text-secondary)]">
+                  It becomes a staff review packet so our team can check your answers
+                  and follow up with missing items or next steps.
+                </p>
+              </div>
             </div>
 
             <FormPageShareBar title={form.title} slug={form.slug} />

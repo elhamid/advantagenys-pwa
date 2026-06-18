@@ -149,6 +149,8 @@ describe("Resource form route", () => {
     render(jsx);
 
     expect(screen.getByRole("heading", { name: /native intake/i })).toBeInTheDocument();
+    expect(screen.getByText(/after you submit/i)).toBeInTheDocument();
+    expect(screen.getByText(/staff review packet/i)).toBeInTheDocument();
     expect(screen.getByTestId("native-form-component")).toBeInTheDocument();
     expect(screen.getByTestId("share-full")).toHaveTextContent("/resources/forms/native-intake");
     expect(screen.getByTestId("share-whatsapp")).toBeInTheDocument();

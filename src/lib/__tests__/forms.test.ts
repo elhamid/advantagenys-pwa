@@ -246,6 +246,17 @@ describe("getFormsByCategory()", () => {
     expect(slugs).not.toContain("l1-hil-auto-02");
     expect(slugs).not.toContain("hic-auto-processing");
   });
+
+  it("describes active immigration forms as intake review packets, not final filing", () => {
+    const immigrationForms = getFormsByCategory("immigration");
+
+    immigrationForms.forEach((form) => {
+      expect(form.description.toLowerCase()).toContain("intake");
+      expect(form.description.toLowerCase()).toContain("review");
+      expect(form.description.toLowerCase()).not.toContain("filing");
+      expect(form.description.toLowerCase()).not.toContain("application");
+    });
+  });
 });
 
 describe("categories array", () => {

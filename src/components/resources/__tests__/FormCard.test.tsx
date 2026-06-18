@@ -40,7 +40,7 @@ describe('FormCard', () => {
 
     expect(screen.getByText('Test Intake')).toBeInTheDocument()
     expect(screen.getByText('Test description')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Open' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Start form' })).toHaveAttribute(
       'href',
       '/resources/forms/test-intake',
     )
