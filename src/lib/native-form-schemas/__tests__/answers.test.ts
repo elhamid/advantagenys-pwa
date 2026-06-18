@@ -113,6 +113,16 @@ describe("native form answers", () => {
     });
   });
 
+  it("preserves separators when normalizing multi-line textarea-style values", () => {
+    const answers = buildNativeAnswers(schema, {
+      "1": "Jose Nino",
+      "2": "(929) 555-0101",
+      "5": "2020 - $30000\n2021 - $35000\t2022 - $40000",
+    });
+
+    expect(answerRecord(answers, true).birthCity).toBe("2020 - $30000 2021 - $35000 2022 - $40000");
+  });
+
   it("rejects accented legal names instead of silently rewriting passport spelling", () => {
     const values = {
       "1": "José Niño",

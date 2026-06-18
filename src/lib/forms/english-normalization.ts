@@ -1,4 +1,5 @@
-const CONTROL_AND_DIRECTIONAL_PATTERN = /[\u0000-\u001F\u007F\u200B-\u200F\u202A-\u202E\u2066-\u2069]/g;
+const CONTROL_AND_DIRECTIONAL_PATTERN = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F\u200B-\u200F\u202A-\u202E\u2066-\u2069]/g;
+const TEXT_SEPARATOR_PATTERN = /[\u0009\u000A\u000D]/g;
 const COMBINING_MARK_PATTERN = /[\u0300-\u036f]/g;
 
 const PUNCTUATION_EQUIVALENTS: Record<string, string> = {
@@ -26,7 +27,10 @@ interface EnglishInputErrorOptions {
 
 export function normalizeEnglishTextValue(value: string, options: NormalizeEnglishOptions = {}): string {
   const { stripDiacritics = true } = options;
-  let normalized = value.normalize("NFKC").replace(CONTROL_AND_DIRECTIONAL_PATTERN, "");
+  let normalized = value
+    .normalize("NFKC")
+    .replace(TEXT_SEPARATOR_PATTERN, " ")
+    .replace(CONTROL_AND_DIRECTIONAL_PATTERN, "");
   normalized = Array.from(normalized, (char) => PUNCTUATION_EQUIVALENTS[char] ?? char).join("");
   if (stripDiacritics) {
     normalized = normalized.normalize("NFKD").replace(COMBINING_MARK_PATTERN, "");

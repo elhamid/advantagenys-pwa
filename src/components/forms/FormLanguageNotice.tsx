@@ -11,16 +11,16 @@ const COPY: Record<NoticeLocale, { title: string; body: string }> = {
   },
   es: {
     title: "Idioma y escritura",
-    body: "Puede usar la traduccion de su navegador para leer este formulario. Escriba sus respuestas con letras en ingles para que nuestro equipo pueda procesarlas. Los nombres legales deben coincidir con el pasaporte o identificacion oficial.",
+    body: "Puede usar la traducción de su navegador para leer este formulario. Escriba sus respuestas con letras en inglés para que nuestro equipo pueda procesarlas. Los nombres legales deben coincidir con el pasaporte o identificación oficial.",
   },
   fr: {
     title: "Langue et orthographe",
-    body: "Vous pouvez utiliser la traduction de votre navigateur pour lire ce formulaire. Saisissez les reponses avec des lettres anglaises afin que notre equipe puisse traiter le dossier. Les noms legaux doivent correspondre au passeport ou a la piece d'identite.",
+    body: "Vous pouvez utiliser la traduction de votre navigateur pour lire ce formulaire. Saisissez les réponses avec des lettres anglaises afin que notre équipe puisse traiter le dossier. Les noms légaux doivent correspondre au passeport ou à la pièce d'identité.",
   },
 };
 
 function detectNoticeLocale(): NoticeLocale {
-  const languages = typeof navigator === "undefined" ? [] : navigator.languages.length > 0 ? navigator.languages : [navigator.language];
+  const languages = typeof navigator === "undefined" ? [] : (navigator.languages?.length ?? 0) > 0 ? navigator.languages : [navigator.language];
   const normalized = languages.map((language) => language.toLowerCase());
   if (normalized.some((language) => language.startsWith("es"))) return "es";
   if (normalized.some((language) => language.startsWith("fr"))) return "fr";
