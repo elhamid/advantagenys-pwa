@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-type NoticeLocale = "en" | "es" | "fr" | "hi" | "bn" | "zh" | "ar" | "ur";
+type NoticeLocale = "en" | "es" | "fr" | "hi" | "bn" | "zh" | "zhHant" | "ar" | "ur";
 
 const COPY: Record<NoticeLocale, { title: string; body: string }> = {
   en: {
@@ -29,6 +29,10 @@ const COPY: Record<NoticeLocale, { title: string; body: string }> = {
     title: "语言和拼写",
     body: "您可以使用浏览器翻译来阅读此表格。请用英文字母填写答案，方便我们的团队处理。法定姓名应与护照或政府身份证件上的拼写一致。",
   },
+  zhHant: {
+    title: "語言和拼寫",
+    body: "您可以使用瀏覽器翻譯來閱讀此表格。請用英文字母填寫答案，方便我們的團隊處理。法定姓名應與護照或政府身分證件上的拼寫一致。",
+  },
   ar: {
     title: "اللغة والتهجئة",
     body: "يمكنك استخدام ترجمة المتصفح لقراءة هذا النموذج. اكتب الإجابات بحروف إنجليزية حتى يتمكن فريقنا من معالجة الملف. يجب أن يطابق الاسم القانوني تهجئة جواز السفر أو الهوية الحكومية.",
@@ -46,6 +50,7 @@ function detectNoticeLocale(): NoticeLocale {
   if (normalized.some((language) => language.startsWith("fr"))) return "fr";
   if (normalized.some((language) => language.startsWith("hi"))) return "hi";
   if (normalized.some((language) => language.startsWith("bn"))) return "bn";
+  if (normalized.some((language) => language.startsWith("zh-hant") || language.startsWith("zh-tw") || language.startsWith("zh-hk") || language.startsWith("zh-mo"))) return "zhHant";
   if (normalized.some((language) => language.startsWith("zh"))) return "zh";
   if (normalized.some((language) => language.startsWith("ar"))) return "ar";
   if (normalized.some((language) => language.startsWith("ur"))) return "ur";

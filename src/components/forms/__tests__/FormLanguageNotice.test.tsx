@@ -24,6 +24,10 @@ describe("FormLanguageNotice", () => {
     { languages: ["hi-IN"], title: "भाषा और वर्तनी", dir: "ltr" },
     { languages: ["bn-BD"], title: "ভাষা ও বানান", dir: "ltr" },
     { languages: ["zh-CN"], title: "语言和拼写", dir: "ltr" },
+    { languages: ["zh-TW"], title: "語言和拼寫", dir: "ltr" },
+    { languages: ["zh-HK"], title: "語言和拼寫", dir: "ltr" },
+    { languages: ["zh-MO"], title: "語言和拼寫", dir: "ltr" },
+    { languages: ["zh-Hant"], title: "語言和拼寫", dir: "ltr" },
     { languages: ["ar"], title: "اللغة والتهجئة", dir: "rtl" },
     { languages: ["ur-PK"], title: "زبان اور ہجے", dir: "rtl" },
   ])("shows deterministic spelling guidance for $languages", async ({ languages, title, dir }) => {
