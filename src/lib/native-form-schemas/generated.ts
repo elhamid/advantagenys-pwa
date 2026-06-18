@@ -221,9 +221,10 @@ export const nativeFormSchemas = [
       {
         "qid": "61",
         "name": "typeA",
-        "label": "typeA",
+        "label": "Internal form widget",
         "kind": "textarea",
         "required": false,
+        "hidden": true,
         "jotformType": "control_widget"
       }
     ],
@@ -448,9 +449,10 @@ export const nativeFormSchemas = [
       {
         "qid": "67",
         "name": "typeA67",
-        "label": "typeA67",
+        "label": "Internal form widget",
         "kind": "textarea",
         "required": false,
+        "hidden": true,
         "jotformType": "control_widget"
       }
     ],
@@ -870,9 +872,10 @@ export const nativeFormSchemas = [
       {
         "qid": "227",
         "name": "typeA227",
-        "label": "typeA227",
+        "label": "Internal form widget",
         "kind": "textarea",
         "required": false,
+        "hidden": true,
         "jotformType": "control_widget"
       },
       {
@@ -1370,17 +1373,19 @@ export const nativeFormSchemas = [
       {
         "qid": "159",
         "name": "typeA159",
-        "label": "typeA159",
+        "label": "Internal form widget",
         "kind": "textarea",
         "required": false,
+        "hidden": true,
         "jotformType": "control_widget"
       },
       {
         "qid": "146",
         "name": "typeA146",
-        "label": "typeA146",
+        "label": "Internal form widget",
         "kind": "textarea",
         "required": false,
+        "hidden": true,
         "jotformType": "control_widget"
       }
     ],
@@ -1476,9 +1481,10 @@ export const nativeFormSchemas = [
       {
         "qid": "13",
         "name": "input13",
-        "label": "input13",
+        "label": "Internal layout spacer",
         "kind": "text",
         "required": false,
+        "hidden": true,
         "jotformType": "control_inline"
       },
       {
@@ -1988,49 +1994,55 @@ export const nativeFormSchemas = [
       {
         "qid": "114",
         "name": "input114",
-        "label": "input114",
+        "label": "Internal layout spacer",
         "kind": "text",
         "required": false,
+        "hidden": true,
         "jotformType": "control_inline"
       },
       {
         "qid": "118",
         "name": "input118",
-        "label": "input118",
+        "label": "Internal layout spacer",
         "kind": "text",
         "required": false,
+        "hidden": true,
         "jotformType": "control_inline"
       },
       {
         "qid": "119",
         "name": "input119",
-        "label": "input119",
+        "label": "Internal layout spacer",
         "kind": "text",
         "required": false,
+        "hidden": true,
         "jotformType": "control_inline"
       },
       {
         "qid": "117",
         "name": "input117",
-        "label": "input117",
+        "label": "Internal layout spacer",
         "kind": "text",
         "required": false,
+        "hidden": true,
         "jotformType": "control_inline"
       },
       {
         "qid": "115",
         "name": "input115",
-        "label": "input115",
+        "label": "Internal layout spacer",
         "kind": "text",
         "required": false,
+        "hidden": true,
         "jotformType": "control_inline"
       },
       {
         "qid": "116",
         "name": "input116",
-        "label": "input116",
+        "label": "Internal layout spacer",
         "kind": "text",
         "required": false,
+        "hidden": true,
         "jotformType": "control_inline"
       },
       {
@@ -2208,9 +2220,10 @@ export const nativeFormSchemas = [
       {
         "qid": "13",
         "name": "input13",
-        "label": "input13",
+        "label": "Internal layout spacer",
         "kind": "text",
         "required": false,
+        "hidden": true,
         "jotformType": "control_inline"
       },
       {
@@ -2737,49 +2750,55 @@ export const nativeFormSchemas = [
       {
         "qid": "114",
         "name": "input114",
-        "label": "input114",
+        "label": "Internal layout spacer",
         "kind": "text",
         "required": false,
+        "hidden": true,
         "jotformType": "control_inline"
       },
       {
         "qid": "118",
         "name": "input118",
-        "label": "input118",
+        "label": "Internal layout spacer",
         "kind": "text",
         "required": false,
+        "hidden": true,
         "jotformType": "control_inline"
       },
       {
         "qid": "119",
         "name": "input119",
-        "label": "input119",
+        "label": "Internal layout spacer",
         "kind": "text",
         "required": false,
+        "hidden": true,
         "jotformType": "control_inline"
       },
       {
         "qid": "117",
         "name": "input117",
-        "label": "input117",
+        "label": "Internal layout spacer",
         "kind": "text",
         "required": false,
+        "hidden": true,
         "jotformType": "control_inline"
       },
       {
         "qid": "115",
         "name": "input115",
-        "label": "input115",
+        "label": "Internal layout spacer",
         "kind": "text",
         "required": false,
+        "hidden": true,
         "jotformType": "control_inline"
       },
       {
         "qid": "116",
         "name": "input116",
-        "label": "input116",
+        "label": "Internal layout spacer",
         "kind": "text",
         "required": false,
+        "hidden": true,
         "jotformType": "control_inline"
       },
       {
@@ -2988,7 +3007,7 @@ export const nativeFormSchemas = [
       {
         "qid": "34",
         "name": "req1",
-        "label": "Req1",
+        "label": "Legal business name",
         "kind": "text",
         "required": true,
         "jotformType": "control_textbox"
@@ -2996,7 +3015,7 @@ export const nativeFormSchemas = [
       {
         "qid": "35",
         "name": "req2",
-        "label": "Req2",
+        "label": "Business address",
         "kind": "text",
         "required": true,
         "jotformType": "control_textbox"
@@ -3004,7 +3023,7 @@ export const nativeFormSchemas = [
       {
         "qid": "36",
         "name": "req3",
-        "label": "Req3",
+        "label": "Business structure (LLC, corporation, or sole proprietor)",
         "kind": "text",
         "required": true,
         "jotformType": "control_textbox"
@@ -3012,7 +3031,7 @@ export const nativeFormSchemas = [
       {
         "qid": "37",
         "name": "req4",
-        "label": "Req4",
+        "label": "Years of contractor or renovation experience",
         "kind": "text",
         "required": true,
         "jotformType": "control_textbox"
@@ -3020,7 +3039,7 @@ export const nativeFormSchemas = [
       {
         "qid": "40",
         "name": "req5",
-        "label": "Req5",
+        "label": "Notes about missing license requirements or questions",
         "kind": "text",
         "required": true,
         "jotformType": "control_textbox"
@@ -3284,7 +3303,7 @@ export const nativeFormSchemas = [
       {
         "qid": "12",
         "name": "input12",
-        "label": "input12",
+        "label": "Do you want to legally change your name?",
         "kind": "radio",
         "required": false,
         "jotformType": "control_radio",
@@ -3323,17 +3342,19 @@ export const nativeFormSchemas = [
       {
         "qid": "26",
         "name": "input26",
-        "label": "input26",
+        "label": "Internal layout spacer",
         "kind": "text",
         "required": false,
+        "hidden": true,
         "jotformType": "control_inline"
       },
       {
         "qid": "27",
         "name": "input27",
-        "label": "input27",
+        "label": "Internal layout spacer",
         "kind": "text",
         "required": false,
+        "hidden": true,
         "jotformType": "control_inline"
       },
       {

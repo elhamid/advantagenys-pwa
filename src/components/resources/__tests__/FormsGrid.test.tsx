@@ -56,9 +56,17 @@ describe('FormsGrid', () => {
     expect(clearButton).toBeDefined()
     fireEvent.click(clearButton!)
 
-    // 18 active entries (5 retired: Divorce, Sales Tax, Bookkeeping, New I-130 pair)
-    expect(screen.getByText(/18 items/i)).toBeInTheDocument()
+    // 16 active entries: 12 real forms plus 4 utility links.
+    expect(screen.getByText(/16 items/i)).toBeInTheDocument()
     expect(screen.queryByText(/matching/i)).not.toBeInTheDocument()
     expect(container).toBeTruthy()
+  })
+
+  it('keeps utility links in a compact section below real forms', () => {
+    render(<FormsGrid />)
+
+    expect(screen.getByRole('region', { name: /quick links/i })).toBeInTheDocument()
+    expect(screen.getByText('Zelle Payment Info')).toBeInTheDocument()
+    expect(screen.getByText('Corporation Services')).toBeInTheDocument()
   })
 })

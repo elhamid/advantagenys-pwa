@@ -1,5 +1,4 @@
 import { describe, it, expect, vi } from "vitest";
-import { NextRequest } from "next/server";
 
 const { uploadMultipleItinDocuments } = vi.hoisted(() => ({
   uploadMultipleItinDocuments: vi.fn(),
@@ -33,15 +32,7 @@ import { POST } from "../itin-submit/route";
 
 describe("POST /api/itin-submit", () => {
   it("is retired and does not write legacy public ITIN documents", async () => {
-    const formData = new FormData();
-    formData.set("firstName", "Maria");
-    formData.set("lastName", "Lopez");
-    formData.set("phone", "9295551234");
-
-    const response = await POST(new NextRequest("http://localhost:3000/api/itin-submit", {
-      method: "POST",
-      body: formData,
-    }));
+    const response = await POST();
 
     expect(response.status).toBe(410);
     await expect(response.json()).resolves.toMatchObject({

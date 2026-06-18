@@ -21,6 +21,7 @@ export interface NativeFormField {
   required: boolean;
   options?: string[];
   sensitive?: boolean;
+  hidden?: boolean;
   jotformType: string;
 }
 

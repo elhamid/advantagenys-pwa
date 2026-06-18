@@ -2,14 +2,37 @@
 
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { categories, type CategoryKey, getFormsByCategory } from "@/lib/forms";
+import { categories, type CategoryKey, type FormConfig, getFormsByCategory } from "@/lib/forms";
 import { FormCard } from "./FormCard";
+import { ShareButton } from "./ShareButton";
 
 interface FormsGridProps {
   kioskMode?: boolean;
 }
 
 const PRIORITY_THRESHOLD = 9;
+
+function UtilityLinkRow({ item }: { item: FormConfig }) {
+  if (!item.linkUrl) return null;
+
+  return (
+    <div className="flex items-center gap-3 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)] px-3 py-2.5">
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-semibold text-[var(--text)]">{item.title}</p>
+        <p className="truncate text-xs text-[var(--text-muted)]">{item.description}</p>
+      </div>
+      <a
+        href={item.linkUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center justify-center rounded-[var(--radius-sm)] border border-[var(--border)] px-3 py-1.5 text-xs font-semibold text-[var(--text)] transition-colors hover:bg-[var(--blue-pale)] hover:text-[var(--blue-accent)]"
+      >
+        Open
+      </a>
+      <ShareButton title={item.title} url={item.linkUrl} variant="copy" className="p-1.5" />
+    </div>
+  );
+}
 
 export function FormsGrid({ kioskMode = false }: FormsGridProps) {
   const [activeCategory, setActiveCategory] = useState<CategoryKey>("all");
@@ -30,10 +53,13 @@ export function FormsGrid({ kioskMode = false }: FormsGridProps) {
     return results;
   }, [activeCategory, search]);
 
+  const serviceForms = filtered.filter((form) => form.type !== "link");
+  const utilityLinks = filtered.filter((form) => form.type === "link");
+
   // Split is only active on the default unfiltered view
   const isFiltered = search.trim() !== "" || activeCategory !== "all";
-  const primaryForms = isFiltered ? filtered : filtered.filter((f) => f.priority <= PRIORITY_THRESHOLD);
-  const moreForms = isFiltered ? [] : filtered.filter((f) => f.priority > PRIORITY_THRESHOLD);
+  const primaryForms = isFiltered ? serviceForms : serviceForms.filter((f) => f.priority <= PRIORITY_THRESHOLD);
+  const moreForms = isFiltered ? [] : serviceForms.filter((f) => f.priority > PRIORITY_THRESHOLD);
 
   const gridClass = `grid gap-4 ${kioskMode ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"}`;
 
@@ -162,6 +188,21 @@ export function FormsGrid({ kioskMode = false }: FormsGridProps) {
             )}
           </AnimatePresence>
         </div>
+      )}
+
+      {utilityLinks.length > 0 && (
+        <section className={serviceForms.length > 0 ? "mt-8" : ""} aria-label="Quick links">
+          <div className="mb-3 flex items-center gap-2">
+            <div className="h-px flex-1 bg-[var(--border)]" />
+            <p className="text-xs font-semibold uppercase text-[var(--text-muted)]">Quick links</p>
+            <div className="h-px flex-1 bg-[var(--border)]" />
+          </div>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            {utilityLinks.map((item) => (
+              <UtilityLinkRow key={item.id} item={item} />
+            ))}
+          </div>
+        </section>
       )}
 
       {filtered.length === 0 && (
