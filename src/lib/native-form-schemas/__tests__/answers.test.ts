@@ -6,6 +6,7 @@ import {
   buildNativeAnswers,
   extractNativeContact,
   maskSensitiveValue,
+  nativeEnglishInputErrors,
 } from "../answers";
 import type { NativeFormSchema } from "../types";
 
@@ -54,6 +55,14 @@ const schema: NativeFormSchema = {
       kind: "text",
       required: true,
       sensitive: true,
+      jotformType: "control_textbox",
+    },
+    {
+      qid: "5",
+      name: "birthCity",
+      label: "Birth City",
+      kind: "text",
+      required: false,
       jotformType: "control_textbox",
     },
   ],

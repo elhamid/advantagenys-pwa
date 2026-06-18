@@ -1,4 +1,5 @@
 import type { NativeFormField, NativeFormSchema } from "./types";
+import { englishInputError, normalizeEnglishValue } from "@/lib/forms/english-normalization";
 
 export const PWA_BACKUP_ECHO_MARKER = "Backup copy from advantagenys.com";
 
@@ -19,13 +20,7 @@ export interface NativeContactFields {
 }
 
 const SENSITIVE_LABEL_PATTERN = /\b(ssn|social security|itin|tax id|taxid|ein|passport|visa|alien|a-number|anumber|routing|account|bank|birth date|date of birth|dob|signature|id number|driver.?s license)\b/i;
-
-function normalizeValues(value: string | string[]): string | string[] {
-  if (Array.isArray(value)) {
-    return value.map((item) => item.trim()).filter(Boolean);
-  }
-  return value.trim();
-}
+const LEGAL_NAME_LABEL_PATTERN = /\b(first\/last name|full legal name|legal name|first name|last name|middle name|applicant name|petitioner.*name|beneficiary.*name|spouse.*name|father.*name|mother.*name|child.*name|owner name|business name|company name|corporation name|entity name)\b/i;
 
 function valueToString(value: string | string[]): string {
   return Array.isArray(value) ? value.join(", ").trim() : value.trim();
@@ -39,6 +34,18 @@ function isSensitiveField(field: Pick<NativeFormField, "label" | "kind" | "sensi
   if (field.sensitive === true) return true;
   if (field.kind === "signature") return true;
   return SENSITIVE_LABEL_PATTERN.test(field.label);
+}
+
+function requiresTypedEnglishName(field: Pick<NativeFormField, "label" | "name" | "kind">): boolean {
+  if (field.kind === "fullName") return true;
+  return LEGAL_NAME_LABEL_PATTERN.test(`${field.name} ${field.label}`);
+}
+
+function normalizeFieldValue(
+  field: Pick<NativeFormField, "label" | "name" | "kind">,
+  value: string | string[],
+): string | string[] {
+  return normalizeEnglishValue(value, { stripDiacritics: !requiresTypedEnglishName(field) });
 }
 
 export function maskSensitiveValue(value: string | string[], field?: Pick<NativeFormField, "label" | "kind">): string | string[] {
@@ -69,7 +76,7 @@ export function buildNativeAnswers(
 ): NativeAnswer[] {
   return schema.fields.flatMap((field) => {
     const raw = uploadedFileUrls[field.qid] ?? values[field.qid] ?? "";
-    const value = normalizeValues(raw);
+    const value = normalizeFieldValue(field, raw);
     if (answerIsEmpty(value)) return [];
 
     const sensitive = isSensitiveField(field);
@@ -135,10 +142,25 @@ export function collectFormDataValues(
       .filter(Boolean);
 
     if (entries.length === 0) continue;
-    values[field.qid] = field.kind === "checkbox" ? entries : entries[0];
+    values[field.qid] = field.kind === "checkbox" ? normalizeFieldValue(field, entries) : normalizeFieldValue(field, entries[0]!);
   }
 
   return values;
+}
+
+export function nativeEnglishInputErrors(
+  schema: NativeFormSchema,
+  values: Record<string, string | string[]>,
+): string[] {
+  return schema.fields.flatMap((field) => {
+    if (field.kind === "file" || field.kind === "signature") return [];
+    const value = values[field.qid];
+    if (!value || answerIsEmpty(value)) return [];
+    const error = englishInputError(value, field.label, {
+      requireBasicEnglishLetters: requiresTypedEnglishName(field),
+    });
+    return error ? [error] : [];
+  });
 }
 
 export function buildJotFormParams(args: {

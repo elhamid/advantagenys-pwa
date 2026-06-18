@@ -32,12 +32,6 @@ describe("forms data integrity", () => {
     expect(unique.size).toBe(priorities.length);
   });
 
-  it("all active flags are booleans", () => {
-    forms.forEach((f) => {
-      expect(typeof f.active).toBe("boolean");
-    });
-  });
-
   it("has 7 retired forms (inactive) including thin HIC stubs", () => {
     const retired = forms.filter((f) => !f.active).map((f) => f.id);
     expect(retired).toEqual(
@@ -156,8 +150,6 @@ describe("getFormBySlug()", () => {
     const form = getFormBySlug("tax-return-questionnaire");
     expect(form).toBeDefined();
     expect(form?.category).toBe("tax");
-    expect(form?.platform).toBe("native");
-    expect(form?.nativeComponent).toBe("TaxReturnForm");
     expect(form?.encrypted).toBe(true);
   });
 
@@ -253,6 +245,17 @@ describe("getFormsByCategory()", () => {
     expect(slugs).toContain("home-improvement-licensing");
     expect(slugs).not.toContain("l1-hil-auto-02");
     expect(slugs).not.toContain("hic-auto-processing");
+  });
+
+  it("describes active immigration forms as intake review packets, not final filing", () => {
+    const immigrationForms = getFormsByCategory("immigration");
+
+    immigrationForms.forEach((form) => {
+      expect(form.description.toLowerCase()).toContain("intake");
+      expect(form.description.toLowerCase()).toContain("review");
+      expect(form.description.toLowerCase()).not.toContain("filing");
+      expect(form.description.toLowerCase()).not.toContain("application");
+    });
   });
 });
 

@@ -79,7 +79,7 @@ export const forms: FormConfig[] = [
   {
     id: "220887424251052",
     title: "Immigration Form for Petitioner",
-    description: "I-130/I-864 petition filing",
+    description: "I-130/I-864 petitioner intake for team review",
     category: "immigration",
     platform: "native",
     nativeComponent: "GeneratedNativeForm",
@@ -90,7 +90,7 @@ export const forms: FormConfig[] = [
   {
     id: "220896671023154",
     title: "Immigration Form for Beneficiary",
-    description: "Beneficiary information for green card",
+    description: "Beneficiary green card intake for team review",
     category: "immigration",
     platform: "native",
     nativeComponent: "GeneratedNativeForm",
@@ -129,7 +129,7 @@ export const forms: FormConfig[] = [
   {
     id: "241966156522056",
     title: "Citizenship Info Form",
-    description: "N-400 naturalization application",
+    description: "N-400 naturalization intake for team review",
     category: "immigration",
     platform: "native",
     nativeComponent: "GeneratedNativeForm",
