@@ -314,6 +314,20 @@ describe('POST /api/contact', () => {
     expect(body.error).toMatch(/passport/i)
   })
 
+  it('rejects accented business names instead of silently rewriting legal entity spelling', async () => {
+    const res = await POST(makeRequest({
+      ...validContact,
+      type: 'client-info',
+      fullName: 'Jose Nino',
+      businessName: 'Café Nino LLC',
+    }))
+
+    expect(res.status).toBe(400)
+    const body = await res.json()
+    expect(body.error).toMatch(/english letters/i)
+    expect(body.error).toMatch(/passport/i)
+  })
+
   it('rejects non-Latin staff-visible input with an English-entry instruction', async () => {
     const res = await POST(makeRequest({
       ...validContact,

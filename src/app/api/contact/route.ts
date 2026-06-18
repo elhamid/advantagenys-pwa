@@ -56,6 +56,10 @@ function strOrEmpty(v: unknown, options: Parameters<typeof normalizeEnglishTextV
   return normalized.length > 0 ? normalized : undefined;
 }
 
+function legalNameStrOrEmpty(v: unknown): string | undefined {
+  return strOrEmpty(v, { stripDiacritics: false });
+}
+
 function strArray(v: unknown): string[] | undefined {
   if (!Array.isArray(v)) return undefined;
   const arr = v
@@ -74,7 +78,7 @@ function additionalOwnerArray(v: unknown): AdditionalOwner[] | undefined {
   const owners = v
     .filter((entry): entry is Record<string, unknown> => Boolean(entry) && typeof entry === "object" && !Array.isArray(entry))
     .map((entry) => ({
-      name: strOrEmpty(entry.name, { stripDiacritics: false }) ?? "",
+      name: legalNameStrOrEmpty(entry.name) ?? "",
       address: strOrEmpty(entry.address),
       city: strOrEmpty(entry.city),
       state: strOrEmpty(entry.state),
@@ -99,7 +103,7 @@ function maskSensitiveIdentifier(value: string): string {
 const STAFF_ENGLISH_SKIP_KEY_PATTERN =
   /^(email|phone|telephone|cellPhone|dateOfBirth|filingReceiptDate|policyExpiration|preferredDate|preferredTime|turnstileToken|source|type|utm|zipCode|ssnOrItin|ownerSsnOrItin|additionalOwner2SsnOrItin|additionalOwner3SsnOrItin|ein)$/i;
 const STAFF_EXACT_ENGLISH_KEY_PATTERN =
-  /^(fullName|name|ownerName|businessName|companyName|corporationName|entityName|legalName)$/i;
+  /(^|[A-Z_ -])(full)?name$/i;
 
 function labelFromKey(key: string): string {
   return key
@@ -276,7 +280,7 @@ function validatePayload(body: unknown): ValidationResult {
           state: strOrEmpty(obj.state),
           zipCode: strOrEmpty(obj.zipCode),
           ssnOrItin: strOrEmpty(obj.ssnOrItin),
-          businessName: strOrEmpty(obj.businessName),
+          businessName: legalNameStrOrEmpty(obj.businessName),
           serviceInterested: strOrEmpty(obj.serviceInterested),
           meetingPreference: strOrEmpty(obj.meetingPreference),
           referredBy: strOrEmpty(obj.referredBy),
@@ -289,7 +293,7 @@ function validatePayload(body: unknown): ValidationResult {
       return validStaffEnglishLead({
           ...base,
           type: "corporate-registration",
-          desiredBusinessName: strOrEmpty(obj.desiredBusinessName),
+          desiredBusinessName: legalNameStrOrEmpty(obj.desiredBusinessName),
           businessType: strOrEmpty(obj.businessType),
           ein: strOrEmpty(obj.ein),
           filingReceiptDate: strOrEmpty(obj.filingReceiptDate),
@@ -305,7 +309,7 @@ function validatePayload(body: unknown): ValidationResult {
           numberOfMembers: strOrEmpty(obj.numberOfMembers),
           numberOfOwners: num(obj.numberOfOwners),
           additionalOwners: additionalOwnerArray(obj.additionalOwners),
-          additionalOwner2Name: strOrEmpty(obj.additionalOwner2Name),
+          additionalOwner2Name: legalNameStrOrEmpty(obj.additionalOwner2Name),
           additionalOwner2Address: strOrEmpty(obj.additionalOwner2Address),
           additionalOwner2City: strOrEmpty(obj.additionalOwner2City),
           additionalOwner2State: strOrEmpty(obj.additionalOwner2State),
@@ -314,7 +318,7 @@ function validatePayload(body: unknown): ValidationResult {
           additionalOwner2DateOfBirth: strOrEmpty(obj.additionalOwner2DateOfBirth),
           additionalOwner2Telephone: strOrEmpty(obj.additionalOwner2Telephone),
           additionalOwner2CellPhone: strOrEmpty(obj.additionalOwner2CellPhone),
-          additionalOwner3Name: strOrEmpty(obj.additionalOwner3Name),
+          additionalOwner3Name: legalNameStrOrEmpty(obj.additionalOwner3Name),
           additionalOwner3Address: strOrEmpty(obj.additionalOwner3Address),
           additionalOwner3City: strOrEmpty(obj.additionalOwner3City),
           additionalOwner3State: strOrEmpty(obj.additionalOwner3State),
@@ -339,7 +343,7 @@ function validatePayload(body: unknown): ValidationResult {
       return validStaffEnglishLead({
           ...base,
           type: "insurance",
-          businessName: strOrEmpty(obj.businessName),
+          businessName: legalNameStrOrEmpty(obj.businessName),
           businessType: strOrEmpty(obj.businessType),
           businessAddress: strOrEmpty(obj.businessAddress),
           city: strOrEmpty(obj.city),
@@ -361,7 +365,7 @@ function validatePayload(body: unknown): ValidationResult {
       return validStaffEnglishLead({
           ...base,
           type: "home-improvement",
-          businessName: strOrEmpty(obj.businessName),
+          businessName: legalNameStrOrEmpty(obj.businessName),
           businessAddress: strOrEmpty(obj.businessAddress),
           city: strOrEmpty(obj.city),
           county: strOrEmpty(obj.county),
