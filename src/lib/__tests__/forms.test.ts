@@ -25,13 +25,13 @@ describe("forms data integrity", () => {
     expect(unique.size).toBe(ids.length);
   });
 
-  it("all priorities are unique", () => {
-    const priorities = forms.map((f) => f.priority);
-    const unique = new Set(priorities);
-    expect(unique.size).toBe(priorities.length);
+  it("all active form priorities are unique", () => {
+    const activePriorities = forms.filter((f) => f.active).map((f) => f.priority);
+    const unique = new Set(activePriorities);
+    expect(unique.size).toBe(activePriorities.length);
   });
 
-  it("has 5 retired forms (inactive) — Divorce, Sales Tax, Bookkeeping, New I-130 pair", () => {
+  it("has 7 retired forms (inactive) including thin HIC stubs", () => {
     const retired = forms.filter((f) => !f.active).map((f) => f.id);
     expect(retired).toEqual(
       expect.arrayContaining([
@@ -40,9 +40,11 @@ describe("forms data integrity", () => {
         "260414184804049", // Bookkeeping Form
         "243156342192150", // New I-130 Petitioner
         "243156183104146", // New I-130 Beneficiary
+        "253344597070157", // L1-HIL Auto 02 thin HIC routing stub
+        "253484272415054", // HIC Auto Processing thin automation stub
       ])
     );
-    expect(retired).toHaveLength(5);
+    expect(retired).toHaveLength(7);
   });
 
   it("every active form has a boolean true active flag", () => {
@@ -93,8 +95,6 @@ describe("forms data integrity", () => {
       "contractor-license-qualifier",
       "boir-form",
       "citizenship-info-form",
-      "l1-hil-auto-02",
-      "hic-auto-processing",
     ];
 
     generatedSlugs.forEach((slug) => {

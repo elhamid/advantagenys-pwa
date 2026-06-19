@@ -36,7 +36,7 @@ function filterDomProps(props: Record<string, unknown>) {
 }
 
 describe("ServicePicker", () => {
-  it("renders all 6 service options", () => {
+  it("renders all service options", () => {
     render(<ServicePicker selected={null} onSelect={vi.fn()} />);
 
     for (const svc of SERVICES) {
@@ -48,7 +48,7 @@ describe("ServicePicker", () => {
   it("renders the correct number of service buttons", () => {
     render(<ServicePicker selected={null} onSelect={vi.fn()} />);
     const buttons = screen.getAllByRole("button");
-    expect(buttons).toHaveLength(6);
+    expect(buttons).toHaveLength(SERVICES.length);
   });
 
   it("calls onSelect with the correct slug when a service is clicked", async () => {
@@ -94,6 +94,9 @@ describe("ServicePicker", () => {
       "insurance",
       "audit",
       "consulting",
+      "legal",
+      "licensing",
+      "bookkeeping",
     ]);
   });
 });

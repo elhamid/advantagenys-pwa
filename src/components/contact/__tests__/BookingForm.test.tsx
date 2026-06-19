@@ -97,7 +97,7 @@ describe('BookingForm', () => {
     // Email is optional — skip it
 
     // Select a service type
-    await user.selectOptions(screen.getByLabelText(/service type/i), 'Tax')
+    await user.selectOptions(screen.getByLabelText(/service type/i), 'Tax Services')
 
     // Select some window chips
     await user.click(screen.getByRole('button', { name: 'Mornings' }))
@@ -117,7 +117,7 @@ describe('BookingForm', () => {
     expect(body.source).toBe('advantagenys.com_book_appointment')
     expect(body.wantsAppointment).toBe(true)
     expect(body.preferredWindow).toEqual(['Mornings', 'Evenings'])
-    expect(body.serviceType).toBe('Tax')
+    expect(body.serviceType).toBe('Tax Services')
     expect(body.turnstileToken).toBe('test-token')
     // Old date/time fields must NOT be present
     expect(body.preferredDate).toBeUndefined()
@@ -139,7 +139,7 @@ describe('BookingForm', () => {
 
     await user.type(screen.getByLabelText(/full name/i), 'Maria Garcia')
     await user.type(screen.getByLabelText(/phone number/i), '9299290001')
-    await user.selectOptions(screen.getByLabelText(/service type/i), 'ITIN')
+    await user.selectOptions(screen.getByLabelText(/service type/i), 'ITIN / Tax ID')
 
     await user.click(screen.getByRole('button', { name: /book appointment/i }))
 
@@ -167,7 +167,7 @@ describe('BookingForm', () => {
 
     await user.type(screen.getByLabelText(/full name/i), 'Ana Lee')
     await user.type(screen.getByLabelText(/phone number/i), '9299290009')
-    await user.selectOptions(screen.getByLabelText(/service type/i), 'Consulting')
+    await user.selectOptions(screen.getByLabelText(/service type/i), 'Business Consulting')
 
     await user.click(screen.getByRole('button', { name: /book appointment/i }))
 
@@ -189,7 +189,7 @@ describe('BookingForm', () => {
 
     await user.type(screen.getByLabelText(/full name/i), 'Test User')
     await user.type(screen.getByLabelText(/phone number/i), '9299290002')
-    await user.selectOptions(screen.getByLabelText(/service type/i), 'Tax')
+    await user.selectOptions(screen.getByLabelText(/service type/i), 'Tax Services')
 
     await user.click(screen.getByRole('button', { name: /book appointment/i }))
 
@@ -256,8 +256,8 @@ describe('BookingForm', () => {
   // 9. defaultService prop syncs into service dropdown
   // ---------------------------------------------------------------------------
   it('pre-fills service dropdown from defaultService prop', () => {
-    render(<BookingForm defaultService="Tax" />)
+    render(<BookingForm defaultService="Tax Services" />)
     const select = screen.getByLabelText(/service type/i) as HTMLSelectElement
-    expect(select.value).toBe('Tax')
+    expect(select.value).toBe('Tax Services')
   })
 })

@@ -2,6 +2,10 @@ import { render, screen } from "@testing-library/react";
 import { vi, describe, it, expect } from "vitest";
 import { ConfirmedClient } from "../ConfirmedClient";
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn() }),
+}));
+
 // Mock PushOptInPrompt — we just need to verify it renders or not
 vi.mock("@/components/booking/PushOptInPrompt", () => ({
   PushOptInPrompt: ({ appointmentId }: { appointmentId?: string }) => (
@@ -12,11 +16,10 @@ vi.mock("@/components/booking/PushOptInPrompt", () => ({
 }));
 
 describe("ConfirmedClient", () => {
-  it("returns null (renders nothing) in inert mode", () => {
-    const { container } = render(
-      <ConfirmedClient isInert={true} appointmentId="abc-123" />
-    );
-    expect(container.innerHTML).toBe("");
+  it("suppresses PushOptInPrompt in inert mode", () => {
+    render(<ConfirmedClient isInert={true} appointmentId="abc-123" />);
+    expect(screen.queryByTestId("push-opt-in")).not.toBeInTheDocument();
+    expect(screen.getByText(/redirecting to home/i)).toBeInTheDocument();
   });
 
   it("renders PushOptInPrompt in live mode", () => {
@@ -39,10 +42,7 @@ describe("ConfirmedClient", () => {
   });
 
   it("does not render PushOptInPrompt even with appointmentId in inert mode", () => {
-    const { container } = render(
-      <ConfirmedClient isInert={true} appointmentId="xyz-789" />
-    );
-    expect(container.innerHTML).toBe("");
+    render(<ConfirmedClient isInert={true} appointmentId="xyz-789" />);
     expect(screen.queryByTestId("push-opt-in")).not.toBeInTheDocument();
   });
 });

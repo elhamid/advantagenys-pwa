@@ -77,8 +77,8 @@ describe("HOURS", () => {
 });
 
 describe("SERVICES", () => {
-  it("has 8 service entries", () => {
-    expect(SERVICES).toHaveLength(8);
+  it("has 9 service entries including the direct ITIN form path", () => {
+    expect(SERVICES).toHaveLength(9);
   });
 
   it("every service has name, href, icon, description", () => {
@@ -90,10 +90,9 @@ describe("SERVICES", () => {
     });
   });
 
-  // ITIN Registration deep-links to the intake form; other services live under /services/.
-  it("every href starts with /services/ or points to the ITIN registration form", () => {
+  it("every href is a first-party services or resources path", () => {
     SERVICES.forEach((service) => {
-      expect(service.href).toMatch(/^\/(services\/|resources\/forms\/itin-registration-form)/);
+      expect(service.href).toMatch(/^\/(services|resources\/forms)\//);
     });
   });
 
@@ -139,6 +138,12 @@ describe("SERVICES", () => {
   it("contains Licensing", () => {
     const found = SERVICES.find((s) => s.name === "Licensing");
     expect(found).toBeDefined();
+  });
+
+  it("contains Web Presence", () => {
+    const found = SERVICES.find((s) => s.name === "Web Presence");
+    expect(found).toBeDefined();
+    expect(found?.href).toBe("/services/web-presence/");
   });
 
   it("all service names are unique", () => {

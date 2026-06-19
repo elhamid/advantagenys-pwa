@@ -232,10 +232,12 @@ describe("SlotGrid", () => {
       expect(screen.queryByText(/loading available times/i)).not.toBeInTheDocument();
     });
 
-    const pressedButtons = screen.getAllByRole("button").filter(
-      (btn) => btn.getAttribute("aria-pressed") === "true"
-    );
-    expect(pressedButtons.length).toBeGreaterThanOrEqual(1);
+    await waitFor(() => {
+      const pressedButtons = screen.getAllByRole("button").filter(
+        (btn) => btn.getAttribute("aria-pressed") === "true"
+      );
+      expect(pressedButtons.length).toBeGreaterThanOrEqual(1);
+    });
   });
 
   // ---------------------------------------------------------------------------
@@ -303,10 +305,10 @@ describe("SlotGrid", () => {
   });
 
   // ---------------------------------------------------------------------------
-  // Day accordion: "Show more days" button
+  // Day picker
   // ---------------------------------------------------------------------------
 
-  it("shows 'Show more days' when there are more than 5 days (desktop)", async () => {
+  it("shows every available day as a horizontally scrollable tab", async () => {
     // Create slots across 7 days
     const manySlots = [];
     for (let d = 2; d <= 8; d++) {
@@ -325,12 +327,10 @@ describe("SlotGrid", () => {
       expect(screen.queryByText(/loading available times/i)).not.toBeInTheDocument();
     });
 
-    // Should have a "Show more" button
-    const showMoreBtn = screen.queryByText(/show.*more day/i);
-    expect(showMoreBtn).toBeInTheDocument();
+    expect(screen.getAllByRole("tab")).toHaveLength(7);
   });
 
-  it("reveals additional days when 'Show more days' is clicked", async () => {
+  it("lets customers switch to a later available day", async () => {
     const manySlots = [];
     for (let d = 2; d <= 8; d++) {
       const dateStr = `2026-05-${String(d).padStart(2, "0")}`;
@@ -349,11 +349,10 @@ describe("SlotGrid", () => {
       expect(screen.queryByText(/loading available times/i)).not.toBeInTheDocument();
     });
 
-    const showMoreBtn = screen.getByText(/show.*more day/i);
-    await user.click(showMoreBtn);
+    const dayTabs = screen.getAllByRole("tab");
+    await user.click(dayTabs[dayTabs.length - 1]);
 
-    // After clicking, the "Show more" button should disappear
-    expect(screen.queryByText(/show.*more day/i)).not.toBeInTheDocument();
+    expect(dayTabs[dayTabs.length - 1]).toHaveAttribute("aria-selected", "true");
   });
 
   // ---------------------------------------------------------------------------

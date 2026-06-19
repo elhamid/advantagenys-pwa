@@ -12,6 +12,22 @@ vi.mock("@/components/home/TeamSection", () => ({ TeamSection: () => <section>Te
 vi.mock("@/components/home/JourneyTimeline", () => ({ JourneyTimeline: () => <section>JourneyTimeline</section> }));
 vi.mock("@/components/home/FinalCTA", () => ({ FinalCTA: () => <section>FinalCTA</section> }));
 
+vi.mock("framer-motion", () => ({
+  motion: new Proxy(
+    {},
+    {
+      get: (_target, tag: string) => {
+        const Component = ({ children, ...props }: React.PropsWithChildren<Record<string, unknown>>) =>
+          React.createElement(tag, props, children);
+        Component.displayName = `motion.${tag}`;
+        return Component;
+      },
+    }
+  ),
+  useInView: () => true,
+  useReducedMotion: () => false,
+}));
+
 describe("HomePage", () => {
   it("renders the homepage section stack", () => {
     render(<HomePage />);

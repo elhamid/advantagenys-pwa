@@ -62,6 +62,8 @@ vi.mock("framer-motion", () => ({
       },
     }
   ),
+  useInView: () => true,
+  useReducedMotion: () => false,
 }));
 
 describe("App pages", () => {
