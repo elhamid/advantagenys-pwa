@@ -43,7 +43,11 @@ describe("CorporateRegistrationForm", () => {
     expect(screen.getByLabelText(/business owner full name/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/phone number/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/^email/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/owner ssn \/ itin/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/owner date of birth/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/desired business name/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/number of owners/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/corporation mailing address/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /submit registration/i })).toBeInTheDocument();
   });
 
@@ -57,8 +61,15 @@ describe("CorporateRegistrationForm", () => {
     await user.type(screen.getByLabelText(/business owner full name/i), "Alex Owner");
     await user.type(screen.getByLabelText(/phone number/i), "9295550102");
     await user.type(screen.getByLabelText(/^email/i), "alex@example.com");
+    await user.type(screen.getByLabelText(/owner ssn \/ itin/i), "123-45-6789");
+    await user.type(screen.getByLabelText(/owner date of birth/i), "1990-01-15");
+    await user.clear(screen.getByLabelText(/number of owners/i));
+    await user.type(screen.getByLabelText(/number of owners/i), "2");
+    await user.type(screen.getAllByLabelText(/^full name$/i)[0], "Second Owner");
+    await user.type(screen.getAllByLabelText(/ssn \/ itin/i)[1], "987-65-4321");
     await user.type(screen.getByLabelText(/desired business name/i), "Alex LLC");
     await user.selectOptions(screen.getByLabelText(/business type/i), "LLC");
+    await user.type(screen.getByLabelText(/corporation mailing address/i), "229-14 Linden Blvd");
     await user.click(screen.getAllByLabelText(/^yes$/i)[0]);
     await user.click(screen.getByRole("button", { name: /submit registration/i }));
 
@@ -74,6 +85,12 @@ describe("CorporateRegistrationForm", () => {
       businessName: "Alex LLC",
       desiredBusinessName: "Alex LLC",
       businessType: "LLC",
+      ownerSsnOrItin: "123-45-6789",
+      ownerDateOfBirth: "1990-01-15",
+      corporationAddress: "229-14 LINDEN BLVD",
+      numberOfOwners: 2,
+      additionalOwner2Name: "SECOND OWNER",
+      additionalOwner2SsnOrItin: "987-65-4321",
       services: ["Business Formation"],
       serviceType: "Business Formation",
       needEIN: "Yes",

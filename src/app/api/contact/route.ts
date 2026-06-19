@@ -56,9 +56,147 @@ interface ContactPayload {
   sendId?: string;
   form_send_id?: string;
   send_id?: string;
+  utm?: Record<string, string>;
   // Generic catch-all for extended form fields (immigration, tax, etc.)
   // These are forwarded to Supabase metadata + taskboard webhook as-is.
   [key: string]: unknown;
+}
+
+type AdditionalOwnerPayload = {
+  name?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
+  ssnOrItin?: string;
+  dateOfBirth?: string;
+  telephone?: string;
+  cellPhone?: string;
+  phone?: string;
+};
+
+function maskSensitiveIdentifier(value: string): string {
+  const compact = value.replace(/\D/g, "");
+  const last4 = compact.slice(-4);
+  return last4 ? `[sensitive ending ${last4}]` : "[sensitive provided]";
+}
+
+function upperString(value: unknown): unknown {
+  return typeof value === "string" ? value.toLocaleUpperCase("en-US") : value;
+}
+
+function upperField<T extends ContactPayload>(data: T, field: string): T {
+  if (typeof data[field] !== "string") return data;
+  return { ...data, [field]: upperString(data[field]) } as T;
+}
+
+function upperAdditionalOwner(owner: AdditionalOwnerPayload): AdditionalOwnerPayload {
+  return {
+    ...owner,
+    name: typeof owner.name === "string" ? owner.name.toLocaleUpperCase("en-US") : owner.name,
+    address: typeof owner.address === "string" ? owner.address.toLocaleUpperCase("en-US") : owner.address,
+    city: typeof owner.city === "string" ? owner.city.toLocaleUpperCase("en-US") : owner.city,
+    state: typeof owner.state === "string" ? owner.state.toLocaleUpperCase("en-US") : owner.state,
+  };
+}
+
+function normalizeGovernmentLead(data: ContactPayload): ContactPayload {
+  if (data.type === "client-info") {
+    return [
+      "fullName",
+      "address",
+      "city",
+      "state",
+      "businessName",
+      "serviceInterested",
+      "referredBy",
+      "purpose",
+      "referralSource",
+    ].reduce<ContactPayload>((current, field) => upperField(current, field), data);
+  }
+
+  if (data.type === "corporate-registration") {
+    const normalized = [
+      "fullName",
+      "businessName",
+      "desiredBusinessName",
+      "businessType",
+      "businessAddress",
+      "city",
+      "state",
+      "natureOfBusiness",
+      "ownerAddress",
+      "ownerCity",
+      "ownerState",
+      "additionalOwner2Name",
+      "additionalOwner2Address",
+      "additionalOwner2City",
+      "additionalOwner2State",
+      "additionalOwner3Name",
+      "additionalOwner3Address",
+      "additionalOwner3City",
+      "additionalOwner3State",
+      "meetingPreference",
+      "corporationAddress",
+      "corporationCity",
+      "corporationState",
+      "websiteSeoOptions",
+      "needEIN",
+      "needSalesTax",
+      "needPayroll",
+      "additionalNotes",
+    ].reduce<ContactPayload>((current, field) => upperField(current, field), data);
+
+    if (Array.isArray(normalized.additionalOwners)) {
+      return {
+        ...normalized,
+        additionalOwners: normalized.additionalOwners
+          .filter((owner): owner is AdditionalOwnerPayload => Boolean(owner) && typeof owner === "object" && !Array.isArray(owner))
+          .map(upperAdditionalOwner),
+      };
+    }
+
+    return normalized;
+  }
+
+  return data;
+}
+
+function maskLeadForPwaStorage(data: ContactPayload): ContactPayload {
+  if (data.type === "client-info" && typeof data.ssnOrItin === "string") {
+    return {
+      ...data,
+      ssnOrItin: maskSensitiveIdentifier(data.ssnOrItin),
+    };
+  }
+
+  if (data.type === "corporate-registration") {
+    const masked: ContactPayload = { ...data };
+    for (const field of [
+      "ownerSsnOrItin",
+      "additionalOwner2SsnOrItin",
+      "additionalOwner3SsnOrItin",
+    ]) {
+      if (typeof masked[field] === "string") {
+        masked[field] = maskSensitiveIdentifier(masked[field]);
+      }
+    }
+
+    if (Array.isArray(masked.additionalOwners)) {
+      masked.additionalOwners = masked.additionalOwners.map((owner) => {
+        if (!owner || typeof owner !== "object" || Array.isArray(owner)) return owner;
+        const entry = owner as AdditionalOwnerPayload;
+        return {
+          ...entry,
+          ssnOrItin: entry.ssnOrItin ? maskSensitiveIdentifier(entry.ssnOrItin) : entry.ssnOrItin,
+        };
+      });
+    }
+
+    return masked;
+  }
+
+  return data;
 }
 
 function validatePayload(
@@ -79,6 +217,13 @@ function validatePayload(
     "website-client-info",
     "website-home-improvement",
     "website-insurance",
+    "contractor-qualifier",
+    "tool-tax-savings",
+    "tool-itin-eligibility",
+    "tool-biz-readiness",
+    "pwa-kiosk",
+    "itin-kiosk",
+    "advantagenys.com_book_page",
     "chat-widget",
     "kiosk",
   ];
@@ -107,6 +252,7 @@ function validatePayload(
     sendId,
     form_send_id,
     send_id,
+    utm,
   } = raw;
 
   if (typeof fullName !== "string" || fullName.trim().length === 0) {
@@ -139,6 +285,9 @@ function validatePayload(
     typeof source === "string" && ALLOWED_SOURCES.includes(source)
       ? source
       : undefined;
+  if (typeof source === "string" && source.trim() && !resolvedSource) {
+    return { valid: false, error: `Unknown source: ${source}` };
+  }
 
   // Accepted type discriminators
   const ACCEPTED_TYPES: LeadType[] = [
@@ -198,9 +347,15 @@ function validatePayload(
     utmSource: typeof utmSource === "string" && utmSource.trim() ? utmSource.trim() : undefined,
     utmMedium: typeof utmMedium === "string" && utmMedium.trim() ? utmMedium.trim() : undefined,
     utmCampaign: typeof utmCampaign === "string" && utmCampaign.trim() ? utmCampaign.trim() : undefined,
+    utm: utm && typeof utm === "object" && !Array.isArray(utm)
+      ? Object.fromEntries(
+          Object.entries(utm).filter((entry): entry is [string, string] => typeof entry[1] === "string" && entry[1].trim().length > 0)
+        )
+      : undefined,
     formSendId: normalizedFormSendId,
     sendId: normalizedFormSendId,
     form_send_id: normalizedFormSendId,
+    send_id: normalizedFormSendId,
   };
 
   // For extended form types (immigration, tax), pass through all extra string fields
@@ -211,12 +366,23 @@ function validatePayload(
       "source", "type", "serviceType", "preferredDate", "preferredTime",
       "description", "wantsAppointment", "preferredWindow", "turnstileToken",
       "sharedBy", "utmSource", "utmMedium", "utmCampaign",
-      "formSendId", "sendId", "form_send_id", "send_id",
+      "formSendId", "sendId", "form_send_id", "send_id", "utm",
     ]);
     for (const [k, v] of Object.entries(raw)) {
       if (baseKeys.has(k)) continue;
       if (typeof v === "string" && v.trim().length > 0) {
         data[k] = v.trim();
+      } else if (typeof v === "number" || typeof v === "boolean") {
+        data[k] = v;
+      } else if (Array.isArray(v)) {
+        const cleaned = v
+          .map((entry) => {
+            if (typeof entry === "string") return entry.trim();
+            if (entry && typeof entry === "object" && !Array.isArray(entry)) return entry;
+            return undefined;
+          })
+          .filter(Boolean);
+        if (cleaned.length > 0) data[k] = cleaned;
       }
     }
   }
@@ -287,7 +453,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { data } = result;
+    const data = normalizeGovernmentLead(result.data);
 
     // --- Turnstile verification ---
     const turnstileToken = (body as Record<string, unknown>).turnstileToken;
@@ -325,6 +491,10 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Keep PWA's own generic lead storage minimized. Taskboard receives the
+    // full authenticated staff packet because staff need it to complete work.
+    const pwaStorageData = maskLeadForPwaStorage(data);
+
     const logLabel = data.type === "booking" ? "[Website Booking]" : "[Website Lead]";
     console.log(logLabel, {
       timestamp: new Date().toISOString(),
@@ -334,7 +504,7 @@ export async function POST(request: NextRequest) {
     // --- Store in Supabase ---
     let supabaseOk = false;
     try {
-      supabaseOk = await storeLeadInSupabase(data);
+      supabaseOk = await storeLeadInSupabase(pwaStorageData);
     } catch (err) {
       console.error("[Supabase] Background store failed:", err);
     }

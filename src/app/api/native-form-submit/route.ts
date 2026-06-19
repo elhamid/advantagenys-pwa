@@ -350,7 +350,7 @@ export async function POST(request: NextRequest) {
     referrer: getString(formData, "referrer"),
   };
 
-  const maskedAnswers = answerRecord(answers, true);
+  const staffAnswers = answerRecord(answers, false);
   const taskboardPayload: Record<string, unknown> = {
     fullName: contact.fullName,
     phone: contact.phone,
@@ -359,7 +359,7 @@ export async function POST(request: NextRequest) {
     lead_type: schema.taskboardType,
     source: "pwa-native",
     serviceType: schema.serviceType,
-    businessName: firstBusinessName(maskedAnswers),
+    businessName: firstBusinessName(staffAnswers),
     sharedBy,
     shared_by: sharedBy,
     formSendId,
@@ -372,13 +372,13 @@ export async function POST(request: NextRequest) {
         formTitle: schema.title,
         formSlug: schema.slug,
         jotformId: schema.jotformId,
-        answers: maskedAnswers,
+        answers: staffAnswers,
         sensitiveFields: answers.filter((answer) => answer.sensitive).map((answer) => answer.label),
         documentUrls: uploads.documentUrls,
         sharedBy,
         formSendId,
         utm,
-        sensitivePolicy: "Sensitive answers are masked before taskboard/CRM storage; full values are only sent to the legacy JotForm mirror.",
+        sensitivePolicy: "Sensitive answers are stored only in authenticated Taskboard intake records and private document storage for staff service work.",
       },
     },
   };

@@ -230,7 +230,7 @@ describe('POST /api/contact', () => {
     const payload = {
       type: 'client-info',
       source: 'website-client-info',
-      fullName: 'Jane Client',
+      fullName: 'JANE CLIENT',
       phone: '9295550101',
       email: 'jane@example.com',
       services: ['Tax Services'],
@@ -255,7 +255,7 @@ describe('POST /api/contact', () => {
     expect(sentBody).toMatchObject({
       type: 'client-info',
       source: 'website-client-info',
-      fullName: 'Jane Client',
+      fullName: 'JANE CLIENT',
       services: ['Tax Services'],
       serviceType: 'Tax Services',
       formSendId: 'event-client-info',
@@ -300,7 +300,7 @@ describe('POST /api/contact', () => {
     )
     expect(jotformCall).toBeDefined()
     const body = jotformCall![1].body as string
-    expect(body).toContain('submission%5B94%5D=Alex+LLC')
+    expect(body).toContain('submission%5B94%5D=ALEX+LLC')
     expect(body).toContain('submission%5B74%5D=')
     const traceNote = new URLSearchParams(body).get('submission[74]')
     expect(traceNote).toContain('Shared-by id: staff-user-123')
@@ -471,6 +471,189 @@ describe('POST /api/contact', () => {
     expect(sentBody.serviceType).toBeUndefined()
     expect(sentBody.preferredDate).toBeUndefined()
     expect(sentBody.preferredTime).toBeUndefined()
+  })
+
+  // -----------------------------------------------------------------------
+  // 12. Source allowlist — accept known sources, reject unknown
+  // -----------------------------------------------------------------------
+  it('accepts an allowlisted custom source and forwards it to the webhook', async () => {
+    const fetchSpy = makeFetchMock()
+    global.fetch = fetchSpy
+
+    await POST(
+      makeRequest({
+        ...validContact,
+        source: 'tool-tax-savings',
+      }),
+    )
+
+    const webhookCall = (fetchSpy.mock.calls as unknown as [string, RequestInit][]).find(
+      ([url]) => !String(url).includes('cloudflare.com'),
+    )
+    expect(webhookCall).toBeDefined()
+    const sentBody = JSON.parse(webhookCall![1].body as string)
+    expect(sentBody.source).toBe('tool-tax-savings')
+  })
+
+  it('returns 400 when source is not on the allowlist', async () => {
+    const res = await POST(
+      makeRequest({
+        ...validContact,
+        source: 'evil-scraper-bot',
+      }),
+    )
+    expect(res.status).toBe(400)
+    const body = await res.json()
+    expect(body.error).toMatch(/unknown source/i)
+  })
+
+  // -----------------------------------------------------------------------
+  // 13. UTM passthrough
+  // -----------------------------------------------------------------------
+  it('forwards UTM params to the webhook when provided', async () => {
+    const fetchSpy = makeFetchMock()
+    global.fetch = fetchSpy
+
+    await POST(
+      makeRequest({
+        ...validContact,
+        utm: {
+          utm_source: 'google',
+          utm_medium: 'cpc',
+          utm_campaign: 'spring-launch',
+          referrer: 'https://google.com',
+        },
+      }),
+    )
+
+    const webhookCall = (fetchSpy.mock.calls as unknown as [string, RequestInit][]).find(
+      ([url]) => !String(url).includes('cloudflare.com'),
+    )
+    expect(webhookCall).toBeDefined()
+    const sentBody = JSON.parse(webhookCall![1].body as string)
+    expect(sentBody.utm).toEqual({
+      utm_source: 'google',
+      utm_medium: 'cpc',
+      utm_campaign: 'spring-launch',
+      referrer: 'https://google.com',
+    })
+  })
+
+  it('preserves staff shared form attribution in the webhook payload', async () => {
+    const fetchSpy = makeFetchMock()
+    global.fetch = fetchSpy
+
+    await POST(
+      makeRequest({
+        ...validContact,
+        sharedBy: 'user-hamid',
+      }),
+    )
+
+    const webhookCall = (fetchSpy.mock.calls as unknown as [string, RequestInit][]).find(
+      ([url]) => !String(url).includes('cloudflare.com'),
+    )
+    expect(webhookCall).toBeDefined()
+    const sentBody = JSON.parse(webhookCall![1].body as string)
+    expect(sentBody.sharedBy).toBe('user-hamid')
+  })
+
+  it('preserves form send id attribution in the webhook payload', async () => {
+    const fetchSpy = makeFetchMock()
+    global.fetch = fetchSpy
+
+    await POST(
+      makeRequest({
+        ...validContact,
+        sharedBy: 'user-hamid',
+        formSendId: 'send-abc',
+      }),
+    )
+
+    const webhookCall = (fetchSpy.mock.calls as unknown as [string, RequestInit][]).find(
+      ([url]) => !String(url).includes('cloudflare.com'),
+    )
+    expect(webhookCall).toBeDefined()
+    const sentBody = JSON.parse(webhookCall![1].body as string)
+    expect(sentBody.formSendId).toBe('send-abc')
+    expect(sentBody.send_id).toBe('send-abc')
+    expect(sentBody.form_send_id).toBe('send-abc')
+  })
+
+  // -----------------------------------------------------------------------
+  // 14. Native-form type variants validate + forward
+  // -----------------------------------------------------------------------
+  it('accepts a client-info submission and forwards it with type=client-info', async () => {
+    const fetchSpy = makeFetchMock()
+    global.fetch = fetchSpy
+
+    const res = await POST(
+      makeRequest({
+        fullName: 'Jane Client',
+        phone: '9295551212',
+        email: 'jane@example.com',
+        type: 'client-info',
+        serviceInterested: 'Tax Services',
+        referralSource: 'Google',
+        ssnOrItin: '123-45-6789',
+        turnstileToken: 'valid-token',
+      }),
+    )
+    expect(res.status).toBe(200)
+
+    const webhookCall = (fetchSpy.mock.calls as unknown as [string, RequestInit][]).find(
+      ([url]) => !String(url).includes('cloudflare.com'),
+    )
+    const sentBody = JSON.parse(webhookCall![1].body as string)
+    expect(sentBody.type).toBe('client-info')
+    expect(sentBody.fullName).toBe('JANE CLIENT')
+    expect(sentBody.serviceInterested).toBe('TAX SERVICES')
+    expect(sentBody.ssnOrItin).toBe('123-45-6789')
+    expect(sentBody.source).toBe('website-client-info')
+  })
+
+  it('forwards full corporate registration identifiers to the Taskboard staff packet', async () => {
+    const fetchSpy = makeFetchMock()
+    global.fetch = fetchSpy
+
+    const res = await POST(
+      makeRequest({
+        fullName: 'Alex Owner',
+        phone: '9295550102',
+        email: 'alex@example.com',
+        type: 'corporate-registration',
+        desiredBusinessName: 'Alex LLC',
+        businessType: 'LLC',
+        ownerSsnOrItin: '123-45-6789',
+        ownerDateOfBirth: '1990-01-15',
+        additionalOwner2Name: 'Second Owner',
+        additionalOwner2SsnOrItin: '987-65-4321',
+        additionalOwners: [
+          {
+            name: 'Second Owner',
+            ssnOrItin: '987-65-4321',
+            dateOfBirth: '1991-02-16',
+          },
+        ],
+        turnstileToken: 'valid-token',
+      }),
+    )
+    expect(res.status).toBe(200)
+
+    const webhookCall = (fetchSpy.mock.calls as unknown as [string, RequestInit][]).find(
+      ([url]) => !String(url).includes('cloudflare.com'),
+    )
+    expect(webhookCall).toBeDefined()
+    const sentBody = JSON.parse(webhookCall![1].body as string)
+    expect(sentBody.type).toBe('corporate-registration')
+    expect(sentBody.fullName).toBe('ALEX OWNER')
+    expect(sentBody.desiredBusinessName).toBe('ALEX LLC')
+    expect(sentBody.ownerSsnOrItin).toBe('123-45-6789')
+    expect(sentBody.additionalOwner2SsnOrItin).toBe('987-65-4321')
+    expect(sentBody.additionalOwner2Name).toBe('SECOND OWNER')
+    expect(sentBody.additionalOwners[0].name).toBe('SECOND OWNER')
+    expect(sentBody.additionalOwners[0].ssnOrItin).toBe('987-65-4321')
+    expect(sentBody.source).toBe('website-corporate-registration')
   })
 
   // -----------------------------------------------------------------------

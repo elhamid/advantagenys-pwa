@@ -34,6 +34,13 @@ describe("native-form-submit source contract", () => {
     expect(ROUTE_SOURCE).toContain("Form not available.");
   });
 
+  it("sends full staff answers to Taskboard instead of masked service packets", () => {
+    expect(ROUTE_SOURCE).toContain("const staffAnswers = answerRecord(answers, false)");
+    expect(ROUTE_SOURCE).toContain("answers: staffAnswers");
+    expect(ROUTE_SOURCE).toContain("Sensitive answers are stored only in authenticated Taskboard intake records");
+    expect(ROUTE_SOURCE).not.toContain("Sensitive answers are masked before taskboard/CRM storage");
+  });
+
   it("keeps retired legacy ITIN storage fail-closed", () => {
     expect(LEGACY_ITIN_STORAGE_SOURCE).toContain("Legacy ITIN document storage is retired.");
     expect(LEGACY_ITIN_STORAGE_SOURCE).toContain("refusing document upload");
