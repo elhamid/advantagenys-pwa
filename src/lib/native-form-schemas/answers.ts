@@ -19,6 +19,23 @@ export interface NativeContactFields {
 }
 
 const SENSITIVE_LABEL_PATTERN = /\b(ssn|social security|itin|tax id|taxid|ein|passport|visa|alien|a-number|anumber|routing|account|bank|birth date|date of birth|dob|signature|id number|driver.?s license)\b/i;
+const GOVERNMENT_FORM_SLUGS = new Set([
+  "itin-registration-form",
+  "tax-return-questionnaire",
+  "profit-loss-form",
+  "boir-form",
+  "corporation-services",
+  "business-formation",
+  "home-improvement-licensing",
+  "contractor-license-qualifier",
+  "l1-hil-auto-02",
+  "hic-auto-processing",
+  "immigration-form-for-petitioner",
+  "immigration-form-for-beneficiary",
+  "citizenship-info-form",
+]);
+
+const SKIP_UPPERCASE_LABEL_PATTERN = /\b(email|e-mail|website|url|link|phone|mobile|cell|whatsapp|file|upload|document|photo|receipt)\b/i;
 
 function normalizeValues(value: string | string[]): string | string[] {
   if (Array.isArray(value)) {
@@ -39,6 +56,18 @@ function isSensitiveField(field: Pick<NativeFormField, "label" | "kind" | "sensi
   if (field.sensitive === true) return true;
   if (field.kind === "signature") return true;
   return SENSITIVE_LABEL_PATTERN.test(field.label);
+}
+
+function shouldUppercaseGovernmentAnswer(schema: NativeFormSchema, field: NativeFormField): boolean {
+  if (!GOVERNMENT_FORM_SLUGS.has(schema.slug)) return false;
+  if (["email", "tel", "file", "date"].includes(field.kind)) return false;
+  return !SKIP_UPPERCASE_LABEL_PATTERN.test(`${field.name} ${field.label}`);
+}
+
+function uppercaseGovernmentValue(value: string | string[], schema: NativeFormSchema, field: NativeFormField): string | string[] {
+  if (!shouldUppercaseGovernmentAnswer(schema, field)) return value;
+  if (Array.isArray(value)) return value.map((item) => item.toLocaleUpperCase("en-US"));
+  return value.toLocaleUpperCase("en-US");
 }
 
 export function maskSensitiveValue(value: string | string[], field?: Pick<NativeFormField, "label" | "kind">): string | string[] {
@@ -69,7 +98,7 @@ export function buildNativeAnswers(
 ): NativeAnswer[] {
   return schema.fields.flatMap((field) => {
     const raw = uploadedFileUrls[field.qid] ?? values[field.qid] ?? "";
-    const value = normalizeValues(raw);
+    const value = uppercaseGovernmentValue(normalizeValues(raw), schema, field);
     if (answerIsEmpty(value)) return [];
 
     const sensitive = isSensitiveField(field);

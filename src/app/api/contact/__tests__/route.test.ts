@@ -505,9 +505,54 @@ describe('POST /api/contact', () => {
     )
     const sentBody = JSON.parse(webhookCall![1].body as string)
     expect(sentBody.type).toBe('client-info')
-    expect(sentBody.serviceInterested).toBe('Tax Services')
-    expect(sentBody.ssnOrItin).toBe('[sensitive ending 6789]')
+    expect(sentBody.fullName).toBe('JANE CLIENT')
+    expect(sentBody.serviceInterested).toBe('TAX SERVICES')
+    expect(sentBody.ssnOrItin).toBe('123-45-6789')
     expect(sentBody.source).toBe('website-client-info')
+  })
+
+  it('forwards full corporate registration identifiers to the Taskboard staff packet', async () => {
+    const fetchSpy = makeFetchMock()
+    global.fetch = fetchSpy
+
+    const res = await POST(
+      makeRequest({
+        fullName: 'Alex Owner',
+        phone: '9295550102',
+        email: 'alex@example.com',
+        type: 'corporate-registration',
+        desiredBusinessName: 'Alex LLC',
+        businessType: 'LLC',
+        ownerSsnOrItin: '123-45-6789',
+        ownerDateOfBirth: '1990-01-15',
+        additionalOwner2Name: 'Second Owner',
+        additionalOwner2SsnOrItin: '987-65-4321',
+        additionalOwners: [
+          {
+            name: 'Second Owner',
+            ssnOrItin: '987-65-4321',
+            dateOfBirth: '1991-02-16',
+          },
+        ],
+        turnstileToken: 'valid-token',
+      }),
+    )
+    expect(res.status).toBe(200)
+
+    const webhookCall = (fetchSpy.mock.calls as unknown as [string, RequestInit][]).find(
+      ([url]) => !String(url).includes('cloudflare.com'),
+    )
+    expect(webhookCall).toBeDefined()
+    const sentBody = JSON.parse(webhookCall![1].body as string)
+    expect(sentBody.type).toBe('corporate-registration')
+    expect(sentBody.fullName).toBe('ALEX OWNER')
+    expect(sentBody.desiredBusinessName).toBe('ALEX LLC')
+    expect(sentBody.ownerSsnOrItin).toBe('123-45-6789')
+    expect(sentBody.additionalOwner2SsnOrItin).toBe('987-65-4321')
+    expect(sentBody.additionalOwner2Name).toBe('SECOND OWNER')
+    expect(sentBody.additionalOwners[0].name).toBe('SECOND OWNER')
+    expect(sentBody.additionalOwners[0].ssnOrItin).toBe('987-65-4321')
+    expect(sentBody.source).toBe('website-corporate-registration')
   })
 
   // -----------------------------------------------------------------------

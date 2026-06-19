@@ -60,12 +60,12 @@ const schema: NativeFormSchema = {
 };
 
 describe("native form answers", () => {
-  it("masks sensitive values for CRM/taskboard records", () => {
+  it("masks sensitive values when an explicitly masked record is requested", () => {
     expect(maskSensitiveValue("123-45-6789")).toBe("[sensitive ending 6789]");
     expect(maskSensitiveValue("1990-01-31", { label: "Date of Birth", kind: "date" })).toBe("[date provided]");
   });
 
-  it("builds masked taskboard answers while retaining raw values for mirror params", () => {
+  it("builds staff answers while retaining optional masked values", () => {
     const answers = buildNativeAnswers(schema, {
       "1": "Jane Client",
       "2": "(929) 555-0101",
@@ -162,6 +162,80 @@ describe("native form answers", () => {
       ifYes168: "first duplicate answer",
       ifYes168_11: "second duplicate answer",
     });
+  });
+
+  it("uppercases government-form values while preserving emails, phones, dates, and file markers", () => {
+    const localSchema: NativeFormSchema = {
+      ...schema,
+      slug: "itin-registration-form",
+      fields: [
+        ...schema.fields,
+        {
+          qid: "5",
+          name: "cityOf",
+          label: "City of birth",
+          kind: "text",
+          required: true,
+          jotformType: "control_textbox",
+        },
+        {
+          qid: "6",
+          name: "countryOf",
+          label: "Country of birth",
+          kind: "text",
+          required: true,
+          jotformType: "control_textbox",
+        },
+        {
+          qid: "7",
+          name: "birthDate",
+          label: "Date of Birth",
+          kind: "date",
+          required: true,
+          jotformType: "control_datetime",
+        },
+        {
+          qid: "8",
+          name: "documentUpload",
+          label: "Uploaded identity document",
+          kind: "file",
+          required: false,
+          jotformType: "control_fileupload",
+        },
+      ],
+    };
+
+    const answers = buildNativeAnswers(
+      localSchema,
+      {
+        "1": "Damion Monteith",
+        "2": "(929) 555-0101",
+        "3": "damion@example.com",
+        "4": "123-45-6789",
+        "5": "kingston",
+        "6": "jamaica",
+        "7": "1990-07-10",
+      },
+      { "8": "Document uploaded" },
+    );
+
+    expect(answerRecord(answers, false)).toMatchObject({
+      fullName: "DAMION MONTEITH",
+      phone: "(929) 555-0101",
+      email: "damion@example.com",
+      ssn: "123-45-6789",
+      cityOf: "KINGSTON",
+      countryOf: "JAMAICA",
+      birthDate: "1990-07-10",
+      documentUpload: "Document uploaded",
+    });
+
+    const params = buildJotFormParams({ schema: localSchema, answers });
+    expect(params.get("submission[1_first]")).toBe("DAMION");
+    expect(params.get("submission[1_last]")).toBe("MONTEITH");
+    expect(params.get("submission[3]")).toBe("damion@example.com");
+    expect(params.get("submission[5]")).toBe("KINGSTON");
+    expect(params.get("submission[6]")).toBe("JAMAICA");
   });
 
   it("adds the backup marker and attribution fields to JotForm mirror params", () => {

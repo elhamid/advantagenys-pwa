@@ -90,6 +90,103 @@ function maskSensitiveIdentifier(value: string): string {
   return last4 ? `[sensitive ending ${last4}]` : "[sensitive provided]";
 }
 
+function upper(v: string | undefined): string | undefined {
+  return v ? v.toLocaleUpperCase("en-US") : v;
+}
+
+function uppercaseOwner(owner: AdditionalOwner): AdditionalOwner {
+  return {
+    ...owner,
+    name: upper(owner.name) ?? "",
+    address: upper(owner.address),
+    city: upper(owner.city),
+    state: upper(owner.state),
+    zipCode: owner.zipCode,
+    ssnOrItin: upper(owner.ssnOrItin),
+    telephone: owner.telephone,
+    cellPhone: owner.cellPhone,
+    phone: owner.phone,
+  };
+}
+
+function normalizeGovernmentLead(data: LeadSubmission): LeadSubmission {
+  if (data.type === "client-info") {
+    return {
+      ...data,
+      fullName: upper(data.fullName) ?? data.fullName,
+      address: upper(data.address),
+      city: upper(data.city),
+      state: upper(data.state),
+      businessName: upper(data.businessName),
+      serviceInterested: upper(data.serviceInterested),
+      referredBy: upper(data.referredBy),
+      purpose: upper(data.purpose),
+      referralSource: upper(data.referralSource),
+    };
+  }
+
+  if (data.type === "corporate-registration") {
+    return {
+      ...data,
+      fullName: upper(data.fullName) ?? data.fullName,
+      desiredBusinessName: upper(data.desiredBusinessName),
+      businessType: upper(data.businessType),
+      natureOfBusiness: upper(data.natureOfBusiness),
+      ownerAddress: upper(data.ownerAddress),
+      ownerCity: upper(data.ownerCity),
+      ownerState: upper(data.ownerState),
+      additionalOwners: data.additionalOwners?.map(uppercaseOwner),
+      additionalOwner2Name: upper(data.additionalOwner2Name),
+      additionalOwner2Address: upper(data.additionalOwner2Address),
+      additionalOwner2City: upper(data.additionalOwner2City),
+      additionalOwner2State: upper(data.additionalOwner2State),
+      additionalOwner3Name: upper(data.additionalOwner3Name),
+      additionalOwner3Address: upper(data.additionalOwner3Address),
+      additionalOwner3City: upper(data.additionalOwner3City),
+      additionalOwner3State: upper(data.additionalOwner3State),
+      meetingPreference: upper(data.meetingPreference),
+      corporationAddress: upper(data.corporationAddress),
+      corporationCity: upper(data.corporationCity),
+      corporationState: upper(data.corporationState),
+      websiteSeoOptions: upper(data.websiteSeoOptions),
+      needEIN: upper(data.needEIN),
+      needSalesTax: upper(data.needSalesTax),
+      needPayroll: upper(data.needPayroll),
+      additionalNotes: upper(data.additionalNotes),
+    };
+  }
+
+  return data;
+}
+
+function maskLeadForPwaStorage(data: LeadSubmission): LeadSubmission {
+  if (data.type === "client-info" && data.ssnOrItin) {
+    return {
+      ...data,
+      ssnOrItin: maskSensitiveIdentifier(data.ssnOrItin),
+    };
+  }
+
+  if (data.type === "corporate-registration") {
+    return {
+      ...data,
+      ownerSsnOrItin: data.ownerSsnOrItin ? maskSensitiveIdentifier(data.ownerSsnOrItin) : data.ownerSsnOrItin,
+      additionalOwner2SsnOrItin: data.additionalOwner2SsnOrItin
+        ? maskSensitiveIdentifier(data.additionalOwner2SsnOrItin)
+        : data.additionalOwner2SsnOrItin,
+      additionalOwner3SsnOrItin: data.additionalOwner3SsnOrItin
+        ? maskSensitiveIdentifier(data.additionalOwner3SsnOrItin)
+        : data.additionalOwner3SsnOrItin,
+      additionalOwners: data.additionalOwners?.map((owner) => ({
+        ...owner,
+        ssnOrItin: owner.ssnOrItin ? maskSensitiveIdentifier(owner.ssnOrItin) : owner.ssnOrItin,
+      })),
+    };
+  }
+
+  return data;
+}
+
 function validateUtm(v: unknown): UtmParams | undefined {
   if (!v || typeof v !== "object") return undefined;
   const obj = v as Record<string, unknown>;
@@ -533,7 +630,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { data } = result;
+    const data = normalizeGovernmentLead(result.data);
 
     // --- Turnstile verification (fail-closed in production) ---------------
     const isProduction = process.env.NODE_ENV === "production";
@@ -586,27 +683,9 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // --- Mask sensitive fields before storage/forwarding -------------------
-    if (data.type === "client-info" && data.ssnOrItin) {
-      data.ssnOrItin = maskSensitiveIdentifier(data.ssnOrItin);
-    }
-    if (data.type === "corporate-registration") {
-      if (data.ownerSsnOrItin) {
-        data.ownerSsnOrItin = maskSensitiveIdentifier(data.ownerSsnOrItin);
-      }
-      if (data.additionalOwner2SsnOrItin) {
-        data.additionalOwner2SsnOrItin = maskSensitiveIdentifier(data.additionalOwner2SsnOrItin);
-      }
-      if (data.additionalOwner3SsnOrItin) {
-        data.additionalOwner3SsnOrItin = maskSensitiveIdentifier(data.additionalOwner3SsnOrItin);
-      }
-      if (data.additionalOwners) {
-        data.additionalOwners = data.additionalOwners.map((owner) => ({
-          ...owner,
-          ssnOrItin: owner.ssnOrItin ? maskSensitiveIdentifier(owner.ssnOrItin) : owner.ssnOrItin,
-        }));
-      }
-    }
+    // Keep PWA's own generic lead storage minimized. Taskboard receives the
+    // full authenticated staff packet because staff need it to complete work.
+    const pwaStorageData = maskLeadForPwaStorage(data);
 
     const logLabel =
       data.type === "booking" ? "[Website Booking]" : `[Lead:${data.type}]`;
@@ -624,7 +703,7 @@ export async function POST(request: NextRequest) {
     // webhook accept constitutes "success". Email is supplementary and does
     // NOT count toward durability.
     const [supabaseOk, webhookOk] = await Promise.all([
-      storeLeadInSupabase(data),
+      storeLeadInSupabase(pwaStorageData),
       forwardToTaskboard(data),
     ]);
 
