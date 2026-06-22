@@ -116,29 +116,33 @@ export function PergolaDossier() {
           min-height:100vh;
         }
         .pergola-doc *{box-sizing:border-box}
-        .pergola-doc .wrap{max-width:1280px;margin:0 auto;padding:24px 16px 60px}
+        .pergola-doc .wrap{max-width:1240px;margin:0 auto;padding:24px 16px 60px}
         .pergola-doc h1{font-size:27px;letter-spacing:-.5px;margin-bottom:3px}
         .pergola-doc .tag{color:var(--muted);font-size:13.5px;margin-bottom:14px}
         .pergola-doc .tag b{color:var(--green)}
 
-        .pergola-doc .rule{display:flex;gap:12px;align-items:flex-start;background:#fffdf6;border:1px solid #ecdcb4;
-              border-radius:12px;padding:11px 15px;margin-bottom:20px}
-        .pergola-doc .rule .ic{font-size:18px}.pergola-doc .rule p{font-size:13px;color:#5b4d2c}.pergola-doc .rule b{color:#473b1f}
+        .pergola-doc .rule{display:flex;gap:12px;align-items:flex-start;background:#eef4f0;border:1px solid #cfe0d6;
+              border-radius:12px;padding:11px 15px;margin-bottom:18px}
+        .pergola-doc .rule .ic{font-size:18px}
+        .pergola-doc .rule p{font-size:13px;color:#2f4a3b}
+        .pergola-doc .rule b{color:#1f3a2b}
 
         .pergola-doc .legend{display:flex;flex-wrap:wrap;gap:16px;font-size:12px;color:var(--muted);margin-bottom:18px}
         .pergola-doc .legend span{display:inline-flex;align-items:center;gap:6px}
         .pergola-doc .led-chip{background:var(--ledbg);color:var(--led);font-weight:700;border-radius:6px;padding:1px 7px;font-size:11.5px}
-        .pergola-doc .hl-chip{background:var(--greenbg);color:var(--green);font-weight:700;border-radius:6px;padding:1px 7px;font-size:11.5px}
+        .pergola-doc .star{color:var(--gold);font-weight:700}
 
-        .pergola-doc .halves{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+        .pergola-doc .halves{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
         .pergola-doc .half{border-radius:18px;padding:14px 14px 16px}
         .pergola-doc .half.motor{background:var(--motor)}
         .pergola-doc .half.man{background:var(--man)}
         .pergola-doc .halfhead{display:flex;align-items:center;gap:10px;margin:2px 4px 12px}
         .pergola-doc .halfhead .dot{width:11px;height:11px;border-radius:50%}
-        .pergola-doc .motor .dot{background:var(--motorbar)}.pergola-doc .man .dot{background:var(--manbar)}
+        .pergola-doc .motor .dot{background:var(--motorbar)}
+        .pergola-doc .man .dot{background:var(--manbar)}
         .pergola-doc .halfhead h2{font-size:17px;text-transform:uppercase;letter-spacing:.5px}
-        .pergola-doc .motor .halfhead h2{color:var(--motorbar)}.pergola-doc .man .halfhead h2{color:var(--manbar)}
+        .pergola-doc .motor .halfhead h2{color:var(--motorbar)}
+        .pergola-doc .man .halfhead h2{color:var(--manbar)}
         .pergola-doc .halfhead .sub{font-size:11.5px;color:var(--muted);margin-left:auto}
 
         .pergola-doc .stack{display:flex;flex-direction:column;gap:12px}
@@ -146,7 +150,8 @@ export function PergolaDossier() {
         .pergola-doc .col{background:var(--card);border:1px solid var(--line);border-radius:15px;box-shadow:var(--shadow);overflow:hidden}
         .pergola-doc .col.win{border:2px solid var(--green)}
         .pergola-doc .ribbon{font-size:10.5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:6px 14px;color:#fff}
-        .pergola-doc .r-value{background:#5a7a8c}.pergola-doc .r-best{background:var(--green)}.pergola-doc .r-prem{background:var(--gold)}
+        .pergola-doc .r-pick{background:var(--green)}
+        .pergola-doc .r-alt{background:#8a8f88}
         .pergola-doc .crow{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:12px 15px 4px}
         .pergola-doc .crow h3{font-size:17px;line-height:1.15}
         .pergola-doc .crow .brand{font-size:11.5px;color:var(--muted);margin-top:2px}
@@ -156,131 +161,118 @@ export function PergolaDossier() {
         .pergola-doc .specs{list-style:none;padding:6px 15px 4px;font-size:12.5px}
         .pergola-doc .specs li{display:flex;gap:7px;padding:5px 0;border-top:1px solid #eef1ee;align-items:flex-start}
         .pergola-doc .specs li:first-child{border-top:none}
-        .pergola-doc .k{flex:0 0 62px;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.3px;padding-top:1px}
+        .pergola-doc .k{flex:0 0 64px;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.3px;padding-top:1px}
         .pergola-doc .v{flex:1;font-weight:500}
-        .pergola-doc .v .hl{display:inline-block;background:var(--greenbg);color:var(--green);font-weight:700;border-radius:6px;padding:1px 6px;font-size:11.5px}
+        .pergola-doc .v .rev{color:var(--gold);font-weight:700}
         .pergola-doc .v .led{display:inline-block;background:var(--ledbg);color:var(--led);font-weight:700;border-radius:6px;padding:1px 6px;font-size:11.5px}
+        .pergola-doc .v .open{display:inline-block;background:var(--greenbg);color:var(--green);font-weight:700;border-radius:6px;padding:1px 6px;font-size:11.5px}
         .pergola-doc .v .warn{color:var(--gold);font-weight:600}
-        .pergola-doc .chk{color:var(--green);font-weight:700}.pergola-doc .x{color:var(--red);font-weight:700}
+        .pergola-doc .chk{color:var(--green);font-weight:700}
+        .pergola-doc .x{color:var(--red);font-weight:700}
 
         .pergola-doc .verdict{padding:9px 15px;background:#f7faf8;border-top:1px solid var(--line);font-size:12px}
         .pergola-doc .verdict b{color:var(--ink)}
-        .pergola-doc .verdict .rev{display:block;color:var(--gold);font-weight:700;font-size:11.5px;margin-bottom:3px}
-        .pergola-doc .verdict .rev .q{color:var(--muted);font-weight:400;font-style:italic}
         .pergola-doc .src{display:block;text-align:center;text-decoration:none;background:var(--green);color:#fff;font-weight:600;font-size:12.5px;padding:10px;transition:.15s}
         .pergola-doc .src:hover{background:#264f37}
-        .pergola-doc .col.value .src{background:#5a7a8c}.pergola-doc .col.value .src:hover{background:#456070}
-        .pergola-doc .col.prem .src{background:var(--gold)}.pergola-doc .col.prem .src:hover{background:#946a26}
+        .pergola-doc .col.alt .src{background:#7c8179}
+        .pergola-doc .col.alt .src:hover{background:#646962}
 
-        .pergola-doc .beamsec{margin-top:26px;background:#fbecea;border:1px solid #f0cfca;border-radius:18px;padding:16px 16px 18px}
-        .pergola-doc .beamsec .bh{display:flex;align-items:center;gap:9px;margin-bottom:4px}
-        .pergola-doc .beamsec .bh h2{font-size:16px;color:#8a3a30;text-transform:uppercase;letter-spacing:.4px}
-        .pergola-doc .beamsec .bnote{font-size:12.5px;color:#7a3a31;margin-bottom:13px}
-        .pergola-doc .beamsec .bnote b{color:#5e2c25}
-        .pergola-doc .bgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
-        .pergola-doc .bcard{background:#fff;border:1px solid #ecd2cd;border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
-        .pergola-doc .bcard .bbeam{background:var(--red);color:#fff;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;text-align:center;padding:4px}
-        .pergola-doc .bcard .bbody{padding:9px 11px 6px;flex:1}
-        .pergola-doc .bcard h4{font-size:14px;line-height:1.15}
-        .pergola-doc .bcard .bret{font-size:10.5px;color:var(--muted);margin:1px 0 6px}
-        .pergola-doc .bcard .bprice{font-size:16px;font-weight:800;letter-spacing:-.3px}
-        .pergola-doc .bcard .bmeta{font-size:11px;color:#555;margin-top:5px;line-height:1.5}
-        .pergola-doc .bcard .bmeta .star{color:var(--gold);font-weight:700}
-        .pergola-doc .bcard .bled{font-size:10.5px;margin-top:5px}
-        .pergola-doc .bcard a{display:block;text-align:center;text-decoration:none;background:#b5736a;color:#fff;font-size:11.5px;font-weight:600;padding:7px;margin-top:6px}
-        .pergola-doc .bcard a:hover{background:#9c5d55}
+        .pergola-doc .takeaway{margin-top:18px;background:#fffdf6;border:1px solid #ecdcb4;border-radius:12px;padding:13px 16px;font-size:13px;color:#5b4d2c}
+        .pergola-doc .takeaway b{color:#473b1f}
 
-        .pergola-doc .takeaway{margin-top:16px;background:#eef4f0;border:1px solid #cfe0d6;border-radius:12px;padding:13px 16px;font-size:13px;color:#2f4a3b}
-        .pergola-doc .takeaway b{color:#1f3a2b}
-
-        .pergola-doc footer{margin-top:20px;font-size:11px;color:var(--muted);text-align:center;line-height:1.6}
+        .pergola-doc footer{margin-top:18px;font-size:11px;color:var(--muted);text-align:center;line-height:1.6}
         .pergola-doc footer a{color:var(--green)}
 
-        @media(max-width:980px){.pergola-doc .halves{grid-template-columns:1fr}.pergola-doc .bgrid{grid-template-columns:repeat(2,1fr)}}
-        @media(max-width:520px){.pergola-doc .bgrid{grid-template-columns:1fr}}
+        @media(max-width:980px){.pergola-doc .halves{grid-template-columns:1fr}}
       `}</style>
 
       <div className="wrap">
-        <h1>12&prime;&times;16&prime; Louvered Pergola &mdash; Your Shortlist</h1>
+        <h1>12&prime;&times;16&prime; Louvered Pergola &mdash; Best Pick Under $6,000</h1>
         <p className="tag">
-          Filtered for your rules: single clear span &middot;{" "}
-          <b>no center beam or post</b> &middot; LED available &middot; sealed
-          against rain. Motorized on the left, the same builds manual on the
-          right, budget center-beam options at the bottom. Snapshot June 22,
-          2026.
+          One <b>motorized</b> and one <b>manual</b> headline pick, each with
+          backups. All &le; $6,000 &middot; open rectangular floor (4 corner
+          posts, no center column) &middot; LED option &middot; real reviews.
+          Snapshot June 22, 2026.
         </p>
 
         <div className="rule">
-          <span className="ic">&#9888;&#65039;</span>
+          <span className="ic">&#9989;</span>
           <p>
-            <b>The deciding factor:</b> at 16 ft wide, cheap pergolas split into
-            two roofs with a <b>center beam</b> (a known leak point). The six up
-            top span 16 ft as <b>one clear bay</b> &mdash; built with louvers
-            running the long way. The cheaper a unit is, the more likely it has
-            that mid-beam.
+            <b>Your floor stays a clean open rectangle.</b> Every unit here
+            stands on just <b>4 corner posts</b> &mdash; no column in the middle
+            or mid-span dividing the space. (The overhead roof &ldquo;beam&rdquo;
+            on some models is up in the ceiling only; it never touches the floor,
+            and per your note that&apos;s fine.)
           </p>
         </div>
 
         <div className="legend">
           <span>
-            <span className="hl-chip">No beam</span> single clear 16-ft span
+            <span className="v open">Open floor</span>{" "}
+            4 corner posts, no center column
           </span>
           <span>
             <span className="led-chip">LED</span> lighting available / included
           </span>
           <span>
-            <span className="chk">&#10004;</span> yes &nbsp;{" "}
+            <span className="star">&#9733;</span> verified rating &nbsp;{" "}
+            <span className="chk">&#10004;</span> yes{" "}
             <span className="x">&#10008;</span> no
           </span>
         </div>
 
         {/* =================== TWO HALVES =================== */}
         <div className="halves">
+
           {/* ---------- MOTORIZED ---------- */}
           <div className="half motor">
             <div className="halfhead">
               <span className="dot"></span>
               <h2>Motorized</h2>
-              <span className="sub">push-button &middot; remote &middot; app</span>
+              <span className="sub">remote &middot; push-button &middot; LED</span>
             </div>
             <div className="stack">
-              <div className="col value">
-                <div className="ribbon r-value">Lowest price &middot; DIY</div>
+
+              <div className="col win">
+                <div className="ribbon r-pick">&#9733; Motorized pick</div>
                 <div className="crow">
                   <div>
                     <h3>Pergolux Sundream / Pro</h3>
-                    <div className="brand">Pergolux &middot; ships to door</div>
+                    <div className="brand">Pergolux &middot; ships to door &middot; DIY</div>
                   </div>
                   <div className="price">
-                    from $5,556<small>13&times;16 higher</small>
+                    from $5,556<small>confirm 12&times;16 &le; $6k</small>
                   </div>
                 </div>
                 <ul className="specs">
                   <li>
                     <span className="k">Operate</span>
                     <span className="v">
-                      <span className="chk">&#10004;</span> Motor + app/remote
+                      <span className="chk">&#10004;</span> Motor + app / remote
                     </span>
                   </li>
                   <li>
                     <span className="k">LED</span>
                     <span className="v">
-                      <span className="led">LED</span> built-in on Pro / add-on
-                      kit
+                      <span className="led">LED</span> built-in on Pro / add-on strip
                     </span>
                   </li>
                   <li>
-                    <span className="k">Center</span>
+                    <span className="k">Reviews</span>
                     <span className="v">
-                      <span className="hl">No beam &mdash; clear 16 ft</span>
+                      <span className="rev">4.6&#9733; &middot; 525+</span> (Trustpilot) &mdash; &ldquo;excellent quality&rdquo;
+                    </span>
+                  </li>
+                  <li>
+                    <span className="k">Floor</span>
+                    <span className="v">
+                      <span className="open">Open &mdash; 4 posts</span>
                     </span>
                   </li>
                   <li>
                     <span className="k">Rain</span>
                     <span className="v">
-                      <span className="warn">
-                        Water-resistant; no rain sensor
-                      </span>
+                      <span className="warn">Water-resistant; no rain sensor</span>
                     </span>
                   </li>
                   <li>
@@ -293,13 +285,8 @@ export function PergolaDossier() {
                   </li>
                 </ul>
                 <div className="verdict">
-                  <span className="rev">
-                    4.6&#9733; &middot; 525+ reviews (Trustpilot){" "}
-                    <span className="q">
-                      &ldquo;excellent quality, 5-star support&rdquo;
-                    </span>
-                  </span>
-                  <b>Cheapest motorized clear-span.</b> Not fully sealed.
+                  <b>Best motorized with a real review record under $6k.</b> Clean
+                  unbroken ceiling too. Gripe: delivery can run late.
                 </div>
                 <a
                   className="src"
@@ -311,142 +298,68 @@ export function PergolaDossier() {
                 </a>
               </div>
 
-              <div className="col win">
-                <div className="ribbon r-best">&#9733; Best all-round</div>
+              <div className="col alt">
+                <div className="ribbon r-alt">Cheapest motorized &middot; most features</div>
                 <div className="crow">
                   <div>
-                    <h3>TerraSummer Motorized</h3>
-                    <div className="brand">TerraSummer &middot; DIY or pro</div>
+                    <h3>MELLCOM Motorized 12&times;16</h3>
+                    <div className="brand">Amazon &middot; solar + plug-in</div>
                   </div>
                   <div className="price">
-                    &asymp; $8,788<small>single 12&times;16 module</small>
+                    check live<small>budget tier</small>
                   </div>
                 </div>
                 <ul className="specs">
                   <li>
                     <span className="k">Operate</span>
                     <span className="v">
-                      <span className="chk">&#10004;</span> Somfy motor + remote
+                      <span className="chk">&#10004;</span> Motor + remote + post control
                     </span>
                   </li>
                   <li>
                     <span className="k">LED</span>
                     <span className="v">
-                      <span className="led">LED</span> optional integrated
+                      <span className="led">LED</span> integrated + 6 pull-down screens
                     </span>
                   </li>
                   <li>
-                    <span className="k">Center</span>
+                    <span className="k">Reviews</span>
                     <span className="v">
-                      <span className="hl">No beam &mdash; one clear bay</span>
+                      <span className="warn">New listing &mdash; few reviews yet</span>
+                    </span>
+                  </li>
+                  <li>
+                    <span className="k">Floor</span>
+                    <span className="v">
+                      <span className="open">Open &mdash; 4 posts</span>
                     </span>
                   </li>
                   <li>
                     <span className="k">Rain</span>
                     <span className="v">
-                      <span className="chk">100% weatherproof closed</span>{" "}
-                      &middot; sensor add-on
+                      <span className="chk">&ldquo;100% waterproof closed&rdquo;</span> &middot; 80 mph
                     </span>
-                  </li>
-                  <li>
-                    <span className="k">Warranty</span>
-                    <span className="v">10 yr frame + louvers</span>
                   </li>
                   <li>
                     <span className="k">Install</span>
-                    <span className="v">DIY/pro ~2&ndash;3 days</span>
+                    <span className="v">2 people, ~4&ndash;8 hrs</span>
                   </li>
                 </ul>
                 <div className="verdict">
-                  <span className="rev">
-                    5.0&#9733; &middot; 9 reviews (Judge.me &mdash; small
-                    sample){" "}
-                    <span className="q">
-                      &ldquo;amazing, over half the cost&rdquo;
-                    </span>
-                  </span>
-                  <b>Hits all three at mid price.</b> Few independent reviews
-                  yet.
+                  <b>Most features for the money</b> &mdash; motor, LED, screens,
+                  seals shut. Trade-off: little proven track record yet; verify
+                  price + reviews on Amazon.
                 </div>
                 <a
                   className="src"
-                  href="https://terrasummer.com/products/large-motorized-louvered-pergola"
+                  href="https://www.amazon.com/MELLCOM-Motorized-Louvered-Adjustable-Weatherproof/dp/B0GYWY1JTB"
                   target="_blank"
                   rel="noopener"
                 >
-                  View TerraSummer &rarr;
+                  View MELLCOM &rarr;
                 </a>
               </div>
 
-              <div className="col prem">
-                <div className="ribbon r-prem">
-                  Premium &middot; most waterproof
-                </div>
-                <div className="crow">
-                  <div>
-                    <h3>Azenco R-BLADE</h3>
-                    <div className="brand">Azenco &middot; dealer install</div>
-                  </div>
-                  <div className="price">
-                    &asymp; $25k&ndash;45k+<small>installed, quote</small>
-                  </div>
-                </div>
-                <ul className="specs">
-                  <li>
-                    <span className="k">Operate</span>
-                    <span className="v">
-                      <span className="chk">&#10004;</span> Motor + app + voice
-                    </span>
-                  </li>
-                  <li>
-                    <span className="k">LED</span>
-                    <span className="v">
-                      <span className="led">LED</span> integrated lighting
-                    </span>
-                  </li>
-                  <li>
-                    <span className="k">Center</span>
-                    <span className="v">
-                      <span className="hl">No beam &mdash; 16-ft louver std</span>
-                    </span>
-                  </li>
-                  <li>
-                    <span className="k">Rain</span>
-                    <span className="v">
-                      <span className="chk">Watertight seal</span> &middot;
-                      auto-close sensor
-                    </span>
-                  </li>
-                  <li>
-                    <span className="k">Warranty</span>
-                    <span className="v">
-                      Up to 15 yr / lifetime structure*
-                    </span>
-                  </li>
-                  <li>
-                    <span className="k">Install</span>
-                    <span className="v">Professional only</span>
-                  </li>
-                </ul>
-                <div className="verdict">
-                  <span className="rev">
-                    4.6&#9733; Google &middot; 4.4&#9733; Trustindex (~54){" "}
-                    <span className="q">
-                      &ldquo;highest quality&rdquo; &mdash; landscape pro
-                    </span>
-                  </span>
-                  <b>Most waterproof + best engineered.</b> *Confirm warranty in
-                  writing.
-                </div>
-                <a
-                  className="src"
-                  href="https://www.azenco-outdoor.com/r-blade"
-                  target="_blank"
-                  rel="noopener"
-                >
-                  View Azenco &rarr;
-                </a>
-              </div>
             </div>
           </div>
 
@@ -455,363 +368,216 @@ export function PergolaDossier() {
             <div className="halfhead">
               <span className="dot"></span>
               <h2>Manual</h2>
-              <span className="sub">
-                hand-crank &middot; same builds, no motor
-              </span>
+              <span className="sub">hand-crank &middot; lowest cost</span>
             </div>
             <div className="stack">
-              <div className="col value">
-                <div className="ribbon r-value">
-                  Lowest price overall &middot; DIY
-                </div>
-                <div className="crow">
-                  <div>
-                    <h3>Pergolux Series 4 (S3 crank)</h3>
-                    <div className="brand">Pergolux &middot; ships to door</div>
-                  </div>
-                  <div className="price">
-                    from $4,732<small>13&times;16 higher</small>
-                  </div>
-                </div>
-                <ul className="specs">
-                  <li>
-                    <span className="k">Operate</span>
-                    <span className="v">Hand crank, louvers to 120&deg;</span>
-                  </li>
-                  <li>
-                    <span className="k">LED</span>
-                    <span className="v">
-                      <span className="led">LED</span> add-on strip (gutter
-                      groove)
-                    </span>
-                  </li>
-                  <li>
-                    <span className="k">Center</span>
-                    <span className="v">
-                      <span className="hl">No beam &mdash; clear 16 ft</span>
-                    </span>
-                  </li>
-                  <li>
-                    <span className="k">Rain</span>
-                    <span className="v">
-                      <span className="warn">Water-resistant</span>
-                    </span>
-                  </li>
-                  <li>
-                    <span className="k">Warranty</span>
-                    <span className="v">10 yr frame &middot; 5 yr coating</span>
-                  </li>
-                  <li>
-                    <span className="k">Install</span>
-                    <span className="v">DIY kit ~3&ndash;5 hrs</span>
-                  </li>
-                </ul>
-                <div className="verdict">
-                  <span className="rev">
-                    4.6&#9733; &middot; 525+ reviews (Trustpilot){" "}
-                    <span className="q">delivery delays a common gripe</span>
-                  </span>
-                  <b>Cheapest clear 16-ft span, period.</b> Same frame, minus
-                  the motor.
-                </div>
-                <a
-                  className="src"
-                  href="https://pergoluxshop.com/products/pergola"
-                  target="_blank"
-                  rel="noopener"
-                >
-                  View Pergolux &rarr;
-                </a>
-              </div>
 
               <div className="col win">
-                <div className="ribbon r-best">&#9733; Best manual all-round</div>
+                <div className="ribbon r-pick">&#9733; Manual pick &middot; best value</div>
                 <div className="crow">
                   <div>
-                    <h3>TerraSummer Manual</h3>
-                    <div className="brand">TerraSummer &middot; DIY or pro</div>
+                    <h3>Domi 12&times;16</h3>
+                    <div className="brand">Home Depot &middot; dark gray / white</div>
                   </div>
                   <div className="price">
-                    from $8,995<small>single 12&times;16 module</small>
+                    $1,699<small>was $2,199</small>
                   </div>
                 </div>
                 <ul className="specs">
                   <li>
                     <span className="k">Operate</span>
-                    <span className="v">Hand crank, louvers to 90&deg;</span>
+                    <span className="v">Hand crank, louvers 0&ndash;90&deg;</span>
                   </li>
                   <li>
                     <span className="k">LED</span>
                     <span className="v">
-                      <span className="led">LED</span> add-on possible (no motor
-                      needed)
+                      <span className="warn">Add-on strip only (not built-in)</span>
                     </span>
                   </li>
                   <li>
-                    <span className="k">Center</span>
+                    <span className="k">Reviews</span>
                     <span className="v">
-                      <span className="hl">No beam &mdash; one clear bay</span>
+                      <span className="rev">4.7&#9733; &middot; 1,105</span> (Home Depot) &mdash; best-rated here
+                    </span>
+                  </li>
+                  <li>
+                    <span className="k">Floor</span>
+                    <span className="v">
+                      <span className="open">Open &mdash; 4 posts</span>
                     </span>
                   </li>
                   <li>
                     <span className="k">Rain</span>
-                    <span className="v">
-                      <span className="chk">Weatherproof when closed</span>
-                    </span>
+                    <span className="v">Gutter drainage; water-resistant</span>
                   </li>
                   <li>
                     <span className="k">Warranty</span>
-                    <span className="v">10 yr frame + louvers</span>
+                    <span className="v">5 yr frame &amp; roof</span>
                   </li>
                   <li>
                     <span className="k">Install</span>
-                    <span className="v">DIY/pro ~2&ndash;3 days</span>
+                    <span className="v">3&ndash;5 people, ~4&ndash;6 hrs</span>
                   </li>
                 </ul>
                 <div className="verdict">
-                  <span className="rev">
-                    5.0&#9733; &middot; 9 reviews (Judge.me &mdash; small
-                    sample){" "}
-                    <span className="q">&ldquo;easiest to assemble&rdquo;</span>
-                  </span>
-                  <b>Sealed + clear span, no motor cost.</b> Barely cheaper than
-                  its motorized twin &mdash; compare both.
+                  <b>Unbeatable value + the most reviews of anything here.</b>{" "}
+                  Want LED built-in? See the two alternatives below.
                 </div>
                 <a
                   className="src"
-                  href="https://terrasummer.com/products/manual-louvered-pergola"
+                  href="https://www.homedepot.com/p/domi-outdoor-living-16-ft-W-x-12-ft-D-Aluminum-Pergola-with-Two-Adjustable-Roof-LGFA1604B-D/330307312"
                   target="_blank"
                   rel="noopener"
                 >
-                  View TerraSummer &rarr;
+                  View Domi &rarr;
                 </a>
               </div>
 
-              <div className="col prem">
-                <div className="ribbon r-prem">Premium &middot; pro-built</div>
+              <div className="col alt">
+                <div className="ribbon r-alt">Alt &middot; LED on some SKUs</div>
                 <div className="crow">
                   <div>
-                    <h3>StruXure (manual operator)</h3>
-                    <div className="brand">
-                      StruXure &middot; needs Pivot-6 MAX louver
-                    </div>
+                    <h3>PURPLE LEAF 12&times;16</h3>
+                    <div className="brand">Home Depot / Wayfair &middot; 4 colors</div>
                   </div>
                   <div className="price">
-                    &asymp; $20k&ndash;35k+<small>installed &middot; est.</small>
+                    $3,002<small>by retailer</small>
                   </div>
                 </div>
                 <ul className="specs">
                   <li>
                     <span className="k">Operate</span>
-                    <span className="v">Manual operator (hand)</span>
+                    <span className="v">Hand pole, louvers 0&ndash;90&deg;</span>
                   </li>
                   <li>
                     <span className="k">LED</span>
                     <span className="v">
-                      <span className="led">LED</span> integrated lighting
-                      available
+                      <span className="led">LED</span> available on some SKUs
                     </span>
                   </li>
                   <li>
-                    <span className="k">Center</span>
+                    <span className="k">Reviews</span>
                     <span className="v">
-                      <span className="hl">
-                        No beam &mdash; 16 ft via Pivot-6 MAX
-                      </span>
+                      <span className="rev">4.4&#9733; &middot; 24</span> (Wayfair, 12&times;16)
+                    </span>
+                  </li>
+                  <li>
+                    <span className="k">Floor</span>
+                    <span className="v">
+                      <span className="open">Open &mdash; 4 posts</span>
                     </span>
                   </li>
                   <li>
                     <span className="k">Rain</span>
                     <span className="v">
-                      <span className="warn">
-                        Rain-shedding; not guaranteed watertight
-                      </span>
+                      <span className="warn">Water-resistant, &ldquo;not water-tight&rdquo;</span>
                     </span>
-                  </li>
-                  <li>
-                    <span className="k">Warranty</span>
-                    <span className="v">15 yr structure &middot; 10 yr operator</span>
                   </li>
                   <li>
                     <span className="k">Install</span>
-                    <span className="v">Professional only</span>
+                    <span className="v">2 people, ~6 hrs (9 boxes)</span>
                   </li>
                 </ul>
                 <div className="verdict">
-                  <span className="rev">
-                    4.9&#9733; &middot; 141+ (Trustpilot){" "}
-                    <span className="q">
-                      great product; some install-delay complaints
-                    </span>
-                  </span>
-                  <b>Premium build, manual to save vs motor.</b> Confirm MAX
-                  louver in manual; price is an estimate.
+                  <b>The manual LED option.</b> Most colors + widest availability;
+                  aluminum runs thin, so close it before a storm.
                 </div>
                 <a
                   className="src"
-                  href="https://struxure.com/product/pergola-x/pivot-6-max-louvers"
+                  href="https://www.wayfair.com/outdoor/pdp/purple-leaf-12-ft-w-x-16-ft-d-louvered-pergola-aluminum-pergola-with-adjustable-roof-hardtop-gazebo-pule1942.html"
                   target="_blank"
                   rel="noopener"
                 >
-                  View StruXure &rarr;
+                  View PURPLE LEAF &rarr;
                 </a>
               </div>
+
+              <div className="col alt">
+                <div className="ribbon r-alt">Alt &middot; most weatherproof + privacy</div>
+                <div className="crow">
+                  <div>
+                    <h3>EROMMY 12&times;16</h3>
+                    <div className="brand">Bed Bath &amp; Beyond (your link)</div>
+                  </div>
+                  <div className="price">
+                    ~$3,499<small>direct</small>
+                  </div>
+                </div>
+                <ul className="specs">
+                  <li>
+                    <span className="k">Operate</span>
+                    <span className="v">Hand crank louvers</span>
+                  </li>
+                  <li>
+                    <span className="k">LED</span>
+                    <span className="v">
+                      <span className="warn">On motorized versions; add-on here</span>
+                    </span>
+                  </li>
+                  <li>
+                    <span className="k">Reviews</span>
+                    <span className="v">
+                      <span className="rev">4.5&#9733; &middot; ~399</span> (Wayfair line)
+                    </span>
+                  </li>
+                  <li>
+                    <span className="k">Floor</span>
+                    <span className="v">
+                      <span className="open">Open &mdash; 4 posts</span>
+                    </span>
+                  </li>
+                  <li>
+                    <span className="k">Rain</span>
+                    <span className="v">
+                      <span className="chk">Near-waterproof</span> + 6 pull-down screens
+                    </span>
+                  </li>
+                  <li>
+                    <span className="k">Install</span>
+                    <span className="v">Heavy; multi-person</span>
+                  </li>
+                </ul>
+                <div className="verdict">
+                  <b>Best privacy + weather sealing of the manual three.</b>{" "}
+                  Owners note water can sit on the overhead beam &mdash; fine for
+                  your floor, just close it before heavy rain.
+                </div>
+                <a
+                  className="src"
+                  href="https://www.bedbathandbeyond.com/Home-Garden/EROMMY-Outdoor-Louvered-Pergola-with-Adjustable-Aluminum-Rainproof-Roof-and-Pull-Down-Screen/37933435/product.html"
+                  target="_blank"
+                  rel="noopener"
+                >
+                  View EROMMY &rarr;
+                </a>
+              </div>
+
             </div>
           </div>
+
         </div>
         {/* /halves */}
 
-        {/* =================== BUDGET / CENTER-BEAM =================== */}
-        <div className="beamsec">
-          <div className="bh">
-            <span style={{ fontSize: "18px" }}>&#9940;</span>
-            <h2>The cheaper ones &mdash; but every one has a center beam</h2>
-          </div>
-          <p className="bnote">
-            These were your original/big-box picks ($1,700&ndash;$3,500). All
-            split the 16-ft roof into <b>two halves with a mid-beam</b> &mdash;
-            the exact thing you want to avoid, and a recurring leak point in
-            owner reviews. Shown so you can see the trade-off clearly.
-          </p>
-          <div className="bgrid">
-            <div className="bcard">
-              <div className="bbeam">&#9888; Center beam</div>
-              <div className="bbody">
-                <h4>Domi</h4>
-                <div className="bret">Home Depot</div>
-                <div className="bprice">$1,699</div>
-                <div className="bmeta">
-                  <span className="star">4.7&#9733;</span> (~1,105) &middot; best
-                  value
-                  <br />5-yr frame warranty
-                </div>
-                <div className="bled">
-                  LED: <span className="x">&#10008;</span> none
-                </div>
-              </div>
-              <a
-                href="https://www.homedepot.com/p/domi-outdoor-living-16-ft-W-x-12-ft-D-Aluminum-Pergola-with-Two-Adjustable-Roof-LGFA1604B-D/330307312"
-                target="_blank"
-                rel="noopener"
-              >
-                View &rarr;
-              </a>
-            </div>
-
-            <div className="bcard">
-              <div className="bbeam">&#9888; Center beam</div>
-              <div className="bbody">
-                <h4>Aoxun</h4>
-                <div className="bret">Amazon / Walmart</div>
-                <div className="bprice">~$1,500&ndash;2,500</div>
-                <div className="bmeta">
-                  price unverified
-                  <br />0&ndash;75&deg; manual louvers
-                </div>
-                <div className="bled">
-                  LED: <span className="x">&#10008;</span> none
-                </div>
-              </div>
-              <a
-                href="https://www.amazon.com/Aoxun-Independent-Adjustable-Waterproof-Backyards/dp/B0H39MVFCC"
-                target="_blank"
-                rel="noopener"
-              >
-                View &rarr;
-              </a>
-            </div>
-
-            <div className="bcard">
-              <div className="bbeam">&#9888; Center beam</div>
-              <div className="bbody">
-                <h4>Heynemo</h4>
-                <div className="bret">Target (your link)</div>
-                <div className="bprice">$2,280</div>
-                <div className="bmeta">
-                  0 reviews yet
-                  <br />1-yr warranty &middot; curtains+net
-                </div>
-                <div className="bled">
-                  LED: <span className="x">&#10008;</span> none
-                </div>
-              </div>
-              <a
-                href="https://www.target.com/p/heynemo-12-x-16-louvered-pergola-outdoor-metal-canopy-with-2-independently-adjustable-louver-roof-patio-pergola-with-curtains-netting-black/-/A-1004671577"
-                target="_blank"
-                rel="noopener"
-              >
-                View &rarr;
-              </a>
-            </div>
-
-            <div className="bcard">
-              <div className="bbeam">&#9888; Center beam</div>
-              <div className="bbody">
-                <h4>PURPLE LEAF</h4>
-                <div className="bret">Home Depot / Wayfair</div>
-                <div className="bprice">$3,002&ndash;3,160</div>
-                <div className="bmeta">
-                  <span className="star">4.4&#9733;</span> (24)
-                  <br />&ldquo;not water-tight&rdquo; in rain
-                </div>
-                <div className="bled">
-                  LED: <span className="chk">&#10004;</span> on some SKUs
-                </div>
-              </div>
-              <a
-                href="https://www.wayfair.com/outdoor/pdp/purple-leaf-12-ft-w-x-16-ft-d-louvered-pergola-aluminum-pergola-with-adjustable-roof-hardtop-gazebo-pule1942.html"
-                target="_blank"
-                rel="noopener"
-              >
-                View &rarr;
-              </a>
-            </div>
-
-            <div className="bcard">
-              <div className="bbeam">&#9888; Center beam</div>
-              <div className="bbody">
-                <h4>EROMMY</h4>
-                <div className="bret">Bed Bath &amp; Beyond (your link)</div>
-                <div className="bprice">~$3,499</div>
-                <div className="bmeta">
-                  <span className="star">4.5&#9733;</span> (~399)
-                  <br />pull-down screens; &ldquo;water hits center beam&rdquo;
-                </div>
-                <div className="bled">
-                  LED: <span className="chk">&#10004;</span> on motorized
-                  versions
-                </div>
-              </div>
-              <a
-                href="https://www.bedbathandbeyond.com/Home-Garden/EROMMY-Outdoor-Louvered-Pergola-with-Adjustable-Aluminum-Rainproof-Roof-and-Pull-Down-Screen/37933435/product.html"
-                target="_blank"
-                rel="noopener"
-              >
-                View &rarr;
-              </a>
-            </div>
-          </div>
-        </div>
-
         <div className="takeaway">
-          <b>Bottom line:</b> center beam = cheap ($1,700&ndash;$3,500) &middot;
-          single clear span = premium ($4,700+). There is{" "}
-          <b>no budget unit that gives a clear 16-ft span</b> &mdash; the
-          mid-beam is how they hit the low price. Cheapest way to get the clear
-          span you want is the <b>Pergolux manual at ~$4,732</b>; the best
-          balance of sealed + clear span is <b>TerraSummer</b>. LED can be added
-          to any of the six above.
+          <b>Quick call:</b> if you want a motor,{" "}
+          <b>Pergolux (~$5.6k)</b> is the safe pick with a real review record
+          &mdash; or <b>MELLCOM</b> for the cheapest motor + LED + screens if
+          you&apos;re OK being an early reviewer. If you&apos;d rather save big
+          and crank by hand, <b>Domi at $1,699 (4.7&#9733;, 1,105 reviews)</b>{" "}
+          is the best value on the page; step up to <b>PURPLE LEAF</b> if you
+          want factory LED. Every one gives you a pure open-floor rectangle.
         </div>
 
         <footer>
           Prices/specs captured June 22, 2026 &mdash; outdoor pricing changes
-          often. StruXure manual figure is an estimate (quote-only); Aoxun price
-          unverified. Confirm with each maker that the 16-ft run is a single
-          uninterrupted louver bank and that LED fits your chosen model.
+          often. MELLCOM live price &amp; review count not verified at capture;
+          Pergolux figure is the base size, so confirm the 12&times;16 motorized
+          config lands under $6,000. Confirm LED availability on your exact SKU
+          before buying.
           <br />
           Sources:{" "}
           <a
-            href="https://pergoluxshop.com/products/pergola"
+            href="https://pergoluxshop.com/products/pergola-pro"
             target="_blank"
             rel="noopener"
           >
@@ -819,27 +585,11 @@ export function PergolaDossier() {
           </a>{" "}
           &middot;{" "}
           <a
-            href="https://terrasummer.com/products/manual-louvered-pergola"
+            href="https://www.amazon.com/MELLCOM-Motorized-Louvered-Adjustable-Weatherproof/dp/B0GYWY1JTB"
             target="_blank"
             rel="noopener"
           >
-            TerraSummer
-          </a>{" "}
-          &middot;{" "}
-          <a
-            href="https://www.azenco-outdoor.com/r-blade"
-            target="_blank"
-            rel="noopener"
-          >
-            Azenco
-          </a>{" "}
-          &middot;{" "}
-          <a
-            href="https://struxure.com/product/pergola-x/pivot-6-max-louvers"
-            target="_blank"
-            rel="noopener"
-          >
-            StruXure
+            MELLCOM
           </a>{" "}
           &middot;{" "}
           <a
@@ -856,6 +606,14 @@ export function PergolaDossier() {
             rel="noopener"
           >
             PURPLE LEAF
+          </a>{" "}
+          &middot;{" "}
+          <a
+            href="https://www.bedbathandbeyond.com/Home-Garden/EROMMY-Outdoor-Louvered-Pergola-with-Adjustable-Aluminum-Rainproof-Roof-and-Pull-Down-Screen/37933435/product.html"
+            target="_blank"
+            rel="noopener"
+          >
+            EROMMY
           </a>
         </footer>
       </div>
