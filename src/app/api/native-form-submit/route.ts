@@ -12,7 +12,7 @@ import type { NativeFormSchema } from "@/lib/native-form-schemas/types";
 
 export const runtime = "nodejs";
 
-const MAX_FILE_SIZE_BYTES = 12 * 1024 * 1024;
+const MAX_FILE_SIZE_BYTES = 3.5 * 1024 * 1024;
 const DOCUMENT_BUCKET = process.env.FORM_DOCUMENTS_BUCKET || "form-documents";
 
 const ALLOWED_UPLOAD_TYPES = new Set([
@@ -132,7 +132,7 @@ async function uploadNativeFiles(args: {
     const urls: string[] = [];
     for (const file of files) {
       if (file.size > MAX_FILE_SIZE_BYTES) {
-        errors.push(`${field.label} exceeds the 12MB upload limit.`);
+        errors.push(`${field.label} is too large after browser preparation. Please upload a smaller file or lower-resolution photo.`);
         continue;
       }
       if (!ALLOWED_UPLOAD_TYPES.has(file.type)) {

@@ -13,6 +13,12 @@ interface GeneratedNativeFormProps {
   schema: NativeFormSchema;
 }
 
+const MAX_REQUEST_FILE_BYTES = 3.5 * 1024 * 1024;
+const MAX_TOTAL_FILE_BYTES = 3.8 * 1024 * 1024;
+const IMAGE_COMPRESSION_TARGET_BYTES = 1.25 * 1024 * 1024;
+const IMAGE_COMPRESSION_MAX_DIMENSION = 1800;
+const IMAGE_COMPRESSION_STEPS = [0.82, 0.72, 0.62, 0.52, 0.42];
+
 const inputClasses =
   "w-full rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-[var(--text)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--blue-accent)] focus:border-transparent transition-all";
 
@@ -137,6 +143,97 @@ function renderField(field: NativeFormField) {
   );
 }
 
+function fileSizeLabel(bytes: number): string {
+  return `${(bytes / (1024 * 1024)).toFixed(1)}MB`;
+}
+
+function loadImage(file: File): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const image = new Image();
+    image.onload = () => {
+      URL.revokeObjectURL(url);
+      resolve(image);
+    };
+    image.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error(`We could not read ${file.name}. Please upload a JPG, PNG, WebP, or PDF.`));
+    };
+    image.src = url;
+  });
+}
+
+function canvasToBlob(canvas: HTMLCanvasElement, type: string, quality: number): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (blob) resolve(blob);
+      else reject(new Error("We could not prepare the image upload. Please try a smaller photo."));
+    }, type, quality);
+  });
+}
+
+async function compressImageFile(file: File): Promise<File> {
+  const image = await loadImage(file);
+  const scale = Math.min(1, IMAGE_COMPRESSION_MAX_DIMENSION / Math.max(image.naturalWidth, image.naturalHeight));
+  const width = Math.max(1, Math.round(image.naturalWidth * scale));
+  const height = Math.max(1, Math.round(image.naturalHeight * scale));
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+
+  const context = canvas.getContext("2d");
+  if (!context) throw new Error("We could not prepare the image upload. Please try a smaller photo.");
+  context.drawImage(image, 0, 0, width, height);
+
+  let best: Blob | null = null;
+  for (const quality of IMAGE_COMPRESSION_STEPS) {
+    const blob = await canvasToBlob(canvas, "image/jpeg", quality);
+    best = blob;
+    if (blob.size <= IMAGE_COMPRESSION_TARGET_BYTES) break;
+  }
+
+  if (!best) return file;
+  return new File([best], file.name.replace(/\.[^.]+$/, "") + ".jpg", {
+    type: "image/jpeg",
+    lastModified: Date.now(),
+  });
+}
+
+async function prepareFileForUpload(file: File): Promise<File> {
+  if (file.size <= MAX_REQUEST_FILE_BYTES) return file;
+
+  if (file.type.startsWith("image/")) {
+    const compressed = await compressImageFile(file);
+    if (compressed.size <= MAX_REQUEST_FILE_BYTES) return compressed;
+  }
+
+  throw new Error(
+    `${file.name} is too large (${fileSizeLabel(file.size)}). Please upload a smaller file or take a lower-resolution photo.`
+  );
+}
+
+async function prepareUploadFiles(form: HTMLFormElement, formData: FormData, schema: NativeFormSchema): Promise<void> {
+  let totalFileBytes = 0;
+
+  for (const field of schema.fields.filter((candidate) => candidate.kind === "file")) {
+    const key = `field_${field.qid}`;
+    const input = form.querySelector<HTMLInputElement>(`input[type="file"][name="${key}"]`);
+    const files = Array.from(input?.files ?? []).filter((file) => file.size > 0);
+
+    if (files.length === 0) continue;
+
+    formData.delete(key);
+    for (const file of files) {
+      const prepared = await prepareFileForUpload(file);
+      totalFileBytes += prepared.size;
+      if (totalFileBytes > MAX_TOTAL_FILE_BYTES) {
+        throw new Error("The uploaded files are too large together. Please submit one smaller document or photo.");
+      }
+      formData.append(key, prepared, prepared.name);
+    }
+  }
+}
+
 export function GeneratedNativeForm({ schema }: GeneratedNativeFormProps) {
   const utm = useUtmParams();
   const sharedBy = useSharedByParam();
@@ -158,7 +255,8 @@ export function GeneratedNativeForm({ schema }: GeneratedNativeFormProps) {
     setLoading(true);
     setError(null);
 
-    const formData = new FormData(event.currentTarget);
+    const form = event.currentTarget;
+    const formData = new FormData(form);
     formData.set("formSlug", schema.slug);
     if (sharedBy) formData.set("sharedBy", sharedBy);
     if (formSendId) formData.set("formSendId", formSendId);
@@ -167,13 +265,23 @@ export function GeneratedNativeForm({ schema }: GeneratedNativeFormProps) {
     }
 
     try {
+      await prepareUploadFiles(form, formData, schema);
       const res = await fetch("/api/native-form-submit", {
         method: "POST",
         body: formData,
       });
-      const data = await res.json().catch(() => ({}));
+      const responseText = await res.text();
+      let data: { success?: boolean; error?: string } = {};
+      try {
+        data = responseText ? (JSON.parse(responseText) as { success?: boolean; error?: string }) : {};
+      } catch {
+        data = {};
+      }
       if (!res.ok || !data.success) {
-        throw new Error(data.error || "Something went wrong. Please try again.");
+        if (res.status === 413) {
+          throw new Error("The uploaded file is too large. Please upload a smaller file or take a lower-resolution photo.");
+        }
+        throw new Error(data.error || responseText.trim().slice(0, 200) || "Something went wrong. Please try again.");
       }
 
       formSubmit("contact");

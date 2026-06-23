@@ -4,9 +4,9 @@ export const CAREERS_ROLE_TITLE = "Junior Product Engineering Associate";
 
 export const WORK_SAMPLE_URL = `${CAREERS_ROLE_PATH}/sample`;
 
-export const MAX_RESUME_BYTES = 5 * 1024 * 1024;
+export const MAX_RESUME_BYTES = 3.5 * 1024 * 1024;
 
-export const MAX_PROOF_BYTES = 10 * 1024 * 1024;
+export const MAX_PROOF_BYTES = 3.5 * 1024 * 1024;
 
 export const ACCEPTED_RESUME_TYPES = new Set([
   "application/pdf",
@@ -112,7 +112,7 @@ export function cleanText(value: FormDataEntryValue | null): string | undefined 
 export function validateResume(file: File | null): ValidationResult {
   if (!file || file.size === 0) return { valid: true };
   if (file.size > MAX_RESUME_BYTES) {
-    return { valid: false, error: "Resume file must be 5 MB or smaller." };
+    return { valid: false, error: "Resume file must be 3.5 MB or smaller." };
   }
   if (!ACCEPTED_RESUME_TYPES.has(file.type)) {
     return {
@@ -126,7 +126,7 @@ export function validateResume(file: File | null): ValidationResult {
 export function validateProof(file: File | null): ValidationResult {
   if (!file || file.size === 0) return { valid: true };
   if (file.size > MAX_PROOF_BYTES) {
-    return { valid: false, error: "Proof file must be 10 MB or smaller." };
+    return { valid: false, error: "Proof file must be 3.5 MB or smaller." };
   }
   if (!ACCEPTED_PROOF_TYPES.has(file.type)) {
     return {

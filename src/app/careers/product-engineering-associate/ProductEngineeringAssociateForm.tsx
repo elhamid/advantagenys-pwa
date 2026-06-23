@@ -12,6 +12,7 @@ import {
 // deliberately non-semantic so browser autofill does not target it. On the
 // server a filled value is a SOFT flag-for-review signal, never a hard reject.
 const HONEYPOT_FIELD = "contact_ref_2";
+const MAX_DIRECT_UPLOAD_BYTES = 3.5 * 1024 * 1024;
 
 const surfaceOptions = [
   "Client-facing pages",
@@ -21,6 +22,15 @@ const surfaceOptions = [
   "Browser console/network checks",
   "Small frontend/content fixes",
 ];
+
+function fileSizeLabel(bytes: number): string {
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function oversizedUploadMessage(file: File, label: string): string | null {
+  if (file.size <= MAX_DIRECT_UPLOAD_BYTES) return null;
+  return `${label} is too large (${fileSizeLabel(file.size)}). Upload a file 3.5 MB or smaller, or use a link instead.`;
+}
 
 export function ProductEngineeringAssociateForm() {
   const formRef = useRef<HTMLFormElement>(null);
@@ -44,6 +54,14 @@ export function ProductEngineeringAssociateForm() {
       setStatus("error");
       return;
     }
+    if (resumeInput?.files?.[0]) {
+      const message = oversizedUploadMessage(resumeInput.files[0], "Resume file");
+      if (message) {
+        setError(message);
+        setStatus("error");
+        return;
+      }
+    }
 
     const proofInput = formRef.current.elements.namedItem("proofScreenshot") as HTMLInputElement | null;
     const hasProofFile = Boolean(proofInput?.files && proofInput.files.length > 0);
@@ -53,6 +71,14 @@ export function ProductEngineeringAssociateForm() {
       );
       setStatus("error");
       return;
+    }
+    if (proofInput?.files?.[0]) {
+      const message = oversizedUploadMessage(proofInput.files[0], "Proof file");
+      if (message) {
+        setError(message);
+        setStatus("error");
+        return;
+      }
     }
 
     setStatus("submitting");
@@ -65,11 +91,20 @@ export function ProductEngineeringAssociateForm() {
         method: "POST",
         body: formData,
       });
-      const data = await response.json();
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || "Application could not be submitted.");
+      const responseText = await response.text();
+      let data: { success?: boolean; error?: string; applicationId?: string } = {};
+      try {
+        data = responseText ? (JSON.parse(responseText) as { success?: boolean; error?: string; applicationId?: string }) : {};
+      } catch {
+        data = {};
       }
-      setApplicationId(data.applicationId);
+      if (!response.ok || !data.success) {
+        if (response.status === 413) {
+          throw new Error("The uploaded file is too large. Upload a file 3.5 MB or smaller, or use a link instead.");
+        }
+        throw new Error(data.error || responseText.trim().slice(0, 200) || "Application could not be submitted.");
+      }
+      setApplicationId(data.applicationId ?? "");
       setStatus("success");
       formRef.current.reset();
       setResumeName("");
@@ -168,7 +203,7 @@ export function ProductEngineeringAssociateForm() {
                   Resume file
                 </span>
                 <span className="mt-2 text-xs font-normal text-[var(--text-secondary)]">
-                  Required (file or link below). PDF, DOC, or DOCX. Max 5 MB.
+                  Required (file or link below). PDF, DOC, or DOCX. Max 3.5 MB.
                 </span>
                 <span className="mt-3 text-xs text-[var(--text-muted)]">{resumeName || "No file selected"}</span>
                 <input
@@ -253,7 +288,7 @@ export function ProductEngineeringAssociateForm() {
                   Annotated screenshots (mobile + desktop)
                 </span>
                 <span className="mt-2 text-xs font-normal text-[var(--text-secondary)]">
-                  PNG, JPG, WEBP, or PDF. Max 10 MB.
+                  PNG, JPG, WEBP, or PDF. Max 3.5 MB.
                 </span>
                 <span className="mt-3 text-xs text-[var(--text-muted)]">{proofName || "No file selected"}</span>
                 <input
