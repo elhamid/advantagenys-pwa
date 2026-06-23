@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import FormPage, { generateMetadata, generateStaticParams } from "../page";
 import { FormPageShareBar } from "../FormPageShareBar";
@@ -82,11 +82,11 @@ vi.mock("@/lib/native-form-schemas/generated", () => ({
 
 vi.mock("@/lib/forms", () => ({
   forms: [
-    { slug: "native-intake", active: true, type: "form" },
-    { slug: "generated-native", active: true, type: "form" },
-    { slug: "jotform-intake", active: true, type: "form" },
-    { slug: "link-only", active: true, type: "link" },
-    { slug: "inactive", active: false, type: "form" },
+    { slug: "native-intake", active: true, type: "form", platform: "native", nativeComponent: "ClientInfoForm" },
+    { slug: "generated-native", active: true, type: "form", platform: "native", nativeComponent: "GeneratedNativeForm" },
+    { slug: "jotform-intake", active: true, type: "form", platform: "jotform", embedUrl: "https://form.jotform.com/abc123" },
+    { slug: "link-only", active: true, type: "link", platform: "native" },
+    { slug: "inactive", active: false, type: "form", platform: "native", nativeComponent: "ClientInfoForm" },
   ],
   getFormBySlug: vi.fn((slug: string) => {
     if (slug === "native-intake") return nativeForm;
@@ -114,7 +114,7 @@ afterEach(() => {
 
 describe("Resource form route", () => {
   it("generates static params for active non-link forms", async () => {
-    expect(await generateStaticParams()).toEqual([{ slug: "native-intake" }, { slug: "generated-native" }, { slug: "jotform-intake" }]);
+    expect(await generateStaticParams()).toEqual([{ slug: "native-intake" }, { slug: "generated-native" }]);
   });
 
   it("generates metadata for a known form slug", async () => {
@@ -141,31 +141,9 @@ describe("Resource form route", () => {
     expect(screen.getByTestId("share-copy")).toBeInTheDocument();
   });
 
-  it("renders the JotForm embed branch", async () => {
-    const handler = vi.fn();
-    Object.defineProperty(window, "jotformEmbedHandler", {
-      configurable: true,
-      writable: true,
-      value: handler,
-    });
-
-    const jsx = await FormPage({ params: Promise.resolve({ slug: "jotform-intake" }) });
-    const { unmount } = render(jsx);
-
-    const iframe = screen.getByTitle("JotForm Intake");
-    expect(iframe).toHaveAttribute("src", "https://form.jotform.com/abc123");
-    expect(iframe).toHaveAttribute("id", "JotFormIFrame-abc123");
-
-    const script = document.body.querySelector('script[src="https://cdn.jotfor.ms/s/umd/latest/for-form-embed-handler.js"]') as HTMLScriptElement | null;
-    expect(script).toBeInTheDocument();
-    script?.onload?.(new Event("load"));
-
-    await waitFor(() => {
-      expect(handler).toHaveBeenCalledWith('iframe[id="JotFormIFrame-abc123"]', "https://form.jotform.com/");
-    });
-
-    unmount();
-    expect(document.body.querySelector('script[src="https://cdn.jotfor.ms/s/umd/latest/for-form-embed-handler.js"]')).toBeNull();
+  it("does not render a public route for legacy JotForm configs", async () => {
+    await expect(FormPage({ params: Promise.resolve({ slug: "jotform-intake" }) })).rejects.toThrow("NOT_FOUND");
+    expect(await generateMetadata({ params: Promise.resolve({ slug: "jotform-intake" }) })).toEqual({ title: "Form Not Found" });
   });
 
   it("renders the FormPageShareBar variants", () => {

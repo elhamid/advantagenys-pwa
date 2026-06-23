@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useRef } from "react";
 import type { FormConfig } from "@/lib/forms";
 import { useInAppBrowser, safeBlankTarget } from "@/hooks/useInAppBrowser";
 
@@ -34,35 +33,20 @@ function withPassthroughParams(embedUrl: string | undefined): string | undefined
 }
 
 export function FormEmbed({ form }: FormEmbedProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
   const inAppBrowser = useInAppBrowser();
 
-  useEffect(() => {
-    if (form.platform !== "jotform") return;
-
-    // Load JotForm embed handler for auto-resizing
-    const script = document.createElement("script");
-    script.src = "https://cdn.jotfor.ms/s/umd/latest/for-form-embed-handler.js";
-    script.async = true;
-    script.onload = () => {
-      // JotForm handler auto-detects iframes after script loads
-      if (typeof window !== "undefined" && (window as unknown as Record<string, unknown>).jotformEmbedHandler) {
-        (window as unknown as Record<string, (...args: unknown[]) => void>).jotformEmbedHandler(
-          `iframe[id="JotFormIFrame-${form.id}"]`,
-          "https://form.jotform.com/"
-        );
-      }
-    };
-    document.body.appendChild(script);
-
-    return () => {
-      if (script.parentNode) {
-        script.parentNode.removeChild(script);
-      }
-    };
-  }, [form.id, form.platform]);
-
   const rawFormUrl = withPassthroughParams(form.embedUrl);
+
+  if (form.platform === "jotform") {
+    return (
+      <div className="rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[var(--shadow-sm)]">
+        <p className="text-base font-semibold text-[var(--text)]">This legacy form is no longer embedded here.</p>
+        <p className="mt-2 text-sm text-[var(--text-secondary)]">
+          Please use the secure Advantage form link from our team, or call (929) 933-1396 if you need help.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -91,11 +75,9 @@ export function FormEmbed({ form }: FormEmbedProps) {
       )}
 
       <div
-        ref={containerRef}
         className="rounded-[var(--radius-lg)] overflow-hidden bg-[var(--surface)] border border-[var(--border)] shadow-[var(--shadow-md)]"
       >
         <iframe
-          id={form.platform === "jotform" ? `JotFormIFrame-${form.id}` : undefined}
           title={form.title}
           src={rawFormUrl ?? form.embedUrl}
           style={{

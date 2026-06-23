@@ -63,6 +63,14 @@ const schema: NativeFormSchema = {
       required: false,
     },
     {
+      qid: "64",
+      name: "dateOf",
+      label: "Date of Entry into the United States",
+      kind: "text",
+      jotformType: "control_textbox",
+      required: false,
+    },
+    {
       qid: "29",
       name: "uploadCopy",
       label: "Upload a copy of your ID",
@@ -109,10 +117,13 @@ describe("GeneratedNativeForm upload guard", () => {
 
     await user.type(screen.getByLabelText(/first\/last name/i), "David Jean Jr");
     await user.type(screen.getByLabelText(/phone number/i), "9295550101");
-    expect(screen.getByText(/use month \/ day \/ year/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/use month \/ day \/ year/i)).toHaveLength(2);
     await user.selectOptions(screen.getByLabelText(/birth date month/i), "06");
     await user.selectOptions(screen.getByLabelText(/birth date day/i), "23");
     await user.selectOptions(screen.getByLabelText(/birth date year/i), "2026");
+    await user.selectOptions(screen.getByLabelText(/date of entry into the united states month/i), "07");
+    await user.selectOptions(screen.getByLabelText(/date of entry into the united states day/i), "04");
+    await user.selectOptions(screen.getByLabelText(/date of entry into the united states year/i), "2025");
     await user.click(screen.getByRole("button", { name: /submit form/i }));
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalledWith("/api/native-form-submit", expect.anything()));
@@ -121,5 +132,7 @@ describe("GeneratedNativeForm upload guard", () => {
     expect(body).toBeInstanceOf(FormData);
     expect((body as FormData).get("field_48")).toBe("2026-06-23");
     expect((body as FormData).get("field_48_month")).toBeNull();
+    expect((body as FormData).get("field_64")).toBe("2025-07-04");
+    expect((body as FormData).get("field_64_month")).toBeNull();
   });
 });

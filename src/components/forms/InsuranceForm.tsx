@@ -491,7 +491,7 @@ export function InsuranceForm() {
               onChange={(e) => setFormData((prev) => ({ ...prev, policyExpiration: e.target.value }))}
               className={inputClasses}
             />
-            <p className="mt-1 text-xs text-[var(--text-muted)]">Use Month / Day / Year. Example: June 23, 2026.</p>
+            <p className="mt-1 text-xs text-[var(--text-muted)]">Use Month / Day / Year, not DD/MM/YYYY. Example: June 23, 2026.</p>
           </div>
         </div>
 

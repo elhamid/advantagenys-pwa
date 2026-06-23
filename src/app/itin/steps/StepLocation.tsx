@@ -88,7 +88,7 @@ export function StepLocation({ data, errors, update, onShowI94, priorityCountry 
             error={errors.usEntryDate}
             type="date"
           />
-          <p className="mt-1 text-xs text-white/40">Use Month / Day / Year. Example: June 23, 2026.</p>
+          <p className="mt-1 text-xs text-white/40">Use Month / Day / Year, not DD/MM/YYYY. Example: June 23, 2026.</p>
           {onShowI94 && (
             <button
               type="button"

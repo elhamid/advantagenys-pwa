@@ -51,6 +51,12 @@ function FieldLabel({ field }: { field: NativeFormField }) {
   );
 }
 
+function isDateLikeField(field: NativeFormField): boolean {
+  if (field.kind === "date") return true;
+  const label = `${field.label} ${field.name}`.toLowerCase();
+  return /\bdate\b|birthdate|expiration/.test(label);
+}
+
 function renderOptionField(field: NativeFormField, mode: "radio" | "checkbox") {
   const options = field.options && field.options.length > 0 ? field.options : ["Yes"];
   return (
@@ -133,7 +139,9 @@ function renderDateField(field: NativeFormField) {
           </select>
         </label>
       </div>
-      <p className="text-xs text-[var(--text-muted)]">Use Month / Day / Year. Example: June 23, 2026.</p>
+      <p className="text-xs text-[var(--text-muted)]">
+        Use Month / Day / Year, not DD/MM/YYYY. Example: June 23, 2026.
+      </p>
     </fieldset>
   );
 }
@@ -143,7 +151,7 @@ function renderField(field: NativeFormField) {
 
   if (field.kind === "radio") return renderOptionField(field, "radio");
   if (field.kind === "checkbox") return renderOptionField(field, "checkbox");
-  if (field.kind === "date") return renderDateField(field);
+  if (isDateLikeField(field)) return renderDateField(field);
 
   if (field.kind === "select") {
     return (
@@ -229,7 +237,7 @@ function buildDateValue(month: string, day: string, year: string): string | null
 }
 
 function prepareDateFields(formData: FormData, schema: NativeFormSchema): void {
-  for (const field of schema.fields.filter((candidate) => candidate.kind === "date")) {
+  for (const field of schema.fields.filter(isDateLikeField)) {
     const key = `field_${field.qid}`;
     const month = String(formData.get(`${key}_month`) ?? "");
     const day = String(formData.get(`${key}_day`) ?? "");

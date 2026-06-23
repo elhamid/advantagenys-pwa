@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Container } from "@/components/ui/Container";
+import type { FormConfig } from "@/lib/forms";
 import { forms, getFormBySlug } from "@/lib/forms";
-import { FormEmbed } from "./FormEmbed";
 import { NativeForm } from "./NativeForm";
 import { FormPageShareBar } from "./FormPageShareBar";
 import Link from "next/link";
@@ -11,14 +11,20 @@ interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
+export const dynamicParams = false;
+
 export async function generateStaticParams() {
-  return forms.filter((f) => f.active && f.type !== "link").map((f) => ({ slug: f.slug }));
+  return forms.filter(isPublicNativeForm).map((f) => ({ slug: f.slug }));
+}
+
+function isPublicNativeForm(form: FormConfig): boolean {
+  return form.active && form.type !== "link" && form.platform === "native" && Boolean(form.nativeComponent);
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
   const form = getFormBySlug(slug);
-  if (!form) return { title: "Form Not Found" };
+  if (!form || !isPublicNativeForm(form)) return { title: "Form Not Found" };
 
   return {
     title: form.title,
@@ -30,7 +36,7 @@ export default async function FormPage({ params }: PageProps) {
   const { slug } = await params;
   const form = getFormBySlug(slug);
 
-  if (!form || form.type === "link" || (!form.embedUrl && form.platform !== "native")) {
+  if (!form || !isPublicNativeForm(form)) {
     notFound();
   }
 
@@ -70,11 +76,7 @@ export default async function FormPage({ params }: PageProps) {
 
       <section className="pb-24">
         <Container>
-          {form.platform === "native" && form.nativeComponent ? (
-            <NativeForm form={form} />
-          ) : (
-            <FormEmbed form={form} />
-          )}
+          <NativeForm form={form} />
         </Container>
       </section>
     </div>

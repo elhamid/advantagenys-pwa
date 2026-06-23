@@ -31,15 +31,8 @@ describe("FormEmbed", () => {
     expect(document.body.querySelector('script[src="https://cdn.jotfor.ms/s/umd/latest/for-form-embed-handler.js"]')).toBeNull();
   });
 
-  it("loads the JotForm helper and wires the iframe selector", async () => {
-    const handler = vi.fn();
-    Object.defineProperty(window, "jotformEmbedHandler", {
-      configurable: true,
-      writable: true,
-      value: handler,
-    });
-
-    const { unmount } = render(
+  it("does not render or load a visible JotForm iframe", () => {
+    render(
       <FormEmbed
         form={{
           id: "abc123",
@@ -50,18 +43,9 @@ describe("FormEmbed", () => {
       />
     );
 
-    const script = document.body.querySelector(
-      'script[src="https://cdn.jotfor.ms/s/umd/latest/for-form-embed-handler.js"]'
-    ) as HTMLScriptElement | null;
-
-    expect(script).toBeInTheDocument();
-    script?.onload?.(new Event("load"));
-
-    await waitFor(() => {
-      expect(handler).toHaveBeenCalledWith('iframe[id="JotFormIFrame-abc123"]', "https://form.jotform.com/");
-    });
-
-    unmount();
+    expect(screen.getByText(/legacy form is no longer embedded/i)).toBeInTheDocument();
+    expect(screen.queryByTitle("JotForm Intake")).not.toBeInTheDocument();
+    expect(document.body.querySelector('iframe[src*="jotform"]')).toBeNull();
     expect(document.body.querySelector('script[src="https://cdn.jotfor.ms/s/umd/latest/for-form-embed-handler.js"]')).toBeNull();
   });
 
@@ -75,12 +59,7 @@ describe("FormEmbed", () => {
 
     render(
       <FormEmbed
-        form={{
-          id: "210224697492156",
-          title: "ITIN Registration Form",
-          platform: "jotform",
-          embedUrl: "https://form.jotform.com/210224697492156",
-        } as never}
+        form={{ title: "Typeform Intake", platform: "typeform", embedUrl: "https://example.com/form" } as never}
       />
     );
 
@@ -95,7 +74,7 @@ describe("FormEmbed", () => {
     });
   });
 
-  it("passes staff attribution and send id into the JotForm iframe URL", () => {
+  it("passes staff attribution and send id into non-JotForm iframe URLs", () => {
     window.history.pushState(
       {},
       "",
@@ -105,15 +84,14 @@ describe("FormEmbed", () => {
     render(
       <FormEmbed
         form={{
-          id: "210224697492156",
-          title: "ITIN Registration Form",
-          platform: "jotform",
-          embedUrl: "https://form.jotform.com/210224697492156",
+          title: "Typeform Intake",
+          platform: "typeform",
+          embedUrl: "https://example.com/form",
         } as never}
       />
     );
 
-    const iframe = screen.getByTitle("ITIN Registration Form");
+    const iframe = screen.getByTitle("Typeform Intake");
     const url = new URL(iframe.getAttribute("src") || "");
     expect(url.searchParams.get("shared_by")).toBe("staff-123");
     expect(url.searchParams.get("send_id")).toBe("send-abc");
