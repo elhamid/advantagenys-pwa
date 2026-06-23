@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
 import { getNativeFormSchema } from "@/lib/native-form-schemas/generated";
+import {
+  type NativeUploadedDocumentRef,
+  parseUploadedDocumentRefs,
+  uploadNativeDocument,
+  validateNativeFile,
+} from "@/lib/native-form-document-storage";
 import {
   answerRecord,
   buildJotFormParams,
@@ -12,46 +17,11 @@ import type { NativeFormSchema } from "@/lib/native-form-schemas/types";
 
 export const runtime = "nodejs";
 
-const MAX_FILE_SIZE_BYTES = 3.5 * 1024 * 1024;
-const DOCUMENT_BUCKET = process.env.FORM_DOCUMENTS_BUCKET || "form-documents";
-
-const ALLOWED_UPLOAD_TYPES = new Set([
-  "application/pdf",
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-  "application/msword",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-]);
-
 function getString(formData: FormData, key: string): string | undefined {
   const value = formData.get(key);
   if (typeof value !== "string") return undefined;
   const trimmed = value.trim();
   return trimmed ? trimmed : undefined;
-}
-
-function getUploadClient() {
-  const url = process.env.TASKBOARD_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.TASKBOARD_SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) return null;
-  return createClient(url, key, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
-}
-
-function safePathPart(value: string): string {
-  return value
-    .toLowerCase()
-    .replace(/[^a-z0-9._-]+/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-|-$/g, "")
-    .slice(0, 80) || "file";
-}
-
-function fileExtension(file: File): string {
-  const fromName = file.name.includes(".") ? file.name.split(".").pop() : "";
-  return safePathPart(fromName || "bin");
 }
 
 function uniqueDocumentKey(documentUrls: Record<string, unknown>, label: string, qid: string): string {
@@ -68,61 +38,37 @@ function uniqueDocumentKey(documentUrls: Record<string, unknown>, label: string,
   return key;
 }
 
-async function ensurePrivateUploadBucket(client: NonNullable<ReturnType<typeof getUploadClient>>): Promise<void> {
-  const { data } = await client.storage.getBucket(DOCUMENT_BUCKET);
-  if (data) {
-    if (data.public) {
-      throw new Error("Document upload bucket is public. Refusing to store sensitive form documents.");
-    }
-    return;
-  }
-
-  const { error } = await client.storage.createBucket(DOCUMENT_BUCKET, {
-    public: false,
-    fileSizeLimit: MAX_FILE_SIZE_BYTES,
-    allowedMimeTypes: Array.from(ALLOWED_UPLOAD_TYPES),
-  });
-  if (error) throw error;
-}
-
 async function uploadNativeFiles(args: {
   schema: NativeFormSchema;
   formData: FormData;
   phone: string;
+  preUploadedByField: Record<string, NativeUploadedDocumentRef[]>;
 }): Promise<{
   answerUrls: Record<string, string | string[]>;
   documentUrls: Record<string, unknown>;
   errors: string[];
 }> {
-  const { schema, formData, phone } = args;
+  const { schema, formData, phone, preUploadedByField } = args;
   const answerUrls: Record<string, string | string[]> = {};
   const documentUrls: Record<string, unknown> = {};
   const errors: string[] = [];
-  const client = getUploadClient();
 
   const fileFields = schema.fields.filter((field) => field.kind === "file");
   if (fileFields.length === 0) return { answerUrls, documentUrls, errors };
 
-  if (!client) {
-    const requiredMissing = fileFields.filter((field) => field.required);
-    if (requiredMissing.length > 0) {
-      errors.push("Document upload is temporarily unavailable. Please try again later.");
-    }
-    return { answerUrls, documentUrls, errors };
-  }
-
-  try {
-    await ensurePrivateUploadBucket(client);
-  } catch (err) {
-    console.error("[native-form-submit] private upload bucket unavailable", {
-      bucket: DOCUMENT_BUCKET,
-      message: err instanceof Error ? err.message : String(err),
-    });
-    errors.push("Document upload is temporarily unavailable. Please try again later.");
-    return { answerUrls, documentUrls, errors };
-  }
-
   for (const field of fileFields) {
+    const preUploaded = preUploadedByField[field.qid] ?? [];
+    if (preUploaded.length > 0) {
+      if (preUploaded.length === 1) {
+        answerUrls[field.qid] = "Document uploaded";
+        documentUrls[uniqueDocumentKey(documentUrls, field.label, field.qid)] = preUploaded[0];
+      } else {
+        answerUrls[field.qid] = `${preUploaded.length} documents uploaded`;
+        documentUrls[uniqueDocumentKey(documentUrls, field.label, field.qid)] = preUploaded;
+      }
+      continue;
+    }
+
     const files = formData
       .getAll(`field_${field.qid}`)
       .filter((entry): entry is File => entry instanceof File && entry.size > 0);
@@ -131,57 +77,46 @@ async function uploadNativeFiles(args: {
 
     const urls: string[] = [];
     for (const file of files) {
-      if (file.size > MAX_FILE_SIZE_BYTES) {
-        errors.push(`${field.label} is too large after browser preparation. Please upload a smaller file or lower-resolution photo.`);
-        continue;
-      }
-      if (!ALLOWED_UPLOAD_TYPES.has(file.type)) {
-        errors.push(`${field.label} must be a PDF, Word document, JPG, PNG, or WebP file.`);
+      const validationError = validateNativeFile(file, field);
+      if (validationError) {
+        errors.push(validationError);
         continue;
       }
 
-      const phoneFolder = phone.replace(/\D/g, "").slice(0, 20) || "unknown";
-      const path = [
-        "native-forms",
-        schema.slug,
-        phoneFolder,
-        `${Date.now()}-${field.qid}-${safePathPart(file.name || field.name)}.${fileExtension(file)}`,
-      ].join("/");
-
-      const buffer = Buffer.from(await file.arrayBuffer());
-      const { error } = await client.storage.from(DOCUMENT_BUCKET).upload(path, buffer, {
-        contentType: file.type,
-        upsert: false,
-      });
-
-      if (error) {
+      try {
+        const document = await uploadNativeDocument({ schema, field, file, phone });
+        urls.push(JSON.stringify(document));
+      } catch (error) {
         console.error("[native-form-submit] upload failed", {
           form: schema.slug,
           field: field.qid,
-          message: error.message,
+          message: error instanceof Error ? error.message : String(error),
         });
         errors.push(`Could not upload ${field.label}. Please try again.`);
         continue;
       }
-
-      urls.push(JSON.stringify({
-        bucket: DOCUMENT_BUCKET,
-        path,
-        name: file.name || field.name,
-        contentType: file.type,
-      }));
     }
 
-    if (urls.length === 1) {
+    if (urls.length === 1 && !answerUrls[field.qid]) {
       answerUrls[field.qid] = "Document uploaded";
       documentUrls[uniqueDocumentKey(documentUrls, field.label, field.qid)] = JSON.parse(urls[0]);
-    } else if (urls.length > 1) {
+    } else if (urls.length > 1 && !answerUrls[field.qid]) {
       answerUrls[field.qid] = `${urls.length} documents uploaded`;
       documentUrls[uniqueDocumentKey(documentUrls, field.label, field.qid)] = urls.map((url) => JSON.parse(url));
     }
   }
 
   return { answerUrls, documentUrls, errors };
+}
+
+function collectUploadedDocumentRefs(formData: FormData, schema: NativeFormSchema): Record<string, NativeUploadedDocumentRef[]> {
+  const refsByField: Record<string, NativeUploadedDocumentRef[]> = {};
+  for (const field of schema.fields.filter((candidate) => candidate.kind === "file")) {
+    const refs = parseUploadedDocumentRefs(getString(formData, `field_${field.qid}_uploaded_documents`) ?? null)
+      .filter((ref) => ref.fieldQid === field.qid && ref.path.startsWith(`native-forms/${schema.slug}/`));
+    if (refs.length > 0) refsByField[field.qid] = refs;
+  }
+  return refsByField;
 }
 
 function validateRequiredFields(
@@ -299,6 +234,7 @@ export async function POST(request: NextRequest) {
     schema,
     formData,
     phone: preliminaryContact.phone,
+    preUploadedByField: collectUploadedDocumentRefs(formData, schema),
   });
 
   if (uploads.errors.length > 0) {

@@ -41,7 +41,8 @@ describe("ClientInfoForm", () => {
 
     expect(screen.getByText(/client information/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/full legal name/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/date of birth/i)).toBeInTheDocument();
+    expect(screen.getByText(/date of birth/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/date of birth month/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/phone number/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/^email/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/service interested in/i)).toBeInTheDocument();

@@ -9,6 +9,7 @@ import type { ClientInfoLead } from "@/lib/leads/types";
 import { formStart, formSubmit } from "@/lib/analytics/events";
 import { reportFormError, userFacingFormError } from "@/lib/error-reporting";
 import { FormErrorMessage } from "@/components/ui/FormErrorMessage";
+import { DatePartsInput } from "./DatePartsInput";
 import { preventImplicitFormSubmit } from "./preventImplicitFormSubmit";
 
 const serviceOptions = [
@@ -214,15 +215,13 @@ export function ClientInfoForm() {
           <label htmlFor="dateOfBirth" className="block text-sm font-medium text-[var(--text)] mb-1">
             Date of Birth
           </label>
-          <input
-            type="date"
+          <DatePartsInput
             id="dateOfBirth"
-            name="dateOfBirth"
+            label="Date of Birth"
             value={formData.dateOfBirth}
-            onChange={handleChange}
-            className={inputClasses}
+            onChange={(value) => setFormData((prev) => ({ ...prev, dateOfBirth: value }))}
+            inputClasses={inputClasses}
           />
-          <p className="mt-1 text-xs text-[var(--text-muted)]">Use Month / Day / Year, not DD/MM/YYYY. Example: June 23, 2026.</p>
         </div>
 
         {/* Phone & Email Row */}

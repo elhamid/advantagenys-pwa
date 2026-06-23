@@ -14,8 +14,26 @@ interface GeneratedNativeFormProps {
   schema: NativeFormSchema;
 }
 
+interface UploadedDocumentRef {
+  bucket: string;
+  path: string;
+  name: string;
+  contentType: string;
+  size: number;
+  fieldQid: string;
+  fieldLabel: string;
+}
+
+interface UploadItem {
+  id: string;
+  name: string;
+  size: number;
+  status: "uploading" | "uploaded" | "error";
+  error?: string;
+  document?: UploadedDocumentRef;
+}
+
 const MAX_REQUEST_FILE_BYTES = 3.5 * 1024 * 1024;
-const MAX_TOTAL_FILE_BYTES = 3.8 * 1024 * 1024;
 const IMAGE_COMPRESSION_TARGET_BYTES = 1.25 * 1024 * 1024;
 const IMAGE_COMPRESSION_MAX_DIMENSION = 1800;
 const IMAGE_COMPRESSION_STEPS = [0.82, 0.72, 0.62, 0.52, 0.42];
@@ -50,6 +68,16 @@ function FieldLabel({ field }: { field: NativeFormField }) {
       {field.label} {requiredMarker(field.required)}
     </label>
   );
+}
+
+function displayFileLabel(field: NativeFormField, schema: NativeFormSchema): string {
+  if (schema.slug === "tax-return-questionnaire") {
+    if (field.qid === "228") return "Upload mortgage interest, property tax, or 1098 documents";
+    if (field.qid === "246") return "Take or upload a photo of mortgage/property tax documents";
+    if (field.qid === "78") return "Take or upload a photo of any remaining tax document";
+    if (field.qid === "168") return "Upload foreign bank account documents";
+  }
+  return field.label;
 }
 
 function isDateLikeField(field: NativeFormField): boolean {
@@ -147,7 +175,83 @@ function renderDateField(field: NativeFormField) {
   );
 }
 
-function renderField(field: NativeFormField) {
+function renderFileField(
+  schema: NativeFormSchema,
+  field: NativeFormField,
+  items: UploadItem[],
+  onFilesSelected: (field: NativeFormField, files: FileList | null) => void,
+  onRemove: (fieldQid: string, itemId: string) => void,
+  uploadBlocked: boolean,
+) {
+  const label = displayFileLabel(field, schema);
+  const uploadedCount = items.filter((item) => item.status === "uploaded").length;
+  return (
+    <div>
+      <label htmlFor={`field_${field.qid}`} className="block text-sm font-medium text-[var(--text)] mb-1">
+        {label} {requiredMarker(field.required)}
+      </label>
+      <label
+        htmlFor={`field_${field.qid}`}
+        className="block rounded-[var(--radius-lg)] border border-dashed border-[var(--border)] bg-[var(--surface)] px-4 py-4 transition-colors focus-within:border-[var(--blue-accent)] focus-within:ring-2 focus-within:ring-[var(--blue-accent)]/20"
+      >
+        <span className="block text-sm font-semibold text-[var(--text)]">Add files for this item</span>
+        <span className="mt-1 block text-xs leading-5 text-[var(--text-muted)]">
+          Accepted: PDF, Word, JPG, PNG, or WebP. Each file can be up to {fileSizeLabel(MAX_REQUEST_FILE_BYTES)}.
+          Files upload here first; the final submit sends the completed packet.
+        </span>
+        <input
+          id={`field_${field.qid}`}
+          name={`field_${field.qid}`}
+          type="file"
+          required={field.required && uploadedCount === 0}
+          multiple
+          disabled={uploadBlocked}
+          accept=".pdf,.doc,.docx,image/jpeg,image/png,image/webp"
+          onChange={(event) => {
+            onFilesSelected(field, event.currentTarget.files);
+            event.currentTarget.value = "";
+          }}
+          className="mt-3 block w-full text-sm text-[var(--text-secondary)] file:mr-4 file:rounded-[var(--radius)] file:border-0 file:bg-[var(--blue-accent)] file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white disabled:opacity-60"
+        />
+      </label>
+
+      {items.length > 0 && (
+        <div className="mt-3 space-y-2">
+          {items.map((item) => (
+            <div
+              key={item.id}
+              className="flex items-start justify-between gap-3 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--bg-section)] px-3 py-2"
+            >
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium text-[var(--text)]">{item.name}</p>
+                <p className="text-xs text-[var(--text-muted)]">
+                  {fileSizeLabel(item.size)} · {item.status === "uploading" ? "Uploading..." : item.status === "uploaded" ? "Uploaded" : item.error}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => onRemove(field.qid, item.id)}
+                disabled={item.status === "uploading"}
+                className="shrink-0 rounded-full border border-[var(--border)] px-3 py-1 text-xs font-semibold text-[var(--text-secondary)] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Remove
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function renderField(
+  schema: NativeFormSchema,
+  field: NativeFormField,
+  uploadItems: UploadItem[] = [],
+  onFilesSelected?: (field: NativeFormField, files: FileList | null) => void,
+  onRemove?: (fieldQid: string, itemId: string) => void,
+  uploadBlocked = false,
+) {
   if (field.hidden) return null;
 
   if (field.kind === "radio") return renderOptionField(field, "radio");
@@ -186,19 +290,13 @@ function renderField(field: NativeFormField) {
   }
 
   if (field.kind === "file") {
-    return (
-      <div>
-        <FieldLabel field={field} />
-        <input
-          id={`field_${field.qid}`}
-          name={`field_${field.qid}`}
-          type="file"
-          required={field.required}
-          multiple
-          accept=".pdf,.doc,.docx,image/jpeg,image/png,image/webp"
-          className="block w-full rounded-[var(--radius)] border border-dashed border-[var(--border)] bg-[var(--surface)] px-4 py-4 text-sm text-[var(--text-secondary)] file:mr-4 file:rounded-[var(--radius)] file:border-0 file:bg-[var(--blue-accent)] file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white"
-        />
-      </div>
+    return renderFileField(
+      schema,
+      field,
+      uploadItems,
+      onFilesSelected ?? (() => undefined),
+      onRemove ?? (() => undefined),
+      uploadBlocked,
     );
   }
 
@@ -325,11 +423,24 @@ async function prepareFileForUpload(file: File): Promise<File> {
   );
 }
 
-async function prepareUploadFiles(form: HTMLFormElement, formData: FormData, schema: NativeFormSchema): Promise<void> {
-  let totalFileBytes = 0;
-
+async function prepareUploadFiles(
+  form: HTMLFormElement,
+  formData: FormData,
+  schema: NativeFormSchema,
+  uploadedDocuments: Record<string, UploadItem[]>,
+): Promise<void> {
   for (const field of schema.fields.filter((candidate) => candidate.kind === "file")) {
     const key = `field_${field.qid}`;
+    const uploaded = (uploadedDocuments[field.qid] ?? [])
+      .filter((item) => item.status === "uploaded" && item.document)
+      .map((item) => item.document as UploadedDocumentRef);
+
+    if (uploaded.length > 0) {
+      formData.delete(key);
+      formData.set(`${key}_uploaded_documents`, JSON.stringify(uploaded));
+      continue;
+    }
+
     const input = form.querySelector<HTMLInputElement>(`input[type="file"][name="${key}"]`);
     const files = Array.from(input?.files ?? []).filter((file) => file.size > 0);
 
@@ -338,10 +449,6 @@ async function prepareUploadFiles(form: HTMLFormElement, formData: FormData, sch
     formData.delete(key);
     for (const file of files) {
       const prepared = await prepareFileForUpload(file);
-      totalFileBytes += prepared.size;
-      if (totalFileBytes > MAX_TOTAL_FILE_BYTES) {
-        throw new Error("The uploaded files are too large together. Please submit one smaller document or photo.");
-      }
       formData.append(key, prepared, prepared.name);
     }
   }
@@ -354,13 +461,92 @@ export function GeneratedNativeForm({ schema }: GeneratedNativeFormProps) {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [uploadItemsByField, setUploadItemsByField] = useState<Record<string, UploadItem[]>>({});
   const startedRef = useRef(false);
   const visibleFields = schema.fields.filter((field) => !field.hidden);
+  const uploadItems = Object.values(uploadItemsByField).flat();
+  const uploadInProgress = uploadItems.some((item) => item.status === "uploading");
+  const uploadHasError = uploadItems.some((item) => item.status === "error");
+  const uploadedCount = uploadItems.filter((item) => item.status === "uploaded").length;
 
   function handleFirstFocus() {
     if (startedRef.current) return;
     startedRef.current = true;
     formStart("contact");
+  }
+
+  function removeUpload(fieldQid: string, itemId: string) {
+    setUploadItemsByField((current) => ({
+      ...current,
+      [fieldQid]: (current[fieldQid] ?? []).filter((item) => item.id !== itemId),
+    }));
+  }
+
+  function patchUploadItem(fieldQid: string, itemId: string, patch: Partial<UploadItem>) {
+    setUploadItemsByField((current) => ({
+      ...current,
+      [fieldQid]: (current[fieldQid] ?? []).map((item) => (
+        item.id === itemId ? { ...item, ...patch } : item
+      )),
+    }));
+  }
+
+  async function uploadPreparedFile(field: NativeFormField, file: File, itemId: string) {
+    try {
+      const prepared = await prepareFileForUpload(file);
+      patchUploadItem(field.qid, itemId, { name: prepared.name, size: prepared.size });
+
+      const uploadData = new FormData();
+      uploadData.set("formSlug", schema.slug);
+      uploadData.set("fieldQid", field.qid);
+      uploadData.set("file", prepared, prepared.name);
+
+      const res = await fetch("/api/native-form-upload", {
+        method: "POST",
+        body: uploadData,
+      });
+      const data = await res.json().catch(() => ({})) as {
+        success?: boolean;
+        error?: string;
+        document?: UploadedDocumentRef;
+      };
+      if (!res.ok || !data.success || !data.document) {
+        throw new Error(data.error || "Could not upload this file. Please try again.");
+      }
+
+      patchUploadItem(field.qid, itemId, {
+        status: "uploaded",
+        document: data.document,
+        error: undefined,
+      });
+    } catch (err) {
+      patchUploadItem(field.qid, itemId, {
+        status: "error",
+        error: userFacingFormError(err),
+      });
+      reportFormError(schema.slug, err, { formSlug: schema.slug, fieldQid: field.qid, uploadFile: file.name });
+    }
+  }
+
+  function handleFilesSelected(field: NativeFormField, files: FileList | null) {
+    const selected = Array.from(files ?? []).filter((file) => file.size > 0);
+    if (selected.length === 0) return;
+
+    const items = selected.map((file, index) => ({
+      id: `${field.qid}-${Date.now()}-${index}-${Math.random().toString(36).slice(2)}`,
+      name: file.name || field.label,
+      size: file.size,
+      status: "uploading" as const,
+    }));
+
+    setUploadItemsByField((current) => ({
+      ...current,
+      [field.qid]: [...(current[field.qid] ?? []), ...items],
+    }));
+
+    selected.forEach((file, index) => {
+      void uploadPreparedFile(field, file, items[index].id);
+    });
   }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -379,7 +565,13 @@ export function GeneratedNativeForm({ schema }: GeneratedNativeFormProps) {
 
     try {
       prepareDateFields(formData, schema);
-      await prepareUploadFiles(form, formData, schema);
+      if (uploadInProgress) {
+        throw new Error("Please wait for your documents to finish uploading before submitting.");
+      }
+      if (uploadHasError) {
+        throw new Error("One or more documents did not upload. Remove the failed file or upload it again.");
+      }
+      await prepareUploadFiles(form, formData, schema, uploadItemsByField);
       const res = await fetch("/api/native-form-submit", {
         method: "POST",
         body: formData,
@@ -430,15 +622,29 @@ export function GeneratedNativeForm({ schema }: GeneratedNativeFormProps) {
       >
         <div className="grid grid-cols-1 gap-5">
           {visibleFields.map((field) => (
-            <div key={field.qid}>{renderField(field)}</div>
+            <div key={field.qid}>
+              {renderField(
+                schema,
+                field,
+                uploadItemsByField[field.qid] ?? [],
+                handleFilesSelected,
+                removeUpload,
+                loading,
+              )}
+            </div>
           ))}
         </div>
 
         {error && <FormErrorMessage error={error} />}
+        {uploadedCount > 0 && (
+          <p className="rounded-[var(--radius)] border border-[var(--border)] bg-[var(--bg-section)] px-3 py-2 text-xs font-medium text-[var(--text-secondary)]">
+            {uploadedCount} document{uploadedCount === 1 ? "" : "s"} uploaded securely. Submit the form to send the packet to our team.
+          </p>
+        )}
 
         <div className="flex flex-col sm:flex-row sm:items-center gap-3 pt-2">
-          <Button type="submit" disabled={loading} className="w-full sm:w-auto">
-            {loading ? "Submitting..." : "Submit Form"}
+          <Button type="submit" disabled={loading || uploadInProgress} className="w-full sm:w-auto">
+            {uploadInProgress ? "Uploading documents..." : loading ? "Submitting..." : "Submit Form"}
           </Button>
           <p className="text-xs text-[var(--text-muted)]">
             Sensitive identifiers are protected before they enter our CRM.

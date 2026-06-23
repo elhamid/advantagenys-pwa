@@ -46,7 +46,8 @@ describe("CorporateRegistrationForm", () => {
     expect(screen.getByLabelText(/desired business name/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/^owner address/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/owner ssn/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/filing receipt date/i)).toBeInTheDocument();
+    expect(screen.getByText(/filing receipt date/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/filing receipt date month/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/corporation address/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/business website/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /submit registration/i })).toBeInTheDocument();
@@ -67,10 +68,14 @@ describe("CorporateRegistrationForm", () => {
     await user.type(screen.getByLabelText(/owner city/i), "Queens");
     await user.type(screen.getByLabelText(/owner zip code/i), "11377");
     await user.type(screen.getByLabelText(/owner ssn/i), "123-45-6789");
-    await user.type(screen.getByLabelText(/owner date of birth/i), "1990-01-15");
+    await user.selectOptions(screen.getByLabelText(/owner date of birth month/i), "01");
+    await user.selectOptions(screen.getByLabelText(/owner date of birth day/i), "15");
+    await user.selectOptions(screen.getByLabelText(/owner date of birth year/i), "1990");
     await user.type(screen.getByLabelText(/desired business name/i), "Alex LLC");
     await user.selectOptions(screen.getByLabelText(/business type/i), "LLC");
-    await user.type(screen.getByLabelText(/filing receipt date/i), "2026-06-17");
+    await user.selectOptions(screen.getByLabelText(/filing receipt date month/i), "06");
+    await user.selectOptions(screen.getByLabelText(/filing receipt date day/i), "17");
+    await user.selectOptions(screen.getByLabelText(/filing receipt date year/i), "2026");
     await user.type(screen.getByLabelText(/corporation address/i), "41 Corp Avenue");
     await user.type(screen.getByLabelText(/corporation city/i), "Brooklyn");
     await user.type(screen.getByLabelText(/corporation zip code/i), "11211");

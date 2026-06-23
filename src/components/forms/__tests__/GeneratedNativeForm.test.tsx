@@ -84,7 +84,23 @@ const schema: NativeFormSchema = {
 
 describe("GeneratedNativeForm upload guard", () => {
   beforeEach(() => {
-    vi.stubGlobal("fetch", vi.fn());
+    vi.stubGlobal("fetch", vi.fn(async (url: RequestInfo | URL) => {
+      if (url === "/api/native-form-upload") {
+        return new Response(JSON.stringify({
+          success: true,
+          document: {
+            bucket: "form-documents",
+            path: "native-forms/itin-registration-form/pending/test-upload-id.pdf",
+            name: "passport.pdf",
+            contentType: "application/pdf",
+            size: 1024,
+            fieldQid: "29",
+            fieldLabel: "Upload a copy of your ID",
+          },
+        }), { status: 201 });
+      }
+      return new Response(JSON.stringify({ success: true }), { status: 201 });
+    }));
   });
 
   afterEach(() => {
@@ -109,10 +125,42 @@ describe("GeneratedNativeForm upload guard", () => {
     await waitFor(() => expect(fetch).not.toHaveBeenCalledWith("/api/native-form-submit", expect.anything()));
   });
 
+  it("uploads documents before final submit and sends document refs with the form packet", async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.mocked(fetch);
+    render(<GeneratedNativeForm schema={schema} />);
+
+    await user.type(screen.getByLabelText(/first\/last name/i), "David Jean Jr");
+    await user.type(screen.getByLabelText(/phone number/i), "9295550101");
+    await user.upload(
+      screen.getByLabelText(/upload a copy/i),
+      new File([new Uint8Array(1024)], "passport.pdf", { type: "application/pdf" })
+    );
+
+    await waitFor(() => expect(screen.getAllByText(/Uploaded/i).length).toBeGreaterThan(0));
+    expect(screen.getByText(/1 document uploaded securely/i)).toBeInTheDocument();
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledWith("/api/native-form-upload", expect.anything()));
+
+    await user.click(screen.getByRole("button", { name: /submit form/i }));
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledWith("/api/native-form-submit", expect.anything()));
+    const submitCall = fetchMock.mock.calls.find(([url]) => url === "/api/native-form-submit");
+    const body = submitCall?.[1]?.body;
+    expect(body).toBeInstanceOf(FormData);
+    expect((body as FormData).get("field_29")).toBeNull();
+    const refs = JSON.parse(String((body as FormData).get("field_29_uploaded_documents")));
+    expect(refs).toMatchObject([
+      {
+        bucket: "form-documents",
+        path: "native-forms/itin-registration-form/pending/test-upload-id.pdf",
+        fieldQid: "29",
+      },
+    ]);
+  });
+
   it("submits date dropdown selections as an unambiguous ISO date", async () => {
     const user = userEvent.setup();
     const fetchMock = vi.mocked(fetch);
-    fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ success: true }), { status: 201 }));
     render(<GeneratedNativeForm schema={schema} />);
 
     await user.type(screen.getByLabelText(/first\/last name/i), "David Jean Jr");
@@ -139,7 +187,6 @@ describe("GeneratedNativeForm upload guard", () => {
   it("does not submit when Enter is pressed inside a field", async () => {
     const user = userEvent.setup();
     const fetchMock = vi.mocked(fetch);
-    fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ success: true }), { status: 201 }));
     render(<GeneratedNativeForm schema={schema} />);
 
     await user.type(screen.getByLabelText(/first\/last name/i), "David Jean Jr");

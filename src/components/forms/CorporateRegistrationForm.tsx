@@ -10,6 +10,7 @@ import type { AdditionalOwner, CorporateRegistrationLead } from "@/lib/leads/typ
 import { formStart, formSubmit } from "@/lib/analytics/events";
 import { reportFormError, userFacingFormError } from "@/lib/error-reporting";
 import { FormErrorMessage } from "@/components/ui/FormErrorMessage";
+import { DatePartsInput } from "./DatePartsInput";
 import { preventImplicitFormSubmit } from "./preventImplicitFormSubmit";
 
 const businessTypes = [
@@ -410,14 +411,13 @@ export function CorporateRegistrationForm() {
             <label htmlFor="ownerDateOfBirth" className="block text-sm font-medium text-[var(--text)] mb-1">
               Owner Date of Birth
             </label>
-            <input
-              type="date"
+            <DatePartsInput
               id="ownerDateOfBirth"
+              label="Owner Date of Birth"
               value={formData.ownerDateOfBirth}
-              onChange={update("ownerDateOfBirth")}
-              className={inputClasses}
+              onChange={(value) => setFormData((prev) => ({ ...prev, ownerDateOfBirth: value }))}
+              inputClasses={inputClasses}
             />
-            <p className="mt-1 text-xs text-[var(--text-muted)]">Use Month / Day / Year, not DD/MM/YYYY. Example: June 23, 2026.</p>
           </div>
           <div>
             <label htmlFor="ownerTelephone" className="block text-sm font-medium text-[var(--text)] mb-1">
@@ -596,16 +596,17 @@ export function CorporateRegistrationForm() {
                       >
                         Date of Birth
                       </label>
-                      <input
-                        type="date"
+                      <DatePartsInput
                         id={`owner${ownerNum}DateOfBirth`}
+                        label={`Owner ${ownerNum} Date of Birth`}
                         value={additionalOwners[i].dateOfBirth ?? ""}
-                        onChange={updateOwner(i, "dateOfBirth")}
-                        className={inputClasses}
+                        onChange={(value) => {
+                          setAdditionalOwners((prev) =>
+                            prev.map((owner, index) => index === i ? { ...owner, dateOfBirth: value } : owner)
+                          );
+                        }}
+                        inputClasses={inputClasses}
                       />
-                      <p className="mt-1 text-xs text-[var(--text-muted)]">
-                        Use Month / Day / Year, not DD/MM/YYYY. Example: June 23, 2026.
-                      </p>
                     </div>
                     <div>
                       <label
@@ -701,14 +702,13 @@ export function CorporateRegistrationForm() {
             <label htmlFor="filingReceiptDate" className="block text-sm font-medium text-[var(--text)] mb-1">
               Filing Receipt Date
             </label>
-            <input
-              type="date"
+            <DatePartsInput
               id="filingReceiptDate"
+              label="Filing Receipt Date"
               value={formData.filingReceiptDate}
-              onChange={update("filingReceiptDate")}
-              className={inputClasses}
+              onChange={(value) => setFormData((prev) => ({ ...prev, filingReceiptDate: value }))}
+              inputClasses={inputClasses}
             />
-            <p className="mt-1 text-xs text-[var(--text-muted)]">Use Month / Day / Year, not DD/MM/YYYY. Example: June 23, 2026.</p>
           </div>
         </div>
 

@@ -9,6 +9,7 @@ import type { InsuranceLead } from "@/lib/leads/types";
 import { formStart, formSubmit } from "@/lib/analytics/events";
 import { reportFormError, userFacingFormError } from "@/lib/error-reporting";
 import { FormErrorMessage } from "@/components/ui/FormErrorMessage";
+import { DatePartsInput } from "./DatePartsInput";
 import { preventImplicitFormSubmit } from "./preventImplicitFormSubmit";
 
 const businessTypes = [
@@ -490,14 +491,13 @@ export function InsuranceForm() {
             <label htmlFor="insurancePolicyExpiry" className="block text-sm font-medium text-[var(--text)] mb-1">
               Policy Expiration Date <span className="text-[var(--text-muted)]">(optional)</span>
             </label>
-            <input
-              type="date"
+            <DatePartsInput
               id="insurancePolicyExpiry"
+              label="Policy Expiration Date"
               value={formData.policyExpiration}
-              onChange={(e) => setFormData((prev) => ({ ...prev, policyExpiration: e.target.value }))}
-              className={inputClasses}
+              onChange={(value) => setFormData((prev) => ({ ...prev, policyExpiration: value }))}
+              inputClasses={inputClasses}
             />
-            <p className="mt-1 text-xs text-[var(--text-muted)]">Use Month / Day / Year, not DD/MM/YYYY. Example: June 23, 2026.</p>
           </div>
         </div>
 
