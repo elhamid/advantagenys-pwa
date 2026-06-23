@@ -84,6 +84,7 @@ export function StepPersonal({ data, errors, update, companyLocked = false, prio
           error={errors.dateOfBirth}
           type="date"
         />
+        <p className="mt-1 text-xs text-white/40">Use Month / Day / Year. Example: June 23, 2026.</p>
       </div>
 
       <div>

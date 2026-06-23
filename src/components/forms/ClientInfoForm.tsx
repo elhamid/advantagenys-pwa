@@ -216,6 +216,7 @@ export function ClientInfoForm() {
             onChange={handleChange}
             className={inputClasses}
           />
+          <p className="mt-1 text-xs text-[var(--text-muted)]">Use Month / Day / Year. Example: June 23, 2026.</p>
         </div>
 
         {/* Phone & Email Row */}

@@ -411,6 +411,7 @@ export function CorporateRegistrationForm() {
               onChange={update("ownerDateOfBirth")}
               className={inputClasses}
             />
+            <p className="mt-1 text-xs text-[var(--text-muted)]">Use Month / Day / Year. Example: June 23, 2026.</p>
           </div>
           <div>
             <label htmlFor="ownerTelephone" className="block text-sm font-medium text-[var(--text)] mb-1">
@@ -596,6 +597,9 @@ export function CorporateRegistrationForm() {
                         onChange={updateOwner(i, "dateOfBirth")}
                         className={inputClasses}
                       />
+                      <p className="mt-1 text-xs text-[var(--text-muted)]">
+                        Use Month / Day / Year. Example: June 23, 2026.
+                      </p>
                     </div>
                     <div>
                       <label
@@ -698,6 +702,7 @@ export function CorporateRegistrationForm() {
               onChange={update("filingReceiptDate")}
               className={inputClasses}
             />
+            <p className="mt-1 text-xs text-[var(--text-muted)]">Use Month / Day / Year. Example: June 23, 2026.</p>
           </div>
         </div>
 

@@ -18,6 +18,23 @@ const MAX_TOTAL_FILE_BYTES = 3.8 * 1024 * 1024;
 const IMAGE_COMPRESSION_TARGET_BYTES = 1.25 * 1024 * 1024;
 const IMAGE_COMPRESSION_MAX_DIMENSION = 1800;
 const IMAGE_COMPRESSION_STEPS = [0.82, 0.72, 0.62, 0.52, 0.42];
+const CURRENT_YEAR = new Date().getFullYear();
+const DATE_YEARS = Array.from({ length: 141 }, (_, index) => CURRENT_YEAR + 20 - index);
+const MONTH_OPTIONS = [
+  ["01", "January"],
+  ["02", "February"],
+  ["03", "March"],
+  ["04", "April"],
+  ["05", "May"],
+  ["06", "June"],
+  ["07", "July"],
+  ["08", "August"],
+  ["09", "September"],
+  ["10", "October"],
+  ["11", "November"],
+  ["12", "December"],
+];
+const DAY_OPTIONS = Array.from({ length: 31 }, (_, index) => String(index + 1).padStart(2, "0"));
 
 const inputClasses =
   "w-full rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-[var(--text)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--blue-accent)] focus:border-transparent transition-all";
@@ -67,11 +84,66 @@ function renderOptionField(field: NativeFormField, mode: "radio" | "checkbox") {
   );
 }
 
+function renderDateField(field: NativeFormField) {
+  const key = `field_${field.qid}`;
+  return (
+    <fieldset className="space-y-2">
+      <legend className="block text-sm font-medium text-[var(--text)] mb-1">
+        {field.label} {requiredMarker(field.required)}
+      </legend>
+      <input type="hidden" name={key} />
+      <div className="grid grid-cols-3 gap-2">
+        <label className="block">
+          <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.08em] text-[var(--text-muted)]">
+            Month
+          </span>
+          <select name={`${key}_month`} required={field.required} aria-label={`${field.label} month`} className={inputClasses}>
+            <option value="">Month</option>
+            {MONTH_OPTIONS.map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="block">
+          <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.08em] text-[var(--text-muted)]">
+            Day
+          </span>
+          <select name={`${key}_day`} required={field.required} aria-label={`${field.label} day`} className={inputClasses}>
+            <option value="">Day</option>
+            {DAY_OPTIONS.map((day) => (
+              <option key={day} value={day}>
+                {day}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="block">
+          <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.08em] text-[var(--text-muted)]">
+            Year
+          </span>
+          <select name={`${key}_year`} required={field.required} aria-label={`${field.label} year`} className={inputClasses}>
+            <option value="">Year</option>
+            {DATE_YEARS.map((year) => (
+              <option key={year} value={year}>
+                {year}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+      <p className="text-xs text-[var(--text-muted)]">Use Month / Day / Year. Example: June 23, 2026.</p>
+    </fieldset>
+  );
+}
+
 function renderField(field: NativeFormField) {
   if (field.hidden) return null;
 
   if (field.kind === "radio") return renderOptionField(field, "radio");
   if (field.kind === "checkbox") return renderOptionField(field, "checkbox");
+  if (field.kind === "date") return renderDateField(field);
 
   if (field.kind === "select") {
     return (
@@ -124,7 +196,6 @@ function renderField(field: NativeFormField) {
   const inputType =
     field.kind === "email" ? "email" :
     field.kind === "tel" ? "tel" :
-    field.kind === "date" ? "date" :
     field.kind === "number" ? "number" :
     "text";
 
@@ -141,6 +212,39 @@ function renderField(field: NativeFormField) {
       />
     </div>
   );
+}
+
+function buildDateValue(month: string, day: string, year: string): string | null {
+  if (!month && !day && !year) return "";
+  if (!month || !day || !year) return null;
+  const date = new Date(Number(year), Number(month) - 1, Number(day));
+  if (
+    date.getFullYear() !== Number(year) ||
+    date.getMonth() !== Number(month) - 1 ||
+    date.getDate() !== Number(day)
+  ) {
+    return null;
+  }
+  return `${year}-${month}-${day}`;
+}
+
+function prepareDateFields(formData: FormData, schema: NativeFormSchema): void {
+  for (const field of schema.fields.filter((candidate) => candidate.kind === "date")) {
+    const key = `field_${field.qid}`;
+    const month = String(formData.get(`${key}_month`) ?? "");
+    const day = String(formData.get(`${key}_day`) ?? "");
+    const year = String(formData.get(`${key}_year`) ?? "");
+    formData.delete(`${key}_month`);
+    formData.delete(`${key}_day`);
+    formData.delete(`${key}_year`);
+
+    const value = buildDateValue(month, day, year);
+    if (value === null) {
+      throw new Error(`Choose a valid Month, Day, and Year for ${field.label}.`);
+    }
+    if (value) formData.set(key, value);
+    else formData.delete(key);
+  }
 }
 
 function fileSizeLabel(bytes: number): string {
@@ -265,6 +369,7 @@ export function GeneratedNativeForm({ schema }: GeneratedNativeFormProps) {
     }
 
     try {
+      prepareDateFields(formData, schema);
       await prepareUploadFiles(form, formData, schema);
       const res = await fetch("/api/native-form-submit", {
         method: "POST",
