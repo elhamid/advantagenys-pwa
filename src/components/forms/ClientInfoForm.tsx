@@ -9,6 +9,7 @@ import type { ClientInfoLead } from "@/lib/leads/types";
 import { formStart, formSubmit } from "@/lib/analytics/events";
 import { reportFormError, userFacingFormError } from "@/lib/error-reporting";
 import { FormErrorMessage } from "@/components/ui/FormErrorMessage";
+import { preventImplicitFormSubmit } from "./preventImplicitFormSubmit";
 
 const serviceOptions = [
   "Business Formation",
@@ -185,7 +186,12 @@ export function ClientInfoForm() {
       <h2 className="text-xl font-bold text-[var(--text)] mb-6">
         Client Information
       </h2>
-      <form onSubmit={handleSubmit} onFocus={handleFirstFocus} className="space-y-5">
+      <form
+        onSubmit={handleSubmit}
+        onFocus={handleFirstFocus}
+        onKeyDown={preventImplicitFormSubmit}
+        className="space-y-5"
+      >
         {/* Full Legal Name */}
         <div>
           <label htmlFor="fullName" className="block text-sm font-medium text-[var(--text)] mb-1">

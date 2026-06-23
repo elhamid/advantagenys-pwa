@@ -135,4 +135,19 @@ describe("GeneratedNativeForm upload guard", () => {
     expect((body as FormData).get("field_64")).toBe("2025-07-04");
     expect((body as FormData).get("field_64_month")).toBeNull();
   });
+
+  it("does not submit when Enter is pressed inside a field", async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.mocked(fetch);
+    fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ success: true }), { status: 201 }));
+    render(<GeneratedNativeForm schema={schema} />);
+
+    await user.type(screen.getByLabelText(/first\/last name/i), "David Jean Jr");
+    await user.type(screen.getByLabelText(/phone number/i), "9295550101{enter}");
+
+    expect(fetchMock).not.toHaveBeenCalled();
+
+    await user.click(screen.getByRole("button", { name: /submit form/i }));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledWith("/api/native-form-submit", expect.anything()));
+  });
 });

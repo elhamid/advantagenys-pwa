@@ -10,6 +10,7 @@ import type { AdditionalOwner, CorporateRegistrationLead } from "@/lib/leads/typ
 import { formStart, formSubmit } from "@/lib/analytics/events";
 import { reportFormError, userFacingFormError } from "@/lib/error-reporting";
 import { FormErrorMessage } from "@/components/ui/FormErrorMessage";
+import { preventImplicitFormSubmit } from "./preventImplicitFormSubmit";
 
 const businessTypes = [
   "LLC",
@@ -278,7 +279,12 @@ export function CorporateRegistrationForm() {
       <h2 className="text-xl font-bold text-[var(--text)] mb-6">
         Corporate Registration
       </h2>
-      <form onSubmit={handleSubmit} onFocus={handleFirstFocus} className="space-y-5">
+      <form
+        onSubmit={handleSubmit}
+        onFocus={handleFirstFocus}
+        onKeyDown={preventImplicitFormSubmit}
+        className="space-y-5"
+      >
         {/* Owner 1: Name */}
         <div>
           <label htmlFor="corpFullName" className="block text-sm font-medium text-[var(--text)] mb-1">

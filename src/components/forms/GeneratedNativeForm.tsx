@@ -8,6 +8,7 @@ import { useFormSendIdParam, useSharedByParam, useUtmParams } from "@/hooks/useU
 import { formStart, formSubmit } from "@/lib/analytics/events";
 import { reportFormError, userFacingFormError } from "@/lib/error-reporting";
 import type { NativeFormField, NativeFormSchema } from "@/lib/native-form-schemas/types";
+import { preventImplicitFormSubmit } from "./preventImplicitFormSubmit";
 
 interface GeneratedNativeFormProps {
   schema: NativeFormSchema;
@@ -421,7 +422,12 @@ export function GeneratedNativeForm({ schema }: GeneratedNativeFormProps) {
 
   return (
     <Card>
-      <form onSubmit={handleSubmit} onFocus={handleFirstFocus} className="space-y-6">
+      <form
+        onSubmit={handleSubmit}
+        onFocus={handleFirstFocus}
+        onKeyDown={preventImplicitFormSubmit}
+        className="space-y-6"
+      >
         <div className="grid grid-cols-1 gap-5">
           {visibleFields.map((field) => (
             <div key={field.qid}>{renderField(field)}</div>

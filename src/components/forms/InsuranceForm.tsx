@@ -9,6 +9,7 @@ import type { InsuranceLead } from "@/lib/leads/types";
 import { formStart, formSubmit } from "@/lib/analytics/events";
 import { reportFormError, userFacingFormError } from "@/lib/error-reporting";
 import { FormErrorMessage } from "@/components/ui/FormErrorMessage";
+import { preventImplicitFormSubmit } from "./preventImplicitFormSubmit";
 
 const businessTypes = [
   "LLC",
@@ -203,7 +204,12 @@ export function InsuranceForm() {
       <h2 className="text-xl font-bold text-[var(--text)] mb-6">
         Insurance Intake Form
       </h2>
-      <form onSubmit={handleSubmit} onFocus={handleFirstFocus} className="space-y-5">
+      <form
+        onSubmit={handleSubmit}
+        onFocus={handleFirstFocus}
+        onKeyDown={preventImplicitFormSubmit}
+        className="space-y-5"
+      >
         {/* Full Name */}
         <div>
           <label htmlFor="insuranceFullName" className="block text-sm font-medium text-[var(--text)] mb-1">

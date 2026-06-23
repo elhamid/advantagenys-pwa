@@ -92,6 +92,23 @@ describe("ClientInfoForm", () => {
     );
   });
 
+  it("does not submit when Enter is pressed inside a field", async () => {
+    const fetchSpy = mockFetchResponse(true, { success: true });
+    vi.stubGlobal("fetch", fetchSpy);
+
+    const user = userEvent.setup();
+    render(<ClientInfoForm />);
+
+    await user.type(screen.getByLabelText(/full legal name/i), "Jane Client");
+    await user.type(screen.getByLabelText(/phone number/i), "9295550101{enter}");
+    await user.type(screen.getByLabelText(/^email/i), "jane@example.com");
+
+    expect(fetchSpy).not.toHaveBeenCalled();
+
+    await user.click(screen.getByRole("button", { name: /submit information/i }));
+    await waitFor(() => expect(fetchSpy).toHaveBeenCalledOnce());
+  });
+
   it("shows the API error when the response is not successful", async () => {
     vi.stubGlobal("fetch", mockFetchResponse(false, { success: false, error: "Server error" }));
 
