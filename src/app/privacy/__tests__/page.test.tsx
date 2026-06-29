@@ -18,6 +18,8 @@ describe("PrivacyPage", () => {
 
     expect(screen.getByRole("heading", { name: /privacy policy/i })).toBeInTheDocument();
     expect(screen.getByText(/we do not sell your personal information/i)).toBeInTheDocument();
+    expect(screen.getByText(/native Advantage forms saved into our internal Taskboard system/i)).toBeInTheDocument();
+    expect(screen.getByText(/sensitive native forms require an acknowledgement/i)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /jotform's privacy policy/i })).toHaveAttribute(
       "href",
       "https://www.jotform.com/privacy/"

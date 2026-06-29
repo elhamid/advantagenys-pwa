@@ -8,7 +8,7 @@ import {
   collectFormDataValues,
   extractNativeContact,
 } from "@/lib/native-form-schemas/answers";
-import type { NativeFormSchema } from "@/lib/native-form-schemas/types";
+import type { NativeFormField, NativeFormSchema } from "@/lib/native-form-schemas/types";
 
 export const runtime = "nodejs";
 
@@ -24,11 +24,24 @@ const ALLOWED_UPLOAD_TYPES = new Set([
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 ]);
 
+const SENSITIVE_LABEL_PATTERN =
+  /\b(ssn|social security|itin|tax id|taxid|ein|passport|visa|alien|a-number|anumber|routing|account|bank|birth date|date of birth|dob|signature|id number|driver.?s license)\b/i;
+
 function getString(formData: FormData, key: string): string | undefined {
   const value = formData.get(key);
   if (typeof value !== "string") return undefined;
   const trimmed = value.trim();
   return trimmed ? trimmed : undefined;
+}
+
+function isSensitiveFormField(field: NativeFormField): boolean {
+  if (field.hidden) return false;
+  if (field.sensitive === true) return true;
+  return SENSITIVE_LABEL_PATTERN.test(`${field.label} ${field.name}`);
+}
+
+function requiresSensitiveConsent(schema: NativeFormSchema): boolean {
+  return schema.fields.some(isSensitiveFormField);
 }
 
 function getUploadClient() {
@@ -282,6 +295,16 @@ export async function POST(request: NextRequest) {
   const schema = getNativeFormSchema(slug);
   if (!schema) {
     return NextResponse.json({ success: false, error: "Unknown form." }, { status: 404 });
+  }
+
+  if (requiresSensitiveConsent(schema) && getString(formData, "privacyConsent") !== "yes") {
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Please acknowledge the sensitive information notice before submitting.",
+      },
+      { status: 400 }
+    );
   }
 
   const values = collectFormDataValues(formData, schema);

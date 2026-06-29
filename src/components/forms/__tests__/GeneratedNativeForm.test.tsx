@@ -92,12 +92,36 @@ describe("GeneratedNativeForm upload guard", () => {
     vi.restoreAllMocks();
   });
 
+  async function acknowledgeSensitiveIntake(user: ReturnType<typeof userEvent.setup>) {
+    await user.click(screen.getByRole("checkbox", { name: /i understand advantage will collect and use this information/i }));
+  }
+
+  it("shows a required privacy acknowledgement before sensitive generated forms submit", async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.mocked(fetch);
+    fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ success: true }), { status: 201 }));
+    render(<GeneratedNativeForm schema={schema} />);
+
+    expect(screen.getByText(/this form asks for sensitive information/i)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /privacy policy/i })).toHaveAttribute("href", "/privacy");
+
+    await user.type(screen.getByLabelText(/first\/last name/i), "David Jean Jr");
+    await user.type(screen.getByLabelText(/phone number/i), "9295550101");
+    await user.click(screen.getByRole("button", { name: /submit form/i }));
+    expect(fetchMock).not.toHaveBeenCalled();
+
+    await acknowledgeSensitiveIntake(user);
+    await user.click(screen.getByRole("button", { name: /submit form/i }));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledWith("/api/native-form-submit", expect.anything()));
+  });
+
   it("blocks oversized files before the native submit request reaches Vercel", async () => {
     const user = userEvent.setup();
     render(<GeneratedNativeForm schema={schema} />);
 
     await user.type(screen.getByLabelText(/first\/last name/i), "David Jean Jr");
     await user.type(screen.getByLabelText(/phone number/i), "9295550101");
+    await acknowledgeSensitiveIntake(user);
     await user.upload(
       screen.getByLabelText(/upload a copy/i),
       new File([new Uint8Array(5 * 1024 * 1024)], "passport.pdf", { type: "application/pdf" })
@@ -117,6 +141,7 @@ describe("GeneratedNativeForm upload guard", () => {
 
     await user.type(screen.getByLabelText(/first\/last name/i), "David Jean Jr");
     await user.type(screen.getByLabelText(/phone number/i), "9295550101");
+    await acknowledgeSensitiveIntake(user);
     expect(screen.getAllByText(/use month \/ day \/ year/i)).toHaveLength(2);
     await user.selectOptions(screen.getByLabelText(/birth date month/i), "06");
     await user.selectOptions(screen.getByLabelText(/birth date day/i), "23");
@@ -147,6 +172,7 @@ describe("GeneratedNativeForm upload guard", () => {
 
     expect(fetchMock).not.toHaveBeenCalled();
 
+    await acknowledgeSensitiveIntake(user);
     await user.click(screen.getByRole("button", { name: /submit form/i }));
     await waitFor(() => expect(fetchMock).toHaveBeenCalledWith("/api/native-form-submit", expect.anything()));
   });

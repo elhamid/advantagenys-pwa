@@ -40,6 +40,9 @@ const DAY_OPTIONS = Array.from({ length: 31 }, (_, index) => String(index + 1).p
 const inputClasses =
   "w-full rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-[var(--text)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--blue-accent)] focus:border-transparent transition-all";
 
+const SENSITIVE_LABEL_PATTERN =
+  /\b(ssn|social security|itin|tax id|taxid|ein|passport|visa|alien|a-number|anumber|routing|account|bank|birth date|date of birth|dob|signature|id number|driver.?s license)\b/i;
+
 function requiredMarker(required: boolean) {
   return required ? <span className="text-red-500">*</span> : null;
 }
@@ -56,6 +59,12 @@ function isDateLikeField(field: NativeFormField): boolean {
   if (field.kind === "date") return true;
   const label = `${field.label} ${field.name}`.toLowerCase();
   return /\bdate\b|birthdate|expiration/.test(label);
+}
+
+function isSensitiveFormField(field: NativeFormField): boolean {
+  if (field.hidden) return false;
+  if (field.sensitive === true) return true;
+  return SENSITIVE_LABEL_PATTERN.test(`${field.label} ${field.name}`);
 }
 
 function renderOptionField(field: NativeFormField, mode: "radio" | "checkbox") {
@@ -356,6 +365,7 @@ export function GeneratedNativeForm({ schema }: GeneratedNativeFormProps) {
   const [error, setError] = useState<string | null>(null);
   const startedRef = useRef(false);
   const visibleFields = schema.fields.filter((field) => !field.hidden);
+  const hasSensitiveFields = visibleFields.some(isSensitiveFormField);
 
   function handleFirstFocus() {
     if (startedRef.current) return;
@@ -433,6 +443,33 @@ export function GeneratedNativeForm({ schema }: GeneratedNativeFormProps) {
             <div key={field.qid}>{renderField(field)}</div>
           ))}
         </div>
+
+        {hasSensitiveFields && (
+          <div className="rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)] p-4">
+            <p className="text-sm font-semibold text-[var(--text)]">
+              This form asks for sensitive information.
+            </p>
+            <p className="mt-1 text-sm text-[var(--text-secondary)]">
+              We collect it only to prepare or support your requested service. It is sent securely, access is limited to the Advantage team, and sensitive identifiers are masked inside our CRM unless staff need to view them.
+            </p>
+            <label className="mt-3 flex items-start gap-3 text-sm text-[var(--text)]">
+              <input
+                type="checkbox"
+                name="privacyConsent"
+                value="yes"
+                required
+                className="mt-1 h-4 w-4 accent-[var(--blue-accent)]"
+              />
+              <span>
+                I understand Advantage will collect and use this information for my requested service. I can read the{" "}
+                <a href="/privacy" className="font-semibold text-[var(--blue-accent)] underline underline-offset-2">
+                  Privacy Policy
+                </a>
+                .
+              </span>
+            </label>
+          </div>
+        )}
 
         {error && <FormErrorMessage error={error} />}
 

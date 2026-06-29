@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import { POST } from "../route";
 
 const ROUTE_SOURCE = readFileSync(
   join(process.cwd(), "src/app/api/native-form-submit/route.ts"),
@@ -12,10 +13,35 @@ const LEGACY_ITIN_STORAGE_SOURCE = readFileSync(
 );
 
 describe("native-form-submit source contract", () => {
+  it("rejects sensitive native submissions when the privacy acknowledgement is bypassed", async () => {
+    const formData = new FormData();
+    formData.set("formSlug", "itin-registration-form");
+
+    const response = await POST(
+      new Request("http://localhost/api/native-form-submit", {
+        method: "POST",
+        body: formData,
+      }) as Parameters<typeof POST>[0],
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(body).toEqual({
+      success: false,
+      error: "Please acknowledge the sensitive information notice before submitting.",
+    });
+  });
+
   it("preserves duplicate upload labels in the document manifest", () => {
     expect(ROUTE_SOURCE).toContain("function uniqueDocumentKey");
     expect(ROUTE_SOURCE).toContain("uniqueDocumentKey(documentUrls, field.label, field.qid)");
     expect(ROUTE_SOURCE).not.toContain("documentUrls[field.label] = urls");
+  });
+
+  it("enforces the sensitive-form acknowledgement server-side", () => {
+    expect(ROUTE_SOURCE).toContain("function requiresSensitiveConsent");
+    expect(ROUTE_SOURCE).toContain('getString(formData, "privacyConsent") !== "yes"');
+    expect(ROUTE_SOURCE).toContain("Please acknowledge the sensitive information notice before submitting.");
   });
 
   it("stores native upload manifests as private storage refs, not public ITIN URLs", () => {
