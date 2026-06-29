@@ -15,7 +15,7 @@ export default function PrivacyPage() {
       <Container>
         <div className="max-w-3xl mx-auto">
           <h1 className="text-4xl font-bold text-[var(--text)] mb-3">Privacy Policy</h1>
-          <p className="text-sm text-[var(--text-secondary)] mb-12">Last updated: March 2026</p>
+          <p className="text-sm text-[var(--text-secondary)] mb-12">Last updated: June 2026</p>
 
           <p className="text-lg text-[var(--text-secondary)] mb-12 leading-relaxed">
             Advantage Services LLC (&ldquo;Advantage,&rdquo; &ldquo;we,&rdquo; &ldquo;our,&rdquo; or
@@ -40,19 +40,20 @@ export default function PrivacyPage() {
               </li>
               <li>
                 <strong className="text-[var(--text)]">Tax and financial information</strong> — Social Security
-                Numbers, ITINs, EINs, income records, and prior tax returns collected via JotForm embedded forms
-                during tax preparation or ITIN service intake.
+                Numbers, ITINs, EINs, income records, and prior tax returns collected through Advantage service
+                intake forms during tax preparation or ITIN service intake.
               </li>
               <li>
                 <strong className="text-[var(--text)]">Immigration information</strong> — visa status, country of
-                origin, passport details, and related documentation collected via JotForm embedded forms for
-                immigration-related services.
+                origin, passport details, and related documentation collected through Advantage service intake
+                forms for immigration-related services.
               </li>
             </ul>
             <p className="text-[var(--text-secondary)] mt-4 leading-relaxed">
-              Our native contact form (on the Contact page) collects name, email, phone, and message only.
-              JotForm-embedded forms on our Resources pages collect the additional service-specific information
-              listed above and are processed under JotForm&apos;s platform.
+              Our native contact form (on the Contact page) collects name, email, phone, and message only. Service
+              intake forms on our Resources pages may ask for additional service-specific information. Some forms are
+              native Advantage forms saved into our internal Taskboard system; some forms may still use or mirror to
+              JotForm while we complete the migration.
             </p>
           </div>
 
@@ -62,7 +63,7 @@ export default function PrivacyPage() {
             <ul className="list-disc pl-6 space-y-2 text-[var(--text-secondary)] leading-relaxed">
               <li>
                 <strong className="text-[var(--text)]">Directly from you</strong> — via our website contact form,
-                JotForm service intake forms, in-person consultations, phone, email, and WhatsApp.
+                Advantage service intake forms, in-person consultations, phone, email, and WhatsApp.
               </li>
               <li>
                 <strong className="text-[var(--text)]">Automatically</strong> — Vercel (our hosting provider)
@@ -99,9 +100,14 @@ export default function PrivacyPage() {
             <h2 className="text-2xl font-bold text-[var(--text)] mb-4">4. Third-Party Services</h2>
             <ul className="list-disc pl-6 space-y-2 text-[var(--text-secondary)] leading-relaxed">
               <li>
-                <strong className="text-[var(--text)]">JotForm</strong> — we embed JotForm forms to collect service
-                intake information. Data submitted through JotForm is stored on JotForm&apos;s platform and is subject
-                to{" "}
+                <strong className="text-[var(--text)]">Advantage Taskboard</strong> — native service intake forms
+                are saved into our internal CRM and operations system so our team can prepare, track, and complete
+                your requested service.
+              </li>
+              <li>
+                <strong className="text-[var(--text)]">JotForm</strong> — some legacy service forms may still use
+                JotForm or receive a backup mirror while we migrate forms into Advantage. Data submitted through
+                JotForm is stored on JotForm&apos;s platform and is subject to{" "}
                 <a
                   href="https://www.jotform.com/privacy/"
                   target="_blank"
@@ -143,9 +149,11 @@ export default function PrivacyPage() {
             </p>
             <ul className="list-disc pl-6 space-y-2 text-[var(--text-secondary)] leading-relaxed mt-4">
               <li>Sensitive data is collected only through encrypted, HTTPS-secured forms</li>
+              <li>Sensitive native forms require an acknowledgement before submission</li>
               <li>
-                Access is restricted to the specific team member handling your case
+                Access to sensitive identifiers is limited to authorized staff who need them for service work
               </li>
+              <li>Uploaded documents are stored in private storage, not public website links</li>
               <li>
                 We do not share your sensitive documents with third parties except as required to deliver your
                 service (e.g., filing with the IRS, USCIS, or New York State agencies)

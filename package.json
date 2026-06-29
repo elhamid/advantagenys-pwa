@@ -24,7 +24,7 @@
     "isomorphic-dompurify": "^3.10.0",
     "lucide-react": "^1.11.0",
     "next": "^16.2.7",
-    "nodemailer": "^8.0.7",
+    "nodemailer": "^9.0.1",
     "react": "19.2.5",
     "react-dom": "19.2.5"
   },
@@ -48,6 +48,7 @@
     "vitest": "^4.1.5"
   },
   "overrides": {
-    "jsdom": "^28.1.0"
+    "jsdom": "^28.1.0",
+    "undici": "7.28.0"
   }
 }

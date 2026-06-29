@@ -43,6 +43,11 @@ const SECURITY_HEADERS = [
 ];
 
 const nextConfig: NextConfig = {
+  outputFileTracingIncludes: {
+    "/p/surgical-component-recovery": [
+      "./src/app/p/surgical-component-recovery/06-pilot-brief.html",
+    ],
+  },
   images: {
     deviceSizes: [640, 750, 828, 1080, 1200, 1400, 1920],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
