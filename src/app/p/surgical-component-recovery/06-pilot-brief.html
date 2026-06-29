@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Surgical Component Recovery Pilot Brief</title>
+  <style>
+    :root {
+      --paper: #fbf7ef;
+      --card: #fffdf8;
+      --ink: #151718;
+      --muted: #665f54;
+      --line: #ded4c4;
+      --gold: #a9791f;
+      --blue: #163b5c;
+      --green: #0e694e;
+      --red: #8a2f2f;
+      --soft-gold: #f0e2c6;
+      --soft-blue: #e4edf4;
+      --soft-green: #dfeee7;
+      --soft-red: #f1dfdc;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.48;
+    }
+
+    .page {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 34px 24px 48px;
+    }
+
+    .kicker {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--gold);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+    }
+
+    .kicker:before {
+      content: "";
+      width: 28px;
+      height: 2px;
+      background: var(--gold);
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.35fr 0.65fr;
+      gap: 24px;
+      align-items: stretch;
+      margin-top: 16px;
+    }
+
+    h1 {
+      margin: 0;
+      max-width: 760px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(42px, 6.5vw, 76px);
+      line-height: 0.95;
+      font-weight: 600;
+      letter-spacing: 0;
+    }
+
+    .lede {
+      margin: 18px 0 0;
+      max-width: 720px;
+      color: var(--muted);
+      font-size: 19px;
+    }
+
+    .verdict {
+      background: var(--blue);
+      color: #fffdf8;
+      border-radius: 8px;
+      padding: 22px;
+      min-height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .verdict span {
+      display: block;
+      color: #c7d7e3;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .verdict strong {
+      display: block;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 30px;
+      line-height: 1.06;
+      font-weight: 600;
+    }
+
+    .verdict p {
+      margin: 18px 0 0;
+      color: #eaf1f6;
+      font-size: 14px;
+    }
+
+    .tiles {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin: 24px 0;
+    }
+
+    .tile {
+      min-height: 112px;
+      padding: 16px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .tile b {
+      display: block;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--gold);
+      margin-bottom: 8px;
+    }
+
+    .tile p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .section {
+      margin-top: 26px;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .section-head h2 {
+      margin: 0;
+      color: var(--gold);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .section-head:after {
+      content: "";
+      height: 1px;
+      flex: 1;
+      background: var(--line);
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 18px;
+    }
+
+    .card h3 {
+      margin: 0 0 8px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 24px;
+      font-weight: 600;
+      line-height: 1.08;
+    }
+
+    .card p, .card li {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .card p { margin: 0; }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      padding: 5px 9px;
+      margin-bottom: 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .pill.blue { color: var(--blue); background: var(--soft-blue); }
+    .pill.green { color: var(--green); background: var(--soft-green); }
+    .pill.red { color: var(--red); background: var(--soft-red); }
+
+    ul {
+      margin: 0;
+      padding-left: 18px;
+    }
+
+    li + li { margin-top: 6px; }
+
+    .two {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .checklist {
+      counter-reset: step;
+      display: grid;
+      gap: 10px;
+    }
+
+    .step {
+      display: grid;
+      grid-template-columns: 44px 1fr;
+      gap: 12px;
+      align-items: start;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+    }
+
+    .step:before {
+      counter-increment: step;
+      content: counter(step);
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      color: #fffdf8;
+      background: var(--gold);
+      font-weight: 900;
+    }
+
+    .step b {
+      display: block;
+      margin-bottom: 2px;
+      font-size: 15px;
+    }
+
+    .step span {
+      display: block;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .quote {
+      margin-top: 12px;
+      padding: 18px;
+      background: var(--soft-gold);
+      border: 1px solid #dcc58d;
+      border-radius: 8px;
+      color: #533b0b;
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    .refs {
+      columns: 2;
+      column-gap: 26px;
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .refs li { break-inside: avoid; margin: 0 0 7px; }
+    a { color: var(--blue); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .footer {
+      margin-top: 24px;
+      color: var(--muted);
+      font-size: 12px;
+      border-top: 1px solid var(--line);
+      padding-top: 14px;
+    }
+
+    @media (max-width: 820px) {
+      .hero, .grid-3, .two { grid-template-columns: 1fr; }
+      .tiles { grid-template-columns: repeat(2, 1fr); }
+      .refs { columns: 1; }
+      h1 { font-size: 44px; }
+    }
+
+    @media print {
+      body { background: white; }
+      .page { max-width: none; padding: 0.35in; }
+      .card, .tile, .step, .verdict { break-inside: avoid; }
+      a { color: inherit; text-decoration: none; }
+      .section { margin-top: 18px; }
+      .lede { font-size: 17px; }
+      .card p, .card li, .step span { font-size: 12.5px; }
+      .refs { font-size: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="kicker">JKH Ventures exploratory pilot</div>
+
+    <section class="hero">
+      <div>
+        <h1>Surgical Component Recovery</h1>
+        <p class="lede">
+          A small pilot to test whether unused, inner-sealed heart and brain procedure-set components can be documented, priced, and routed to a licensed buyer without touching used devices or medical waste.
+        </p>
+      </div>
+      <aside class="verdict">
+        <div>
+          <span>Verdict</span>
+          <strong>Worth a tiny pilot. Not a business yet.</strong>
+        </div>
+        <p>The first move is not a shipment. It is a buyer legality sheet and one real set audit.</p>
+      </aside>
+    </section>
+
+    <section class="tiles">
+      <div class="tile"><b>The source</b><p>U.S. heart and brain surgeons identify opened sets with unused sealed leftovers.</p></div>
+      <div class="tile"><b>The buyer</b><p>India-side contacts test demand and the lawful import/distribution route.</p></div>
+      <div class="tile"><b>The product</b><p>Only unused, untouched, inner-sealed, in-date components with label/lot/expiry data.</p></div>
+      <div class="tile"><b>The stop line</b><p>No used, exposed, reprocessed, red-bag, or customs-ambiguous goods.</p></div>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><h2>Why It Is Interesting</h2></div>
+      <div class="two">
+        <article class="card">
+          <span class="pill green">Real waste</span>
+          <h3>OR waste is documented.</h3>
+          <p>Hospitals discard meaningful unused operating-room supplies. REMEDY-style recovery and donation programs prove that sealed surplus recovery is a real category, not just a theory.</p>
+        </article>
+        <article class="card">
+          <span class="pill blue">Contact edge</span>
+          <h3>The contacts make it testable.</h3>
+          <p>The U.S. surgeons can show which sets create leftovers. The buyer-side contacts can answer the only question that matters: can these exact categories be bought legally?</p>
+        </article>
+      </div>
+      <div class="quote">Pilot question: can one tiny batch be documented, accepted, and paid for legally?</div>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><h2>Bright Lines</h2></div>
+      <div class="grid-3">
+        <article class="card">
+          <span class="pill green">Allowed</span>
+          <ul>
+            <li>Inner sterile seal intact</li>
+            <li>Never touched patient</li>
+            <li>In-date with lot/expiry/UDI</li>
+            <li>Transferred before waste stream</li>
+          </ul>
+        </article>
+        <article class="card">
+          <span class="pill red">Not allowed</span>
+          <ul>
+            <li>Used or patient-contact items</li>
+            <li>Broken seal or exposed sterile goods</li>
+            <li>Red-bag or regulated waste</li>
+            <li>Cleaning or re-sterilizing</li>
+          </ul>
+        </article>
+        <article class="card">
+          <span class="pill blue">Unresolved</span>
+          <ul>
+            <li>Buyer import license for exact categories</li>
+            <li>"Not for individual sale" components</li>
+            <li>U.S. repackager/relabeler registration duties</li>
+            <li>Hospital title-transfer terms</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><h2>Actual Steps</h2></div>
+      <div class="checklist">
+        <div class="step"><div><b>Buyer legality sheet</b><span>Name the Indian buying/importing entity. Confirm CDSCO MD-15 access and the residual shelf-life rule for the exact categories.</span></div></div>
+        <div class="step"><div><b>Target category list</b><span>Ask what they want and what they would pay: cannulas, guidewires, hemostats, sutures, clips, patties, drains, graft-related components, and similar sealed items.</span></div></div>
+        <div class="step"><div><b>One U.S. set audit</b><span>With one surgeon, audit one heart or brain procedure set. Record manufacturer, REF/model, lot, expiry, UDI, intact seal, standalone label, and "not for individual sale" language.</span></div></div>
+        <div class="step"><div><b>Two narrow professional opinions</b><span>Ask U.S. counsel to confirm repackager/relabeler registration duties and that this avoids reprocessor/manufacturer status. Ask an India regulatory consultant if the buyer can receive these exact items as unused goods.</span></div></div>
+        <div class="step"><div><b>Micro-batch only</b><span>If green, run one site, one procedure type, one trained champion, one clean collection bin, one item-level ledger, and one pre-approved buyer list.</span></div></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><h2>Success And Hard Stops</h2></div>
+      <div class="two">
+        <article class="card">
+          <span class="pill green">Promising if</span>
+          <ul>
+            <li>Buyer can legally receive the exact categories</li>
+            <li>One set produces meaningful clean value</li>
+            <li>Items have standalone label, lot, expiry, and UDI</li>
+            <li>Hospital can transfer title before waste entry</li>
+            <li>Buyer gives SKU-level pricing before shipment</li>
+          </ul>
+        </article>
+        <article class="card">
+          <span class="pill red">Stop if</span>
+          <ul>
+            <li>Buyer cannot show a legal import/distribution path</li>
+            <li>Most items are short-dated, unlabeled, or ambiguous</li>
+            <li>Hospital requires items to enter waste first</li>
+            <li>Counsel says this triggers reprocessor/manufacturer obligations</li>
+            <li>Manufacturer anti-resale or gray-market terms block the SKU</li>
+            <li>Buyer asks for used, exposed, or reprocessed goods</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><h2>Research References</h2></div>
+      <ol class="refs">
+        <li><a href="https://www.fda.gov/medical-devices/reprocessing-single-use-medical-devices-information-health-care-facilities/reprocessed-single-use-devices-frequently-asked-questions">FDA: Reprocessed single-use device FAQ</a></li>
+        <li><a href="https://www.fda.gov/medical-devices/importing-and-exporting-medical-devices/exporting-medical-devices">FDA: Exporting medical devices</a></li>
+        <li><a href="https://www.fda.gov/medical-devices/device-registration-and-listing/who-must-register-list-and-pay-fee">FDA: Who must register and list</a></li>
+        <li><a href="https://www.ecfr.gov/current/title-21/chapter-I/subchapter-H/part-801/subpart-E/section-801.150">21 CFR 801.150: processing, labeling, repacking</a></li>
+        <li><a href="https://www.fda.gov/medical-devices/unique-device-identification-system-udi-system/udi-basics">FDA: UDI basics and labeler responsibility</a></li>
+        <li><a href="https://cdsco.gov.in/opencms/resources/UploadCDSCOWeb/2022/m_device/Medical%20Devices%20Rules%2C%202017.pdf">CDSCO: Medical Devices Rules, 2017</a></li>
+        <li><a href="https://cdsco.gov.in/opencms/export/sites/CDSCO_WEB/Pdf-documents/Addendum02faqmd.pdf">CDSCO FAQ addendum: residual shelf life</a></li>
+        <li><a href="https://hub.jhu.edu/gazette/2015/january-february/currents-united-states-wastes-surgical-supplies/">Johns Hopkins: unused surgical supplies waste</a></li>
+        <li><a href="https://einsteinmed.edu/uploadedFiles/EJBM/19miller121.pdf">REMEDY recovery model</a></li>
+        <li><a href="https://www.medshare.org/donate/donate-medical-supplies-equipment/">MedShare: medical supply donation criteria</a></li>
+      </ol>
+    </section>
+
+    <footer class="footer">
+      Prepared as a pilot-screening brief. It is not legal advice and should not be used to move goods, accept payment, or make customs declarations without U.S. and destination-country regulatory review.
+    </footer>
+  </main>
+</body>
+</html>

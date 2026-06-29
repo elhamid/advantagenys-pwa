@@ -34,6 +34,7 @@ export function proxy(request: NextRequest) {
   // Don't redirect if already on legacy pages, API routes, or static files
   if (
     path.startsWith("/legacy") ||
+    path.startsWith("/p/") ||
     path.startsWith("/api/") ||
     path.startsWith("/_next/") ||
     path.startsWith("/icons/") ||
