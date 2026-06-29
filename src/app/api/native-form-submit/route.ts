@@ -227,7 +227,10 @@ async function forwardToTaskboard(payload: Record<string, unknown>): Promise<{ o
     return { ok: false, status: 503, text: "PWA_WEBHOOK_SECRET is not configured" };
   }
 
-  const url = process.env.TASKBOARD_WEBHOOK_URL || "https://app.advantagenys.com/api/webhooks/pwa-lead";
+  const url = process.env.TASKBOARD_WEBHOOK_URL
+    || (process.env.VERCEL_ENV === "production"
+      ? "https://app.advantagenys.com/api/webhooks/pwa-lead"
+      : "https://advantage-taskboard-git-staging-hamids-projects-59f8b77f.vercel.app/api/webhooks/pwa-lead");
   const res = await fetch(url, {
     method: "POST",
     headers: {

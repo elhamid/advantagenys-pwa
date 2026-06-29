@@ -60,6 +60,12 @@ describe("native-form-submit source contract", () => {
     expect(ROUTE_SOURCE).not.toContain("Sensitive answers are masked before taskboard/CRM storage");
   });
 
+  it("does not let preview deployments silently forward native forms into production Taskboard", () => {
+    expect(ROUTE_SOURCE).toContain('process.env.VERCEL_ENV === "production"');
+    expect(ROUTE_SOURCE).toContain("https://app.advantagenys.com/api/webhooks/pwa-lead");
+    expect(ROUTE_SOURCE).toContain("https://advantage-taskboard-git-staging-hamids-projects-59f8b77f.vercel.app/api/webhooks/pwa-lead");
+  });
+
   it("keeps retired legacy ITIN storage fail-closed", () => {
     expect(LEGACY_ITIN_STORAGE_SOURCE).toContain("Legacy ITIN document storage is retired.");
     expect(LEGACY_ITIN_STORAGE_SOURCE).toContain("refusing document upload");
