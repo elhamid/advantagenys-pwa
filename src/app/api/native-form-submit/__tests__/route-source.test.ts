@@ -62,6 +62,8 @@ describe("native-form-submit source contract", () => {
 
   it("does not let preview deployments silently forward native forms into production Taskboard", () => {
     expect(ROUTE_SOURCE).toContain('process.env.VERCEL_ENV === "production"');
+    expect(ROUTE_SOURCE).toContain("const configuredUrl = process.env.TASKBOARD_WEBHOOK_URL?.trim()");
+    expect(ROUTE_SOURCE).toContain("configuredUrl && configuredUrl !== productionUrl");
     expect(ROUTE_SOURCE).toContain("https://app.advantagenys.com/api/webhooks/pwa-lead");
     expect(ROUTE_SOURCE).toContain("https://advantage-taskboard-git-staging-hamids-projects-59f8b77f.vercel.app/api/webhooks/pwa-lead");
   });
