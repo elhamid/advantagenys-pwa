@@ -243,7 +243,7 @@ export function CorporateRegistrationForm() {
           Thank You, {formData.fullName}!
         </h3>
         <p className="text-[var(--text-secondary)]">
-          Your corporate registration request has been received.
+          Your corporation formation request has been received.
           <br />
           We&apos;ll contact you within 1 business day. For immediate assistance, call{" "}
           <a href="tel:+19299331396" className="text-[var(--blue-accent)] font-medium">
@@ -277,7 +277,7 @@ export function CorporateRegistrationForm() {
   return (
     <Card>
       <h2 className="text-xl font-bold text-[var(--text)] mb-6">
-        Corporate Registration
+        Corporation Formation
       </h2>
       <form
         onSubmit={handleSubmit}

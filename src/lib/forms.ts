@@ -241,14 +241,14 @@ export const forms: FormConfig[] = [
   },
   {
     id: "native-corp",
-    title: "Corporation Services",
-    description: "Business formation and corporate registration intake",
+    title: "Corporation Formation",
+    description: "Business formation and entity filing intake",
     category: "business",
     platform: "native",
     nativeComponent: "CorporateRegistrationForm",
     active: true,
     priority: 2,
-    slug: toSlug("Corporation Services"),
+    slug: "corporation-services",
     shortLinkSlug: "corp",
     whatsappText:
       "Hi {firstName}, here is the LLC/Corporation registration form so we can get your entity filed: https://advantagenys.com/r/corp",
@@ -371,8 +371,12 @@ export function getFormByShortLinkSlug(shortLinkSlug: string): FormConfig | unde
   return forms.find((f) => f.shortLinkSlug === shortLinkSlug && f.active);
 }
 
+export function sortFormsAlphabetically<T extends Pick<FormConfig, "title">>(items: T[]): T[] {
+  return [...items].sort((a, b) => a.title.localeCompare(b.title, undefined, { sensitivity: "base" }));
+}
+
 export function getFormsByCategory(category: CategoryKey): FormConfig[] {
-  const activeForms = forms.filter((f) => f.active).sort((a, b) => a.priority - b.priority);
+  const activeForms = sortFormsAlphabetically(forms.filter((f) => f.active));
   if (category === "all") return activeForms;
   return activeForms.filter((f) => f.category === category);
 }

@@ -1,4 +1,4 @@
-import { forms, type FormConfig } from "@/lib/forms";
+import { forms, sortFormsAlphabetically, type FormConfig } from "@/lib/forms";
 import { BASE_URL } from "@/lib/seo";
 
 /** Shape returned to taskboard/other consumers — intentionally stable. */
@@ -35,8 +35,5 @@ export function toPublicDescriptor(f: FormConfig): PublicFormDescriptor {
 }
 
 export function activePublicForms(): PublicFormDescriptor[] {
-  return forms
-    .filter((f) => f.active)
-    .sort((a, b) => a.priority - b.priority)
-    .map(toPublicDescriptor);
+  return sortFormsAlphabetically(forms.filter((f) => f.active)).map(toPublicDescriptor);
 }

@@ -58,17 +58,16 @@ describe("GET /api/v1/resources/forms", () => {
   });
 
   // -----------------------------------------------------------------------
-  // 5. Forms are sorted by priority
+  // 5. Forms are sorted alphabetically
   // -----------------------------------------------------------------------
-  it("returns forms sorted by priority (ascending)", async () => {
+  it("returns forms sorted alphabetically by title", async () => {
     const res = GET();
     const body = await res.json();
 
-    // publicUrl contains slug, and forms should be in priority order
-    // We just verify the array has at least 2 items to make the sort check meaningful
-    if (body.forms.length >= 2) {
-      // The first form (ITIN) should have the highest priority (lowest number)
-      expect(body.forms[0].slug).toBeTruthy();
+    for (let i = 1; i < body.forms.length; i++) {
+      expect(
+        body.forms[i].title.localeCompare(body.forms[i - 1].title, undefined, { sensitivity: "base" }),
+      ).toBeGreaterThanOrEqual(0);
     }
   });
 

@@ -67,6 +67,16 @@ describe('FormsGrid', () => {
 
     expect(screen.getByRole('region', { name: /quick links/i })).toBeInTheDocument()
     expect(screen.getByText('Zelle Payment Info')).toBeInTheDocument()
-    expect(screen.getByText('Corporation Services')).toBeInTheDocument()
+    expect(screen.getByText('Corporation Formation')).toBeInTheDocument()
+  })
+
+  it('shows all real forms alphabetically without a priority accordion', () => {
+    const { container } = render(<FormsGrid />)
+    const text = container.textContent ?? ''
+
+    expect(screen.queryByRole('button', { name: /more forms/i })).not.toBeInTheDocument()
+    expect(text.indexOf('Basic Info / Client Intake')).toBeLessThan(text.indexOf('BOIR Form'))
+    expect(text.indexOf('BOIR Form')).toBeLessThan(text.indexOf('Citizenship Info Form'))
+    expect(text.indexOf('Corporation Formation')).toBeLessThan(text.indexOf('Home Improvement Licensing'))
   })
 })

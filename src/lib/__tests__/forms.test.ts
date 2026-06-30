@@ -159,9 +159,10 @@ describe("getFormBySlug()", () => {
     expect(form?.nativeComponent).toBe("ClientInfoForm");
   });
 
-  it("finds Corporation Services form by slug", () => {
+  it("finds Corporation Formation form by slug", () => {
     const form = getFormBySlug("corporation-services");
     expect(form).toBeDefined();
+    expect(form?.title).toBe("Corporation Formation");
     expect(form?.nativeComponent).toBe("CorporateRegistrationForm");
   });
 
@@ -222,10 +223,10 @@ describe("getFormsByCategory()", () => {
     });
   });
 
-  it("returns results sorted by priority (ascending)", () => {
+  it("returns results sorted alphabetically by title", () => {
     const all = getFormsByCategory("all");
     for (let i = 1; i < all.length; i++) {
-      expect(all[i].priority).toBeGreaterThan(all[i - 1].priority);
+      expect(all[i].title.localeCompare(all[i - 1].title, undefined, { sensitivity: "base" })).toBeGreaterThanOrEqual(0);
     }
   });
 

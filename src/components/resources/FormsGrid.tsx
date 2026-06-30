@@ -10,8 +10,6 @@ interface FormsGridProps {
   kioskMode?: boolean;
 }
 
-const PRIORITY_THRESHOLD = 9;
-
 function UtilityLinkRow({ item }: { item: FormConfig }) {
   if (!item.linkUrl) return null;
 
@@ -37,7 +35,6 @@ function UtilityLinkRow({ item }: { item: FormConfig }) {
 export function FormsGrid({ kioskMode = false }: FormsGridProps) {
   const [activeCategory, setActiveCategory] = useState<CategoryKey>("all");
   const [search, setSearch] = useState("");
-  const [accordionOpen, setAccordionOpen] = useState(false);
 
   const filtered = useMemo(() => {
     let results = getFormsByCategory(activeCategory);
@@ -55,11 +52,6 @@ export function FormsGrid({ kioskMode = false }: FormsGridProps) {
 
   const serviceForms = filtered.filter((form) => form.type !== "link");
   const utilityLinks = filtered.filter((form) => form.type === "link");
-
-  // Split is only active on the default unfiltered view
-  const isFiltered = search.trim() !== "" || activeCategory !== "all";
-  const primaryForms = isFiltered ? serviceForms : serviceForms.filter((f) => f.priority <= PRIORITY_THRESHOLD);
-  const moreForms = isFiltered ? [] : serviceForms.filter((f) => f.priority > PRIORITY_THRESHOLD);
 
   const gridClass = `grid gap-4 ${kioskMode ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"}`;
 
@@ -134,61 +126,11 @@ export function FormsGrid({ kioskMode = false }: FormsGridProps) {
           transition={{ duration: 0.2 }}
           className={gridClass}
         >
-          {primaryForms.map((form, i) => (
+          {serviceForms.map((form, i) => (
             <FormCard key={form.id} form={form} index={i} kioskMode={kioskMode} />
           ))}
         </motion.div>
       </AnimatePresence>
-
-      {/* "More forms" accordion — only in default unfiltered view */}
-      {moreForms.length > 0 && (
-        <div className="mt-8">
-          <button
-            type="button"
-            aria-expanded={accordionOpen}
-            onClick={() => setAccordionOpen((v) => !v)}
-            className="flex items-center gap-2 text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors duration-150 cursor-pointer group"
-          >
-            <motion.svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              animate={{ rotate: accordionOpen ? 180 : 0 }}
-              transition={{ duration: 0.2 }}
-            >
-              <path d="M6 9l6 6 6-6" />
-            </motion.svg>
-            <span className="text-sm font-medium">
-              More forms{" "}
-              <span className="text-[var(--text-muted)] font-normal">({moreForms.length})</span>
-            </span>
-          </button>
-
-          <AnimatePresence>
-            {accordionOpen && (
-              <motion.div
-                key="more-forms"
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.25, ease: "easeInOut" }}
-                style={{ overflow: "hidden" }}
-              >
-                <div className={`${gridClass} mt-4`}>
-                  {moreForms.map((form, i) => (
-                    <FormCard key={form.id} form={form} index={i} kioskMode={kioskMode} />
-                  ))}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      )}
 
       {utilityLinks.length > 0 && (
         <section className={serviceForms.length > 0 ? "mt-8" : ""} aria-label="Quick links">

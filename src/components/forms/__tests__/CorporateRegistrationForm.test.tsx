@@ -39,7 +39,7 @@ describe("CorporateRegistrationForm", () => {
   it("renders the form fields and submit button", () => {
     render(<CorporateRegistrationForm />);
 
-    expect(screen.getByText(/corporate registration/i)).toBeInTheDocument();
+    expect(screen.getByText(/corporation formation/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/business owner full name/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/phone number/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/^email/i)).toBeInTheDocument();

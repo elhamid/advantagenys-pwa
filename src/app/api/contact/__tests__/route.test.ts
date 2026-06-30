@@ -511,7 +511,7 @@ describe('POST /api/contact', () => {
     expect(sentBody.source).toBe('website-client-info')
   })
 
-  it('forwards full corporate registration identifiers to the Taskboard staff packet', async () => {
+  it('forwards full corporation formation identifiers to the Taskboard staff packet', async () => {
     const fetchSpy = makeFetchMock()
     global.fetch = fetchSpy
 
