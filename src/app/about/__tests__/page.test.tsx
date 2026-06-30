@@ -42,8 +42,8 @@ describe('About page metadata', () => {
     expect(metadata.title).toBe('About Us')
   })
 
-  it('description mentions Advantage Services', () => {
-    expect(metadata.description).toMatch(/Advantage Services/i)
+  it('description mentions the legal business name', () => {
+    expect(metadata.description).toMatch(/Advantage Business Consulting LLC/i)
   })
 
   it('description mentions NYC', () => {

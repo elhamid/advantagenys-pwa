@@ -2,6 +2,7 @@ type LocalBusinessData = {
   "@context": "https://schema.org";
   "@type": "LocalBusiness";
   name: string;
+  legalName?: string;
   description: string;
   url: string;
   telephone: string;
@@ -38,6 +39,7 @@ type ServiceData = {
   provider: {
     "@type": "LocalBusiness";
     name: string;
+    legalName?: string;
   };
   areaServed: string;
 };
@@ -74,6 +76,7 @@ type PersonData = {
   worksFor: {
     "@type": "LocalBusiness";
     name: string;
+    legalName?: string;
     url: string;
   };
   hasCredential?: {
@@ -87,6 +90,7 @@ type AggregateRatingData = {
   "@context": "https://schema.org";
   "@type": "LocalBusiness";
   name: string;
+  legalName?: string;
   url: string;
   aggregateRating: {
     "@type": "AggregateRating";
@@ -138,6 +142,7 @@ function buildData(props: JsonLdProps): JsonLdData {
         "@context": "https://schema.org",
         "@type": "LocalBusiness",
         name: "Advantage Services",
+        legalName: "Advantage Business Consulting LLC",
         description:
           "One-stop shop for business consulting, tax preparation, licensing, insurance, and legal services in Queens, NYC.",
         url: "https://advantagenys.com",
@@ -183,6 +188,7 @@ function buildData(props: JsonLdProps): JsonLdData {
         provider: {
           "@type": "LocalBusiness",
           name: "Advantage Services",
+          legalName: "Advantage Business Consulting LLC",
         },
         areaServed: "Queens, NYC",
       };
@@ -222,6 +228,7 @@ function buildData(props: JsonLdProps): JsonLdData {
         worksFor: {
           "@type": "LocalBusiness",
           name: "Advantage Services",
+          legalName: "Advantage Business Consulting LLC",
           url: "https://advantagenys.com",
         },
         ...(props.credentials && props.credentials.length
@@ -242,6 +249,7 @@ function buildData(props: JsonLdProps): JsonLdData {
         "@context": "https://schema.org",
         "@type": "LocalBusiness",
         name: "Advantage Services",
+        legalName: "Advantage Business Consulting LLC",
         url: "https://advantagenys.com",
         aggregateRating: {
           "@type": "AggregateRating",

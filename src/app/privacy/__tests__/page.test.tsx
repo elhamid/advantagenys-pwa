@@ -11,12 +11,14 @@ describe("PrivacyPage", () => {
   it("exports privacy metadata", () => {
     expect(metadata.title).toBe("Privacy Policy");
     expect(metadata.description).toMatch(/personal and business information/i);
+    expect(metadata.description).toContain("Advantage Business Consulting LLC");
   });
 
   it("renders the privacy content and external policy link", () => {
     render(<PrivacyPage />);
 
     expect(screen.getByRole("heading", { name: /privacy policy/i })).toBeInTheDocument();
+    expect(screen.getAllByText(/Advantage Business Consulting LLC/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/we do not sell your personal information/i)).toBeInTheDocument();
     expect(screen.getByText(/native Advantage forms saved into our internal Taskboard system/i)).toBeInTheDocument();
     expect(screen.getByText(/sensitive native forms require an acknowledgement/i)).toBeInTheDocument();

@@ -11,12 +11,14 @@ describe("TermsPage", () => {
   it("exports terms metadata", () => {
     expect(metadata.title).toBe("Terms of Service");
     expect(metadata.description).toMatch(/business consulting services/i);
+    expect(metadata.description).toContain("Advantage Business Consulting LLC");
   });
 
   it("renders the terms page heading and website link", () => {
     render(<TermsPage />);
 
     expect(screen.getByRole("heading", { name: /terms of service/i })).toBeInTheDocument();
+    expect(screen.getAllByText(/Advantage Business Consulting LLC/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/last updated: march 2026/i)).toBeInTheDocument();
     expect(screen.getAllByRole("link", { name: /advantagenys\.com/i })[0]).toHaveAttribute(
       "href",

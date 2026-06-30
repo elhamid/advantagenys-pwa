@@ -44,6 +44,11 @@ describe('JsonLd', () => {
       expect(data.name).toBe('Advantage Services')
     })
 
+    it('includes legal business name', () => {
+      const data = getScriptData(<JsonLd type="LocalBusiness" />)
+      expect(data.legalName).toBe('Advantage Business Consulting LLC')
+    })
+
     it('includes telephone and email', () => {
       const data = getScriptData(<JsonLd type="LocalBusiness" />)
       expect(data.telephone).toBe('+19299331396')
@@ -121,6 +126,7 @@ describe('JsonLd', () => {
       const data = getScriptData(<JsonLd {...serviceProps} />)
       expect(data.provider['@type']).toBe('LocalBusiness')
       expect(data.provider.name).toBe('Advantage Services')
+      expect(data.provider.legalName).toBe('Advantage Business Consulting LLC')
     })
 
     it('includes areaServed', () => {
