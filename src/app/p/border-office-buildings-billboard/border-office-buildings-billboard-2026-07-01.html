@@ -111,41 +111,14 @@
 <body>
 <div class="wrap">
   <div class="topbar">
-    <h1>Border Office Buildings — like 271 Jericho</h1>
+    <h1>Border Office Building Options</h1>
     <button class="openCalc" onclick="openCalc()">📊 Own-vs-Rent calculator</button>
   </div>
   <p class="sub">For-sale office/commercial buildings near the Cross Island Pkwy edge · ranked by fit &amp; drive time from 229-14 Linden Blvd · tap any row to drill down · data as of Jul 1, 2026</p>
   <div class="legend">
     <span><span class="dot" style="background:var(--good)"></span>Nassau (preferred)</span>
-    <span><span class="dot" style="background:var(--queens)"></span>Queens (border)</span>
-    <span><span class="dot" style="background:var(--ref)"></span>Your reference building</span>
     <span>Drive times are estimates in normal traffic</span>
   </div>
-
-  <!-- REFERENCE -->
-  <details class="ref-card">
-    <summary>
-      <span class="rank">REF</span>
-      <span class="bill">
-        <span class="headline">~12K SF · <span class="price">$2.65M*</span> · <span class="mi">8 min</span></span>
-        <span class="addr">271 JERICHO TPKE · FLORAL PARK</span>
-      </span>
-      <span class="badges"><span class="tag t-ref">Your pick</span><span class="tag t-nassau">Nassau</span></span>
-      <span class="chev">▾</span>
-    </summary>
-    <div class="drill">
-      <div class="grid">
-        <div class="cell"><div class="k">Building</div><div class="v">~11,859 SF</div></div>
-        <div class="cell"><div class="k">Stories</div><div class="v">2–3</div></div>
-        <div class="cell"><div class="k">Built</div><div class="v">1975</div></div>
-        <div class="cell"><div class="k">Lot</div><div class="v">0.22 ac · 49×125</div></div>
-        <div class="cell"><div class="k">Parking</div><div class="v">~20</div></div>
-        <div class="cell"><div class="k">Status</div><div class="v">Not for sale (lease)</div></div>
-      </div>
-      <div class="why"><b>Baseline.</b> *Last sold 3/30/2023 for $2.65M (~$223/SF). Owned by 271 Jericho Tpke LLC — would need an off-market offer. This is the yardstick for everything below.</div>
-      <button class="runbtn" data-name="271 Jericho Tpke, Floral Park" data-price="2650000" data-sf="11859" data-rent="37" data-tax="61781">Run the numbers →</button>
-    </div>
-  </details>
 
   <!-- 1 -->
   <details open>
@@ -277,29 +250,28 @@
     </div>
   </details>
 
-  <!-- 6 Queens option -->
-  <details>
+  <!-- Reference benchmark -->
+  <details class="ref-card">
     <summary>
-      <span class="rank">6</span>
+      <span class="rank">REF</span>
       <span class="bill">
-        <span class="headline">1,025 SF · <span class="price">$769K</span> · <span class="mi">12 min</span></span>
-        <span class="addr">112-08 SPRINGFIELD BLVD · QUEENS VILLAGE</span>
+        <span class="headline">~12K SF · <span class="price">$2.65M*</span> · <span class="mi">8 min</span></span>
+        <span class="addr">271 JERICHO TPKE · FLORAL PARK · REFERENCE BENCHMARK</span>
       </span>
-      <span class="badges"><span class="tag t-queens">Queens</span></span>
+      <span class="badges"><span class="tag t-ref">Reference</span><span class="tag t-nassau">Nassau</span></span>
       <span class="chev">▾</span>
     </summary>
     <div class="drill">
       <div class="grid">
-        <div class="cell"><div class="k">Price / SF</div><div class="v">$750</div></div>
-        <div class="cell"><div class="k">Stories</div><div class="v">1</div></div>
-        <div class="cell"><div class="k">Built</div><div class="v">1931</div></div>
-        <div class="cell"><div class="k">Use</div><div class="v">Medical office fit-out</div></div>
-        <div class="cell"><div class="k">Tenancy</div><div class="v">Single-tenant</div></div>
-        <div class="cell"><div class="k">Zoning</div><div class="v">R3-2</div></div>
+        <div class="cell"><div class="k">Building</div><div class="v">~11,859 SF</div></div>
+        <div class="cell"><div class="k">Stories</div><div class="v">2–3</div></div>
+        <div class="cell"><div class="k">Built</div><div class="v">1975</div></div>
+        <div class="cell"><div class="k">Lot</div><div class="v">0.22 ac · 49×125</div></div>
+        <div class="cell"><div class="k">Parking</div><div class="v">~20</div></div>
+        <div class="cell"><div class="k">Status</div><div class="v">Not for sale (lease)</div></div>
       </div>
-      <div class="why"><b>Included only for completeness.</b> Right at the Queens border and cheap, but far too small (single-tenant, ~1,025 SF) for an occupy-and-rent play. Not a real match — listed so you can see the Queens-side edge inventory.</div>
-      <div class="broker">MGM Islandwide Realty · Michael Macchia · 516-818-7650 · <a href="https://www.loopnet.com/Listing/112-08-Springfield-Blvd-Queens-Village-NY/40456624/">LoopNet</a></div>
-      <button class="runbtn" data-name="112-08 Springfield Blvd, Queens Village" data-price="769000" data-sf="1025" data-rent="30" data-tax="" data-jur="nyc">Run the numbers →</button>
+      <div class="why"><b>Reference only.</b> *Last sold 3/30/2023 for $2.65M (~$223/SF). Owned by 271 Jericho Tpke LLC, so it would require an off-market offer. Use this as a size/price benchmark, not as the lead option.</div>
+      <button class="runbtn" data-name="271 Jericho Tpke, Floral Park" data-price="2650000" data-sf="11859" data-rent="37" data-tax="61781">Run the numbers →</button>
     </div>
   </details>
 
