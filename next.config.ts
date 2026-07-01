@@ -47,6 +47,9 @@ const nextConfig: NextConfig = {
     "/p/surgical-component-recovery": [
       "./src/app/p/surgical-component-recovery/06-pilot-brief.html",
     ],
+    "/p/border-office-buildings-billboard": [
+      "./src/app/p/border-office-buildings-billboard/border-office-buildings-billboard-2026-07-01.html",
+    ],
   },
   images: {
     deviceSizes: [640, 750, 828, 1080, 1200, 1400, 1920],

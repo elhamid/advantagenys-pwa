@@ -22,6 +22,14 @@ describe("proxy", () => {
     expect(response.headers.get("location")).toBeNull();
   });
 
+  it("does not legacy-redirect private billboard partner links", () => {
+    const response = proxy(
+      makeRequest("/p/border-office-buildings-billboard?token=bob-keda-r7n4q2")
+    );
+
+    expect(response.headers.get("location")).toBeNull();
+  });
+
   it("still legacy-redirects ordinary app pages for legacy browsers", () => {
     const response = proxy(makeRequest("/services/licensing"));
 

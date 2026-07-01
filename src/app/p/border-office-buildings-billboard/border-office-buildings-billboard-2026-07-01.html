@@ -1,0 +1,528 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Border Office Buildings — Billboard View</title>
+<style>
+  :root{
+    --bg:#0f1115; --card:#171a21; --card2:#1e222b; --line:#2a2f3a;
+    --ink:#f4f6fa; --mut:#9aa4b2; --accent:#4da3ff; --good:#37d39b;
+    --warn:#ffb454; --ref:#b98cff; --queens:#ff7a7a;
+  }
+  @media (prefers-color-scheme: light){
+    :root{ --bg:#f6f7f9; --card:#ffffff; --card2:#f0f2f5; --line:#e2e6ec;
+      --ink:#10131a; --mut:#5b6675; --accent:#1f6fd6; --good:#159e73;
+      --warn:#c47d16; --ref:#7a4fd0; --queens:#c74545; }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;padding:20px}
+  .wrap{max-width:980px;margin:0 auto}
+  h1{font-size:22px;margin:0 0 2px}
+  .sub{color:var(--mut);font-size:13px;margin:0 0 18px}
+  .legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--mut);margin:0 0 16px}
+  .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:middle}
+  details{background:var(--card);border:1px solid var(--line);border-radius:14px;
+    margin:0 0 12px;overflow:hidden}
+  details[open]{border-color:var(--accent)}
+  summary{list-style:none;cursor:pointer;padding:16px 18px;display:flex;align-items:center;
+    gap:14px;flex-wrap:wrap}
+  summary::-webkit-details-marker{display:none}
+  .rank{font-size:12px;font-weight:700;color:var(--mut);width:22px;flex:0 0 auto}
+  .bill{flex:1 1 320px;min-width:260px}
+  .headline{font-size:26px;font-weight:800;letter-spacing:-.5px;line-height:1.05}
+  .headline .price{color:var(--good)}
+  .headline .mi{color:var(--accent)}
+  .addr{font-size:13px;color:var(--mut);margin-top:4px;font-weight:600;letter-spacing:.2px}
+  .badges{display:flex;gap:6px;flex-wrap:wrap;align-items:center;flex:0 0 auto}
+  .tag{font-size:11px;font-weight:700;padding:4px 9px;border-radius:999px;white-space:nowrap;
+    border:1px solid var(--line)}
+  .t-nassau{color:var(--good);border-color:color-mix(in srgb,var(--good) 45%,transparent)}
+  .t-queens{color:var(--queens);border-color:color-mix(in srgb,var(--queens) 45%,transparent)}
+  .t-ref{color:var(--ref);border-color:color-mix(in srgb,var(--ref) 45%,transparent)}
+  .t-best{background:var(--good);color:#05271c;border-color:transparent}
+  .t-twin{background:var(--ref);color:#1c0b3a;border-color:transparent}
+  .t-value{background:var(--accent);color:#04203f;border-color:transparent}
+  .chev{color:var(--mut);font-size:13px;flex:0 0 auto}
+  .drill{padding:2px 18px 18px 18px;border-top:1px solid var(--line);margin-top:2px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px 18px;margin:14px 0}
+  .cell .k{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.5px}
+  .cell .v{font-size:15px;font-weight:600;margin-top:2px}
+  .why{background:var(--card2);border-radius:10px;padding:11px 13px;font-size:13.5px;line-height:1.5}
+  .why b{color:var(--ink)}
+  .broker{font-size:13px;color:var(--mut);margin-top:12px}
+  .broker a{color:var(--accent);text-decoration:none}
+  .ref-card{border-style:dashed}
+  .foot{color:var(--mut);font-size:11.5px;margin-top:14px;line-height:1.5}
+  /* calculator */
+  .runbtn{margin-top:12px;display:inline-flex;align-items:center;gap:6px;cursor:pointer;
+    font-size:13px;font-weight:700;color:#04203f;background:var(--accent);border:none;
+    padding:9px 14px;border-radius:9px}
+  .runbtn:hover{filter:brightness(1.07)}
+  .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 8px}
+  .openCalc{cursor:pointer;font-size:13px;font-weight:700;color:var(--ink);background:var(--card2);
+    border:1px solid var(--line);padding:9px 14px;border-radius:9px}
+  .modal{position:fixed;inset:0;background:rgba(4,7,12,.62);display:none;z-index:50;
+    padding:18px;overflow:auto}
+  .modal.on{display:flex;align-items:flex-start;justify-content:center}
+  .calc{background:var(--card);border:1px solid var(--line);border-radius:16px;
+    width:100%;max-width:760px;margin:18px auto;padding:18px 20px 20px}
+  .calc h2{font-size:18px;margin:0 0 2px}
+  .calc .sub2{color:var(--mut);font-size:12.5px;margin:0 0 6px}
+  .propname{width:100%;background:var(--card2);border:1px solid var(--line);color:var(--ink);
+    border-radius:9px;padding:9px 11px;font-size:15px;font-weight:700;margin:8px 0 4px}
+  .x{position:sticky;top:0;float:right;cursor:pointer;color:var(--mut);font-size:22px;
+    line-height:1;border:none;background:none}
+  .sect{margin-top:14px}
+  .sect h3{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--mut);
+    margin:0 0 8px;font-weight:700}
+  .inrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px 14px}
+  .fld label{display:block;font-size:11.5px;color:var(--mut);margin:0 0 3px}
+  .fld input{width:100%;background:var(--card2);border:1px solid var(--line);color:var(--ink);
+    border-radius:8px;padding:8px 10px;font-size:14px;font-variant-numeric:tabular-nums}
+  .fld input:focus{outline:none;border-color:var(--accent)}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+  .chip{font-size:11px;font-weight:700;padding:5px 10px;border-radius:999px;cursor:pointer;
+    background:var(--card2);border:1px solid var(--line);color:var(--mut)}
+  .chip:hover{border-color:var(--accent);color:var(--ink)}
+  .verdict{margin-top:16px;border-radius:12px;padding:14px 16px;border:1px solid var(--line);
+    background:var(--card2)}
+  .verdict .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--mut)}
+  .verdict .big{font-size:34px;font-weight:800;letter-spacing:-1px;line-height:1.05;margin-top:2px}
+  .pos{color:var(--good)} .neg{color:var(--queens)}
+  .verdict .say{font-size:13.5px;color:var(--ink);margin-top:8px;line-height:1.5}
+  .outs{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px 16px;margin-top:14px}
+  .out .k{font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--mut)}
+  .out .v{font-size:17px;font-weight:700;margin-top:2px;font-variant-numeric:tabular-nums}
+  .disc{color:var(--mut);font-size:11px;margin-top:14px;line-height:1.5;border-top:1px solid var(--line);padding-top:10px}
+  .segwrap{display:flex;gap:10px;flex-wrap:wrap}
+  .seg{display:inline-flex;background:var(--card2);border:1px solid var(--line);border-radius:9px;overflow:hidden}
+  .seg button{border:none;background:none;color:var(--mut);font-size:12.5px;font-weight:700;
+    padding:8px 12px;cursor:pointer}
+  .seg button.on{background:var(--accent);color:#04203f}
+  .note{color:var(--mut);font-size:11.5px;line-height:1.45;margin:8px 0 0}
+  .verify{margin-top:10px;font-size:12px}
+  .verify a{color:var(--accent);text-decoration:none;font-weight:600}
+  .verify span{color:var(--mut)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <h1>Border Office Buildings — like 271 Jericho</h1>
+    <button class="openCalc" onclick="openCalc()">📊 Own-vs-Rent calculator</button>
+  </div>
+  <p class="sub">For-sale office/commercial buildings near the Cross Island Pkwy edge · ranked by fit &amp; drive time from 229-14 Linden Blvd · tap any row to drill down · data as of Jul 1, 2026</p>
+  <div class="legend">
+    <span><span class="dot" style="background:var(--good)"></span>Nassau (preferred)</span>
+    <span><span class="dot" style="background:var(--queens)"></span>Queens (border)</span>
+    <span><span class="dot" style="background:var(--ref)"></span>Your reference building</span>
+    <span>Drive times are estimates in normal traffic</span>
+  </div>
+
+  <!-- REFERENCE -->
+  <details class="ref-card">
+    <summary>
+      <span class="rank">REF</span>
+      <span class="bill">
+        <span class="headline">~12K SF · <span class="price">$2.65M*</span> · <span class="mi">8 min</span></span>
+        <span class="addr">271 JERICHO TPKE · FLORAL PARK</span>
+      </span>
+      <span class="badges"><span class="tag t-ref">Your pick</span><span class="tag t-nassau">Nassau</span></span>
+      <span class="chev">▾</span>
+    </summary>
+    <div class="drill">
+      <div class="grid">
+        <div class="cell"><div class="k">Building</div><div class="v">~11,859 SF</div></div>
+        <div class="cell"><div class="k">Stories</div><div class="v">2–3</div></div>
+        <div class="cell"><div class="k">Built</div><div class="v">1975</div></div>
+        <div class="cell"><div class="k">Lot</div><div class="v">0.22 ac · 49×125</div></div>
+        <div class="cell"><div class="k">Parking</div><div class="v">~20</div></div>
+        <div class="cell"><div class="k">Status</div><div class="v">Not for sale (lease)</div></div>
+      </div>
+      <div class="why"><b>Baseline.</b> *Last sold 3/30/2023 for $2.65M (~$223/SF). Owned by 271 Jericho Tpke LLC — would need an off-market offer. This is the yardstick for everything below.</div>
+      <button class="runbtn" data-name="271 Jericho Tpke, Floral Park" data-price="2650000" data-sf="11859" data-rent="37" data-tax="61781">Run the numbers →</button>
+    </div>
+  </details>
+
+  <!-- 1 -->
+  <details open>
+    <summary>
+      <span class="rank">1</span>
+      <span class="bill">
+        <span class="headline">7,124 SF · <span class="price">$2.5M</span> · <span class="mi">8 min</span></span>
+        <span class="addr">66 S TYSON AVE · FLORAL PARK</span>
+      </span>
+      <span class="badges"><span class="tag t-best">Closest fit</span><span class="tag t-nassau">Nassau</span></span>
+      <span class="chev">▾</span>
+    </summary>
+    <div class="drill">
+      <div class="grid">
+        <div class="cell"><div class="k">Price / SF</div><div class="v">$351</div></div>
+        <div class="cell"><div class="k">Stories</div><div class="v">1</div></div>
+        <div class="cell"><div class="k">Built</div><div class="v">1966</div></div>
+        <div class="cell"><div class="k">Parking</div><div class="v">14 spaces</div></div>
+        <div class="cell"><div class="k">Sale type</div><div class="v">Owner-user</div></div>
+        <div class="cell"><div class="k">Extras</div><div class="v">Sprinklered · 1 blk to LIRR</div></div>
+      </div>
+      <div class="why"><b>Why it fits:</b> Closest of the pack to your office, Floral Park core, in budget, delivered for an owner-user. <b>Verify:</b> listed as "flex" — confirm true office use &amp; whether it supports multi-tenant sub-leasing.</div>
+      <div class="broker">Suffolk Industrial LLC · Mike Freedberg · 646-623-5242 · <a href="https://www.loopnet.com/Listing/66-S-Tyson-Ave-Floral-Park-NY/40569870/">LoopNet</a></div>
+      <button class="runbtn" data-name="66 S Tyson Ave, Floral Park" data-price="2500000" data-sf="7124" data-rent="37" data-tax="">Run the numbers →</button>
+    </div>
+  </details>
+
+  <!-- 2 -->
+  <details>
+    <summary>
+      <span class="rank">2</span>
+      <span class="bill">
+        <span class="headline">7,742 SF · <span class="price">$3.25M</span> · <span class="mi">7 min</span></span>
+        <span class="addr">1200 HEMPSTEAD TPKE · FRANKLIN SQ</span>
+      </span>
+      <span class="badges"><span class="tag t-twin">Structural twin</span><span class="tag t-nassau">Nassau</span></span>
+      <span class="chev">▾</span>
+    </summary>
+    <div class="drill">
+      <div class="grid">
+        <div class="cell"><div class="k">Price / SF</div><div class="v">$420 (top of budget)</div></div>
+        <div class="cell"><div class="k">Stories</div><div class="v">2</div></div>
+        <div class="cell"><div class="k">Built</div><div class="v">1959 · Class B</div></div>
+        <div class="cell"><div class="k">Parking</div><div class="v">16 on-site</div></div>
+        <div class="cell"><div class="k">Occupancy</div><div class="v">1st fl vacant · 2nd fl leased</div></div>
+        <div class="cell"><div class="k">Taxes</div><div class="v">~$37,745/yr</div></div>
+      </div>
+      <div class="why"><b>Why it fits:</b> The closest structural match to 271 Jericho — 2-story multi-tenant. <b>Occupy-and-rent, ready-made:</b> ground floor (3,950 SF, built out) delivered vacant for you; 2nd floor on a 7-yr lease covers expenses. Listing notes "7 min to Cross Island." Priced at your ceiling — negotiate.</div>
+      <div class="broker">Douglas Elliman Commercial · Ben Indiviglia · 516-353-6549 · <a href="https://www.loopnet.com/Listing/1200-Hempstead-Tpke-Franklin-Square-NY/34574458/">LoopNet</a></div>
+      <button class="runbtn" data-name="1200 Hempstead Tpke, Franklin Square" data-price="3250000" data-sf="7742" data-rent="35" data-tax="37745">Run the numbers →</button>
+    </div>
+  </details>
+
+  <!-- 3 -->
+  <details>
+    <summary>
+      <span class="rank">3</span>
+      <span class="bill">
+        <span class="headline">5,000 SF · <span class="price">$1.4M</span> · <span class="mi">10 min</span></span>
+        <span class="addr">828 HEMPSTEAD TPKE · FRANKLIN SQ</span>
+      </span>
+      <span class="badges"><span class="tag t-value">Best value</span><span class="tag t-nassau">Nassau</span></span>
+      <span class="chev">▾</span>
+    </summary>
+    <div class="drill">
+      <div class="grid">
+        <div class="cell"><div class="k">Price / SF</div><div class="v">$280</div></div>
+        <div class="cell"><div class="k">Stories</div><div class="v">1</div></div>
+        <div class="cell"><div class="k">Suites</div><div class="v">9 offices</div></div>
+        <div class="cell"><div class="k">Cap / NOI</div><div class="v">5.88% · $82,281</div></div>
+        <div class="cell"><div class="k">Occupancy</div><div class="v">100% leased</div></div>
+        <div class="cell"><div class="k">Parking</div><div class="v">Municipal lot across st.</div></div>
+      </div>
+      <div class="why"><b>Why it fits:</b> Lowest entry price, very multi-tenant (9 suites), income in place, sale type explicitly "investment or owner-user." Trade-off: 1 story and smaller than 271. Great cash-flow starter with room to owner-occupy as leases roll.</div>
+      <div class="broker">HedgeStone Commercial · Steven Bezmen 516-419-2752 / Sam Kapoor 516-647-3232 · <a href="https://www.loopnet.com/Listing/828-Hempstead-Tpke-Franklin-Square-NY/40395008/">LoopNet</a></div>
+      <button class="runbtn" data-name="828 Hempstead Tpke, Franklin Square" data-price="1400000" data-sf="5000" data-rent="30" data-tax="56078">Run the numbers →</button>
+    </div>
+  </details>
+
+  <!-- 4 -->
+  <details>
+    <summary>
+      <span class="rank">4</span>
+      <span class="bill">
+        <span class="headline">8,030 SF · <span class="price">$2.9M</span> · <span class="mi">9 min</span></span>
+        <span class="addr">107 S CENTRAL AVE · VALLEY STREAM</span>
+      </span>
+      <span class="badges"><span class="tag t-nassau">Nassau</span></span>
+      <span class="chev">▾</span>
+    </summary>
+    <div class="drill">
+      <div class="grid">
+        <div class="cell"><div class="k">Price / SF</div><div class="v">$361</div></div>
+        <div class="cell"><div class="k">Stories</div><div class="v">2</div></div>
+        <div class="cell"><div class="k">Built</div><div class="v">1960 · Class C</div></div>
+        <div class="cell"><div class="k">Cap / NOI</div><div class="v">5.35% · $155,115</div></div>
+        <div class="cell"><div class="k">Occupancy</div><div class="v">Leased; 2 suites lease-back</div></div>
+        <div class="cell"><div class="k">Transit</div><div class="v">~0.5 mi to LIRR</div></div>
+      </div>
+      <div class="why"><b>Why it fits:</b> 2-story multi-tenant, center of budget. Seller intends to lease back 2 lower-level suites — those become <b>your</b> owner-occupied space while the rest keeps paying. Slightly farther east.</div>
+      <div class="broker">American Investment Properties · Ron Koenigsberg 516-393-2300 x101 / Dawn Gingold 516-939-4309 · <a href="https://www.loopnet.com/Listing/107-S-Central-Ave-Valley-Stream-NY/40953970/">LoopNet</a></div>
+      <button class="runbtn" data-name="107 S Central Ave, Valley Stream" data-price="2900000" data-sf="8030" data-rent="35" data-tax="">Run the numbers →</button>
+    </div>
+  </details>
+
+  <!-- 5 -->
+  <details>
+    <summary>
+      <span class="rank">5</span>
+      <span class="bill">
+        <span class="headline">10,000 SF · <span class="price">$2.30M</span> · <span class="mi">14 min</span></span>
+        <span class="addr">337-343 MERRICK RD · LYNBROOK</span>
+      </span>
+      <span class="badges"><span class="tag t-nassau">Nassau</span></span>
+      <span class="chev">▾</span>
+    </summary>
+    <div class="drill">
+      <div class="grid">
+        <div class="cell"><div class="k">Price / SF</div><div class="v">$230 (lowest)</div></div>
+        <div class="cell"><div class="k">Stories</div><div class="v">2</div></div>
+        <div class="cell"><div class="k">Built</div><div class="v">1963</div></div>
+        <div class="cell"><div class="k">Parking</div><div class="v">Private 20-space lot</div></div>
+        <div class="cell"><div class="k">Occupancy</div><div class="v">100% leased</div></div>
+        <div class="cell"><div class="k">Access</div><div class="v">24-hr · A/C</div></div>
+      </div>
+      <div class="why"><b>Why it fits:</b> Most space per dollar and the rare private parking lot. Trade-offs: farthest of the Nassau set (~14 min) and fully leased today, so owner-occupancy waits for a lease to roll. Best as investment + future move-in.</div>
+      <div class="broker">PBT Realty · Joy Kannett · 516-567-0241 · <a href="https://www.loopnet.com/Listing/337-343-Merrick-Rd-Lynbrook-NY/38455638/">LoopNet</a></div>
+      <button class="runbtn" data-name="337-343 Merrick Rd, Lynbrook" data-price="2299000" data-sf="10000" data-rent="25" data-tax="">Run the numbers →</button>
+    </div>
+  </details>
+
+  <!-- 6 Queens option -->
+  <details>
+    <summary>
+      <span class="rank">6</span>
+      <span class="bill">
+        <span class="headline">1,025 SF · <span class="price">$769K</span> · <span class="mi">12 min</span></span>
+        <span class="addr">112-08 SPRINGFIELD BLVD · QUEENS VILLAGE</span>
+      </span>
+      <span class="badges"><span class="tag t-queens">Queens</span></span>
+      <span class="chev">▾</span>
+    </summary>
+    <div class="drill">
+      <div class="grid">
+        <div class="cell"><div class="k">Price / SF</div><div class="v">$750</div></div>
+        <div class="cell"><div class="k">Stories</div><div class="v">1</div></div>
+        <div class="cell"><div class="k">Built</div><div class="v">1931</div></div>
+        <div class="cell"><div class="k">Use</div><div class="v">Medical office fit-out</div></div>
+        <div class="cell"><div class="k">Tenancy</div><div class="v">Single-tenant</div></div>
+        <div class="cell"><div class="k">Zoning</div><div class="v">R3-2</div></div>
+      </div>
+      <div class="why"><b>Included only for completeness.</b> Right at the Queens border and cheap, but far too small (single-tenant, ~1,025 SF) for an occupy-and-rent play. Not a real match — listed so you can see the Queens-side edge inventory.</div>
+      <div class="broker">MGM Islandwide Realty · Michael Macchia · 516-818-7650 · <a href="https://www.loopnet.com/Listing/112-08-Springfield-Blvd-Queens-Village-NY/40456624/">LoopNet</a></div>
+      <button class="runbtn" data-name="112-08 Springfield Blvd, Queens Village" data-price="769000" data-sf="1025" data-rent="30" data-tax="" data-jur="nyc">Run the numbers →</button>
+    </div>
+  </details>
+
+  <p class="foot">Ruled out this pass: 251-73 Jericho Tpke Bellerose ($45.5M, 60K SF), 570 Elmont Rd (off-market), 102-114 Jericho Tpke ($5M), 1575 Hillside Ave New Hyde Park (sold as medical condos), plus retail/warehouse/land. True multi-tenant office buildings in this micro-market are thin right now — the off-market owner list is the way to surface more.<br>Sources: LoopNet, PropertyShark (Nassau assessor), RealtyHop. Prices/status as listed; verify with broker before acting.</p>
+</div>
+
+<!-- ===== OWN-vs-RENT CALCULATOR ===== -->
+<div class="modal" id="calcModal">
+  <div class="calc">
+    <button class="x" onclick="closeCalc()" aria-label="Close">×</button>
+    <h2>Own vs. Rent — is this building worth it?</h2>
+    <p class="sub2">Owner-occupier + landlord + tax view. Everything is editable — set your own tax numbers.</p>
+    <input class="propname" id="pName" value="New building">
+
+    <div class="sect">
+      <h3>1 · What are we buying &amp; where?</h3>
+      <div class="segwrap">
+        <div class="seg" id="segType">
+          <button class="on" data-type="comm" onclick="setType('comm')">Commercial only</button>
+          <button data-type="mix" onclick="setType('mix')">Mixed-use (+ apartments up top)</button>
+        </div>
+        <div class="seg" id="segJur">
+          <button class="on" data-jur="nassau" onclick="setJur('nassau')">Nassau</button>
+          <button data-jur="nyc" onclick="setJur('nyc')">Queens (NYC)</button>
+        </div>
+      </div>
+      <p class="note" id="jurNote">Nassau: no NYC business-tax layer; commercial property tax ≈ 2–2.5% of value.</p>
+    </div>
+
+    <div class="sect">
+      <h3>Purchase &amp; financing</h3>
+      <div class="inrow">
+        <div class="fld"><label>Purchase price ($)</label><input id="iPrice" type="number" value="2000000"></div>
+        <div class="fld"><label>Down payment (%)</label><input id="iDown" type="number" value="30"></div>
+        <div class="fld"><label>Interest rate (%)</label><input id="iRate" type="number" step="0.1" value="7"></div>
+        <div class="fld"><label>Amortization (yrs)</label><input id="iTerm" type="number" value="25"></div>
+        <div class="fld"><label>Land, % of price (not depreciable)</label><input id="iLand" type="number" value="20"></div>
+      </div>
+    </div>
+
+    <div class="sect">
+      <h3>Space &amp; income</h3>
+      <div class="inrow">
+        <div class="fld"><label>Total building SF</label><input id="iSF" type="number" value="8000"></div>
+        <div class="fld"><label>Share WE occupy (%)</label><input id="iOcc" type="number" value="40"></div>
+        <div class="fld"><label>Market rent ($/SF/yr)</label><input id="iRent" type="number" value="35"></div>
+        <div class="fld"><label>Rent we pay NOW, external ($/yr)</label><input id="iCur" type="number" value=""></div>
+        <div class="fld"><label>Vacancy allowance (%)</label><input id="iVac" type="number" value="5"></div>
+      </div>
+    </div>
+
+    <div class="sect" id="resSect" style="display:none">
+      <h3>Residential income (apartments up top)</h3>
+      <div class="inrow">
+        <div class="fld"><label>Apartment units</label><input id="iResUnits" type="number" value="2"></div>
+        <div class="fld"><label>Rent per unit ($/mo)</label><input id="iResRent" type="number" value="2200"></div>
+      </div>
+      <p class="note">Heads-up: NY rent-stabilization &amp; eviction rules can apply to residential units, property may shift toward tax Class 2, and tenants need managing. The residential portion can also be depreciated over 27.5 yrs (vs 39 for commercial) for a faster shelter — not modeled here.</p>
+    </div>
+
+    <div class="sect">
+      <h3>Carrying costs</h3>
+      <div class="inrow">
+        <div class="fld"><label>Property tax — Nassau ($/yr)</label><input id="iTax" type="number" value="45000"></div>
+        <div class="fld"><label>Other opex ($/SF/yr): ins, utils, R&amp;M, mgmt</label><input id="iOpex" type="number" value="6"></div>
+      </div>
+    </div>
+
+    <div class="sect">
+      <h3>Tax rate (drives the savings)</h3>
+      <div class="inrow" style="grid-template-columns:minmax(150px,240px)">
+        <div class="fld"><label>Blended marginal rate (%)</label><input id="iTaxRate" type="number" value="35"></div>
+      </div>
+      <div class="chips">
+        <span class="chip" onclick="setRate(27)">C-corp blend ≈ 27%</span>
+        <span class="chip" onclick="setRate(40)">Pass-through NY ≈ 40%</span>
+      </div>
+      <div class="inrow" id="nycWrap" style="display:none;grid-template-columns:minmax(150px,260px);margin-top:10px">
+        <div class="fld"><label>NYC business tax on rental income (%) — Queens only</label><input id="iNyc" type="number" value="4"></div>
+      </div>
+      <p class="note" id="nycNote" style="display:none">Queens adds an NYC layer Nassau doesn't: 4% UBT (partnership/LLP) or 8.85% Business Corp Tax (C-corp) on NYC-allocated net income. Applied here to positive building income; the bigger hit is usually on your firm's own operating income.</p>
+    </div>
+
+    <div class="verdict">
+      <div class="lbl">Net after-tax benefit vs. staying a renter (year 1)</div>
+      <div class="big" id="oNet">—</div>
+      <div class="say" id="oSay"></div>
+    </div>
+
+    <div class="outs">
+      <div class="out"><div class="k">Building after-tax cash flow</div><div class="v" id="oCF">—</div></div>
+      <div class="out"><div class="k">Avoided rent (after-tax)</div><div class="v" id="oAvoid">—</div></div>
+      <div class="out"><div class="k">Tax saved by deductions (yr 1)</div><div class="v" id="oTax">—</div></div>
+      <div class="out"><div class="k">Equity built (yr 1 principal)</div><div class="v" id="oEq">—</div></div>
+      <div class="out"><div class="k">Asset cap rate</div><div class="v" id="oCap">—</div></div>
+      <div class="out"><div class="k">Cash-on-cash (incl. avoided rent)</div><div class="v" id="oCoC">—</div></div>
+      <div class="out" id="oNycWrap" style="display:none"><div class="k">NYC business tax (Queens penalty)</div><div class="v neg" id="oNyc">—</div></div>
+    </div>
+
+    <p class="disc">Planning estimate only — <b>not filed tax advice</b>. Year-1, simplified: 39-yr straight-line depreciation on the building (land excluded), interest from a standard amortization, principal is not deductible. Whether you lease the building back through a separate LLC (PropCo) shifts <i>where</i> deductions sit but not this buy/don't-buy answer — treat that as a separate structuring step. Confirm self-rental treatment, QBI/SALT limits, and actual rates before acting.</p>
+  </div>
+</div>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id);};
+  var ids=['iPrice','iDown','iRate','iTerm','iLand','iSF','iOcc','iRent','iCur','iVac','iTax','iOpex','iTaxRate','iResUnits','iResRent','iNyc'];
+  var curType='comm', curJur='nassau';
+  window.openCalc=function(){ $('calcModal').classList.add('on'); calc(); };
+  window.closeCalc=function(){ $('calcModal').classList.remove('on'); };
+  window.setRate=function(r){ $('iTaxRate').value=r; calc(); };
+  window.setType=function(t){
+    curType=t;
+    $('segType').querySelectorAll('button').forEach(function(b){ b.classList.toggle('on',b.dataset.type===t); });
+    $('resSect').style.display = (t==='mix')?'block':'none';
+    calc();
+  };
+  window.setJur=function(j){
+    curJur=j;
+    $('segJur').querySelectorAll('button').forEach(function(b){ b.classList.toggle('on',b.dataset.jur===j); });
+    var isNyc=(j==='nyc');
+    $('nycWrap').style.display=isNyc?'grid':'none';
+    $('nycNote').style.display=isNyc?'block':'none';
+    $('oNycWrap').style.display=isNyc?'block':'none';
+    $('jurNote').textContent = isNyc
+      ? 'Queens (NYC): adds a 4% UBT / 8.85% Corp Tax layer Nassau has none of, and commercial property tax runs ~4%+ of value.'
+      : 'Nassau: no NYC business-tax layer; commercial property tax ≈ 2–2.5% of value.';
+    calc();
+  };
+  $('calcModal').addEventListener('click',function(e){ if(e.target===this) closeCalc(); });
+
+  function n(id){ var v=parseFloat($(id).value); return isFinite(v)?v:0; }
+  function money(x){ var s=(x<0?'-':'')+'$'+Math.round(Math.abs(x)).toLocaleString('en-US'); return s; }
+  function pct(x){ return (x).toFixed(1)+'%'; }
+
+  function calc(){
+    var price=n('iPrice'), down=n('iDown')/100, rate=n('iRate')/100, term=n('iTerm'),
+        land=n('iLand')/100, sf=n('iSF'), occ=n('iOcc')/100, rent=n('iRent'),
+        vac=n('iVac')/100, tax=n('iTax'), opexSF=n('iOpex'), tr=n('iTaxRate')/100;
+
+    var loan=price*(1-down), mr=rate/12, nper=term*12;
+    var pmt = mr>0 ? loan*mr/(1-Math.pow(1+mr,-nper)) : loan/nper;
+    var debt=pmt*12;
+    // year-1 interest / principal via amortization
+    var bal=loan, intY1=0;
+    for(var m=0;m<12 && m<nper;m++){ var i=bal*mr; intY1+=i; bal-=(pmt-i); }
+    var prinY1=debt-intY1;
+
+    var depr = price*(1-land)/39;
+    var tenantSF=sf*(1-occ), occSF=sf*occ;
+    var commRent = tenantSF*rent*(1-vac);
+    // residential income (mixed-use only)
+    var resInc = (curType==='mix') ? n('iResUnits')*n('iResRent')*12*(1-vac) : 0;
+    var effRent = commRent + resInc;
+    var opex = sf*opexSF;
+
+    // current external rent: if blank, assume we pay market on the space we occupy
+    var curField=$('iCur').value;
+    var curRent = (curField===''||curField===null)? occSF*rent : n('iCur');
+
+    var preTaxCF = effRent - debt - tax - opex;
+    var taxableInc = effRent - intY1 - tax - opex - depr;      // building only
+    var incomeTax = taxableInc*tr;                              // <0 = shelters other income
+    // NYC business-tax layer (Queens only) on positive building income
+    var nycTax = (curJur==='nyc' && taxableInc>0) ? taxableInc*(n('iNyc')/100) : 0;
+    var afterTaxCF = preTaxCF - incomeTax - nycTax;
+    var avoidedAT = curRent*(1-tr);
+    var netVsRent = afterTaxCF + avoidedAT;
+
+    var noiAsset = sf*rent*(1-vac) + resInc - tax - opex;       // fully-rented basis
+    var cap = price>0? noiAsset/price*100 : 0;
+    var cashIn = price*down;
+    var coc = cashIn>0? netVsRent/cashIn*100 : 0;
+    var taxSaved = tr*(intY1+tax+opex+depr);                    // gross deduction value yr1
+
+    $('oNet').textContent = money(netVsRent)+'/yr';
+    $('oNet').className = 'big '+(netVsRent>=0?'pos':'neg');
+    var verdict;
+    if(netVsRent>=0){
+      verdict='Owning looks better than renting by about '+money(netVsRent)+'/yr after tax — <b>before</b> counting the '+money(prinY1)+' of equity you build in year one or any appreciation.';
+    } else {
+      verdict='Owning costs about '+money(-netVsRent)+'/yr more than renting on after-tax cash — but you also build '+money(prinY1)+' of equity in year one, which can offset that. Weigh the gap against long-term equity + appreciation.';
+    }
+    $('oSay').innerHTML = verdict;
+
+    $('oCF').textContent   = money(afterTaxCF)+'/yr';
+    $('oCF').className='v '+(afterTaxCF>=0?'pos':'neg');
+    $('oAvoid').textContent= money(avoidedAT)+'/yr';
+    $('oTax').textContent  = money(taxSaved)+'/yr';
+    $('oEq').textContent   = money(prinY1)+'/yr';
+    $('oCap').textContent  = pct(cap);
+    $('oCoC').textContent  = pct(coc);
+    $('oCoC').className='v '+(coc>=0?'pos':'neg');
+    $('oNyc').textContent  = nycTax>0? '−'+money(nycTax)+'/yr' : '$0 (no positive income yet)';
+  }
+
+  ids.forEach(function(id){ $(id).addEventListener('input',calc); });
+
+  // per-property prefill
+  document.querySelectorAll('.runbtn').forEach(function(b){
+    b.addEventListener('click',function(){
+      $('pName').value = b.dataset.name||'New building';
+      if(b.dataset.price) $('iPrice').value=b.dataset.price;
+      if(b.dataset.sf)    $('iSF').value=b.dataset.sf;
+      if(b.dataset.rent)  $('iRent').value=b.dataset.rent;
+      $('iTax').value = b.dataset.tax? b.dataset.tax : '';
+      $('iCur').value=''; // recompute from space
+      setType('comm');
+      setJur(b.dataset.jur==='nyc' ? 'nyc' : 'nassau');
+      openCalc();
+    });
+    // multi-source availability verifier under each property
+    var addr=b.dataset.name||'';
+    var g='https://www.google.com/search?q='+encodeURIComponent(addr+' for sale commercial');
+    var ps='https://www.propertyshark.com/mason/';
+    var v=document.createElement('div');
+    v.className='verify';
+    v.innerHTML='<span>Verify it’s still available (LoopNet can be stale): </span>'+
+      '<a href="'+g+'" target="_blank" rel="noopener">Google listings ↗</a> <span>·</span> '+
+      '<a href="'+ps+'" target="_blank" rel="noopener">PropertyShark ↗</a> <span>· then cross-check price &amp; status</span>';
+    b.parentNode.appendChild(v);
+  });
+})();
+</script>
+</body>
+</html>
